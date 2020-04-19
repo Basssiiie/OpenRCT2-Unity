@@ -35,7 +35,6 @@ namespace OpenRCT2.Unity
             peepBuffer = new Peep[MaxPeeps];
             int amount = OpenRCT2.GetAllPeeps(peepBuffer);
             peepObjects = new Dictionary<ushort, PeepObject>(amount);
-            Debug.Log("This guest is a" + peepBuffer[1].type);
             for (int i = 0; i < amount; i++)
             {
                 AddPeep(ref peepBuffer[i]);
@@ -72,7 +71,6 @@ namespace OpenRCT2.Unity
         {
             ushort id = peep.Id;
             var type = peep.type;
-
             GameObject peepObj = Instantiate(peepPrefab, Vector3.zero, Quaternion.identity, transform);
             peepObj.name = $"{type} {id}";
 
@@ -101,6 +99,8 @@ namespace OpenRCT2.Unity
                 obj = AddPeep(ref peep);
 
             obj.lastUpdate = currentUpdateTick;
+
+            obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(peep);
 
             Vector3 target = Map.CoordsToVector3(peep.Position);
 
@@ -143,6 +143,8 @@ namespace OpenRCT2.Unity
 
             if (forward != Vector3.zero)
                 transf.rotation = Quaternion.LookRotation(forward);
+
+            //obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(peep);
         }
 
 

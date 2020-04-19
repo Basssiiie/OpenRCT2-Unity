@@ -33,7 +33,7 @@ namespace OpenRCT2.Unity
 	//  public byte thirst;
 	//  public byte toilet;
 	//  public byte mass;
-	//  public byte timeToCconsume;
+	//  public byte timeToConsume;
 	//  public byte intensity; // The max intensity is stored in the first 4 bits, and the min intensity in the second 4 bits
 	//  public byte nauseaTolerance;
 	//  public byte windowInvalidateFlags;
