@@ -7,17 +7,17 @@ namespace OpenRCT2.Unity
 	[StructLayout(LayoutKind.Sequential, Size = 264)]
 	public struct Peep
 	{
-		public SpriteBase sprite;          
-		public IntPtr namePtr;             
-		public int nextLocX;               
-		public int nextLocY;               
-		public int nextLocZ;               
-	    public byte nextFlags;                                 
-	    public byte outsideOfPark;                             
-		public PeepState state;            
-	    public byte substate;                                  
-		public PeepSpriteType spriteType;  
-		public PeepType type;              
+		public SpriteBase sprite;
+		public IntPtr namePtr;
+		public int nextLocX;
+		public int nextLocY;
+		public int nextLocZ;
+	    public byte nextFlags;
+	    public byte outsideOfPark;
+		public PeepState state;
+	    public byte substate;
+		public PeepSpriteType spriteType;
+		public PeepType type;
 	//  public byte staffTypeOrNoOfRides; // union of staff type or no. of rides.
 	//  public byte tshirtColour;
 	//  public byte trousersColour;
