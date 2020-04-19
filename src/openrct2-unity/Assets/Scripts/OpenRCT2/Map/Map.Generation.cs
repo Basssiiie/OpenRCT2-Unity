@@ -8,6 +8,7 @@ namespace OpenRCT2.Unity
         [SerializeField] GameObject pathPrefab;
         [SerializeField] GameObject trackPrefab;
         [SerializeField] GameObject smallSceneryPrefab;
+        [SerializeField] GameObject entrancePrefab;
 
 
         const int TileCoordsToCoords = 32;
@@ -74,6 +75,10 @@ namespace OpenRCT2.Unity
                     Vector3 scale = scenery.transform.localScale;
                     scale.y = Mathf.Max((tile.clearanceHeight - tile.baseHeight) * TileHeightMultiplier, 1);
                     scenery.transform.localScale = scale;
+                    break;
+
+                case TileElementType.Entrance:
+                    InstantiateElement(entrancePrefab, x, tile.baseHeight, y);
                     break;
             }
         }

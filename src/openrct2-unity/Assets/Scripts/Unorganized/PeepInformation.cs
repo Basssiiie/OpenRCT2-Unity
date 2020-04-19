@@ -13,7 +13,7 @@ public class PeepInformation : MonoBehaviour
     [Header("Button Settings")]
         [Tooltip("Arbitary text message")]
   */
-        public string name = "PLACEHOLDER";
+        public string park = "PLACEHOLDER";
         public string type = "PLACEHOLDER";
         public string state = "PLACEHOLDER";
 
@@ -31,8 +31,8 @@ public class PeepInformation : MonoBehaviour
     }
 
     public void UpdateInformation (OpenRCT2.Unity.Peep peep) {
-        name = $"{peep.Name}";
         type = $"{peep.type}";
         state = $"{peep.state}";
+        park = $"{(peep.outsideOfPark == 0 ? "In the park" : "Outside the park")}";
     }
 }
