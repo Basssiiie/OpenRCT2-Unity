@@ -9,6 +9,15 @@ namespace OpenRCT2.Unity
         [SerializeField] GameObject trackPrefab;
         [SerializeField] GameObject smallSceneryPrefab;
         [SerializeField] GameObject entrancePrefab;
+        [SerializeField] GameObject wallPrefab;
+        [SerializeField] GameObject largeSceneryPrefab;
+
+        public bool generatePath = true;
+        public bool generateTrack = true;
+        public bool generateSmallScenery = true;
+        public bool generateEntrance = true;
+        public bool generateWall = true;
+        public bool generateLargeScenery = true;
 
 
         const int TileCoordsToCoords = 32;
@@ -62,23 +71,43 @@ namespace OpenRCT2.Unity
                     break;
 
                 case TileElementType.Path:
-                    InstantiateElement(pathPrefab, x, tile.baseHeight, y);
+                    if (generatePath) {
+                        InstantiateElement(pathPrefab, x, tile.baseHeight, y);
+                    }
                     break;
 
                 case TileElementType.Track:
-                    InstantiateElement(trackPrefab, x, tile.baseHeight, y);
+                    if (generateTrack) {
+                        InstantiateElement(trackPrefab, x, tile.baseHeight, y);
+                    }
                     break;
 
                 case TileElementType.SmallScenery:
-                    GameObject scenery = InstantiateElement(smallSceneryPrefab, x, tile.baseHeight, y);
+                    if (generateSmallScenery) {
+                        GameObject scenery = InstantiateElement(smallSceneryPrefab, x, tile.baseHeight, y);
 
-                    Vector3 scale = scenery.transform.localScale;
-                    scale.y = Mathf.Max((tile.clearanceHeight - tile.baseHeight) * TileHeightMultiplier, 1);
-                    scenery.transform.localScale = scale;
+                        Vector3 scale = scenery.transform.localScale;
+                        scale.y = Mathf.Max((tile.clearanceHeight - tile.baseHeight) * TileHeightMultiplier, 1);
+                        scenery.transform.localScale = scale;
+                    }
                     break;
 
                 case TileElementType.Entrance:
-                    InstantiateElement(entrancePrefab, x, tile.baseHeight, y);
+                    if (generateEntrance) {
+                        InstantiateElement(entrancePrefab, x, tile.baseHeight, y);
+                    }
+                    break;
+
+                case TileElementType.Wall:
+                    if (generateWall) {
+                        InstantiateElement(wallPrefab, x, tile.baseHeight, y);
+                    }           
+                    break;
+
+                case TileElementType.LargeScenery:
+                    if (generateLargeScenery) {
+                        InstantiateElement(largeSceneryPrefab, x, tile.baseHeight, y);
+                    }
                     break;
             }
         }
