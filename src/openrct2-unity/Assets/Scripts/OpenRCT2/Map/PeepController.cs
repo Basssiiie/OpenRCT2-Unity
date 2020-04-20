@@ -26,7 +26,7 @@ namespace OpenRCT2.Unity
             public float timeSinceStart;
             public int lastUpdate;
             public Vector3 from;
-            public Vector3 towards; 
+            public Vector3 towards;
         }
 
 
@@ -73,7 +73,7 @@ namespace OpenRCT2.Unity
             var type = peep.type;
             GameObject peepObj = Instantiate(peepPrefab, Vector3.zero, Quaternion.identity, transform);
             peepObj.name = $"{type} {id}";
-
+            peepObj.GetComponent<PeepInformation>().UpdateColours(peep.tshirtColour, peep.trousersColour);
             Vector3 position = Map.CoordsToVector3(peep.Position);
 
             PeepObject instance = new PeepObject
