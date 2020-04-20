@@ -21,18 +21,21 @@ namespace OpenRCT2.Unity
         public byte staffTypeOrNoOfRides; // union of staff type or no. of rides.
         public byte tshirtColour;
         public byte trousersColour;
-        public ushort destinationX;
+        public ushort destinationX; // Location that the peep is trying to get to
         public ushort destinationY;
-        public byte destinationTolerance; // How close the peep is to his destination
-        public byte var37; // Unsure what this is
+        public byte destinationTolerance; // How close to destination before next action/state 0 = exact
+        public byte var37;
         public byte energy;
         public byte energyTarget;
         public byte happiness;
         public byte happinessTarget;
+        public byte nausea;
+        public byte nauseaTarget;
         public byte hunger;
         public byte thirst;
         public byte toilet;
-        public byte timeToConsume; // Unsure what this is
+        public byte mass;
+        public byte timeToConsume;
         public byte intensity; // The max intensity is stored in the first 4 bits, and the min intensity in the second 4 bits
         public byte nauseaTolerance;
         public byte windowInvalidateFlags;
@@ -51,7 +54,7 @@ namespace OpenRCT2.Unity
         public PeepActionSprite actionSpriteType;
         public PeepActionSprite nextActionSpriteType;
         public byte actionSpriteImageOffset;
-        public PeepActionSprite action;
+        public PeepAction action;
         public byte actionFrame;
         public byte stepProgress;
         public ushort MechanicTimeSinceCallOrNextInQueue; // time getting to ride to fix
@@ -63,7 +66,6 @@ namespace OpenRCT2.Unity
         public long ridesBeenOn3;
         public long ridesBeenOn4;
         public uint Id2;
-
         public int cashInPocket;
         public int cashSpent;
         public int timeInPark;
