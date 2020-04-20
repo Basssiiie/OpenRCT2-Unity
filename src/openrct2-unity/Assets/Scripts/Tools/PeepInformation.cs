@@ -18,6 +18,7 @@ public class PeepInformation : MonoBehaviour
     public string name;
     public string type;
     public string insideThePark;
+    public string timeInPark;
 
     [Header("Peep Activity")]
     public string state;
@@ -57,6 +58,7 @@ public class PeepInformation : MonoBehaviour
         intensity = $"{peep.intensity}";
         nauseaTolerance = $"{peep.nauseaTolerance}";
         actionSprite = $"{peep.actionSpriteType}";
+        timeInPark = $"{peep.timeInPark}";
 
     }
 }

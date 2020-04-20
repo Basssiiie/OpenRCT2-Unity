@@ -61,6 +61,7 @@
      <Compile Include="Assets\Scripts\MeshBuilder\Vertex.cs" />
      <Compile Include="Assets\Scripts\OpenRCT2\Enums\Direction.cs" />
      <Compile Include="Assets\Scripts\OpenRCT2\Enums\Ownership.cs" />
+     <Compile Include="Assets\Scripts\OpenRCT2\Enums\PeepAction.cs" />
      <Compile Include="Assets\Scripts\OpenRCT2\Enums\PeepActionSprite.cs" />
      <Compile Include="Assets\Scripts\OpenRCT2\Enums\PeepSpriteType.cs" />
      <Compile Include="Assets\Scripts\OpenRCT2\Enums\PeepState.cs" />
