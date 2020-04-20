@@ -14,19 +14,20 @@ public class PeepInformation : MonoBehaviour
         [Tooltip("Arbitary text message")]
   */
 
-
-
+    [Header("Peep General Information")]
+    public string name;
     public string type;
-    public string state;
     public string insideThePark;
+
+    [Header("Peep Activity")]
+    public string state;
     public string subState;
     public string ridesDone;
-    public string TshirtColour;
-    public string TrouserColour;
     public string TryingToGetTo;
     public string DestinationTolerance;
     public string intensity;
     public string nauseaTolerance;
+    public string actionSprite;
 
     [Header("Peep Needs")]
     [Range(0, 256)] public int energy;
@@ -36,29 +37,14 @@ public class PeepInformation : MonoBehaviour
     [Range(0, 256)] public int toilet;
 
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-
-
     public void UpdateInformation(OpenRCT2.Unity.Peep peep)
     {
+        name = $"{(peep.Name != null ? peep.Name : "null")}";
         type = $"{peep.type}";
         state = $"{peep.state}";
         insideThePark = $"{(peep.outsideOfPark == 0 ? "Yes" : "No")}";
         subState = $"{peep.substate}";
         ridesDone = $"{peep.staffTypeOrNoOfRides}";
-        TshirtColour = $"{peep.tshirtColour}";
-        TrouserColour = $"{peep.trousersColour}";
         TryingToGetTo = $"{(peep.destinationX + peep.destinationY)}";
         DestinationTolerance = $"{peep.destinationTolerance}";
 
@@ -70,6 +56,7 @@ public class PeepInformation : MonoBehaviour
 
         intensity = $"{peep.intensity}";
         nauseaTolerance = $"{peep.nauseaTolerance}";
+        actionSprite = $"{peep.actionSpriteType}";
 
     }
 }
