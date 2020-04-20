@@ -50,6 +50,33 @@ namespace OpenRCT2.Unity
         public byte specialSprite;
         public PeepActionSprite actionSpriteType;
         public PeepActionSprite nextActionSpriteType;
+        public byte actionSpriteImageOffset;
+        public PeepActionSprite action;
+        public byte actionFrame;
+        public byte stepProgress;
+        public ushort MechanicTimeSinceCallOrNextInQueue; // time getting to ride to fix
+        public byte MazeLastEdgeOrDirection;
+        public byte interactionRideIndex;
+        public ushort timeInQueue;
+        public long ridesBeenOn1;
+        public long ridesBeenOn2;
+        public long ridesBeenOn3;
+        public long ridesBeenOn4;
+        public uint Id2;
+
+        public int cashInPocket;
+        public int cashSpent;
+        public int timeInPark;
+        public byte rejoinQueueTimeOut;
+        public byte previousRide;
+        public ushort previousRideTimeOut;
+        public uint peepThoughts;
+        public byte pathCheckOptimisation;
+        public byte staffIdOrGuestHeadingToRideId;
+        public byte staffOrdersOrPeepIsLostCountdown;
+        public byte photo1RideRef;
+        public uint peepFlags;
+
 
 
         public ushort Id
