@@ -5,8 +5,8 @@ namespace OpenRCT2.Unity
     public partial class OpenRCT2 : MonoBehaviour
     {
         [SerializeField] string park = "My test park with burgers.sv6";
-        [SerializeField] string rct2path;
-        [SerializeField] string rct1path;
+        [SerializeField] string rct2Path;
+        [SerializeField] string rct1Path;
 
 
         // OpenRCT2 takes the executing directory by default; which is where the Unity Editor is installed here...
@@ -19,7 +19,7 @@ namespace OpenRCT2.Unity
         {
             Print("Start OpenRCT2...");
 
-            StartGame(datapath, rct2path, rct1path);
+            StartGame(datapath, rct2Path, rct1Path);
             LoadPark($@"{parkpath}\{park}");
 
             string parkname = GetParkName();
