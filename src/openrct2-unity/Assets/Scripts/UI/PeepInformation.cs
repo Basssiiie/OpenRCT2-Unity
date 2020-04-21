@@ -6,53 +6,30 @@ using UnityEngine.UI;
 public class PeepInformation : MonoBehaviour
 {
     private string name;
-    [SerializeField] private Text nameLabel;
+    private string hunger;
+    [SerializeField] private GameObject peepBox;
     [SerializeField] private GameObject referenceObject;
-    private Text UI;
-    private bool active;
-    private bool destroyed;
+    private GameObject PeepBox;
 
-    void OnMouseOver()
+
+    void OnMouseDown()
     {
-        if (!active) {
-            UI = Instantiate(nameLabel, FindObjectOfType<Canvas>().transform);
-            UI.name = $"HoverLabel: {name}";
-            UI.GetComponent<Text>().text = name;
-            active = true;
-            destroyed = false;
+        if (!PeepBox)
+        {
+            PeepBox = Instantiate(peepBox, FindObjectOfType<Canvas>().transform);
+            PeepBox.name = $"PeepBox: {name}";
+            var titleText = PeepBox.transform.Find("Header").transform.Find("TitleText");
+            titleText.GetComponent<Text>().text = name;
+            var hungerText = PeepBox.transform.Find("Bottom").transform.Find("Page Area").transform.Find("Page 2 - Needs").transform.Find("Hunger");
+            hungerText.GetComponent<Text>().text = $"Hunger: {hunger}";
         }
-    }
 
-    void OnMouseExit()
-    {
-        if (active && !destroyed) {
-            StartCoroutine("Fade");
-            destroyed = true;
-        }
-    }
-
-    IEnumerator Fade() {
-        if (!destroyed) {
-            yield return new WaitForSeconds(1f);
-            Destroy(UI.gameObject);
-            active = false;
-        }
-      
-        
-    }
-
-    void Update()
-    {
-        if (UI) {
-            Vector3 namePose = Camera.main.WorldToScreenPoint(referenceObject.transform.position);
-            UI.transform.position = namePose; 
-        }
- 
     }
 
     public void UpdateInformation(OpenRCT2.Unity.Peep peep)
     {
         name = $"{peep.type} {peep.Id}";
+        hunger = $"{peep.hunger}";
         /*
         var intensityBinary = System.Convert.ToString(peep.intensity, 2);
         var maxIntensityString = System.Convert.ToString(peep.intensity >> 4);
