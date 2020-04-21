@@ -89,6 +89,8 @@
      <Compile Include="Assets\Scripts\Sprites\SpriteBase.cs" />
      <Compile Include="Assets\Scripts\Tools\CameraBuild.cs" />
      <Compile Include="Assets\Scripts\Tools\PeepInformation.cs" />
+     <None Include="Assets\Fonts\RCT2\readme.txt" />
+     <None Include="Assets\Fonts\RCT2\license.txt" />
  <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
  <HintPath>C:/Users/Rolf/Projects/03 - OpenRCT2 Unity/src/openrct2-unity/Library/ScriptAssemblies/Unity.RenderPipeline.Universal.ShaderLibrary.dll</HintPath>
  </Reference>

@@ -6,27 +6,53 @@ using UnityEngine.UI;
 public class PeepInformation : MonoBehaviour
 {
     private string name;
-    public Text nameLabel;
+    [SerializeField] private Text nameLabel;
+    [SerializeField] private GameObject referenceObject;
+    private Text UI;
+    private bool active;
+    private bool destroyed;
+
     void OnMouseOver()
     {
-        nameLabel.GetComponent<Text>().enabled = true;
+        if (!active) {
+            UI = Instantiate(nameLabel, FindObjectOfType<Canvas>().transform);
+            UI.name = $"HoverLabel: {name}";
+            UI.GetComponent<Text>().text = name;
+            active = true;
+            destroyed = false;
+        }
     }
 
     void OnMouseExit()
     {
-        nameLabel.GetComponent<Text>().enabled = false;
+        if (active && !destroyed) {
+            StartCoroutine("Fade");
+            destroyed = true;
+        }
+    }
+
+    IEnumerator Fade() {
+        if (!destroyed) {
+            yield return new WaitForSeconds(1f);
+            Destroy(UI.gameObject);
+            active = false;
+        }
+      
+        
     }
 
     void Update()
     {
-        Vector3 namePose = Camera.main.WorldToScreenPoint(gameObject.transform.Find("Sphere").transform.position);
-        nameLabel.transform.position = namePose;
+        if (UI) {
+            Vector3 namePose = Camera.main.WorldToScreenPoint(referenceObject.transform.position);
+            UI.transform.position = namePose; 
+        }
+ 
     }
 
     public void UpdateInformation(OpenRCT2.Unity.Peep peep)
     {
         name = $"{peep.type} {peep.Id}";
-        gameObject.transform.Find("Canvas").Find("Text").GetComponent<UnityEngine.UI.Text>().text = name;
         /*
         var intensityBinary = System.Convert.ToString(peep.intensity, 2);
         var maxIntensityString = System.Convert.ToString(peep.intensity >> 4);
