@@ -449,7 +449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  park: Blackpool.sv6
+  park: Bumbly Beach.sv6
   rct2Path: D:\Gaming\Steam\steamapps\common\Rollercoaster Tycoon 2
   rct1Path: D:\Gaming\Steam\steamapps\common\RollerCoaster Tycoon Deluxe
 --- !u!4 &1347800243
