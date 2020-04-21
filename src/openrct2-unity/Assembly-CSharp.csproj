@@ -88,7 +88,7 @@
      <Compile Include="Assets\Scripts\Sprites\Peep.cs" />
      <Compile Include="Assets\Scripts\Sprites\SpriteBase.cs" />
      <Compile Include="Assets\Scripts\Tools\CameraBuild.cs" />
-     <Compile Include="Assets\Scripts\Tools\PeepInformation.cs" />
+     <Compile Include="Assets\Scripts\UI\PeepInformation.cs" />
      <None Include="Assets\Fonts\RCT2\readme.txt" />
      <None Include="Assets\Fonts\RCT2\license.txt" />
  <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
