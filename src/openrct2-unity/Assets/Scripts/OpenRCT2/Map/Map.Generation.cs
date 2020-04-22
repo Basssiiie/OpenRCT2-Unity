@@ -17,7 +17,7 @@ namespace OpenRCT2.Unity
         const float TileHeightMultiplier = 0.25f;
         const int TileHeightStep = 2;
 
-        const float PixelPerUnitMultiplier = 0.025f;
+        const float PixelPerUnitMultiplier = 0.022f;
 
 
         MeshBuilder cachedBuilder;
