@@ -64,9 +64,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Maths.cs" />
-    <Compile Include="Assets\Scripts\MeshBuilder\MeshBuilder.cs" />
-    <Compile Include="Assets\Scripts\MeshBuilder\MeshBuilderExtensions.cs" />
-    <Compile Include="Assets\Scripts\MeshBuilder\Vertex.cs" />
+    <Compile Include="Assets\Scripts\MeshBuilding\MeshBuilder.cs" />
+    <Compile Include="Assets\Scripts\MeshBuilding\MeshBuilderExtensions.cs" />
+    <Compile Include="Assets\Scripts\MeshBuilding\Vertex.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\Enums\Direction.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\Enums\Ownership.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\Enums\PeepSpriteType.cs" />
@@ -85,13 +85,16 @@
     <Compile Include="Assets\Scripts\OpenRCT2\Map\PeepController.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\OpenRCT2.Lib.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\OpenRCT2.cs" />
+    <Compile Include="Assets\Scripts\OpenRCT2\Sprites\PaletteEntry.cs" />
+    <Compile Include="Assets\Scripts\OpenRCT2\Sprites\Peep.cs" />
+    <Compile Include="Assets\Scripts\OpenRCT2\Sprites\SpriteBase.cs" />
+    <Compile Include="Assets\Scripts\OpenRCT2\Sprites\SpriteSize.cs" />
+    <Compile Include="Assets\Scripts\OpenRCT2\Sprites\TextureFactory.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\TileElements\PathElement.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\TileElements\SmallSceneryElement.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\TileElements\SurfaceElement.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\TileElements\TileElement.cs" />
     <Compile Include="Assets\Scripts\OpenRCT2\TileElements\TrackElement.cs" />
-    <Compile Include="Assets\Scripts\Sprites\Peep.cs" />
-    <Compile Include="Assets\Scripts\Sprites\SpriteBase.cs" />
     <Compile Include="Assets\Scripts\Tools\CameraBuild.cs" />
     <None Include="Assets\csc.rsp" />
     <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">

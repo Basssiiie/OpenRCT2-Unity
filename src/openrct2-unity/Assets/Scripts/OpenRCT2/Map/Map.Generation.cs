@@ -15,14 +15,17 @@ namespace OpenRCT2.Unity
         const float TileCoordsToVector3Multiplier = CoordsToVector3Multiplier * TileCoordsToCoords;
 
         const float TileHeightMultiplier = 0.25f;
-
         const int TileHeightStep = 2;
 
+        const float PixelPerUnitMultiplier = 0.025f;
 
 
         MeshBuilder cachedBuilder;
 
 
+        /// <summary>
+        /// Generates the surface of the map.
+        /// </summary>
         Mesh GenerateSurfaceMesh()
         {
             ResetSurfaceMaterials();
@@ -69,11 +72,7 @@ namespace OpenRCT2.Unity
                     break;
 
                 case TileElementType.SmallScenery:
-                    GameObject scenery = InstantiateElement(smallSceneryPrefab, x, tile.baseHeight, y);
-
-                    Vector3 scale = scenery.transform.localScale;
-                    scale.y = Mathf.Max((tile.clearanceHeight - tile.baseHeight) * TileHeightMultiplier, 1);
-                    scenery.transform.localScale = scale;
+                    InstantiateSmallScenery(ref tile, smallSceneryPrefab, x, tile.baseHeight, y);
                     break;
             }
         }
@@ -82,10 +81,29 @@ namespace OpenRCT2.Unity
         /// <summary>
         /// Instantiates a prefab in the place of a tile element.
         /// </summary>
-        GameObject InstantiateElement(GameObject obj, float x, float y, float z)
+        GameObject InstantiateElement(GameObject prefab, float x, float y, float z)
         {
             Vector3 position = TileCoordsToUnity(x, y, z);
-            return Instantiate(obj, position, Quaternion.identity, transform);
+            return Instantiate(prefab, position, Quaternion.identity, transform);
+        }
+
+
+        /// <summary>
+        /// Instantiates a small scenery prefab in the place of a tile element.
+        /// </summary>
+        GameObject InstantiateSmallScenery(ref TileElement tile, GameObject prefab, float x, float y, float z)
+        {
+            GameObject obj = InstantiateElement(prefab, x, y, z);
+            Texture2D texture = TextureFactory.ForTileElement(ref tile);
+
+            float width = (texture.width * PixelPerUnitMultiplier);
+            obj.transform.localScale = new Vector3(width, texture.height * PixelPerUnitMultiplier, width);
+
+            foreach (var renderer in obj.GetComponentsInChildren<MeshRenderer>())
+            {
+                renderer.material.SetTexture("_BaseMap", texture);
+            }
+            return obj;
         }
     }
 }

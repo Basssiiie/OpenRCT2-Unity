@@ -285,10 +285,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  park: Thunder Rock.sv6
-  openrctpath: D:\Projects\Visual Studio\OpenRCT2-Unity
-  rct2path: 
-  rct1path: 
+  park: Evergreen Gardens.sv6
+  rct2Path: D:\Games\RollerCoaster Tycoon 2 Triple Thrill Pack
+  rct1Path: D:\Games\RollerCoaster Tycoon Deluxe
+  texture: {fileID: 0}
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0

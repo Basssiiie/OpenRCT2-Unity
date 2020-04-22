@@ -52,6 +52,7 @@ namespace OpenRCT2.Unity
         public ushort Id
             => sprite.spriteIndex;
 
+
 		public string Name
 			=> Marshal.PtrToStringAnsi(namePtr);
 
