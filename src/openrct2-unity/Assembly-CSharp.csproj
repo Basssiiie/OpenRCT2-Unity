@@ -767,9 +767,6 @@
     <Reference Include="Unity.CollabProxy.Editor">
       <HintPath>D:/Projects/Visual Studio/OpenRCT2-Unity/src/openrct2-unity/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.Rider.Editor">
-      <HintPath>D:/Projects/Visual Studio/OpenRCT2-Unity/src/openrct2-unity/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
       <HintPath>D:/Projects/Visual Studio/OpenRCT2-Unity/src/openrct2-unity/Library/ScriptAssemblies/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
     </Reference>
