@@ -11,7 +11,6 @@
 #include "Openrct2-dll.h"
 
 
-
 std::unique_ptr<IContext> context;
 
 extern "C"

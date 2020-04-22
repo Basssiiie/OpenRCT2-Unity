@@ -17,7 +17,6 @@ namespace OpenRCT2.Unity
         const string datapath = rootpath + @"\bin\data";
         const string parkpath = rootpath + @"\src\openrct2-unity\parks";
 
-        public Texture2D texture;
 
         void Awake()
         {
@@ -35,27 +34,6 @@ namespace OpenRCT2.Unity
 
             string parkname = GetParkName();
             Print($"Park name: {parkname}");
-
-            // rct new game icon
-            /*
-            uint idx = 99691;
-            SpriteSize size = new SpriteSize();
-            GetTextureSize(idx, ref size);
-            byte[] bytes = GetTextureBytesFromImageEntry(idx, size.width, size.height);
-
-            int total = size.Total;
-            Color[] colors = new Color[total];
-
-            for (int i = 0; i < total; i++)
-            {
-                colors[i] = TextureFactory.PaletteToColor(bytes[i]);
-            }
-
-            texture = new Texture2D(size.width, size.height);
-            texture.SetPixels(colors);
-            texture.Apply();
-            */
-            // end icon
 
             Print("OpenRCT2 started.");
         }
