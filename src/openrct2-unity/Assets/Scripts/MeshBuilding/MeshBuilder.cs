@@ -39,7 +39,8 @@ namespace MeshBuilding
 			while (submesh >= triangles.Count)
 				triangles.Add(new List<int>(16));
 
-			triangles[submesh].AddRange(new int[]{
+			triangles[submesh].AddRange(new int[]
+            {
 				AddVertex(a),
 				AddVertex(b),
 				AddVertex(c)

@@ -1,20 +1,15 @@
 #include "../openrct2/core/Path.hpp"
-#include "../openrct2/core/String.hpp"
-#include "../openrct2/world/Location.hpp"
 
 #include <openrct2/Context.h>
 #include <openrct2/Game.h>
 #include <openrct2/GameState.h>
 #include <openrct2/OpenRCT2.h>
 #include <openrct2/platform/platform.h>
-#include <openrct2/world/Map.h>
 #include <openrct2/world/Park.h>
 #include <openrct2/world/Sprite.h>
 
+#include "Openrct2-dll.h"
 
-#define EXPORT __declspec(dllexport)
-
-using namespace OpenRCT2;
 
 
 std::unique_ptr<IContext> context;
@@ -24,11 +19,9 @@ extern "C"
     EXPORT void StartGame(const char* datapath, const char* rct2path, const char* rct1path)
     {
         printf("(me) StartGame( %s )\n", datapath);
-
         _log_levels[DIAGNOSTIC_LEVEL_VERBOSE] = true;
 
         gOpenRCT2Headless = true;
-        gOpenRCT2NoGraphics = true;
 
         Path::GetAbsolute(gCustomOpenrctDataPath, std::size(gCustomOpenrctDataPath), datapath);
 
@@ -38,7 +31,7 @@ extern "C"
             Path::GetAbsolute(gCustomRCT2DataPath, std::size(gCustomRCT2DataPath), rct2path);
 
         printf(
-            "(me) gCustomOpenrctDataPath = %s\ngCustomRCT1DataPath = %s\n(me) gCustomRCT2DataPath = %s\n",
+            "(me) gCustomOpenrctDataPath = %s\n(me) gCustomRCT1DataPath = %s\n(me) gCustomRCT2DataPath = %s\n",
             gCustomOpenrctDataPath, gCustomRCT1DataPath, gCustomRCT2DataPath
         );
 
@@ -69,7 +62,6 @@ extern "C"
     {
         printf("(me) LoadPark( %s )\n", filepath);
 
-        // this one gives lots of "Object not found" messages 
         context->LoadParkFromFile(std::string(filepath));
 
         Park& park = context->GetGameState()->GetPark();

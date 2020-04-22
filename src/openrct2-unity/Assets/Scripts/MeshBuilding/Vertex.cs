@@ -122,7 +122,7 @@ namespace MeshBuilding
         /// Determines the hash for this vertex.
         /// </summary>
         public override int GetHashCode()
-            => (position.GetHashCode() ^ (normal.GetHashCode() << 2) ^ uv.GetHashCode() << 7);
+            => (position.GetHashCode() ^ (normal.GetHashCode() << 7) ^ uv.GetHashCode() << 17); 
 
 
         /// <summary>
