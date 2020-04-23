@@ -13,13 +13,13 @@ namespace OpenRCT2.Unity
         [SerializeField] GameObject largeSceneryPrefab;
         [SerializeField] GameObject bannerPrefab;
 
-        public bool generatePath = true;
-        public bool generateTrack = true;
-        public bool generateSmallScenery = true;
-        public bool generateEntrance = true;
-        public bool generateWall = true;
-        public bool generateLargeScenery = true;
-        public bool generateBanner = true;
+        [SerializeField] private bool generatePath = true;
+        [SerializeField] private bool generateTrack = true;
+        [SerializeField] private bool generateSmallScenery = true;
+        [SerializeField] private bool generateEntrance = true;
+        [SerializeField] private bool generateWall = true;
+        [SerializeField] private bool generateLargeScenery = true;
+        [SerializeField] private bool generateBanner = true;
 
 
         const int TileCoordsToCoords = 32;

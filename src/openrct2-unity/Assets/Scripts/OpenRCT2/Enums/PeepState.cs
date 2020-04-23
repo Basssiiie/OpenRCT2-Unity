@@ -4,14 +4,14 @@ namespace OpenRCT2.Unity
     {
         Falling = 0, // drowning is part of falling
         QueuingFront = 2,
-        On_ride = 3,
+        OnRide = 3,
         LeavingRide = 4,
         Walking = 5,
         Queuing = 6,
         EnteringRide = 7,
         Sitting = 8,
         Picked = 9,
-        Patrolling = 10, 
+        Patrolling = 10,
         Mowing = 11,
         Sweeping = 12,
         EnteringPark = 13,
