@@ -8,6 +8,18 @@ namespace OpenRCT2.Unity
         [SerializeField] GameObject pathPrefab;
         [SerializeField] GameObject trackPrefab;
         [SerializeField] GameObject smallSceneryPrefab;
+        [SerializeField] GameObject entrancePrefab;
+        [SerializeField] GameObject wallPrefab;
+        [SerializeField] GameObject largeSceneryPrefab;
+        [SerializeField] GameObject bannerPrefab;
+
+        [SerializeField] private bool generatePath = true;
+        [SerializeField] private bool generateTrack = true;
+        [SerializeField] private bool generateSmallScenery = true;
+        [SerializeField] private bool generateEntrance = true;
+        [SerializeField] private bool generateWall = true;
+        [SerializeField] private bool generateLargeScenery = true;
+        [SerializeField] private bool generateBanner = true;
 
 
         const int TileCoordsToCoords = 32;
@@ -64,15 +76,52 @@ namespace OpenRCT2.Unity
                     break;
 
                 case TileElementType.Path:
-                    InstantiateElement(pathPrefab, x, tile.baseHeight, y);
+                    if (generatePath)
+                    {
+                        InstantiateElement(pathPrefab, x, tile.baseHeight, y);
+                    }
                     break;
 
                 case TileElementType.Track:
-                    InstantiateElement(trackPrefab, x, tile.baseHeight, y);
+                    if (generateTrack)
+                    {
+                        InstantiateElement(trackPrefab, x, tile.baseHeight, y);
+                    }
                     break;
 
                 case TileElementType.SmallScenery:
-                    InstantiateSmallScenery(ref tile, smallSceneryPrefab, x, tile.baseHeight, y);
+                    if (generateSmallScenery)
+                    {
+                        InstantiateSmallScenery(ref tile, smallSceneryPrefab, x, tile.baseHeight, y);
+                    }
+                    break;
+
+                case TileElementType.Entrance:
+                    if (generateEntrance)
+                    {
+                        InstantiateElement(entrancePrefab, x, tile.baseHeight, y);
+                    }
+                    break;
+
+                case TileElementType.Wall:
+                    if (generateWall)
+                    {
+                        InstantiateElement(wallPrefab, x, tile.baseHeight, y);
+                    }
+                    break;
+
+                case TileElementType.LargeScenery:
+                    if (generateLargeScenery)
+                    {
+                        InstantiateElement(largeSceneryPrefab, x, tile.baseHeight, y);
+                    }
+                    break;
+
+                case TileElementType.Banner:
+                    if (generateBanner)
+                    {
+                        InstantiateElement(bannerPrefab, x, tile.baseHeight, y);
+                    }
                     break;
             }
         }
