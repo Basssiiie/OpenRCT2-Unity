@@ -173,8 +173,8 @@ namespace OpenRCT2.Unity
         public void UpdateColours(GameObject peepObj, Peep peep)
         {
 
-            GameObject tshirt = peepObj.transform.Find("Tshirt").gameObject;
-            GameObject trousers = peepObj.transform.Find("Trousers").gameObject;
+            GameObject tshirt = peepObj.transform.GetChild(0).gameObject;
+            GameObject trousers = peepObj.transform.GetChild(1).gameObject;
 
             var tshirtRenderer = tshirt.GetComponent<Renderer>();
             var trousersRenderer = trousers.GetComponent<Renderer>();
