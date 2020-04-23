@@ -8,6 +8,9 @@ namespace OpenRCT2.Unity
         public TileElementType Type => element.Type;
 
 
+        public int EntryIndex => (element.slot0x1 + (element.slot0x2 << 8));
+
+
         /* 0x1 = EntryIndex
          * 0x2 = EntryIndex
          * 0x3 = Age

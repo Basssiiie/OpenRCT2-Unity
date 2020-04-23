@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace OpenRCT2.Unity
@@ -17,13 +20,20 @@ namespace OpenRCT2.Unity
 
         void Awake()
         {
+            if (ArePathSettingsInvalid())
+            {
+                // disable everything to prevent crashes
+                gameObject.SetActive(false); 
+                return;
+            }
+
             Print("Start OpenRCT2...");
 
             StartGame(datapath, rct2Path, rct1Path);
             LoadPark($@"{parkpath}\{park}");
 
             string parkname = GetParkName();
-            Print($"Name: {parkname} (pointer: {parkname})");
+            Print($"Park name: {parkname}");
 
             Print("OpenRCT2 started.");
         }
@@ -39,6 +49,48 @@ namespace OpenRCT2.Unity
         {
             StopGame();
             Print("OpenRCT2 has shutdown.");
+        }
+
+
+        bool ArePathSettingsInvalid()
+        {
+            bool error = false;
+
+            // RCT2 data folder
+            if (string.IsNullOrWhiteSpace(rct2Path))
+            {
+                Debug.LogError("The RCT2 path is not specified!\nPoint it to the folder where RCT2 is installed.");
+                error = true;
+            }
+            else if (!Directory.Exists(rct2Path))
+            {
+                Debug.LogError($"The RCT2 path does not exist: '{rct2Path}'\nPoint it to the folder where RCT2 is installed.");
+                error = true;
+            }
+
+            // RCT1 data folder (optional)
+            if (!string.IsNullOrWhiteSpace(rct1Path) && !Directory.Exists(rct1Path))
+            {
+                Debug.LogError($"The RCT1 path does not exist: '{rct1Path}'\nPoint it to the folder where RCT1 is installed or leave it empty.");
+                error = true;
+            }
+
+            // Park file
+            if (string.IsNullOrWhiteSpace(park))
+            {
+                Debug.LogError($"Please enter a valid park file.");
+                error = true;
+            }
+            else
+            {
+                string fullparkpath = $@"{parkpath}\{park}";
+                if (!File.Exists(fullparkpath))
+                {
+                    Debug.LogError($"The specified park file does not exist: '{rct1Path}'\nPoint it to a valid park file and make sure to include the file extension.");
+                    error = true;
+                }
+            }
+            return error;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
@@ -60,7 +61,7 @@ namespace OpenRCT2.Unity
 
 
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern int GetMapElementsAt(int x, int y, [In, Out] TileElement[] elements, int arraySize);
+        static extern int GetMapElementsAt(int x, int y, [Out] TileElement[] elements, int arraySize);
 
 
         /// <summary>
@@ -79,7 +80,7 @@ namespace OpenRCT2.Unity
 
 
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern int GetAllPeeps([In, Out] Peep[] elements, int arraySize);
+        static extern int GetAllPeeps([Out] Peep[] elements, int arraySize);
 
 
         public static Peep[] GetAllPeeps()
@@ -103,12 +104,42 @@ namespace OpenRCT2.Unity
         #endregion
 
 
+        #region Textures
+
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        static extern void GetPalette([Out] PaletteEntry[] entries);
+
+
+        /// <summary>
+        /// Returns all the palette color entries.
+        /// </summary>
+        internal static PaletteEntry[] GetPalette()
+        {
+            PaletteEntry[] entries = new PaletteEntry[256];
+            GetPalette(entries);
+
+            entries[0].alpha = 0;
+
+            return entries;
+        }   
+
+
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern uint GetTileElementTextureInfo(TileElement tileElement, byte direction, ref SpriteSize textureSize);
+
+
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void GetTexture(uint imageIndex, [Out] byte[] bytes, int amountOfBytes);
+
+        #endregion
+
+
         /// <summary>
         /// Adds '(me)' to the log and prints it out.
         /// </summary>
         static void Print(string text)
         {
-            Debug.Log("(me) " + text);
+            Debug.Log(text);
         }
     }
 }
