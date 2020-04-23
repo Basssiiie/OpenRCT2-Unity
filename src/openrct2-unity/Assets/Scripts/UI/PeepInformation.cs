@@ -5,16 +5,16 @@ using UnityEngine.UI;
 
 public class PeepInformation : MonoBehaviour
 {
-    private string name;
-    private int happiness;
-    private int energy;
-    private int hunger;
-    private int thirst;
-    private int nausea;
-    private int toilet;
+    string name;
+    int happiness;
+    int energy;
+    int hunger;
+    int thirst;
+    int nausea;
+    int toilet;
     [SerializeField] private GameObject peepBox;
     [SerializeField] private GameObject referenceObject;
-    private GameObject PeepBox;
+    GameObject PeepBox;
 
 
     void OnMouseDown()
