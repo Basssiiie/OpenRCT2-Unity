@@ -23,15 +23,15 @@ public class PeepInformation : MonoBehaviour
         {
             PeepBox = Instantiate(peepBox, FindObjectOfType<Canvas>().transform);
             PeepBox.name = $"PeepBox: {name}";
-            var titleText = PeepBox.transform.Find("Header").transform.Find("TitleText");
+            var titleText = PeepBox.transform.GetChild(0).transform.GetChild(0);
             titleText.GetComponent<Text>().text = name;
-            var needValues = PeepBox.transform.Find("Bottom").transform.Find("Page Area").transform.Find("Page 2 - Needs").transform.Find("NeedValues");
-            var happinessBar = needValues.transform.Find("HappinessBar");
-            var energyBar = needValues.transform.Find("EnergyBar");
-            var hungerBar = needValues.transform.Find("HungerBar");
-            var thirstBar = needValues.transform.Find("ThirstBar");
-            var nauseaBar = needValues.transform.Find("NauseaBar");
-            var toiletBar = needValues.transform.Find("ToiletBar");
+            var needValues = PeepBox.transform.GetChild(1).transform.GetChild(1).transform.GetChild(1).transform.GetChild(1);
+            var happinessBar = needValues.transform.GetChild(0);
+            var energyBar = needValues.transform.GetChild(1);
+            var hungerBar = needValues.transform.GetChild(2);
+            var thirstBar = needValues.transform.GetChild(3);
+            var nauseaBar = needValues.transform.GetChild(4);
+            var toiletBar = needValues.transform.GetChild(5);
 
             happinessBar.GetComponent<Slider>().value = happiness;
             energyBar.GetComponent<Slider>().value = energy;
