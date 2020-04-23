@@ -8,6 +8,7 @@ public class DragWindow : MonoBehaviour, IDragHandler, IPointerDownHandler
     [SerializeField] private RectTransform dragRectTransform;
     [SerializeField] private GameObject peepWindow;
     [SerializeField] private Canvas canvas;
+
     public void Awake()
     {
         if (dragRectTransform == null)
