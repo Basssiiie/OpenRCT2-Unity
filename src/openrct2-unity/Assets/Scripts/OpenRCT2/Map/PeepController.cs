@@ -223,8 +223,6 @@ namespace OpenRCT2.Unity
 
             obj.lastUpdate = currentUpdateTick;
 
-            obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(peep);
-
             Vector3 target = Map.CoordsToVector3(peep.Position);
 
             if (obj.towards == target)

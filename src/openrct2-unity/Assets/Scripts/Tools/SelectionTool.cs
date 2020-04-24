@@ -6,11 +6,14 @@ using UnityEngine.EventSystems;
 public class SelectionTool : MonoBehaviour
 {
 
+    [SerializeField] private GameObject canvasManager;
+    CanvasManager canvasScript;
+
+
     void Start()
     {
-
+        canvasScript = canvasManager.gameObject.GetComponent<CanvasManager>();
     }
-
 
     // Update is called once per frame
     void Update()
@@ -21,8 +24,21 @@ public class SelectionTool : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                Debug.Log(hit.collider.gameObject.name);
+                CheckHit(hit.collider.gameObject.name);
             }
         }
     }
+
+    void CheckHit(string name)
+    {
+        switch (name)
+        {
+            case string a when a.Contains("Guest"):
+                canvasScript.RenderUIElement("RENDER_PEEP_BOX");
+                break;
+            default:
+                break;
+        }
+    }
+
 }

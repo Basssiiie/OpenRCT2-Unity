@@ -13,7 +13,6 @@ public class PeepInformation : MonoBehaviour
     int nausea;
     int toilet;
     [SerializeField] private GameObject peepBox;
-    [SerializeField] private GameObject referenceObject;
     GameObject PeepBox;
 
 
