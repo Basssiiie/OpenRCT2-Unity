@@ -267,7 +267,6 @@ namespace OpenRCT2.Unity
             if (forward != Vector3.zero)
                 transf.rotation = Quaternion.LookRotation(forward);
 
-            //obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(peep);
         }
 
 
