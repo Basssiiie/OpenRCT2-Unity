@@ -103,7 +103,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7996351302382993899}
   - component: {fileID: 708385747242773865}
-  - component: {fileID: 6139420476272748121}
   m_Layer: 0
   m_Name: Peep
   m_TagString: Untagged
@@ -141,20 +140,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.2975366, y: 2.530463, z: 1.367513}
   m_Center: {x: 0.006939371, y: 1.3687063, z: 0.036323763}
---- !u!114 &6139420476272748121
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4013945455800788704}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f60834235e1dc684496126a3b6483623, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  peepBox: {fileID: 8219538139994365458, guid: 8f7aedb4e26ded34b9d6c0a26bff6792, type: 3}
-  referenceObject: {fileID: 0}
 --- !u!1 &4476403986186528975
 GameObject:
   m_ObjectHideFlags: 0
