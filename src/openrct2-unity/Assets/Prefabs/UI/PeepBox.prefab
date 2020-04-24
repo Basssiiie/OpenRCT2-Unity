@@ -2265,7 +2265,7 @@ GameObject:
   - component: {fileID: 8219538139303277639}
   - component: {fileID: 8219538139303277638}
   m_Layer: 5
-  m_Name: TitleText
+  m_Name: Title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2342,6 +2342,7 @@ GameObject:
   - component: {fileID: 8219538139994365457}
   - component: {fileID: 8219538139994365456}
   - component: {fileID: 9242439597515853}
+  - component: {fileID: 2671619259318021821}
   m_Layer: 5
   m_Name: PeepBox
   m_TagString: Untagged
@@ -2428,6 +2429,25 @@ MonoBehaviour:
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
+--- !u!114 &2671619259318021821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8219538139994365458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364f628a98b3419419e3aad324d7e23e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  title: {fileID: 8219538139303277632}
+  happinessBar: {fileID: 1646417924075283451}
+  energyBar: {fileID: 7312753539610148621}
+  hungerBar: {fileID: 2799787925233207035}
+  thirstBar: {fileID: 7343185199350556200}
+  nauseaBar: {fileID: 8043433590289064651}
+  toiletBar: {fileID: 2237209151157935327}
 --- !u!1 &8219538140004040533
 GameObject:
   m_ObjectHideFlags: 0
