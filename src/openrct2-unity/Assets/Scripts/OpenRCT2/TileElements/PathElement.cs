@@ -23,7 +23,7 @@ namespace OpenRCT2.Unity
         readonly TileElement element;
 
 
-        public PathElement(TileElement element)
+        public PathElement(ref TileElement element)
         {
             this.element = element;
         }

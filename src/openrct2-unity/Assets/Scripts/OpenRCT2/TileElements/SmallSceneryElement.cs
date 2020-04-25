@@ -5,6 +5,10 @@ namespace OpenRCT2.Unity
     /// </summary>
     public readonly ref struct SmallSceneryElement
     {
+        // Mask to get the bits for the scenery quadrant.
+        const byte QuadrantMask = 0b11000000;
+
+
         /// <summary>
         /// The type of the element. In this case a small scenery element.
         /// </summary>
@@ -15,6 +19,12 @@ namespace OpenRCT2.Unity
         /// The entry index of the graphic of the small scenery element.
         /// </summary>
         public uint EntryIndex => (element.slot0x1 + ((uint)element.slot0x2 << 8));
+
+
+        /// <summary>
+        /// Gets the quadrant(s) this scenery item occupies.
+        /// </summary>
+        public byte Quadrant => (byte)((element.type & QuadrantMask) >> 6);
 
 
         /* 0x1 = EntryIndex
@@ -29,7 +39,7 @@ namespace OpenRCT2.Unity
         /// <summary>
         /// Wraps the tile element to access the small scenery level information.
         /// </summary>
-        public SmallSceneryElement(TileElement element)
+        public SmallSceneryElement(ref TileElement element)
         {
             this.element = element;
         }

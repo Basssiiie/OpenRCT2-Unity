@@ -5,7 +5,7 @@ namespace OpenRCT2.Unity
     [StructLayout(LayoutKind.Sequential, Size = 16)]
     public struct TileElement
     {
-        public TileElementType type;
+        public byte type;
         public byte flags;
         public byte baseHeight;
         public byte clearanceHeight;
@@ -26,9 +26,14 @@ namespace OpenRCT2.Unity
         public byte slot0xC;
 
 
-        const TileElementType TypeMask = (TileElementType)0b00111100;
+        // The mask skim off the extra bits, to retrieve the actual type.
+        const byte TypeMask = 0b00111100;
 
+
+        /// <summary>
+        /// Gets the type of the element.
+        /// </summary>
         public TileElementType Type
-            => (type & TypeMask);
+            => (TileElementType)(type & TypeMask);
     }
 }

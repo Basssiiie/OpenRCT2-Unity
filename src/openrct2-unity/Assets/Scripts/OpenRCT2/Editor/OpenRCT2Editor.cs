@@ -27,7 +27,6 @@ namespace OpenRCT2.Unity
 
         bool groupToggleSelectedPark = true;
         string[] allDiscoveredParks;
-        string selectedPark;
         int selectedParkIndex = -1;
 
 
