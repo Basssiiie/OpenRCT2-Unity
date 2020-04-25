@@ -145,9 +145,7 @@ namespace OpenRCT2.Unity
             SmallSceneryElement smallScenery = tile.AsSmallScenery();
 
             SmallSceneryEntry entry = OpenRCT2.GetSmallSceneryEntry(smallScenery.EntryIndex);
-
-            //SmallSceneryEntry sceneryEntry = entry.AsSmallScenery();
-            SmallSceneryFlags flags = entry.Flags; //sceneryEntry.Flags;
+            SmallSceneryFlags flags = entry.Flags; 
 
             // If not a full tile, move small scenery to the correct quadrant.
             if ((flags & SmallSceneryFlags.FullTile) == 0)
@@ -166,7 +164,6 @@ namespace OpenRCT2.Unity
 
             // Instantiate the element.
             GameObject obj = InstantiateElement(prefab, x, y, z);
-            obj.name = $"Flags: {System.Convert.ToString((int)flags, 16)}";
             Texture2D texture = GraphicsFactory.ForTileElement(ref tile).ToTexture2D();
 
             foreach (MeshRenderer renderer in obj.GetComponentsInChildren<MeshRenderer>())
