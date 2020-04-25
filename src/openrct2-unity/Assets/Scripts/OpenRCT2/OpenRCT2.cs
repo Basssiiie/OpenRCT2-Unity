@@ -1,27 +1,30 @@
-using System;
 using System.IO;
-using System.Linq;
 using UnityEngine;
 
 namespace OpenRCT2.Unity
 {
     public partial class OpenRCT2 : MonoBehaviour
     {
-        [SerializeField] string park = "My test park with burgers.sv6";
-        [SerializeField] string rct2Path;
-        [SerializeField] string rct1Path;
+        // The relative path to the selected park file.
+        public string selectedPark;
+
+        // Configuration for data paths
+        string openrctDataPath;
+        string rct2Path;
+        string rct1Path;
+        string parkPath;
 
 
-        // OpenRCT2 takes the executing directory by default; which is where the Unity Editor is installed here...
-        const string rootpath = @"D:\Projects\Visual Studio\OpenRCT2-Unity";
-        const string datapath = rootpath + @"\bin\data";
-        const string parkpath = rootpath + @"\src\openrct2-unity\parks";
-
-
+        /// <summary>
+        /// Starts the game based on the settings set in the editor.
+        /// </summary>
         void Awake()
         {
-            if (ArePathSettingsInvalid())
+            LoadPathSettings();
+            if (!ArePathSettingsValid())
             {
+                Debug.LogError("Could not load OpenRCT2: one of the specified paths is invalid.", gameObject);
+
                 // disable everything to prevent crashes
                 gameObject.SetActive(false); 
                 return;
@@ -29,8 +32,8 @@ namespace OpenRCT2.Unity
 
             Print("Start OpenRCT2...");
 
-            StartGame(datapath, rct2Path, rct1Path);
-            LoadPark($@"{parkpath}\{park}");
+            StartGame(openrctDataPath, rct2Path, rct1Path);
+            LoadPark(GetParkFilePath());
 
             string parkname = GetParkName();
             Print($"Park name: {parkname}");
@@ -39,12 +42,18 @@ namespace OpenRCT2.Unity
         }
 
 
+        /// <summary>
+        /// Updates the game 40 times per second, similar to a regular RCT2 game tick.
+        /// </summary>
         void FixedUpdate()
         {
             PerformGameUpdate();
         }
 
 
+        /// <summary>
+        /// Shuts down the game.
+        /// </summary>
         void OnDestroy()
         {
             StopGame();
@@ -52,45 +61,34 @@ namespace OpenRCT2.Unity
         }
 
 
-        bool ArePathSettingsInvalid()
+        /// <summary>
+        /// Loads the path settings from the player preferences configuration.
+        /// </summary>
+        void LoadPathSettings()
         {
-            bool error = false;
-
-            // RCT2 data folder
-            if (string.IsNullOrWhiteSpace(rct2Path))
-            {
-                Debug.LogError("The RCT2 path is not specified!\nPoint it to the folder where RCT2 is installed.");
-                error = true;
-            }
-            else if (!Directory.Exists(rct2Path))
-            {
-                Debug.LogError($"The RCT2 path does not exist: '{rct2Path}'\nPoint it to the folder where RCT2 is installed.");
-                error = true;
-            }
-
-            // RCT1 data folder (optional)
-            if (!string.IsNullOrWhiteSpace(rct1Path) && !Directory.Exists(rct1Path))
-            {
-                Debug.LogError($"The RCT1 path does not exist: '{rct1Path}'\nPoint it to the folder where RCT1 is installed or leave it empty.");
-                error = true;
-            }
-
-            // Park file
-            if (string.IsNullOrWhiteSpace(park))
-            {
-                Debug.LogError($"Please enter a valid park file.");
-                error = true;
-            }
-            else
-            {
-                string fullparkpath = $@"{parkpath}\{park}";
-                if (!File.Exists(fullparkpath))
-                {
-                    Debug.LogError($"The specified park file does not exist: '{fullparkpath}'\nPoint it to a valid park file and make sure to include the file extension.");
-                    error = true;
-                }
-            }
-            return error;
+            openrctDataPath = Configuration.OpenRCT2DataPath;
+            rct2Path = Configuration.RCT2Path;
+            rct1Path = Configuration.RCT1Path;
+            parkPath = Configuration.ParkPath;
         }
+
+
+        /// <summary>
+        /// Checks whether all paths exist.
+        /// </summary>
+        bool ArePathSettingsValid()
+        {
+            return (Directory.Exists(openrctDataPath)
+                && Directory.Exists(rct2Path)
+                && (string.IsNullOrWhiteSpace(rct1Path) || Directory.Exists(rct1Path))
+                && File.Exists(GetParkFilePath()));
+        }
+
+
+        /// <summary>
+        /// Gets the file path to the park file.
+        /// </summary>
+        string GetParkFilePath()
+            => Path.Combine(parkPath, selectedPark);
     }
 }

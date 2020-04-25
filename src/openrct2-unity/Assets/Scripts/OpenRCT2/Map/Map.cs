@@ -26,7 +26,6 @@ namespace OpenRCT2.Unity
 		void Start()
 		{
 			LoadMap();
-			GenerateSurfaceMesh();
 
             Debug.Log($"Map load complete!");
         }
@@ -45,8 +44,6 @@ namespace OpenRCT2.Unity
             mapSize = OpenRCT2.GetMapSize();
 			tiles = new Tile[mapSize, mapSize];
 
-            Debug.Log($"Map size: {mapSize}");
-
 			TileElement[] buffer = new TileElement[MaxElementsPerTile];
 
 			for (int x = 0; x < mapSize; x++)
@@ -63,8 +60,6 @@ namespace OpenRCT2.Unity
 			Mesh mesh = GenerateSurfaceMesh();
             mesh.name = "Map";
 			meshFilter.sharedMesh = mesh;
-
-            Debug.Log($"Map loaded!");
         }
 
 
