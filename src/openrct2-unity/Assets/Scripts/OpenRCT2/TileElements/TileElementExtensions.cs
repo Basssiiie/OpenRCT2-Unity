@@ -12,28 +12,28 @@ namespace OpenRCT2.Unity
         /// Wraps this tile element in a surface element wrapper.
         /// </summary>
 		public static SurfaceElement AsSurface(this ref TileElement tileElement)
-			=> new SurfaceElement(tileElement);
+			=> new SurfaceElement(ref tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a path element wrapper.
         /// </summary>
         public static PathElement AsPath(this ref TileElement tileElement)
-			=> new PathElement(tileElement);
+			=> new PathElement(ref tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a track element wrapper.
         /// </summary>
         public static TrackElement AsTrack(this ref TileElement tileElement)
-			=> new TrackElement(tileElement);
+			=> new TrackElement(ref tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a small scenery element wrapper.
         /// </summary>
         public static SmallSceneryElement AsSmallScenery(this ref TileElement tileElement)
-			=> new SmallSceneryElement(tileElement);
+			=> new SmallSceneryElement(ref tileElement);
 
 
         /// <summary>

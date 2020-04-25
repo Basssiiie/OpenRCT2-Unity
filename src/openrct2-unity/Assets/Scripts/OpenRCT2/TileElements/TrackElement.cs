@@ -20,7 +20,7 @@ namespace OpenRCT2.Unity
         readonly TileElement element;
 
 
-        public TrackElement(TileElement element)
+        public TrackElement(ref TileElement element)
         {
             this.element = element;
         }

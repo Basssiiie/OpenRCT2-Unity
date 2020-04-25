@@ -4,7 +4,10 @@ using UnityEngine;
 
 namespace OpenRCT2.Unity
 {
-    [StructLayout(LayoutKind.Sequential, Size = 264)]
+    /// <summary>
+    /// The struct of a peep, which can be either a guest or a staff member.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Size = (256 + Ptr.Size))]
     public struct Peep
     {
         public SpriteBase sprite;
@@ -65,7 +68,7 @@ namespace OpenRCT2.Unity
         public long ridesBeenOn2;
         public long ridesBeenOn3;
         public long ridesBeenOn4;
-        public uint Id2;
+        public uint id;
         public int cashInPocket;
         public int cashSpent;
         public int timeInPark;

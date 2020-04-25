@@ -133,7 +133,6 @@ extern "C"
         dpi.pitch = 0;
         dpi.zoom_level = 0;
 
-        printf("(me) g1 = %i, %i, %i x %i\n", g1->x_offset, g1->y_offset, width, height);
         gfx_draw_sprite_software(&dpi, ImageId::FromUInt32(imageIndex), 0, 0);
 
         for (int i = 0; i < numPixels; i++)
@@ -142,5 +141,29 @@ extern "C"
         }
 
         delete[] dpi.bits;
+    }
+
+    // Returns the RCT Scenery entry for the specified path, smallscenery, wall, largescenery or banner.
+    EXPORT void GetSceneryEntry(uint8_t type, uint32_t entryIndex, rct_scenery_entry* entry)
+    {
+        switch (type)
+        {
+            case TILE_ELEMENT_TYPE_PATH:
+                break;
+
+            case TILE_ELEMENT_TYPE_SMALL_SCENERY:
+                *entry = *get_small_scenery_entry(entryIndex);
+                break;
+
+            case TILE_ELEMENT_TYPE_WALL:
+                *entry = *get_wall_entry(entryIndex);
+                break;
+
+            case TILE_ELEMENT_TYPE_LARGE_SCENERY:
+                break;
+
+            case TILE_ELEMENT_TYPE_BANNER:
+                break;
+        }
     }
 }

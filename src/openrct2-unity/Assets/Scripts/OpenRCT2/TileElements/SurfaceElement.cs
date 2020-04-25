@@ -54,7 +54,7 @@ namespace OpenRCT2.Unity
         /// <summary>
         /// Wraps the tile element to access the surface level information.
         /// </summary>
-        public SurfaceElement(TileElement element)
+        public SurfaceElement(ref TileElement element)
         {
             this.element = element;
         }

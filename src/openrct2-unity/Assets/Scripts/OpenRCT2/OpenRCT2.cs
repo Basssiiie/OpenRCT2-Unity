@@ -30,15 +30,13 @@ namespace OpenRCT2.Unity
                 return;
             }
 
-            Print("Start OpenRCT2...");
+            Debug.Log("Start OpenRCT2...");
 
             StartGame(openrctDataPath, rct2Path, rct1Path);
             LoadPark(GetParkFilePath());
 
             string parkname = GetParkName();
-            Print($"Park name: {parkname}");
-
-            Print("OpenRCT2 started.");
+            Debug.Log($"OpenRCT2 started on park: {parkname}.");
         }
 
 
@@ -57,7 +55,7 @@ namespace OpenRCT2.Unity
         void OnDestroy()
         {
             StopGame();
-            Print("OpenRCT2 has shutdown.");
+            Debug.Log("OpenRCT2 has shutdown.");
         }
 
 
