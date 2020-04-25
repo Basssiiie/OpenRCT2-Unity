@@ -80,7 +80,9 @@ namespace OpenRCT2.Unity
         public uint peepFlags;
 
 
-
+        /// <summary>
+        /// Returns an id of the peep, currently based on the sprite index.
+        /// </summary>
         public ushort Id
             => sprite.spriteIndex;
 
@@ -89,6 +91,9 @@ namespace OpenRCT2.Unity
             => Marshal.PtrToStringAuto(namePtr);
 
 
+        /// <summary>
+        /// Returns the peep's position in RCT2 coordinates.
+        /// </summary>
         public Vector3 Position
             => new Vector3(sprite.x, sprite.z, sprite.y);
     }

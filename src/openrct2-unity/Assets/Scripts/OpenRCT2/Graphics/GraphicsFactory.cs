@@ -1,10 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace OpenRCT2.Unity
 {
-    public static class TextureFactory
+    /// <summary>
+    /// Factory for graphics related things in OpenRCT2.
+    /// </summary>
+    public static class GraphicsFactory
     {
         static readonly PaletteEntry[] palette = OpenRCT2.GetPalette();
+
+        // A cache of previously generated graphics.
+        static readonly Dictionary<uint, Graphic> graphicCache = new Dictionary<uint, Graphic>();
 
 
         /// <summary>
@@ -17,32 +24,28 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
-        /// Returns a Texture2D from the specified tile element.
+        /// Returns a Graphic from the specified tile element.
         /// </summary>
-        public static Texture2D ForTileElement(ref TileElement tileElement)
+        public static Graphic ForTileElement(ref TileElement tileElement)
         {
             // Retrieve texture information
             SpriteSize size = new SpriteSize();
             uint imageIndex = OpenRCT2.GetTileElementTextureInfo(tileElement, 0, ref size);
+
+            if (graphicCache.TryGetValue(imageIndex, out Graphic graphic))
+            {
+                return graphic;
+            }
 
             // Retrieve texture in bytes
             int total = size.Total;
             byte[] byteBuffer = new byte[total];
             OpenRCT2.GetTexture(imageIndex, byteBuffer, total);
 
-            // Convert to color and do 180 degrees rotate
-            Color[] colors = new Color[total];
-            for (int i = 0, c = total - 1; i < total; i++, c--)
-            {
-                colors[c] = PaletteToColor(byteBuffer[i]);
-            }
+            graphic = new Graphic(imageIndex, size.width, size.height, byteBuffer);
+            graphicCache.Add(imageIndex, graphic);
 
-            Texture2D texture = new Texture2D(size.width, size.height);
-            texture.SetPixels(colors);
-            texture.filterMode = FilterMode.Point;
-            texture.wrapMode = TextureWrapMode.Clamp;
-            texture.Apply(true);
-            return texture;
+            return graphic;
         }
     }
 }

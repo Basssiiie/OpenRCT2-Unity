@@ -13,7 +13,7 @@ namespace OpenRCT2.Unity
 
 
         // OpenRCT2 takes the executing directory by default; which is where the Unity Editor is installed here...
-        const string rootpath = @"C:\Users\Rolf\Projects\03 - OpenRCT2 Unity";
+        const string rootpath = @"D:\Projects\Visual Studio\OpenRCT2-Unity";
         const string datapath = rootpath + @"\bin\data";
         const string parkpath = rootpath + @"\src\openrct2-unity\parks";
 
@@ -86,7 +86,7 @@ namespace OpenRCT2.Unity
                 string fullparkpath = $@"{parkpath}\{park}";
                 if (!File.Exists(fullparkpath))
                 {
-                    Debug.LogError($"The specified park file does not exist: '{rct1Path}'\nPoint it to a valid park file and make sure to include the file extension.");
+                    Debug.LogError($"The specified park file does not exist: '{fullparkpath}'\nPoint it to a valid park file and make sure to include the file extension.");
                     error = true;
                 }
             }
