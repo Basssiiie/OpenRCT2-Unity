@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace OpenRCT2.Unity
@@ -20,8 +21,12 @@ namespace OpenRCT2.Unity
         int currentUpdateTick;
 
 
+        /// <summary>
+        /// Internal peep object.
+        /// </summary>
         class PeepObject
         {
+            public int bufferIndex;
             public GameObject gameObject;
             public float timeSinceStart;
             public int lastUpdate;
@@ -35,13 +40,17 @@ namespace OpenRCT2.Unity
             peepBuffer = new Peep[MaxPeeps];
             int amount = OpenRCT2.GetAllPeeps(peepBuffer);
             peepObjects = new Dictionary<ushort, PeepObject>(amount);
+
             for (int i = 0; i < amount; i++)
             {
-                AddPeep(ref peepBuffer[i]);
+                AddPeep(i, ref peepBuffer[i]);
             }
         }
 
 
+        /// <summary>
+        /// Update ~40 per second to get the peep information from OpenRCT2.
+        /// </summary>
         void FixedUpdate()
         {
             currentUpdateTick++;
@@ -50,11 +59,14 @@ namespace OpenRCT2.Unity
 
             for (int i = 0; i < amount; i++)
             {
-                SetPeepPositions(ref peepBuffer[i]);
+                SetPeepPositions(i, ref peepBuffer[i]);
             }
         }
 
 
+        /// <summary>
+        /// Update and lerp the peeps every frame for smoother transitions.
+        /// </summary>
         void LateUpdate()
         {
             foreach (var peep in peepObjects.Values)
@@ -63,7 +75,35 @@ namespace OpenRCT2.Unity
             }
         }
 
-        Color decodeColour(byte colour)
+
+        /// <summary>
+        /// Find the associated peep id for the specified gameobject, or
+        /// null if the gameobject is not a peep.
+        /// </summary>
+        public ushort FindPeepIdForGameObject(GameObject peepObject)
+        {
+            var entry = peepObjects.FirstOrDefault(p => p.Value.gameObject == peepObject);
+
+            int bufferIndex = entry.Value.bufferIndex;
+            return peepBuffer[bufferIndex].Id;
+        }
+
+
+        /// <summary>
+        /// Find the associated peep struct for the specified id, or
+        /// null if the gameobject is not a peep.
+        /// </summary>
+        public Peep? GetPeepById(ushort peepId)
+        {
+            if (!peepObjects.TryGetValue(peepId, out PeepObject peepObject))
+                return null;
+
+            int bufferIndex = peepObject.bufferIndex;
+            return peepBuffer[bufferIndex];
+        }
+
+
+        Color DecodeColour(byte colour)
         {
             var colourRGB = new Color32(0, 0, 0, 1);
             switch (colour)
@@ -170,7 +210,8 @@ namespace OpenRCT2.Unity
             return colourRGB;
         }
 
-        public void UpdateColours(GameObject peepObj, Peep peep)
+
+        void UpdateColours(GameObject peepObj, Peep peep)
         {
 
             GameObject tshirt = peepObj.transform.GetChild(0).gameObject;
@@ -179,18 +220,19 @@ namespace OpenRCT2.Unity
             var tshirtRenderer = tshirt.GetComponent<Renderer>();
             var trousersRenderer = trousers.GetComponent<Renderer>();
 
-            tshirtRenderer.material.color = decodeColour(peep.tshirtColour);
-            trousersRenderer.material.color = decodeColour(peep.trousersColour);
+            tshirtRenderer.material.color = DecodeColour(peep.tshirtColour);
+            trousersRenderer.material.color = DecodeColour(peep.trousersColour);
 
         }
+
 
         /// <summary>
         /// Adds a new peep object to the dictionary.
         /// </summary>
-        PeepObject AddPeep(ref Peep peep)
+        PeepObject AddPeep(int index, ref Peep peep)
         {
             ushort id = peep.Id;
-            var type = peep.type;
+            PeepType type = peep.type;
             GameObject peepObj = Instantiate(peepPrefab, Vector3.zero, Quaternion.identity, transform);
 
             peepObj.name = $"{type} {id}";
@@ -201,6 +243,7 @@ namespace OpenRCT2.Unity
 
             PeepObject instance = new PeepObject
             {
+                bufferIndex = index,
                 gameObject = peepObj,
                 from = position,
                 towards = position
@@ -214,14 +257,22 @@ namespace OpenRCT2.Unity
         /// <summary>
         /// Sets the new start and end positions for this game tick.
         /// </summary>
-        void SetPeepPositions(ref Peep peep)
+        void SetPeepPositions(int index, ref Peep peep)
         {
             ushort id = peep.Id;
 
             if (!peepObjects.TryGetValue(id, out PeepObject obj))
-                obj = AddPeep(ref peep);
+            {
+                obj = AddPeep(index, ref peep);
+            }
+            else
+            {
+                obj.bufferIndex = index;
+            }
 
             obj.lastUpdate = currentUpdateTick;
+
+            obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(peep);
 
             Vector3 target = Map.CoordsToVector3(peep.Position);
 
@@ -264,7 +315,6 @@ namespace OpenRCT2.Unity
 
             if (forward != Vector3.zero)
                 transf.rotation = Quaternion.LookRotation(forward);
-
         }
 
 
