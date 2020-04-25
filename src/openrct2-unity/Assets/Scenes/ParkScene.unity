@@ -266,7 +266,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440946295}
   m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
-  m_LocalPosition: {x: 50, y: 20, z: 50}
+  m_LocalPosition: {x: 25, y: 20, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -449,9 +449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  park: Dynamite D5unes.sv6
-  rct2Path: D:\Games\RollerCoaster Tycoon 2 Triple Thrill Pack
-  rct1Path: D:\Games\RollerCoaster Tycoon Deluxe
+  selectedPark: My test park/My test park.sc6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
