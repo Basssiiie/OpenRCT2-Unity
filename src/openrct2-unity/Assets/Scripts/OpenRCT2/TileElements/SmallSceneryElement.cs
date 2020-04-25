@@ -3,12 +3,18 @@ namespace OpenRCT2.Unity
     /// <summary>
     /// An element representing a small scenery piece.
     /// </summary>
-    public readonly struct SmallSceneryElement
+    public readonly ref struct SmallSceneryElement
     {
+        /// <summary>
+        /// The type of the element. In this case a small scenery element.
+        /// </summary>
         public TileElementType Type => element.Type;
 
 
-        public int EntryIndex => (element.slot0x1 + (element.slot0x2 << 8));
+        /// <summary>
+        /// The entry index of the graphic of the small scenery element.
+        /// </summary>
+        public uint EntryIndex => (element.slot0x1 + ((uint)element.slot0x2 << 8));
 
 
         /* 0x1 = EntryIndex
@@ -20,6 +26,9 @@ namespace OpenRCT2.Unity
         readonly TileElement element;
 
 
+        /// <summary>
+        /// Wraps the tile element to access the small scenery level information.
+        /// </summary>
         public SmallSceneryElement(TileElement element)
         {
             this.element = element;

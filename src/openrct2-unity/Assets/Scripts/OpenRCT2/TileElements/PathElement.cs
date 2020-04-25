@@ -3,7 +3,7 @@ namespace OpenRCT2.Unity
     /// <summary>
     /// An element representing a piece of path.
     /// </summary>
-    public readonly struct PathElement
+    public readonly ref struct PathElement
     {
         public TileElementType Type => element.Type;
 

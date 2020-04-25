@@ -60,7 +60,7 @@ namespace OpenRCT2.Unity
                 }
             }
 
-            return cachedBuilder.Build();
+            return cachedBuilder.ToMesh();
         }
 
 
@@ -143,7 +143,7 @@ namespace OpenRCT2.Unity
         GameObject InstantiateSmallScenery(ref TileElement tile, GameObject prefab, float x, float y, float z)
         {
             GameObject obj = InstantiateElement(prefab, x, y, z);
-            Texture2D texture = TextureFactory.ForTileElement(ref tile);
+            Texture2D texture = GraphicsFactory.ForTileElement(ref tile).ToTexture2D();
 
             float width = (texture.width * PixelPerUnitMultiplier);
             obj.transform.localScale = new Vector3(width, texture.height * PixelPerUnitMultiplier, width);

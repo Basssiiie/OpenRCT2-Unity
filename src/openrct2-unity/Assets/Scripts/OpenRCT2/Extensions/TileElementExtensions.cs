@@ -3,39 +3,57 @@ using UnityEngine;
 
 namespace OpenRCT2.Unity
 {
+    /// <summary>
+    /// Extensions for a tile element struct.
+    /// </summary>
 	public static class TileElementExtensions
 	{
-		public static SurfaceElement AsSurface(this TileElement tileElement)
+        /// <summary>
+        /// Wraps this tile element in a surface element wrapper.
+        /// </summary>
+		public static SurfaceElement AsSurface(this ref TileElement tileElement)
 			=> new SurfaceElement(tileElement);
 
 
-		public static PathElement AsPath(this TileElement tileElement)
+        /// <summary>
+        /// Wraps this tile element in a path element wrapper.
+        /// </summary>
+        public static PathElement AsPath(this ref TileElement tileElement)
 			=> new PathElement(tileElement);
 
 
-		public static TrackElement AsTrack(this TileElement tileElement)
+        /// <summary>
+        /// Wraps this tile element in a track element wrapper.
+        /// </summary>
+        public static TrackElement AsTrack(this ref TileElement tileElement)
 			=> new TrackElement(tileElement);
 
 
-		public static SmallSceneryElement AsSmallScenery(this TileElement tileElement)
+        /// <summary>
+        /// Wraps this tile element in a small scenery element wrapper.
+        /// </summary>
+        public static SmallSceneryElement AsSmallScenery(this ref TileElement tileElement)
 			=> new SmallSceneryElement(tileElement);
 
 
         /// <summary>
         /// Dumps all values on this tile element to the console log.
         /// </summary>
-		public static void DumpToConsole(this TileElement tile)
-            => Console.WriteLine(DumpToString(tile));
+		public static void DumpToConsole(this ref TileElement tile)
+            => Console.WriteLine(DumpToString(ref tile));
 
 
         /// <summary>
         /// Dumps all values on this tile element to the debug log.
         /// </summary>
-        public static void DumpToDebug(this TileElement tile)
-            => Debug.Log(DumpToString(tile));
+        public static void DumpToDebug(this ref TileElement tile)
+            => Debug.Log(DumpToString(ref tile));
 
 
-        static string DumpToString(TileElement tile)
+        /// <summary>
+        /// Dumps the byte content of the tile element to a readable string.
+        /// </summary>
+        static string DumpToString(ref TileElement tile)
         {
             return
 $@"(me) TileElement:
