@@ -73,6 +73,30 @@ namespace OpenRCT2.Unity
         }
 
 
+        /// <summary>
+        /// Rotates the sprite to look towards where its walking.
+        /// </summary>
+        protected override void MoveSprite(SpriteObject spriteObject)
+        {
+            base.MoveSprite(spriteObject);
+
+            // Update rotation
+            Vector3 forward = new Vector3(
+                spriteObject.towards.x - spriteObject.from.x,
+                0,
+                spriteObject.towards.z - spriteObject.from.z
+            );
+
+            if (forward != Vector3.zero)
+            {
+                spriteObject
+                    .gameObject
+                    .transform
+                    .rotation = Quaternion.LookRotation(forward);
+            }
+        }
+
+
         void UpdateColours(GameObject peepObj, Peep peep)
         {
             GameObject tshirt = peepObj.transform.GetChild(0).gameObject;

@@ -1,3 +1,4 @@
+#include <openrct2/ride/Vehicle.h>
 #include <openrct2/world/Sprite.h>
 
 #include "Openrct2-dll.h"
@@ -31,22 +32,52 @@ extern "C"
         return peepCount;
     }
 
+
+    struct RideVehicle
+    {
+    public:
+        uint16_t idx;
+        int32_t x;
+        int32_t y;
+        int32_t z;
+        uint8_t direction;
+        uint8_t bankRotation;
+        uint8_t pitchRotation;
+    };
+
     
     // Loads all the vehicles into the specified buffer, returns the total amount of vehicles loaded.
-    EXPORT int GetAllVehicles(Vehicle* vehicles, int arraySize)
+    EXPORT int GetAllVehicles(RideVehicle* vehicles, int arraySize)
     {
-        Vehicle* vehicle;
+        Vehicle *train, *vehicle;
         int vehicleCount = 0;
+        uint16_t train_index, vehicle_index;
 
-        for (uint16_t i = gSpriteListHead[SPRITE_LIST_VEHICLE]; i != SPRITE_INDEX_NULL; i = vehicle->next)
+        for (train_index = gSpriteListHead[SPRITE_LIST_TRAIN_HEAD]; train_index != SPRITE_INDEX_NULL; train_index = train->next)
         {
-            vehicle = &get_sprite(i)->vehicle;
+            train = GET_VEHICLE(train_index);
+            for (vehicle_index = train_index; vehicle_index != SPRITE_INDEX_NULL; vehicle_index = vehicle->next_vehicle_on_train)
+            {
+                vehicle = GET_VEHICLE(vehicle_index);
+                if (vehicle->x == LOCATION_NULL)
+                    continue;
 
-            vehicles[vehicleCount] = *vehicle;
-            vehicleCount++;
+                //printf("(me) %i vehicle %i at %i, %i, %i\n", vehicleCount, vehicle->sprite_index, vehicle->x, vehicle->y, vehicle->z);
 
-            if (vehicleCount >= arraySize)
-                break;
+                RideVehicle* target = &vehicles[vehicleCount];
+                target->idx = vehicle->sprite_index;
+                target->x = vehicle->x;
+                target->y = vehicle->y;
+                target->z = vehicle->z;
+                target->direction = vehicle->sprite_direction;
+                target->bankRotation = vehicle->bank_rotation;
+                target->pitchRotation = vehicle->vehicle_sprite_type;
+
+                vehicleCount++;
+
+                if (vehicleCount >= arraySize)
+                    break;
+            }
         }
         return vehicleCount;
     }

@@ -11,6 +11,7 @@ public static class Maths
 		return ((Mathf.Atan2(to.x - from.x, to.z - from.z) * 180 / Mathf.PI) + 360) % 360;
 	}
 
+
     /// <summary>
     /// Returns the difference between two world angles.
     /// </summary>
@@ -20,6 +21,7 @@ public static class Maths
         //float dif = (((((angleA - angleB) % 360) + 540) % 360) - 180); //((angleA - angleB) % 360);
         return ((angleB - angleA) + 360) % 360;
     }
+
 
     /// <summary>
     /// Returns the location at a certain distance from the given position, 
@@ -34,6 +36,7 @@ public static class Maths
 		return newpos;
 	}
 
+
     /// <summary>
     /// Returns the location (normal) at a certain distance from local position
 	/// 0,0,0 , with help of a world angle.
@@ -46,6 +49,7 @@ public static class Maths
             (distance * Mathf.Cos(angle * Mathf.Deg2Rad))
         );
     }
+
 
     /// <summary>
     /// Checks whether posB is in range of posA, while ignoring the Y-axis.
@@ -164,4 +168,11 @@ public static class Maths
 		int remainder = value % divider;
 		return remainder < 0 ? remainder + divider : remainder;
 	}
+
+
+    /// <summary>
+    /// Quick distance calculation by manhatten distance.
+    /// </summary>
+    public static float ManhattenDistance(Vector3 start, Vector3 end)
+        => (Mathf.Abs(start.x - end.x) + Mathf.Abs(start.y - end.y) + Mathf.Abs(start.z - end.z));
 }

@@ -135,9 +135,14 @@ namespace OpenRCT2.Unity
         /// Reads all peeps in the park into the specified buffer.
         /// </summary>
         public static int GetAllPeeps(Peep[] buffer)
-        {
-            return GetAllPeeps(buffer, buffer.Length);
-        }
+            => GetAllPeeps(buffer, buffer.Length);
+
+
+        /// <summary>
+        /// Reads all vehicles in the park into the specified buffer.
+        /// </summary>
+        public static int GetAllVehicles(Vehicle[] buffer)
+            => GetAllVehicles(buffer, buffer.Length);
 
         #endregion
 
