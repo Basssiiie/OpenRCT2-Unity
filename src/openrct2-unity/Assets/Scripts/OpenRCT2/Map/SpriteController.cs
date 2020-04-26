@@ -10,7 +10,6 @@ namespace OpenRCT2.Unity
     {
         [SerializeField] GameObject spritePrefab;
 
-
         const int MaxSprites = 8000;
 
 
@@ -112,7 +111,7 @@ namespace OpenRCT2.Unity
             Vector3 target = Map.CoordsToVector3(sprite.Position);
 
             if (obj.towards != target)
-            { 
+            {
                 obj.from = obj.towards;
                 obj.towards = target;
                 obj.timeSinceStart = Time.timeSinceLevelLoad;
@@ -125,7 +124,7 @@ namespace OpenRCT2.Unity
         /// Updates the actual object position by lerping between the information
         /// from last game tick.
         /// </summary>
-        void MoveSprite(SpriteObject spriteObject)
+        protected virtual void MoveSprite(SpriteObject spriteObject)
         {
             if (spriteObject.lastUpdate < currentUpdateTick)
             {
@@ -145,12 +144,6 @@ namespace OpenRCT2.Unity
             Vector3 lerped = Vector3.Lerp(transf.position, spriteObject.towards, time);
 
             transf.position = lerped;
-
-            // Update rotation
-            Vector3 forward = new Vector3(spriteObject.from.x - spriteObject.towards.x, 0, spriteObject.from.z - spriteObject.towards.z);
-
-            if (forward != Vector3.zero)
-                transf.rotation = Quaternion.LookRotation(forward);
         }
 
 

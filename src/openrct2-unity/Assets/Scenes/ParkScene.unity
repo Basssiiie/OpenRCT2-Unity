@@ -449,7 +449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: My test park/Test park with a park.sc6
+  selectedPark: Dynamite Dunes.sv6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
@@ -479,6 +479,7 @@ GameObject:
   - component: {fileID: 1491562774}
   - component: {fileID: 1491562769}
   - component: {fileID: 1491562773}
+  - component: {fileID: 1491562775}
   m_Layer: 0
   m_Name: Map
   m_TagString: Untagged
@@ -592,7 +593,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26c4168fd423cac45b389b005f0daf26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  peepPrefab: {fileID: 4013945455800788704, guid: f7506ca24f3b99a49898e9ec122adf29,
+  spritePrefab: {fileID: 4013945455800788704, guid: f7506ca24f3b99a49898e9ec122adf29,
     type: 3}
 --- !u!65 &1491562774
 BoxCollider:
@@ -607,6 +608,20 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 100000000, y: 1, z: 100000000}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1491562775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1491562768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d991161af4647e499721cbb478404f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spritePrefab: {fileID: 3497475327691341381, guid: 93889bcee0f99db4da5b6c078f25b97f,
+    type: 3}
 --- !u!1 &1675223600
 GameObject:
   m_ObjectHideFlags: 0
