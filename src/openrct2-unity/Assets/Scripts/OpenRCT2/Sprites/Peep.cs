@@ -8,7 +8,7 @@ namespace OpenRCT2.Unity
     /// The struct of a peep, which can be either a guest or a staff member.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Size = (256 + Ptr.Size))]
-    public struct Peep
+    public struct Peep : ISprite
     {
         public SpriteBase sprite;
         public IntPtr namePtr; // The real name
