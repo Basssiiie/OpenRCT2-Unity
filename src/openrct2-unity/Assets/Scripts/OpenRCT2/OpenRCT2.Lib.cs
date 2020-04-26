@@ -112,6 +112,10 @@ namespace OpenRCT2.Unity
         static extern int GetAllPeeps([Out] Peep[] elements, int arraySize);
 
 
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        static extern int GetAllVehicles([Out] Vehicle[] elements, int arraySize);
+
+
         /// <summary>
         /// Returns all peeps in the park.
         /// </summary>
