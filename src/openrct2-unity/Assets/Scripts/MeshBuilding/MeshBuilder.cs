@@ -75,7 +75,7 @@ namespace MeshBuilding
 		/// <summary>
 		/// Build the vertices and triangles into a Mesh.
 		/// </summary>
-		public Mesh Build()
+		public Mesh ToMesh()
 		{
 			if (mesh == null)
 				mesh = new Mesh();

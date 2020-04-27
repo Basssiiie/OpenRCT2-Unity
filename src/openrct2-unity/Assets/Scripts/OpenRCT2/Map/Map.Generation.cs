@@ -13,18 +13,18 @@ namespace OpenRCT2.Unity
         [SerializeField] GameObject largeSceneryPrefab;
         [SerializeField] GameObject bannerPrefab;
 
-        [SerializeField] private bool generatePath = true;
-        [SerializeField] private bool generateTrack = true;
-        [SerializeField] private bool generateSmallScenery = true;
-        [SerializeField] private bool generateEntrance = true;
-        [SerializeField] private bool generateWall = true;
-        [SerializeField] private bool generateLargeScenery = true;
-        [SerializeField] private bool generateBanner = true;
+        [SerializeField] bool generatePath = true;
+        [SerializeField] bool generateTrack = true;
+        [SerializeField] bool generateSmallScenery = true;
+        [SerializeField] bool generateEntrance = true;
+        [SerializeField] bool generateWall = true;
+        [SerializeField] bool generateLargeScenery = true;
+        [SerializeField] bool generateBanner = true;
 
 
         const int TileCoordsToCoords = 32;
-        const float CoordsToVector3Multiplier = 1f / TileCoordsToCoords;
-        const float TileCoordsToVector3Multiplier = CoordsToVector3Multiplier * TileCoordsToCoords;
+        const float TileCoordsToVector3Multiplier = 1f;
+        const float CoordsToVector3Multiplier = TileCoordsToVector3Multiplier / TileCoordsToCoords;
 
         const float TileHeightMultiplier = 0.25f;
         const int TileHeightStep = 2;
@@ -60,7 +60,7 @@ namespace OpenRCT2.Unity
                 }
             }
 
-            return cachedBuilder.Build();
+            return cachedBuilder.ToMesh();
         }
 
 
@@ -142,16 +142,36 @@ namespace OpenRCT2.Unity
         /// </summary>
         GameObject InstantiateSmallScenery(ref TileElement tile, GameObject prefab, float x, float y, float z)
         {
-            GameObject obj = InstantiateElement(prefab, x, y, z);
-            Texture2D texture = TextureFactory.ForTileElement(ref tile);
+            SmallSceneryElement smallScenery = tile.AsSmallScenery();
 
+            SmallSceneryEntry entry = OpenRCT2.GetSmallSceneryEntry(smallScenery.EntryIndex);
+            SmallSceneryFlags flags = entry.Flags; 
+
+            // If not a full tile, move small scenery to the correct quadrant.
+            if ((flags & SmallSceneryFlags.FullTile) == 0)
+            {
+                const float distanceToQuadrant = (TileCoordsToVector3Multiplier / 4);
+                byte quadrant = smallScenery.Quadrant;
+
+                switch (quadrant)
+                {
+                    case 0: x -= distanceToQuadrant; z -= distanceToQuadrant; break;
+                    case 1: x -= distanceToQuadrant; z += distanceToQuadrant; break;
+                    case 2: x += distanceToQuadrant; z += distanceToQuadrant; break;
+                    case 3: x += distanceToQuadrant; z -= distanceToQuadrant; break;
+                }
+            }
+
+            // Instantiate the element.
+            GameObject obj = InstantiateElement(prefab, x, y, z);
+            Texture2D texture = GraphicsFactory.ForTileElement(ref tile).ToTexture2D();
+
+            foreach (MeshRenderer renderer in obj.GetComponentsInChildren<MeshRenderer>())
+                renderer.material.SetTexture("_BaseMap", texture);
+
+            // Set the visual scale of the model.
             float width = (texture.width * PixelPerUnitMultiplier);
             obj.transform.localScale = new Vector3(width, texture.height * PixelPerUnitMultiplier, width);
-
-            foreach (var renderer in obj.GetComponentsInChildren<MeshRenderer>())
-            {
-                renderer.material.SetTexture("_BaseMap", texture);
-            }
             return obj;
         }
     }

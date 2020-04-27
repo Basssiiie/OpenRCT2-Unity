@@ -63,11 +63,13 @@ xcopy /i /y /f "$(SolutionDir)bin\dll-export\*" "$(SolutionDir)src\openrct2-unit
     <ResourceCompile Include="..\..\resources\OpenRCT2.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Graphics.cpp" />
-    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Export\Graphics.cpp" />
+    <ClCompile Include="Export\Game.cpp" />
+    <ClCompile Include="Export\Map.cpp" />
+    <ClCompile Include="Export\Sprites.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Openrct2-dll.h" />
+    <ClInclude Include="Export\Openrct2-dll.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
