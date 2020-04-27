@@ -67,8 +67,6 @@ namespace OpenRCT2.Unity
         protected override SpriteObject UpdateSprite(int index, ref Peep sprite)
         {
             SpriteObject obj = base.UpdateSprite(index, ref sprite);
-
-            obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(sprite);
             return obj;
         }
 

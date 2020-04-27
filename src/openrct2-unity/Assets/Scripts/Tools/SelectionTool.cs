@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using OpenRCT2.Unity;
 
 public class SelectionTool : MonoBehaviour
 {
 
-    [SerializeField] private GameObject canvasManager;
-    CanvasManager canvasScript;
+    [SerializeField] private CanvasManager canvasManager;
+    [SerializeField] private PeepController peepController;
 
 
     void Start()
     {
-        canvasScript = canvasManager.gameObject.GetComponent<CanvasManager>();
     }
 
     // Update is called once per frame
@@ -24,17 +24,19 @@ public class SelectionTool : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit))
             {
-                CheckHit(hit.collider.gameObject.name);
+                CheckHit(hit.collider.gameObject);
             }
         }
     }
 
-    void CheckHit(string name)
+    void CheckHit(GameObject obj)
     {
-        switch (name)
+        switch (obj.name)
         {
             case string a when a.Contains("Guest"):
-                canvasScript.RenderUIElement("RENDER_PEEP_BOX");
+                dynamic args = new System.Dynamic.ExpandoObject();
+                args.id = peepController.FindPeepIdForGameObject(obj);
+                canvasManager.RenderUIElement("RENDER_PEEP_BOX", args);
                 break;
             default:
                 break;
