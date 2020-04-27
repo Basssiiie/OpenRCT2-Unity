@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace OpenRCT2.Unity
@@ -6,64 +6,111 @@ namespace OpenRCT2.Unity
     /// <summary>
     /// Controller which moves and updates all the peeps in the park.
     /// </summary>
-    [RequireComponent(typeof(Map))]
-    public class PeepController : MonoBehaviour
+    public class PeepController : SpriteController<Peep>
     {
-        [SerializeField] GameObject peepPrefab;
 
-
-        const int MaxPeeps = 8000;
-
-
-        Peep[] peepBuffer;
-        Dictionary<ushort, PeepObject> peepObjects;
-        int currentUpdateTick;
-
-
-        class PeepObject
+        /// <summary>
+        /// Find the associated peep id for the specified gameobject, or
+        /// null if the gameobject is not a peep.
+        /// </summary>
+        public ushort FindPeepIdForGameObject(GameObject peepObject)
         {
-            public GameObject gameObject;
-            public float timeSinceStart;
-            public int lastUpdate;
-            public Vector3 from;
-            public Vector3 towards;
+            var entry = spriteObjects.FirstOrDefault(p => p.Value.gameObject == peepObject);
+
+            int bufferIndex = entry.Value.bufferIndex;
+            return spriteBuffer[bufferIndex].Id;
         }
 
 
-        void Start()
+        /// <summary>
+        /// Find the associated peep struct for the specified id, or
+        /// null if the gameobject is not a peep.
+        /// </summary>
+        public Peep? GetPeepById(ushort peepId)
         {
-            peepBuffer = new Peep[MaxPeeps];
-            int amount = OpenRCT2.GetAllPeeps(peepBuffer);
-            peepObjects = new Dictionary<ushort, PeepObject>(amount);
-            for (int i = 0; i < amount; i++)
+            if (!spriteObjects.TryGetValue(peepId, out SpriteObject peepObject))
+                return null;
+
+            int bufferIndex = peepObject.bufferIndex;
+            return spriteBuffer[bufferIndex];
+        }
+
+
+        /// <summary>
+        /// Gets all the peep sprites from the dll hook.
+        /// </summary>
+        protected override int FillSpriteBuffer(Peep[] buffer)
+            => OpenRCT2.GetAllPeeps(buffer);
+
+
+        /// <summary>
+        /// Sets the name and colors of the peep sprite.
+        /// </summary>
+        protected override SpriteObject AddSprite(int index, ref Peep sprite)
+        {
+            SpriteObject spriteObject = base.AddSprite(index, ref sprite);
+            GameObject obj = spriteObject.gameObject;
+
+            ushort id = sprite.Id;
+            PeepType type = sprite.type;
+            obj.name = $"{type} {id}";
+
+            UpdateColours(obj, sprite);
+            return spriteObject;
+        }
+
+
+        /// <summary>
+        /// Sets the new start and end positions for this game tick.
+        /// </summary>
+        ///
+        protected override SpriteObject UpdateSprite(int index, ref Peep sprite)
+        {
+            SpriteObject obj = base.UpdateSprite(index, ref sprite);
+
+            obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(sprite);
+            return obj;
+        }
+
+
+        /// <summary>
+        /// Rotates the sprite to look towards where its walking.
+        /// </summary>
+        protected override void MoveSprite(SpriteObject spriteObject)
+        {
+            base.MoveSprite(spriteObject);
+
+            // Update rotation
+            Vector3 forward = new Vector3(
+                spriteObject.towards.x - spriteObject.from.x,
+                0,
+                spriteObject.towards.z - spriteObject.from.z
+            );
+
+            if (forward != Vector3.zero)
             {
-                AddPeep(ref peepBuffer[i]);
+                spriteObject
+                    .gameObject
+                    .transform
+                    .rotation = Quaternion.LookRotation(forward);
             }
         }
 
 
-        void FixedUpdate()
+        void UpdateColours(GameObject peepObj, Peep peep)
         {
-            currentUpdateTick++;
+            GameObject tshirt = peepObj.transform.GetChild(0).gameObject;
+            GameObject trousers = peepObj.transform.GetChild(1).gameObject;
 
-            int amount = OpenRCT2.GetAllPeeps(peepBuffer);
+            var tshirtRenderer = tshirt.GetComponent<Renderer>();
+            var trousersRenderer = trousers.GetComponent<Renderer>();
 
-            for (int i = 0; i < amount; i++)
-            {
-                SetPeepPositions(ref peepBuffer[i]);
-            }
+            tshirtRenderer.material.color = DecodeColour(peep.tshirtColour);
+            trousersRenderer.material.color = DecodeColour(peep.trousersColour);
         }
 
 
-        void LateUpdate()
-        {
-            foreach (var peep in peepObjects.Values)
-            {
-                UpdatePeepPosition(peep);
-            }
-        }
-
-        Color decodeColour(byte colour)
+        Color DecodeColour(byte colour)
         {
             var colourRGB = new Color32(0, 0, 0, 1);
             switch (colour)
@@ -168,120 +215,6 @@ namespace OpenRCT2.Unity
                     break;
             }
             return colourRGB;
-        }
-
-        public void UpdateColours(GameObject peepObj, Peep peep)
-        {
-
-            GameObject tshirt = peepObj.transform.GetChild(0).gameObject;
-            GameObject trousers = peepObj.transform.GetChild(1).gameObject;
-
-            var tshirtRenderer = tshirt.GetComponent<Renderer>();
-            var trousersRenderer = trousers.GetComponent<Renderer>();
-
-            tshirtRenderer.material.color = decodeColour(peep.tshirtColour);
-            trousersRenderer.material.color = decodeColour(peep.trousersColour);
-
-        }
-
-        /// <summary>
-        /// Adds a new peep object to the dictionary.
-        /// </summary>
-        PeepObject AddPeep(ref Peep peep)
-        {
-            ushort id = peep.Id;
-            var type = peep.type;
-            GameObject peepObj = Instantiate(peepPrefab, Vector3.zero, Quaternion.identity, transform);
-
-            peepObj.name = $"{type} {id}";
-
-            UpdateColours(peepObj, peep);
-
-            Vector3 position = Map.CoordsToVector3(peep.Position);
-
-            PeepObject instance = new PeepObject
-            {
-                gameObject = peepObj,
-                from = position,
-                towards = position
-            };
-
-            peepObjects.Add(peep.Id, instance);
-            return instance;
-        }
-
-
-        /// <summary>
-        /// Sets the new start and end positions for this game tick.
-        /// </summary>
-        void SetPeepPositions(ref Peep peep)
-        {
-            ushort id = peep.Id;
-
-            if (!peepObjects.TryGetValue(id, out PeepObject obj))
-                obj = AddPeep(ref peep);
-
-            obj.lastUpdate = currentUpdateTick;
-
-            obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(peep);
-
-            Vector3 target = Map.CoordsToVector3(peep.Position);
-
-            if (obj.towards == target)
-                return;
-
-            obj.from = obj.towards;
-            obj.towards = target;
-            obj.timeSinceStart = Time.timeSinceLevelLoad;
-        }
-
-
-        /// <summary>
-        /// Updates the actual object position by lerping between the information
-        /// from last game tick.
-        /// </summary>
-        void UpdatePeepPosition(PeepObject obj)
-        {
-            if (obj.lastUpdate < currentUpdateTick)
-            {
-                DisablePeep(obj);
-                return;
-            }
-            else
-                EnablePeep(obj);
-
-            Transform transf = obj.gameObject.transform;
-
-            if (transf.position == obj.towards)
-                return;
-
-            // Update position
-            float time = (Time.timeSinceLevelLoad - obj.timeSinceStart) / Time.fixedDeltaTime;
-            Vector3 lerped = Vector3.Lerp(transf.position, obj.towards, time);
-
-            transf.position = lerped;
-
-            // Update rotation
-            Vector3 forward = new Vector3(obj.from.x - obj.towards.x, 0, obj.from.z - obj.towards.z);
-
-            if (forward != Vector3.zero)
-                transf.rotation = Quaternion.LookRotation(forward);
-
-            //obj.gameObject.GetComponent<PeepInformation>().UpdateInformation(peep);
-        }
-
-
-        void EnablePeep(PeepObject obj)
-        {
-            if (!obj.gameObject.activeSelf)
-                obj.gameObject.SetActive(true);
-        }
-
-
-        void DisablePeep(PeepObject obj)
-        {
-            if (obj.gameObject.activeSelf)
-                obj.gameObject.SetActive(false);
         }
     }
 }

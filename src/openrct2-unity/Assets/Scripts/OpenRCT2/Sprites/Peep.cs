@@ -4,8 +4,11 @@ using UnityEngine;
 
 namespace OpenRCT2.Unity
 {
-    [StructLayout(LayoutKind.Sequential, Size = 264)]
-    public struct Peep
+    /// <summary>
+    /// The struct of a peep, which can be either a guest or a staff member.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Size = (256 + Ptr.Size))]
+    public struct Peep : ISprite
     {
         public SpriteBase sprite;
         public IntPtr namePtr; // The real name
@@ -65,7 +68,7 @@ namespace OpenRCT2.Unity
         public long ridesBeenOn2;
         public long ridesBeenOn3;
         public long ridesBeenOn4;
-        public uint Id2;
+        public uint id;
         public int cashInPocket;
         public int cashSpent;
         public int timeInPark;
@@ -80,7 +83,9 @@ namespace OpenRCT2.Unity
         public uint peepFlags;
 
 
-
+        /// <summary>
+        /// Returns an id of the peep, currently based on the sprite index.
+        /// </summary>
         public ushort Id
             => sprite.spriteIndex;
 
@@ -89,6 +94,9 @@ namespace OpenRCT2.Unity
             => Marshal.PtrToStringAnsi(namePtr);
 
 
+        /// <summary>
+        /// Returns the peep's position in RCT2 coordinates.
+        /// </summary>
         public Vector3 Position
             => new Vector3(sprite.x, sprite.z, sprite.y);
     }

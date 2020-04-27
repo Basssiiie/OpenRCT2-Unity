@@ -185,7 +185,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &440946295
 GameObject:
@@ -266,7 +266,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440946295}
   m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
-  m_LocalPosition: {x: 50, y: 20, z: 50}
+  m_LocalPosition: {x: 25, y: 20, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -413,7 +413,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -435,7 +435,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!114 &1347800242
 MonoBehaviour:
@@ -449,9 +449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  park: Diamond Heights.sv6
-  rct2Path: D:\Gaming\Steam\steamapps\common\Rollercoaster Tycoon 2
-  rct1Path: D:\Gaming\Steam\steamapps\common\RollerCoaster Tycoon Deluxe
+  selectedPark: Dynamite Dunes.sv6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
@@ -462,7 +460,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1491562770}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -480,12 +479,13 @@ GameObject:
   - component: {fileID: 1491562774}
   - component: {fileID: 1491562769}
   - component: {fileID: 1491562773}
+  - component: {fileID: 1491562775}
   m_Layer: 0
   m_Name: Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 126
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!114 &1491562769
 MonoBehaviour:
@@ -527,12 +527,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1491562768}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_Father: {fileID: 1347800243}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &1491562771
 MeshRenderer:
@@ -593,7 +593,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26c4168fd423cac45b389b005f0daf26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  peepPrefab: {fileID: 4013945455800788704, guid: f7506ca24f3b99a49898e9ec122adf29,
+  spritePrefab: {fileID: 4013945455800788704, guid: f7506ca24f3b99a49898e9ec122adf29,
     type: 3}
 --- !u!65 &1491562774
 BoxCollider:
@@ -608,6 +608,20 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 100000000, y: 1, z: 100000000}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1491562775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1491562768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d991161af4647e499721cbb478404f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spritePrefab: {fileID: 3497475327691341381, guid: 93889bcee0f99db4da5b6c078f25b97f,
+    type: 3}
 --- !u!1 &1675223600
 GameObject:
   m_ObjectHideFlags: 0

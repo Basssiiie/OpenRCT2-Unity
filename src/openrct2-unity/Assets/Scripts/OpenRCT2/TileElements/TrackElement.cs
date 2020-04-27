@@ -3,7 +3,7 @@ namespace OpenRCT2.Unity
     /// <summary>
     /// An element representing a trackpiece of a ride, or a stall.
     /// </summary>
-    public readonly struct TrackElement
+    public readonly ref struct TrackElement
     {
         public TileElementType Type => element.Type;
 
@@ -20,7 +20,7 @@ namespace OpenRCT2.Unity
         readonly TileElement element;
 
 
-        public TrackElement(TileElement element)
+        public TrackElement(ref TileElement element)
         {
             this.element = element;
         }

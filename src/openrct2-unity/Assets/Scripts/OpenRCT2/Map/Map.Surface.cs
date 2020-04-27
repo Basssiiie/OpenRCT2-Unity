@@ -28,7 +28,8 @@ namespace OpenRCT2.Unity
 
             int submesh = GetMaterialIndex(MaterialType.Surface /*surface.SurfaceStyle*/);
 
-            if ((slope & SurfaceSlope.WestUp) == 0 && (slope & SurfaceSlope.EastUp) == 0)
+            SurfaceSlope rotatedSlope = (slope & SurfaceSlope.WestEastValley);
+            if (rotatedSlope == 0 || rotatedSlope == SurfaceSlope.WestEastValley)
             {
                 // In these cases the quad has to be rotated to show the correct kind of slope
                 builder.AddTriangle(west, north, east, submesh);
