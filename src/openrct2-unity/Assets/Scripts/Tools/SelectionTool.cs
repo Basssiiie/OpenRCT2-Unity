@@ -7,8 +7,8 @@ using OpenRCT2.Unity;
 public class SelectionTool : MonoBehaviour
 {
 
-    [SerializeField] private CanvasManager canvasManager;
-    [SerializeField] private PeepController peepController;
+    [SerializeField] CanvasManager canvasManager;
+    [SerializeField] PeepController peepController;
 
 
     void Start()
@@ -31,12 +31,10 @@ public class SelectionTool : MonoBehaviour
 
     void CheckHit(GameObject obj)
     {
-        switch (obj.name)
+        switch (obj.tag)
         {
-            case string a when a.Contains("Guest"):
-                dynamic args = new System.Dynamic.ExpandoObject();
-                args.id = peepController.FindPeepIdForGameObject(obj);
-                canvasManager.RenderUIElement("RENDER_PEEP_BOX", args);
+            case "Peep":
+                canvasManager.CreatePeepWindow(peepController.FindPeepIdForGameObject(obj));
                 break;
             default:
                 break;

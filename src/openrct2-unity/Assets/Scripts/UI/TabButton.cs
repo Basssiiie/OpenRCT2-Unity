@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(RawImage))]
 public class TabButton : MonoBehaviour, IPointerClickHandler
 {
-    [SerializeField] private TabGroup tabGroup;
+    [SerializeField] TabGroup tabGroup;
     public RawImage background;
 
 
