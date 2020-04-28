@@ -6,24 +6,14 @@ using OpenRCT2.Unity;
 public class CanvasManager : MonoBehaviour
 {
 
-    [SerializeField] private GameObject peepBox;
-    [SerializeField] private GameObject peepCanvas;
-    [SerializeField] private PeepController peepController;
+    [SerializeField] GameObject peepBox;
+    [SerializeField] GameObject peepCanvas;
+    [SerializeField] PeepController peepController;
 
-    public void RenderUIElement(string action, dynamic args)
-    {
-        switch (action)
-        {
-            case "RENDER_PEEP_BOX":
-                RenderPeepBox(args.id);
-                break;
-        }
-    }
-
-    void RenderPeepBox(ushort id)
+    public void CreatePeepWindow(ushort id)
     {
         GameObject obj = Instantiate(peepBox, peepCanvas.transform);
         obj.name = $"PeepBox: {id}";
-        obj.gameObject.GetComponent<PeepWindow>().loadPeepController(peepController, id);
+        obj.GetComponent<PeepWindow>().LoadPeepController(peepController, id);
     }
 }

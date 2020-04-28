@@ -61,17 +61,6 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
-        /// Sets the new start and end positions for this game tick.
-        /// </summary>
-        ///
-        protected override SpriteObject UpdateSprite(int index, ref Peep sprite)
-        {
-            SpriteObject obj = base.UpdateSprite(index, ref sprite);
-            return obj;
-        }
-
-
-        /// <summary>
         /// Rotates the sprite to look towards where its walking.
         /// </summary>
         protected override void MoveSprite(SpriteObject spriteObject)

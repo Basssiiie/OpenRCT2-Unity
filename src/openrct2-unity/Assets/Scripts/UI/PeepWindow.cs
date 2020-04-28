@@ -6,17 +6,17 @@ using OpenRCT2.Unity;
 
 public class PeepWindow : MonoBehaviour
 {
-    [SerializeField] private Text title;
-    [SerializeField] private Slider happinessBar;
-    [SerializeField] private Slider energyBar;
-    [SerializeField] private Slider hungerBar;
-    [SerializeField] private Slider thirstBar;
-    [SerializeField] private Slider nauseaBar;
-    [SerializeField] private Slider toiletBar;
+    [SerializeField] Text title;
+    [SerializeField] Slider happinessBar;
+    [SerializeField] Slider energyBar;
+    [SerializeField] Slider hungerBar;
+    [SerializeField] Slider thirstBar;
+    [SerializeField] Slider nauseaBar;
+    [SerializeField] Slider toiletBar;
     ushort peepId;
     PeepController peepControllerScript;
 
-    public void loadPeepController(PeepController peepController, ushort id)
+    public void LoadPeepController(PeepController peepController, ushort id)
     {
         peepId = id;
         peepControllerScript = peepController;
@@ -27,11 +27,23 @@ public class PeepWindow : MonoBehaviour
     void UpdateData()
     {
         Peep? peep = peepControllerScript.GetPeepById(peepId);
-        happinessBar.value = peep.Value.happiness;
-        energyBar.value = peep.Value.energy;
-        hungerBar.value = peep.Value.hunger;
-        thirstBar.value = peep.Value.thirst;
-        nauseaBar.value = peep.Value.nausea;
-        toiletBar.value = peep.Value.toilet;
+        if (peep == null)
+        {
+            Destroy(gameObject);
+        }
+        var value = peep.Value;
+
+        happinessBar.value = value.happiness;
+        energyBar.value = value.energy;
+        hungerBar.value = value.hunger;
+        thirstBar.value = value.thirst;
+        nauseaBar.value = value.nausea;
+        toiletBar.value = value.toilet;
+
+        /*
+        var intensityBinary = System.Convert.ToString(peep.intensity, 2);
+        var maxIntensityString = System.Convert.ToString(peep.intensity >> 4);
+        var minIntensityString = System.Convert.ToString(peep.intensity & 0b1111);
+        */
     }
 }

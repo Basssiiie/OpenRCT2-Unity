@@ -5,9 +5,9 @@ using UnityEngine.EventSystems;
 
 public class DragWindow : MonoBehaviour, IDragHandler, IPointerDownHandler
 {
-    [SerializeField] private RectTransform dragRectTransform;
-    [SerializeField] private GameObject peepWindow;
-    [SerializeField] private Canvas canvas;
+    [SerializeField] RectTransform dragRectTransform;
+    [SerializeField] GameObject peepWindow;
+    [SerializeField] Canvas canvas;
 
     public void Awake()
     {
