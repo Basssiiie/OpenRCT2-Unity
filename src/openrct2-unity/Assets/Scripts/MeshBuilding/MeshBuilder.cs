@@ -8,8 +8,13 @@ namespace MeshBuilding
     /// </summary>
     public class MeshBuilder
 	{
-		readonly Dictionary<Vertex, int> vertices = new Dictionary<Vertex, int>(64);
-		readonly List<List<int>> triangles = new List<List<int>>(1); // per submesh
+        // Dictionary of vertices and their indexes.
+		public readonly Dictionary<Vertex, int> vertices = new Dictionary<Vertex, int>(64);
+
+        // List of triangles per submesh.
+		readonly List<List<int>> triangles = new List<List<int>>(1);
+
+
         Mesh mesh = null;
 
 

@@ -24,6 +24,12 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
+        /// The height at which the water is, if there is any.
+        /// </summary>
+        public int WaterHeight => element.slot0x2;
+
+
+        /// <summary>
         /// A flaggable describing the possible ownerships of this surface element.
         /// </summary>
         public Ownership Ownership => (Ownership)element.slot0x4;

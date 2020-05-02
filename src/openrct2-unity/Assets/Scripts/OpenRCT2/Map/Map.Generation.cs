@@ -1,4 +1,3 @@
-using MeshBuilding;
 using UnityEngine;
 
 namespace OpenRCT2.Unity
@@ -32,20 +31,13 @@ namespace OpenRCT2.Unity
         const float PixelPerUnitMultiplier = 0.022f;
 
 
-        MeshBuilder cachedBuilder;
-
-
         /// <summary>
         /// Generates the surface of the map.
         /// </summary>
         Mesh GenerateSurfaceMesh()
         {
-            ResetSurfaceMaterials();
-
-            if (cachedBuilder == null)
-                cachedBuilder = new MeshBuilder();
-            else
-                cachedBuilder.Clear();
+            ResetImages();
+            SetupSurfaceMesh();
 
             int end = mapSize - 1;
             for (int x = 1; x < end; x++)
@@ -55,24 +47,24 @@ namespace OpenRCT2.Unity
                     Tile tile = tiles[x, y];
                     for (int e = 0; e < tile.Count; e++)
                     {
-                        GenerateTileElement(cachedBuilder, ref tile.Elements[e], x, y);
+                        GenerateTileElement(ref tile.Elements[e], x, y);
                     }
                 }
             }
 
-            return cachedBuilder.ToMesh();
+            return FinalizeSurfaceMesh();
         }
 
 
         /// <summary>
         /// Generates a tile element based on the type of the given tile.
         /// </summary>
-        void GenerateTileElement(MeshBuilder builder, ref TileElement tile, int x, int y)
+        void GenerateTileElement(ref TileElement tile, int x, int y)
         {
             switch (tile.Type)
             {
                 case TileElementType.Surface:
-                    GenerateSurface(builder, ref tile, x, y);
+                    GenerateSurface(ref tile, x, y);
                     break;
 
                 case TileElementType.Path:
@@ -166,7 +158,7 @@ namespace OpenRCT2.Unity
             GameObject obj = InstantiateElement(prefab, x, y, z);
 
             uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
-            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D();
+            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D(TextureWrapMode.Clamp);
 
             foreach (MeshRenderer renderer in obj.GetComponentsInChildren<MeshRenderer>())
                 renderer.material.SetTexture("_BaseMap", texture);

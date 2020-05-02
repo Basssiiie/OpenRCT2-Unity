@@ -73,6 +73,15 @@ namespace MeshBuilding
         /// <summary>
         /// Create a new vertex with a specified position, normal and uvs.
         /// </summary>
+        public Vertex(float x, float y, float z, Vector3 normal, Vector2 uvs)
+            : this(new Vector3(x, y, z), normal, uvs)
+        {
+        }
+
+
+        /// <summary>
+        /// Create a new vertex with a specified position, normal and uvs.
+        /// </summary>
         public Vertex(float x, float y, float z, Vector3 normal, float u, float v)
             : this(new Vector3(x, y, z), normal, new Vector2(u, v))
         {
@@ -91,7 +100,6 @@ namespace MeshBuilding
 
 
         #region IEquatable implementation
-
 
         /// <summary>
         /// Determines whether two vertices are equal based on their position, normals
@@ -118,11 +126,21 @@ namespace MeshBuilding
             => (Equals(this, other));
 
 
+
         /// <summary>
         /// Determines the hash for this vertex.
         /// </summary>
         public override int GetHashCode()
-            => (position.GetHashCode() ^ (normal.GetHashCode() << 7) ^ uv.GetHashCode() << 17); 
+        {
+            unchecked
+            {
+                int hashCode = -54916258;
+                hashCode = hashCode * -1521134295 + position.GetHashCode();
+                hashCode = hashCode * -1521134295 + normal.GetHashCode();
+                hashCode = hashCode * -1521134295 + uv.GetHashCode();
+                return hashCode;
+            }
+        }
 
 
         /// <summary>

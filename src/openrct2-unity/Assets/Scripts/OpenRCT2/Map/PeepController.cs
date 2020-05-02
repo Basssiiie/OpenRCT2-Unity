@@ -55,7 +55,7 @@ namespace OpenRCT2.Unity
             PeepType type = sprite.type;
             obj.name = $"{type} {id}";
 
-            UpdateColours(obj, sprite);
+            UpdateColours(obj, ref sprite);
             return spriteObject;
         }
 
@@ -84,7 +84,7 @@ namespace OpenRCT2.Unity
         }
 
 
-        void UpdateColours(GameObject peepObj, Peep peep)
+        void UpdateColours(GameObject peepObj, ref Peep peep)
         {
             GameObject tshirt = peepObj.transform.GetChild(0).gameObject;
             GameObject trousers = peepObj.transform.GetChild(1).gameObject;

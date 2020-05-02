@@ -1,89 +1,110 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace OpenRCT2.Unity
 {
     public partial class Map
     {
-        enum MaterialType : byte
+        [SerializeField] Shader surfaceShader;
+        [SerializeField] string surfaceTextureField;
+        [SerializeField] Shader edgeShader;
+        [SerializeField] string edgeTextureField;
+
+
+        const byte TypeSurface = 1;
+        const byte TypeEdge = 2;
+        const byte TypeWater = 3;
+
+
+        readonly List<RequestedImage> images = new List<RequestedImage>();
+
+
+        /// <summary>
+        /// Pushes a image index to the materials stack and returns its mesh index.
+        /// </summary>
+        int PushImageIndex(uint imageIndex, byte type)
         {
-            Surface,
-            Edge,
-            Water
-        }
+            int position = images.FindIndex(i => i.ImageIndex == imageIndex);
 
+            if (position != -1)
+                return position;
 
-        List<RequestedMaterial> requestedSurfaceMaterials;
+            position = images.Count;
+            images.Add(new RequestedImage(imageIndex, type));
 
-
-        void ResetSurfaceMaterials()
-        {
-            requestedSurfaceMaterials?.Clear();
+            return position;
         }
 
 
         /// <summary>
-        /// Gets the material / submesh index for the given material type.
+        /// Generates the required materials for the surface mesh.
         /// </summary>
-        int GetMaterialIndex(MaterialType type, byte value)
+        /// <returns></returns>
+        Material[] GenerateSurfaceMaterials()
         {
-            if (requestedSurfaceMaterials == null)
-                requestedSurfaceMaterials = new List<RequestedMaterial>();
+            int count = images.Count;
+            Material[] materials = new Material[count];
 
-            RequestedMaterial material = new RequestedMaterial(type, value);
-            int index = requestedSurfaceMaterials.IndexOf(material);
-
-            if (index == -1)
+            for (int i = 0; i < count; i++)
             {
-                // Add if it doesn't exist yet.
-                index = requestedSurfaceMaterials.Count;
-                requestedSurfaceMaterials.Add(material);
+                RequestedImage image = images[i];
+
+                Texture2D texture = GraphicsFactory
+                    .ForImageIndex(image.ImageIndex)
+                    .ToTexture2D(TextureWrapMode.Repeat);
+
+                Material material;
+
+                switch (image.Type)
+                {
+                    case TypeSurface:
+                    case TypeWater:
+                        material = new Material(surfaceShader);
+                        material.SetTexture(surfaceTextureField, texture);
+                        break;
+
+                    case TypeEdge:
+                        material = new Material(edgeShader);
+                        material.SetTexture(edgeTextureField, texture);
+                        break;
+
+                    default:
+                        Debug.LogWarning("Could not parse this image type: " + image.Type);
+                        continue;
+                }
+
+                materials[i] = material;
             }
-            return index;
+
+            return materials;
         }
 
 
-        /// <summary>
-        /// Gets the default material / submesh index for the given material type.
-        /// </summary>
-        int GetMaterialIndex(MaterialType style)
-            => GetMaterialIndex(style, 0);
-
-
-        /// <summary>
-        /// Gets the material / submesh index for the given surface style.
-        /// </summary>
-        int GetMaterialIndex(TerrainSurfaceStyle style)
-            => GetMaterialIndex(MaterialType.Surface, (byte)style);
-
-
-        /// <summary>
-        /// Gets the material / submesh index for the given terrain edge style.
-        /// </summary>
-        int GetMaterialIndex(TerrainEdgeStyle style)
-            => GetMaterialIndex(MaterialType.Edge, (byte)style);
-
-
-        readonly struct RequestedMaterial
+        void ResetImages()
         {
-            public readonly MaterialType Type;
-            public readonly byte Value;
+            images.Clear();
+        }
 
 
-            public RequestedMaterial(MaterialType type, byte value)
+        readonly struct RequestedImage
+        {
+            public readonly uint ImageIndex;
+            public readonly byte Type;
+
+
+            public RequestedImage(uint imageIndex, byte type)
             {
+                ImageIndex = imageIndex;
                 Type = type;
-                Value = value;
             }
 
 
             public override bool Equals(object obj)
-                => obj is RequestedMaterial material
-                    && Type == material.Type
-                    && Value == material.Value;
+                => (obj is RequestedImage image && ImageIndex == image.ImageIndex);
 
 
             public override int GetHashCode()
-                => ((Value.GetHashCode() << 3) + Type.GetHashCode());
+                => (int)ImageIndex;
         }
     }
 }

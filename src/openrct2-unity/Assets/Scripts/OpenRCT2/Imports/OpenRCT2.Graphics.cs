@@ -25,10 +25,24 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
-        /// Gets the image entry for the specified surface tile.
+        /// Gets the surface image entry for the specified surface tile.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
         internal static extern uint GetSurfaceImageIndex(TileElement tileElement, int tileX, int tileY, byte direction);
+
+
+        /// <summary>
+        /// Gets the surface edge image entry for the specified surface tile.
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern uint GetSurfaceEdgeImageIndex(TileElement tileElement);
+
+
+        /// <summary>
+        /// Gets the image entry for a water tile.
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern uint GetWaterImageIndex();
 
 
         /// <summary>

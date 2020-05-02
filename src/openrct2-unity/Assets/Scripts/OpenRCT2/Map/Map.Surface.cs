@@ -5,13 +5,51 @@ namespace OpenRCT2.Unity
 {
     public partial class Map
     {
+        [SerializeField] GameObject testVertex;
+
+        // This is only a single sprite, which can be cached.
+        static readonly uint WaterImageIndex = OpenRCT2.GetWaterImageIndex();
+
+        const byte NoWater = 0;
+
+
         public Texture2D texture;
+
+
+        MeshBuilder surfaceMeshBuilder;
+
+
+        /// <summary>
+        /// Initializes the required components for building the surface.
+        /// </summary>
+        void SetupSurfaceMesh()
+        {
+            surfaceMeshBuilder = new MeshBuilder();
+        }
+
+
+        /// <summary>
+        /// Finishes surface building and returns the mesh.
+        /// </summary>
+        Mesh FinalizeSurfaceMesh()
+        {
+            Mesh mesh = surfaceMeshBuilder.ToMesh();
+            mesh.RecalculateNormals();
+            /*
+            foreach (var v in surfaceMeshBuilder.vertices.Keys)
+            {
+                Instantiate(testVertex, v.position, Quaternion.LookRotation((v.normal == Vector3.zero) ? Vector3.up : v.normal)).name = $"{v.position}|{v.normal}|{v.uv}|{v.GetHashCode()}";
+            }
+            */
+            surfaceMeshBuilder = null;
+            return mesh;
+        }
 
 
         /// <summary>
         /// Generates a surface tile along with the edges.
         /// </summary>
-        void GenerateSurface(MeshBuilder builder, ref TileElement tile, int x, int y)
+        void GenerateSurface(ref TileElement tile, int x, int y)
         {
             /* Surface coords to Unity:
              * 
@@ -25,59 +63,92 @@ namespace OpenRCT2.Unity
             int baseHeight = tile.baseHeight;
 
             Vertex north = GetSurfaceCorner(x + 1, y + 1, baseHeight, slope, SurfaceSlope.NorthUp);
-            Vertex east = GetSurfaceCorner(x + 1, y, baseHeight, slope, SurfaceSlope.EastUp);
-            Vertex south = GetSurfaceCorner(x, y, baseHeight, slope, SurfaceSlope.SouthUp);
-            Vertex west = GetSurfaceCorner(x, y + 1, baseHeight, slope, SurfaceSlope.WestUp);
+            Vertex east =  GetSurfaceCorner(x + 1, y,     baseHeight, slope, SurfaceSlope.EastUp);
+            Vertex south = GetSurfaceCorner(x,     y,     baseHeight, slope, SurfaceSlope.SouthUp);
+            Vertex west =  GetSurfaceCorner(x,     y + 1, baseHeight, slope, SurfaceSlope.WestUp);
 
-            int submesh = GetMaterialIndex(surface.SurfaceStyle);
+            uint surfaceImage = OpenRCT2.GetSurfaceImageIndex(tile, x, y, 0);
+            int surfaceSubmesh = PushImageIndex(surfaceImage, TypeSurface);
 
             SurfaceSlope rotatedSlope = (slope & SurfaceSlope.WestEastValley);
             if (rotatedSlope == 0 || rotatedSlope == SurfaceSlope.WestEastValley)
             {
                 // In these cases the quad has to be rotated to show the correct kind of slope
-                builder.AddTriangle(west, north, east, submesh);
-                builder.AddTriangle(east, south, west, submesh);
+                surfaceMeshBuilder.AddTriangle(west, north, east, surfaceSubmesh);
+                surfaceMeshBuilder.AddTriangle(east, south, west, surfaceSubmesh);
             }
             else
             {
-                builder.AddQuad(north, east, south, west, submesh);
+                surfaceMeshBuilder.AddQuad(north, east, south, west, surfaceSubmesh);
             }
+            
+            // Water
+            int waterHeight = surface.WaterHeight;
+            if (waterHeight != NoWater)
+            {
+                float waterVertexHeight = (waterHeight * TileHeightMultiplier * TileHeightStep);
 
-            TryAddSurfaceEdge(builder, north, west, x, y, 0, 1, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, submesh); // Edge northwest
-            TryAddSurfaceEdge(builder, east, north, x, y, 1, 0, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, submesh); // Edge northeast
-            TryAddSurfaceEdge(builder, south, east, x, y, 0, -1, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, submesh); // Edge southeast
-            TryAddSurfaceEdge(builder, west, south, x, y, -1, 0, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, submesh); // Edge southwest
+                Vertex waterNorth = new Vertex(north.position.x, waterVertexHeight, north.position.z, Vector3.up, north.uv);
+                Vertex waterEast =  new Vertex(east.position.x,  waterVertexHeight, east.position.z,  Vector3.up, east.uv);
+                Vertex waterSouth = new Vertex(south.position.x, waterVertexHeight, south.position.z, Vector3.up, south.uv);
+                Vertex waterWest =  new Vertex(west.position.x,  waterVertexHeight, west.position.z,  Vector3.up, west.uv);
+
+                int waterSubmesh = PushImageIndex(WaterImageIndex, TypeWater);
+                surfaceMeshBuilder.AddQuad(waterNorth, waterEast, waterSouth, waterWest, waterSubmesh);
+            }
+            
+            // Edges
+            uint edgeImage = OpenRCT2.GetSurfaceEdgeImageIndex(tile);
+            int edgeSubmesh = PushImageIndex(edgeImage, TypeEdge);
+
+            TryAddSurfaceEdge(surfaceMeshBuilder, north, west, x, y, 0, 1, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh); // Edge northwest
+            TryAddSurfaceEdge(surfaceMeshBuilder, east, north, x, y, 1, 0, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh); // Edge northeast
+            TryAddSurfaceEdge(surfaceMeshBuilder, south, east, x, y, 0, -1, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh); // Edge southeast
+            TryAddSurfaceEdge(surfaceMeshBuilder, west, south, x, y, -1, 0, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
         }
 
 
         /// <summary>
         /// Tries to add an surface edge to the specified offset.
         /// </summary>
-        void TryAddSurfaceEdge(MeshBuilder builder, Vertex left, Vertex right, int x, int y, int offsetX, int offsetY, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
+        void TryAddSurfaceEdge(MeshBuilder builder, Vertex leftTop, Vertex rightTop, int x, int y, int offsetX, int offsetY, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
         {
             SurfaceElement other = tiles[x + offsetX, y + offsetY].Surface;
             int baseHeight = other.BaseHeight;
             SurfaceSlope otherSlope = other.Slope;
 
-            float leftHeight = GetSurfaceCornerHeight(baseHeight, otherSlope, leftOtherCorner) * TileHeightMultiplier;
-            float rightHeight = GetSurfaceCornerHeight(baseHeight, otherSlope, rightOtherCorner) * TileHeightMultiplier;
-
-            if (left.position.y > leftHeight || right.position.y > rightHeight)
+            if (waterHeight != NoWater && other.WaterHeight != waterHeight)
             {
+                // Render water edge at different height
+                float waterY = (waterHeight * TileHeightMultiplier * TileHeightStep);
+                leftTop.position.y = waterY;
+                rightTop.position.y = waterY;
+            }
+
+            float leftBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, leftOtherCorner) * TileHeightMultiplier;
+            float rightBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, rightOtherCorner) * TileHeightMultiplier;
+
+            if (leftTop.position.y > leftBottomY || rightTop.position.y > rightBottomY)
+            {
+                int u = (offsetX == 0) ? x : y; // pick u based on direction
+
                 Vector3 normal = new Vector3(offsetX, 0, offsetY);
-                left.normal = normal;
-                left.uv = new Vector2(0, left.position.y);
-                right.normal = normal;
-                right.uv = new Vector2(1, right.position.y);
+                leftTop.normal = normal;
+                leftTop.uv = new Vector2(u + offsetY, leftTop.position.y);
+                rightTop.normal = normal;
+                rightTop.uv = new Vector2(u + offsetX, rightTop.position.y);
 
-                Vertex leftBottom = new Vertex(left.position.x, leftHeight, left.position.z, normal, 0, leftHeight);
-                Vertex rightBottom = new Vertex(right.position.x, rightHeight, right.position.z, normal, 1, rightHeight);
+                Vertex leftBottom = new Vertex(leftTop.position.x, leftBottomY, leftTop.position.z, normal, u + offsetY, leftBottomY);
+                Vertex rightBottom = new Vertex(rightTop.position.x, rightBottomY, rightTop.position.z, normal, u + offsetX, rightBottomY);
 
-                builder.AddQuad(left, right, rightBottom, leftBottom, submesh);
+                builder.AddQuad(leftTop, rightTop, rightBottom, leftBottom, submesh);
             }
         }
 
 
+        /// <summary>
+        /// Gets the specified surface corner as a 3D vertex.
+        /// </summary>
         Vertex GetSurfaceCorner(int x, int y, int startHeight, SurfaceSlope surfaceSlope, SurfaceSlope surfaceCorner)
         {
             int height = GetSurfaceCornerHeight(startHeight, surfaceSlope, surfaceCorner);
@@ -88,10 +159,13 @@ namespace OpenRCT2.Unity
                 y * TileCoordsToVector3Multiplier
             );
 
-            return new Vertex(position);
+            return new Vertex(position, Vector3.zero, new Vector2(x, y));
         }
 
 
+        /// <summary>
+        /// Gets the height of the specified corner.
+        /// </summary>
         int GetSurfaceCornerHeight(int height, SurfaceSlope surfaceSlope, SurfaceSlope surfaceCorner)
         {
             short slope = (short)surfaceSlope;

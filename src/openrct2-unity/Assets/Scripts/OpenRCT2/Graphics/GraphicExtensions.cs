@@ -15,7 +15,7 @@ namespace OpenRCT2.Unity
         /// <summary>
         /// Converts a Graphic to a Unity Texture2D.
         /// </summary>
-        public static Texture2D ToTexture2D(this Graphic graphic)
+        public static Texture2D ToTexture2D(this Graphic graphic, TextureWrapMode wrapMode)
         {
             // Check cache first for this graphic.
             uint imageIndex = graphic.ImageIndex;
@@ -34,11 +34,11 @@ namespace OpenRCT2.Unity
                 colors[c] = GraphicsFactory.PaletteToColor(graphic.Data[i]);
             }
 
-            texture = new Texture2D(graphic.Width, graphic.Height)
+            texture = new Texture2D(graphic.Width, graphic.Height, TextureFormat.RGBA32, mipChain: false)
             {
                 name = imageIndex.ToString(),
                 filterMode = FilterMode.Point,
-                wrapMode = TextureWrapMode.Clamp
+                wrapMode = wrapMode
             };
             texture.SetPixels(colors);
             texture.Apply(true);

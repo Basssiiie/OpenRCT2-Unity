@@ -9,6 +9,7 @@ namespace OpenRCT2.Unity
     public partial class Map : MonoBehaviour
     {
         MeshFilter meshFilter;
+        MeshRenderer meshRenderer;
 
 
         const int MaxElementsPerTile = 128;
@@ -20,7 +21,8 @@ namespace OpenRCT2.Unity
 		void Awake()
 		{
 			meshFilter = gameObject.GetComponent<MeshFilter>();
-		}
+            meshRenderer = gameObject.GetComponent<MeshRenderer>();
+        }
 
 
 		void Start()
@@ -60,6 +62,7 @@ namespace OpenRCT2.Unity
 			Mesh mesh = GenerateSurfaceMesh();
             mesh.name = "Map";
 			meshFilter.sharedMesh = mesh;
+            meshRenderer.sharedMaterials = GenerateSurfaceMaterials();
         }
 
 
