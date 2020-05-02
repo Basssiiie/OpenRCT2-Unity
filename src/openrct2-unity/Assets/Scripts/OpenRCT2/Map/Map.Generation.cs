@@ -164,7 +164,9 @@ namespace OpenRCT2.Unity
 
             // Instantiate the element.
             GameObject obj = InstantiateElement(prefab, x, y, z);
-            Texture2D texture = GraphicsFactory.ForTileElement(ref tile).ToTexture2D();
+
+            uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
+            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D();
 
             foreach (MeshRenderer renderer in obj.GetComponentsInChildren<MeshRenderer>())
                 renderer.material.SetTexture("_BaseMap", texture);

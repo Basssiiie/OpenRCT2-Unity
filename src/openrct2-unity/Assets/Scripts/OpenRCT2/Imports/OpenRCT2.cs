@@ -5,6 +5,9 @@ namespace OpenRCT2.Unity
 {
     public partial class OpenRCT2 : MonoBehaviour
     {
+        const string PluginFile = "openrct2-dll";
+
+
         // The relative path to the selected park file.
         public string selectedPark;
 

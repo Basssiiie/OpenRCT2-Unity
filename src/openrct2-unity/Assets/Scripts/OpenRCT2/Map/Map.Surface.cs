@@ -5,6 +5,9 @@ namespace OpenRCT2.Unity
 {
     public partial class Map
     {
+        public Texture2D texture;
+
+
         /// <summary>
         /// Generates a surface tile along with the edges.
         /// </summary>
@@ -26,7 +29,7 @@ namespace OpenRCT2.Unity
             Vertex south = GetSurfaceCorner(x, y, baseHeight, slope, SurfaceSlope.SouthUp);
             Vertex west = GetSurfaceCorner(x, y + 1, baseHeight, slope, SurfaceSlope.WestUp);
 
-            int submesh = GetMaterialIndex(MaterialType.Surface /*surface.SurfaceStyle*/);
+            int submesh = GetMaterialIndex(surface.SurfaceStyle);
 
             SurfaceSlope rotatedSlope = (slope & SurfaceSlope.WestEastValley);
             if (rotatedSlope == 0 || rotatedSlope == SurfaceSlope.WestEastValley)

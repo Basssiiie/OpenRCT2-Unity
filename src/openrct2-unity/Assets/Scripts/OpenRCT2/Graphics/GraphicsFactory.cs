@@ -24,23 +24,21 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
-        /// Returns a Graphic from the specified tile element.
+        /// Returns the graphic for the given image index.
         /// </summary>
-        public static Graphic ForTileElement(ref TileElement tileElement)
+        public static Graphic ForImageIndex(uint imageIndex)
         {
-            // Retrieve texture information
-            SpriteSize size = new SpriteSize();
-            uint imageIndex = OpenRCT2.GetTileElementTextureInfo(tileElement, 0, ref size);
-
             if (graphicCache.TryGetValue(imageIndex, out Graphic graphic))
             {
                 return graphic;
             }
 
             // Retrieve texture in bytes
+            SpriteSize size = OpenRCT2.GetTextureSize(imageIndex);
+
             int total = size.Total;
             byte[] byteBuffer = new byte[total];
-            OpenRCT2.GetTexture(imageIndex, byteBuffer, total);
+            OpenRCT2.GetTexturePixels(imageIndex, byteBuffer);
 
             graphic = new Graphic(imageIndex, size.width, size.height, byteBuffer);
             graphicCache.Add(imageIndex, graphic);

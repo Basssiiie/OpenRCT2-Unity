@@ -1,54 +1,15 @@
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/object/TerrainSurfaceObject.h>
+#include <openrct2/object/ObjectManager.h>
+#include <openrct2/paint/tile_element/Paint.Surface.h>
+#include <openrct2/sprites.h>
 #include <openrct2/world/TileElement.h>
 #include <openrct2/world/SmallScenery.h>
 
 #include "Openrct2-dll.h"
 
 
-// Returns the sprite image index for a small scenery tile element.
-uint32_t GetSmallScenerySprite(const TileElement* tileElement, uint8_t direction)
-{
-    SmallSceneryElement* sceneryElement = tileElement->AsSmallScenery();
-    rct_scenery_entry* entry = sceneryElement->GetEntry();
 
-    if (entry == nullptr)
-    {
-        printf("(me) Small scenery sprite entry = null\n");
-        return 0;
-    }
-
-    uint32_t imageIndex = entry->image + direction;
-
-    // Wither flowers
-    if (scenery_small_entry_has_flag(entry, SMALL_SCENERY_FLAG_CAN_WITHER))
-    {
-        uint8_t age = sceneryElement->GetAge();
-
-        if (age >= SCENERY_WITHER_AGE_THRESHOLD_1)
-        {
-            imageIndex += 4;
-        }
-        if (age >= SCENERY_WITHER_AGE_THRESHOLD_2)
-        {
-            imageIndex += 4;
-        }
-    }
-
-    // Scenery colors
-    if (scenery_small_entry_has_flag(entry, SMALL_SCENERY_FLAG_HAS_PRIMARY_COLOUR))
-    {
-        if (scenery_small_entry_has_flag(entry, SMALL_SCENERY_FLAG_HAS_SECONDARY_COLOUR))
-        {
-            imageIndex |= SPRITE_ID_PALETTE_COLOUR_2(sceneryElement->GetPrimaryColour(), sceneryElement->GetSecondaryColour());
-        }
-        else
-        {
-            imageIndex |= SPRITE_ID_PALETTE_COLOUR_1(sceneryElement->GetPrimaryColour());
-        }
-    }
-
-    return imageIndex;
-}
 
 
 extern "C"
@@ -62,14 +23,86 @@ extern "C"
     }
 
 
-    // Returns the image index of the tile element and its texture size.
-    EXPORT uint32_t GetTileElementTextureInfo(const TileElement* tileElement, uint8_t direction, rct_size16* textureSize)
+    // Returns the sprite image index for a surface sprite.
+    EXPORT uint32_t GetSurfaceImageIndex(const TileElement* tileElement, int32_t tileX, int32_t tileY, uint8_t direction)
     {
+        SurfaceElement* surface = tileElement->AsSurface();
+        auto surfaceIndex = surface->GetSurfaceStyle();
+        auto grassLength = surface->GetGrassLength();
+
+        auto image = (uint32_t)SPR_NONE;
+
+        auto& objMgr = OpenRCT2::GetContext()->GetObjectManager();
+        auto obj = objMgr.GetLoadedObject(OBJECT_TYPE_TERRAIN_SURFACE, surfaceIndex);
+
+        if (obj != nullptr)
+        {
+            TerrainSurfaceObject* result = static_cast<TerrainSurfaceObject*>(obj);
+
+            image = result->GetImageId({ tileX, tileY }, grassLength, direction, 0, false, false);
+            if (result->Colour != 255)
+            {
+                image |= SPRITE_ID_PALETTE_COLOUR_1(result->Colour);
+            }
+        }
+        return image;
+    }
+
+    // Returns the sprite image index for a small scenery tile element.
+    EXPORT uint32_t GetSmallSceneryImageIndex(const TileElement* tileElement, uint8_t direction)
+    {
+        SmallSceneryElement* sceneryElement = tileElement->AsSmallScenery();
+        rct_scenery_entry* entry = sceneryElement->GetEntry();
+
+        if (entry == nullptr)
+        {
+            printf("(me) Small scenery sprite entry = null\n");
+            return 0;
+        }
+
+        uint32_t imageIndex = entry->image + direction;
+
+        // Wither flowers
+        if (scenery_small_entry_has_flag(entry, SMALL_SCENERY_FLAG_CAN_WITHER))
+        {
+            uint8_t age = sceneryElement->GetAge();
+
+            if (age >= SCENERY_WITHER_AGE_THRESHOLD_1)
+            {
+                imageIndex += 4;
+            }
+            if (age >= SCENERY_WITHER_AGE_THRESHOLD_2)
+            {
+                imageIndex += 4;
+            }
+        }
+
+        // Scenery colors
+        if (scenery_small_entry_has_flag(entry, SMALL_SCENERY_FLAG_HAS_PRIMARY_COLOUR))
+        {
+            if (scenery_small_entry_has_flag(entry, SMALL_SCENERY_FLAG_HAS_SECONDARY_COLOUR))
+            {
+                imageIndex |= SPRITE_ID_PALETTE_COLOUR_2(
+                    sceneryElement->GetPrimaryColour(), sceneryElement->GetSecondaryColour());
+            }
+            else
+            {
+                imageIndex |= SPRITE_ID_PALETTE_COLOUR_1(sceneryElement->GetPrimaryColour());
+            }
+        }
+        return imageIndex;
+    }
+
+
+    // Returns the image index of the tile element and its texture size.
+    EXPORT void GetTextureSize(uint32_t imageIndex, rct_size16* textureSize)
+    {
+        /*
         uint32_t imageIndex = 0;
         switch (tileElement->GetType())
         {
             case TILE_ELEMENT_TYPE_SURFACE:
-                // surface_paint(session, direction, baseZ, tile_element);
+                imageIndex = GetSurfaceSprite(tileElement, 0, 0, direction);
                 break;
             case TILE_ELEMENT_TYPE_PATH:
                 // path_paint(session, baseZ, tile_element);
@@ -98,15 +131,14 @@ extern "C"
         {
             printf("(me) GetTileElementTextureInfo: image index = 0\n");
             return 0;
-        }
+        }*/
 
         *textureSize = gfx_get_sprite_size(imageIndex);
-        return imageIndex;
     }
 
 
     // Returns the actual texture data based on the image index.
-    EXPORT void GetTexture(uint32_t imageIndex, uint8_t* pixels, int arraySize)
+    EXPORT void GetTexturePixels(uint32_t imageIndex, uint8_t* pixels, int arraySize)
     {
         const int32_t maskedImageId = imageIndex & 0x7FFFF;
         const rct_g1_element* g1 = gfx_get_g1_element(maskedImageId);
