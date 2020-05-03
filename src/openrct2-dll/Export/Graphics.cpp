@@ -17,6 +17,7 @@ extern "C"
         for (int i = 0; i < 256; i++)
         {
             entries[i] = gPalette[i];
+            entries[i].alpha = (i == 0) ? 0 : 255;
         }
     }
 

@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace OpenRCT2.Unity
 {
     /// <summary>
