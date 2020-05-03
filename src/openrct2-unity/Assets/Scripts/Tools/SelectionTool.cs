@@ -7,7 +7,7 @@ using OpenRCT2.Unity;
 public class SelectionTool : MonoBehaviour
 {
 
-    [SerializeField] CanvasManager canvasManager;
+    [SerializeField] WindowManager canvasManager;
     [SerializeField] PeepController peepController;
 
 

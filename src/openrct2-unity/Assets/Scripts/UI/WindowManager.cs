@@ -1,9 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using OpenRCT2.Unity;
 
-public class CanvasManager : MonoBehaviour
+public class WindowManager : MonoBehaviour
 {
 
     [SerializeField] GameObject peepBox;
