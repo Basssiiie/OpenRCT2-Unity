@@ -557,7 +557,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Forest Frontiers.sv6
+  selectedPark: Leafy Lake.sv6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
@@ -634,7 +634,10 @@ MonoBehaviour:
   edgeShader: {fileID: -6465566751694194690, guid: 5be9d4f19d70f504d90b782f27c81015,
     type: 3}
   edgeTextureField: Edge
-  testVertex: {fileID: 1753423851}
+  waterShader: {fileID: -6465566751694194690, guid: f2b2dbc11d613b9478c958f95f47ef17,
+    type: 3}
+  waterTextureField: Water
+  waterRefractionField: WaterRefraction
   texture: {fileID: 0}
 --- !u!4 &1491562770
 Transform:

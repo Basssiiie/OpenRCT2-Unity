@@ -9,6 +9,9 @@ namespace OpenRCT2.Unity
         [SerializeField] string surfaceTextureField;
         [SerializeField] Shader edgeShader;
         [SerializeField] string edgeTextureField;
+        [SerializeField] Shader waterShader;
+        [SerializeField] string waterTextureField;
+        [SerializeField] string waterRefractionField;
 
 
         const byte TypeSurface = 1;
@@ -58,7 +61,6 @@ namespace OpenRCT2.Unity
                 switch (image.Type)
                 {
                     case TypeSurface:
-                    case TypeWater:
                         material = new Material(surfaceShader);
                         material.SetTexture(surfaceTextureField, texture);
                         break;
@@ -66,6 +68,14 @@ namespace OpenRCT2.Unity
                     case TypeEdge:
                         material = new Material(edgeShader);
                         material.SetTexture(edgeTextureField, texture);
+                        break;
+
+                    case TypeWater:
+                        material = new Material(waterShader);
+                        material.SetTexture(waterTextureField, texture);
+
+                        var refraction = GraphicsFactory.ForImageIndex(5053).ToTexture2D(TextureWrapMode.Repeat);
+                        material.SetTexture(waterRefractionField, refraction);
                         break;
 
                     default:

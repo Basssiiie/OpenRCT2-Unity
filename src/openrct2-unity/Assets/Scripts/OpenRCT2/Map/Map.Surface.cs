@@ -5,15 +5,10 @@ namespace OpenRCT2.Unity
 {
     public partial class Map
     {
-        [SerializeField] GameObject testVertex;
-
         // This is only a single sprite, which can be cached.
         static readonly uint WaterImageIndex = OpenRCT2.GetWaterImageIndex();
 
         const byte NoWater = 0;
-
-
-        public Texture2D texture;
 
 
         MeshBuilder surfaceMeshBuilder;
@@ -35,12 +30,7 @@ namespace OpenRCT2.Unity
         {
             Mesh mesh = surfaceMeshBuilder.ToMesh();
             mesh.RecalculateNormals();
-            /*
-            foreach (var v in surfaceMeshBuilder.vertices.Keys)
-            {
-                Instantiate(testVertex, v.position, Quaternion.LookRotation((v.normal == Vector3.zero) ? Vector3.up : v.normal)).name = $"{v.position}|{v.normal}|{v.uv}|{v.GetHashCode()}";
-            }
-            */
+
             surfaceMeshBuilder = null;
             return mesh;
         }
