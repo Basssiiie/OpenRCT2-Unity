@@ -5,8 +5,9 @@ namespace OpenRCT2.Unity
 {
     public partial class Map
     {
-        // This is only a single sprite, which can be cached.
+        // For now we only use these two water sprites.
         static readonly uint WaterImageIndex = OpenRCT2.GetWaterImageIndex();
+        static readonly uint WaterRefractionImageIndex = 5053;
 
         const byte NoWater = 0;
 

@@ -241,8 +241,8 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
-  orthographic: 1
+  field of view: 70
+  orthographic: 0
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
@@ -464,7 +464,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Evergreen Gardens.sv6
+  selectedPark: Crazy Castle.sv6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
@@ -531,8 +531,8 @@ MonoBehaviour:
   generatePath: 1
   generateTrack: 1
   generateSmallScenery: 1
-  generateEntrance: 1
-  generateWall: 0
+  generateEntrance: 0
+  generateWall: 1
   generateLargeScenery: 0
   generateBanner: 0
   surfaceShader: {fileID: -6465566751694194690, guid: c5119169087bdc14bb9a8a4b72cab9e7,

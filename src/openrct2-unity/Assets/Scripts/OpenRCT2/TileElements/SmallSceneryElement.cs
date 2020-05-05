@@ -16,15 +16,15 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
-        /// The entry index of the graphic of the small scenery element.
-        /// </summary>
-        public uint EntryIndex => (element.slot0x1 + ((uint)element.slot0x2 << 8));
-
-
-        /// <summary>
         /// Gets the quadrant(s) this scenery item occupies.
         /// </summary>
         public byte Quadrant => (byte)((element.type & QuadrantMask) >> 6);
+
+
+        /// <summary>
+        /// The entry index of the graphic of the small scenery element.
+        /// </summary>
+        public uint EntryIndex => (element.slot0x1 + ((uint)element.slot0x2 << 8));
 
 
         /* 0x1 = EntryIndex
@@ -37,7 +37,7 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
-        /// Wraps the tile element to access the small scenery level information.
+        /// Wraps the tile element to access the small scenery information.
         /// </summary>
         public SmallSceneryElement(ref TileElement element)
         {

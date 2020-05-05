@@ -30,10 +30,21 @@ namespace OpenRCT2.Unity
         const byte TypeMask = 0b00111100;
 
 
+        // The mask skim off the extra bits, to retrieve the rotation.
+        const byte RotationMask = 0b00000011;
+
+
         /// <summary>
         /// Gets the type of the element.
         /// </summary>
         public TileElementType Type
             => (TileElementType)(type & TypeMask);
+
+
+        /// <summary>
+        /// Gets the rotation of the element, which will be a value between 0 and 4.
+        /// </summary>
+        public byte Rotation
+            => (byte)(type & RotationMask);
     }
 }

@@ -53,6 +53,13 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
+        /// Gets the image entry for the specified small scenery tile.
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern uint GetWallImageIndex(TileElement tileElement, byte direction);
+
+
+        /// <summary>
         /// Gets the texture size for the specified image index.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]

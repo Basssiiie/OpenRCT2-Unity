@@ -5,6 +5,9 @@ namespace OpenRCT2.Unity
     /// </summary>
     public readonly ref struct PathElement
     {
+        /// <summary>
+        /// The type of the element. In this case a path element.
+        /// </summary>
         public TileElementType Type => element.Type;
 
 
@@ -23,6 +26,9 @@ namespace OpenRCT2.Unity
         readonly TileElement element;
 
 
+        /// <summary>
+        /// Wraps the tile element to access the path element information.
+        /// </summary>
         public PathElement(ref TileElement element)
         {
             this.element = element;

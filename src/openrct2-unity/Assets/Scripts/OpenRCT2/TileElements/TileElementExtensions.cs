@@ -37,6 +37,13 @@ namespace OpenRCT2.Unity
 
 
         /// <summary>
+        /// Wraps this tile element in a wall element wrapper.
+        /// </summary>
+        public static WallElement AsWall(this ref TileElement tileElement)
+            => new WallElement(ref tileElement);
+
+
+        /// <summary>
         /// Dumps all values on this tile element to the console log.
         /// </summary>
 		public static void DumpToConsole(this ref TileElement tile)

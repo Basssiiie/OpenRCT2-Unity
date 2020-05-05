@@ -70,14 +70,14 @@ namespace OpenRCT2.Unity
                 case TileElementType.Path:
                     if (generatePath)
                     {
-                        InstantiateElement(pathPrefab, x, tile.baseHeight, y);
+                        InstantiateElement(ref tile, pathPrefab, x, tile.baseHeight, y);
                     }
                     break;
 
                 case TileElementType.Track:
                     if (generateTrack)
                     {
-                        InstantiateElement(trackPrefab, x, tile.baseHeight, y);
+                        InstantiateElement(ref tile, trackPrefab, x, tile.baseHeight, y);
                     }
                     break;
 
@@ -91,28 +91,28 @@ namespace OpenRCT2.Unity
                 case TileElementType.Entrance:
                     if (generateEntrance)
                     {
-                        InstantiateElement(entrancePrefab, x, tile.baseHeight, y);
+                        InstantiateElement(ref tile, entrancePrefab, x, tile.baseHeight, y);
                     }
                     break;
 
                 case TileElementType.Wall:
                     if (generateWall)
                     {
-                        InstantiateElement(wallPrefab, x, tile.baseHeight, y);
+                        InstantiateWall(ref tile, wallPrefab, x, tile.baseHeight, y);
                     }
                     break;
 
                 case TileElementType.LargeScenery:
                     if (generateLargeScenery)
                     {
-                        InstantiateElement(largeSceneryPrefab, x, tile.baseHeight, y);
+                        InstantiateElement(ref tile, largeSceneryPrefab, x, tile.baseHeight, y);
                     }
                     break;
 
                 case TileElementType.Banner:
                     if (generateBanner)
                     {
-                        InstantiateElement(bannerPrefab, x, tile.baseHeight, y);
+                        InstantiateElement(ref tile, bannerPrefab, x, tile.baseHeight, y);
                     }
                     break;
             }
@@ -122,10 +122,12 @@ namespace OpenRCT2.Unity
         /// <summary>
         /// Instantiates a prefab in the place of a tile element.
         /// </summary>
-        GameObject InstantiateElement(GameObject prefab, float x, float y, float z)
+        GameObject InstantiateElement(ref TileElement tile, GameObject prefab, float x, float y, float z)
         {
             Vector3 position = TileCoordsToUnity(x, y, z);
-            return Instantiate(prefab, position, Quaternion.identity, transform);
+            Quaternion rotation = Quaternion.Euler(0, 90 * tile.Rotation + 90, 0);
+
+            return Instantiate(prefab, position, rotation, transform);
         }
 
 
@@ -155,17 +157,37 @@ namespace OpenRCT2.Unity
             }
 
             // Instantiate the element.
-            GameObject obj = InstantiateElement(prefab, x, y, z);
+            GameObject obj = InstantiateElement(ref tile, prefab, x, y, z);
 
             uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
             Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D(TextureWrapMode.Clamp);
 
-            foreach (MeshRenderer renderer in obj.GetComponentsInChildren<MeshRenderer>())
-                renderer.material.SetTexture("_BaseMap", texture);
+            MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
+            renderer.material.SetTexture("_BaseMap", texture);
 
             // Set the visual scale of the model.
             float width = (texture.width * PixelPerUnitMultiplier);
             obj.transform.localScale = new Vector3(width, texture.height * PixelPerUnitMultiplier, width);
+            return obj;
+        }
+
+
+        /// <summary>
+        /// Instantiates a wall prefab in the place of a tile element.
+        /// </summary>
+        GameObject InstantiateWall(ref TileElement tile, GameObject prefab, float x, float y, float z)
+        {
+            // Instantiate the element.
+            GameObject obj = InstantiateElement(ref tile, prefab, x, y, z);
+
+            uint imageIndex = OpenRCT2.GetWallImageIndex(tile, 0);
+            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D(TextureWrapMode.Repeat);
+
+            MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
+            renderer.material.SetTexture("Wall", texture);
+
+            // Set the visual scale of the model.
+            obj.transform.localScale = new Vector3(1, (tile.clearanceHeight - tile.baseHeight), 1);
             return obj;
         }
     }

@@ -74,7 +74,8 @@ namespace OpenRCT2.Unity
                         material = new Material(waterShader);
                         material.SetTexture(waterTextureField, texture);
 
-                        var refraction = GraphicsFactory.ForImageIndex(5053).ToTexture2D(TextureWrapMode.Repeat);
+                        // HACK: injection of the refraction sprite shouldnt be here.
+                        var refraction = GraphicsFactory.ForImageIndex(WaterRefractionImageIndex).ToTexture2D(TextureWrapMode.Repeat);
                         material.SetTexture(waterRefractionField, refraction);
                         break;
 
