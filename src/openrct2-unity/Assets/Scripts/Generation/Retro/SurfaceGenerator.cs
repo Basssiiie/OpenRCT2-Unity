@@ -1,9 +1,15 @@
+using System;
+using System.Collections.Generic;
 using MeshBuilding;
+using OpenRCT;
 using UnityEngine;
 
-namespace OpenRCT2.Unity
+namespace Generation.Retro
 {
-    public partial class Map
+    /// <summary>
+    /// A generator that generates the surface of a map.
+    /// </summary>
+    public partial class SurfaceGenerator : IElementGenerator
     {
         // For now we only use these two water sprites.
         static readonly uint WaterImageIndex = OpenRCT2.GetWaterImageIndex();
@@ -11,52 +17,52 @@ namespace OpenRCT2.Unity
 
         const byte NoWater = 0;
 
-
+        Map map;
         MeshBuilder surfaceMeshBuilder;
 
 
-        /// <summary>
-        /// Initializes the required components for building the surface.
-        /// </summary>
-        void SetupSurfaceMesh()
+        /// <inheritdoc/>
+        public void StartGenerator(Map map)
         {
+            this.map = map;
             surfaceMeshBuilder = new MeshBuilder();
+            images = new List<RequestedImage>();
         }
 
 
-        /// <summary>
-        /// Finishes surface building and returns the mesh.
-        /// </summary>
-        Mesh FinalizeSurfaceMesh()
+        /// <inheritdoc/>
+        public void FinishGenerator()
         {
             Mesh mesh = surfaceMeshBuilder.ToMesh();
+            mesh.name = "Map";
             mesh.RecalculateNormals();
 
+            map.Mesh = mesh;
+            map.Materials = GenerateSurfaceMaterials();
+
             surfaceMeshBuilder = null;
-            return mesh;
+            images = null;
         }
 
 
-        /// <summary>
-        /// Generates a surface tile along with the edges.
-        /// </summary>
-        void GenerateSurface(ref TileElement tile, int x, int y)
+        /// <inheritdoc/>
+        public void CreateElement(int x, int y, ref TileElement tile)
         {
             /* Surface coords to Unity:
-             * 
-             *  ^   W N
-             *  |   S E
-             *  y 
-             *    x -->
-             */
+                 * 
+                 *  ^   W N
+                 *  |   S E
+                 *  y 
+                 *    x -->
+                 */
             SurfaceElement surface = tile.AsSurface();
             SurfaceSlope slope = surface.Slope;
             int baseHeight = tile.baseHeight;
 
             Vertex north = GetSurfaceCorner(x + 1, y + 1, baseHeight, slope, SurfaceSlope.NorthUp);
-            Vertex east =  GetSurfaceCorner(x + 1, y,     baseHeight, slope, SurfaceSlope.EastUp);
-            Vertex south = GetSurfaceCorner(x,     y,     baseHeight, slope, SurfaceSlope.SouthUp);
-            Vertex west =  GetSurfaceCorner(x,     y + 1, baseHeight, slope, SurfaceSlope.WestUp);
+            Vertex east = GetSurfaceCorner(x + 1, y, baseHeight, slope, SurfaceSlope.EastUp);
+            Vertex south = GetSurfaceCorner(x, y, baseHeight, slope, SurfaceSlope.SouthUp);
+            Vertex west = GetSurfaceCorner(x, y + 1, baseHeight, slope, SurfaceSlope.WestUp);
 
             uint surfaceImage = OpenRCT2.GetSurfaceImageIndex(tile, x, y, 0);
             int surfaceSubmesh = PushImageIndex(surfaceImage, TypeSurface);
@@ -72,22 +78,22 @@ namespace OpenRCT2.Unity
             {
                 surfaceMeshBuilder.AddQuad(north, east, south, west, surfaceSubmesh);
             }
-            
+
             // Water
             int waterHeight = surface.WaterHeight;
             if (waterHeight != NoWater)
             {
-                float waterVertexHeight = (waterHeight * TileHeightMultiplier * TileHeightStep);
+                float waterVertexHeight = (waterHeight * Map.TileHeightMultiplier * Map.TileHeightStep);
 
                 Vertex waterNorth = new Vertex(north.position.x, waterVertexHeight, north.position.z, Vector3.up, north.uv);
-                Vertex waterEast =  new Vertex(east.position.x,  waterVertexHeight, east.position.z,  Vector3.up, east.uv);
+                Vertex waterEast = new Vertex(east.position.x, waterVertexHeight, east.position.z, Vector3.up, east.uv);
                 Vertex waterSouth = new Vertex(south.position.x, waterVertexHeight, south.position.z, Vector3.up, south.uv);
-                Vertex waterWest =  new Vertex(west.position.x,  waterVertexHeight, west.position.z,  Vector3.up, west.uv);
+                Vertex waterWest = new Vertex(west.position.x, waterVertexHeight, west.position.z, Vector3.up, west.uv);
 
                 int waterSubmesh = PushImageIndex(WaterImageIndex, TypeWater);
                 surfaceMeshBuilder.AddQuad(waterNorth, waterEast, waterSouth, waterWest, waterSubmesh);
             }
-            
+
             // Edges
             uint edgeImage = OpenRCT2.GetSurfaceEdgeImageIndex(tile);
             int edgeSubmesh = PushImageIndex(edgeImage, TypeEdge);
@@ -104,20 +110,20 @@ namespace OpenRCT2.Unity
         /// </summary>
         void TryAddSurfaceEdge(MeshBuilder builder, Vertex leftTop, Vertex rightTop, int x, int y, int offsetX, int offsetY, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
         {
-            SurfaceElement other = tiles[x + offsetX, y + offsetY].Surface;
+            SurfaceElement other = map.Tiles[x + offsetX, y + offsetY].Surface;
             int baseHeight = other.BaseHeight;
             SurfaceSlope otherSlope = other.Slope;
 
             if (waterHeight != NoWater && other.WaterHeight != waterHeight)
             {
                 // Render water edge at different height
-                float waterY = (waterHeight * TileHeightMultiplier * TileHeightStep);
+                float waterY = (waterHeight * Map.TileHeightMultiplier * Map.TileHeightStep);
                 leftTop.position.y = waterY;
                 rightTop.position.y = waterY;
             }
 
-            float leftBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, leftOtherCorner) * TileHeightMultiplier;
-            float rightBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, rightOtherCorner) * TileHeightMultiplier;
+            float leftBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, leftOtherCorner) * Map.TileHeightMultiplier;
+            float rightBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, rightOtherCorner) * Map.TileHeightMultiplier;
 
             if (leftTop.position.y > leftBottomY || rightTop.position.y > rightBottomY)
             {
@@ -145,9 +151,9 @@ namespace OpenRCT2.Unity
             int height = GetSurfaceCornerHeight(startHeight, surfaceSlope, surfaceCorner);
 
             Vector3 position = new Vector3(
-                x * TileCoordsToVector3Multiplier,
-                height * TileHeightMultiplier,
-                y * TileCoordsToVector3Multiplier
+                x * Map.TileCoordsToVector3Multiplier,
+                height * Map.TileHeightMultiplier,
+                y * Map.TileCoordsToVector3Multiplier
             );
 
             return new Vertex(position, Vector3.zero, new Vector2(x, y));
@@ -164,7 +170,7 @@ namespace OpenRCT2.Unity
 
             // Lift corner vertex up
             if ((slope & corner) != 0)
-                height += TileHeightStep;
+                height += Map.TileHeightStep;
 
             if ((slope & (int)SurfaceSlope.DoubleHeight) != 0)
             {
@@ -175,9 +181,10 @@ namespace OpenRCT2.Unity
 
                 // Check if all corners except opposite are raised.
                 if (corners == (allcornersup & ~opposite))
-                    height += TileHeightStep;
+                    height += Map.TileHeightStep;
             }
             return height;
         }
+
     }
 }

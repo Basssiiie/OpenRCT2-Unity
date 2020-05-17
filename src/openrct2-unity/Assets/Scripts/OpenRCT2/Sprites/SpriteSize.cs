@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     [StructLayout(LayoutKind.Sequential, Size = 4)]
     public struct SpriteSize

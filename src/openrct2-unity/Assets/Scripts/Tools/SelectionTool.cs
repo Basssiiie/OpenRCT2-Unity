@@ -1,44 +1,41 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+using OpenRCT;
+using UI;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using OpenRCT2.Unity;
 
-public class SelectionTool : MonoBehaviour
+
+namespace Tools
 {
-
-    [SerializeField] WindowManager canvasManager;
-    [SerializeField] PeepController peepController;
-
-
-    void Start()
+    public class SelectionTool : MonoBehaviour
     {
-    }
+        [SerializeField] WindowManager canvasManager;
+        [SerializeField] PeepController peepController;
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
+
+        // Update is called once per frame
+        void Update()
         {
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
+            if (Input.GetMouseButtonDown(0))
             {
-                CheckHit(hit.collider.gameObject);
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out RaycastHit hit))
+                {
+                    CheckHit(hit.collider.gameObject);
+                }
+            }
+        }
+
+
+        void CheckHit(GameObject obj)
+        {
+            switch (obj.tag)
+            {
+                case "Peep":
+                    canvasManager.CreatePeepWindow(peepController.FindPeepIdForGameObject(obj));
+                    break;
+                default:
+                    break;
             }
         }
     }
-
-    void CheckHit(GameObject obj)
-    {
-        switch (obj.tag)
-        {
-            case "Peep":
-                canvasManager.CreatePeepWindow(peepController.FindPeepIdForGameObject(obj));
-                break;
-            default:
-                break;
-        }
-    }
-
 }

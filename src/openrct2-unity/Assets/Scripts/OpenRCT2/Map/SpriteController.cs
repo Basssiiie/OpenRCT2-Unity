@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     /// <summary>
     /// Abstract base class for shared code in moving sprites around.

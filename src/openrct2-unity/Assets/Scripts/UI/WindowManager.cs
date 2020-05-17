@@ -1,19 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
+using OpenRCT;
 using UnityEngine;
-using OpenRCT2.Unity;
 
-public class WindowManager : MonoBehaviour
+
+namespace UI
 {
-
-    [SerializeField] GameObject peepBox;
-    [SerializeField] GameObject peepCanvas;
-    [SerializeField] PeepController peepController;
-
-    public void CreatePeepWindow(ushort id)
+    public class WindowManager : MonoBehaviour
     {
-        GameObject obj = Instantiate(peepBox, peepCanvas.transform);
-        obj.name = $"PeepBox: {id}";
-        obj.GetComponent<PeepWindow>().LoadPeepController(peepController, id);
+
+        [SerializeField] GameObject peepBox;
+        [SerializeField] GameObject peepCanvas;
+        [SerializeField] PeepController peepController;
+
+        public void CreatePeepWindow(ushort id)
+        {
+            GameObject obj = Instantiate(peepBox, peepCanvas.transform);
+            obj.name = $"PeepBox: {id}";
+            obj.GetComponent<PeepWindow>().LoadPeepController(peepController, id);
+        }
     }
 }

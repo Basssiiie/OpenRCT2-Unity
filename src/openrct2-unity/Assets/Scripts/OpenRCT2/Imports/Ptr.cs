@@ -1,4 +1,4 @@
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     /// <summary>
     /// Static helper class for pointer information.

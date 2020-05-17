@@ -1,4 +1,4 @@
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     /// <summary>
     /// An element representing a trackpiece of a ride, or a stall.

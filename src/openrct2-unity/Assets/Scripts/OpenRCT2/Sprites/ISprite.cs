@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     /// <summary>
     /// Generic sprite information.

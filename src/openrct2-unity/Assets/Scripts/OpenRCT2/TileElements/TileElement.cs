@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     [StructLayout(LayoutKind.Sequential, Size = 16)]
     public struct TileElement

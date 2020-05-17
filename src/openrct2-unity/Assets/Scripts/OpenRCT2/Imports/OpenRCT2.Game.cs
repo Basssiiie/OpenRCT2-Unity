@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments -> this is deliberate
 
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     public partial class OpenRCT2
     {

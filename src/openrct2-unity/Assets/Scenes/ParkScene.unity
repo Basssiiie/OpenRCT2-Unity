@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 1
+  m_UseShadowmask: 0
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -464,7 +464,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Crazy Castle.sv6
+  selectedPark: Blackpool.sv6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
@@ -514,37 +514,74 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f4353bcde699fe4dbc7f9641bcd509e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathPrefab: {fileID: 6681454114598486694, guid: d5e4b199bf0e87b47b14b43c86d8c12f,
-    type: 3}
-  trackPrefab: {fileID: 3460111253241373034, guid: ac7c5b20c9776c2458a7c5f077e645f0,
-    type: 3}
-  smallSceneryPrefab: {fileID: 4881190563108725493, guid: e5123beefdc062f42b5e3fb98e104cef,
-    type: 3}
-  entrancePrefab: {fileID: 67614980614369834, guid: b3a4fb9191c251d44b6aadea9354fba3,
-    type: 3}
-  wallPrefab: {fileID: 6613264330481197744, guid: 3c5d91e604076ff43b5c7556fe1c89e5,
-    type: 3}
-  largeSceneryPrefab: {fileID: 8665094481412155395, guid: ab17a95a8234f8e42b1bcde029bf4720,
-    type: 3}
-  bannerPrefab: {fileID: 1690927267108533612, guid: 3ffc06cfa16e4e24a9c7526f41ba500f,
-    type: 3}
-  generatePath: 1
-  generateTrack: 1
-  generateSmallScenery: 1
-  generateEntrance: 0
-  generateWall: 1
-  generateLargeScenery: 0
-  generateBanner: 0
-  surfaceShader: {fileID: -6465566751694194690, guid: c5119169087bdc14bb9a8a4b72cab9e7,
-    type: 3}
-  surfaceTextureField: Surface
-  edgeShader: {fileID: -6465566751694194690, guid: 5be9d4f19d70f504d90b782f27c81015,
-    type: 3}
-  edgeTextureField: Edge
-  waterShader: {fileID: -6465566751694194690, guid: f2b2dbc11d613b9478c958f95f47ef17,
-    type: 3}
-  waterTextureField: Water
-  waterRefractionField: WaterRefraction
+  generationFlags: 125
+  surfaceGenerator:
+    id: 0
+  pathGenerator:
+    id: 1
+  trackGenerator:
+    id: 2
+  smallSceneryGenerator:
+    id: 3
+  entranceGenerator:
+    id: 4
+  wallGenerator:
+    id: 5
+  largeSceneryGenerator:
+    id: 6
+  bannerGenerator:
+    id: 7
+  references:
+    version: 1
+    00000000:
+      type: {class: SurfaceGenerator, ns: Generation.Retro, asm: Assembly-CSharp}
+      data:
+        surfaceShader: {fileID: -6465566751694194690, guid: c5119169087bdc14bb9a8a4b72cab9e7,
+          type: 3}
+        surfaceTextureField: Surface
+        edgeShader: {fileID: -6465566751694194690, guid: 5be9d4f19d70f504d90b782f27c81015,
+          type: 3}
+        edgeTextureField: Edge
+        waterShader: {fileID: -6465566751694194690, guid: f2b2dbc11d613b9478c958f95f47ef17,
+          type: 3}
+        waterTextureField: Water
+        waterRefractionField: WaterRefraction
+    00000001:
+      type: {class: PrefabGenerator, ns: Generation, asm: Assembly-CSharp}
+      data:
+        prefab: {fileID: 6681454114598486694, guid: d5e4b199bf0e87b47b14b43c86d8c12f,
+          type: 3}
+    00000002:
+      type: {class: PrefabGenerator, ns: Generation, asm: Assembly-CSharp}
+      data:
+        prefab: {fileID: 3460111253241373034, guid: ac7c5b20c9776c2458a7c5f077e645f0,
+          type: 3}
+    00000003:
+      type: {class: SmallSceneryGenerator, ns: Generation.Retro, asm: Assembly-CSharp}
+      data:
+        crossShape: {fileID: 4881190563108725493, guid: e5123beefdc062f42b5e3fb98e104cef,
+          type: 3}
+    00000004:
+      type: {class: PrefabGenerator, ns: Generation, asm: Assembly-CSharp}
+      data:
+        prefab: {fileID: 67614980614369834, guid: b3a4fb9191c251d44b6aadea9354fba3,
+          type: 3}
+    00000005:
+      type: {class: WallGenerator, ns: Generation.Retro, asm: Assembly-CSharp}
+      data:
+        prefab: {fileID: 6613264330481197744, guid: 3c5d91e604076ff43b5c7556fe1c89e5,
+          type: 3}
+        textureField: Wall
+    00000006:
+      type: {class: PrefabGenerator, ns: Generation, asm: Assembly-CSharp}
+      data:
+        prefab: {fileID: 8665094481412155395, guid: ab17a95a8234f8e42b1bcde029bf4720,
+          type: 3}
+    00000007:
+      type: {class: PrefabGenerator, ns: Generation, asm: Assembly-CSharp}
+      data:
+        prefab: {fileID: 1690927267108533612, guid: 3ffc06cfa16e4e24a9c7526f41ba500f,
+          type: 3}
 --- !u!4 &1491562770
 Transform:
   m_ObjectHideFlags: 0

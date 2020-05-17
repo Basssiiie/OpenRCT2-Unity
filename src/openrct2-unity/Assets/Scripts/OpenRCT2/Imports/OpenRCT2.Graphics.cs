@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     public partial class OpenRCT2
     {

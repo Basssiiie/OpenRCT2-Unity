@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     /// <summary>
     /// A small struct that contains RCT graphic information.

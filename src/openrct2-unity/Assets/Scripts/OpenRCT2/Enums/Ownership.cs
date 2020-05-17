@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     /// <summary>
     /// Flags of ownership of a specific tile.

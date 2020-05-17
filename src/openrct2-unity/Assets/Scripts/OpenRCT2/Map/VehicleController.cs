@@ -1,4 +1,4 @@
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     /// <summary>
     /// Controller which moves and updates all ride vehicles in the park.

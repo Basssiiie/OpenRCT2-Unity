@@ -1,17 +1,18 @@
 using System.Collections.Generic;
+using OpenRCT;
 using UnityEngine;
 
-namespace OpenRCT2.Unity
+namespace Generation.Retro
 {
-    public partial class Map
+    public partial class SurfaceGenerator 
     {
         [SerializeField] Shader surfaceShader;
-        [SerializeField] string surfaceTextureField;
+        [SerializeField] string surfaceTextureField = "Surface";
         [SerializeField] Shader edgeShader;
-        [SerializeField] string edgeTextureField;
+        [SerializeField] string edgeTextureField = "Edge";
         [SerializeField] Shader waterShader;
-        [SerializeField] string waterTextureField;
-        [SerializeField] string waterRefractionField;
+        [SerializeField] string waterTextureField = "Water";
+        [SerializeField] string waterRefractionField = "WaterRefraction";
 
 
         const byte TypeSurface = 1;
@@ -19,7 +20,7 @@ namespace OpenRCT2.Unity
         const byte TypeWater = 3;
 
 
-        readonly List<RequestedImage> images = new List<RequestedImage>();
+        List<RequestedImage> images;
 
 
         /// <summary>

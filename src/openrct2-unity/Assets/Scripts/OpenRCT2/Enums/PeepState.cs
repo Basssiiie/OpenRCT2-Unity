@@ -1,4 +1,4 @@
-namespace OpenRCT2.Unity
+namespace OpenRCT
 {
     public enum PeepState : byte
     {
