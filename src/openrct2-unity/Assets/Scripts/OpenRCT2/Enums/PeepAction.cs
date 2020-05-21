@@ -1,4 +1,4 @@
-namespace OpenRCT
+namespace Lib
 {
     public enum PeepAction : byte
     {

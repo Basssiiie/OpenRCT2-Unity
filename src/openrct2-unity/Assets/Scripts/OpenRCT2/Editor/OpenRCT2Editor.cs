@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// An editor that helps configuring OpenRCT2 settings in Unity, for example

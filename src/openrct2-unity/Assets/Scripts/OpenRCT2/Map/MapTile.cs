@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// A tile struct containing multiple elements.

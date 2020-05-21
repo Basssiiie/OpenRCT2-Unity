@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -464,7 +464,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Blackpool.sv6
+  selectedPark: Dynamite Dunes.sv6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
@@ -514,7 +514,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f4353bcde699fe4dbc7f9641bcd509e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generationFlags: 125
+  generationFlags: -1
   surfaceGenerator:
     id: 0
   pathGenerator:
@@ -552,7 +552,7 @@ MonoBehaviour:
         prefab: {fileID: 6681454114598486694, guid: d5e4b199bf0e87b47b14b43c86d8c12f,
           type: 3}
     00000002:
-      type: {class: PrefabGenerator, ns: Generation, asm: Assembly-CSharp}
+      type: {class: TrackGenerator, ns: Generation.Retro, asm: Assembly-CSharp}
       data:
         prefab: {fileID: 3460111253241373034, guid: ac7c5b20c9776c2458a7c5f077e645f0,
           type: 3}

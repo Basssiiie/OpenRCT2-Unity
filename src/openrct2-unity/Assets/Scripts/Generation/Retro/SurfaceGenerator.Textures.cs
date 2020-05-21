@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using OpenRCT;
+using Lib;
 using UnityEngine;
 
 namespace Generation.Retro

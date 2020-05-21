@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Extensions for the Graphic struct.

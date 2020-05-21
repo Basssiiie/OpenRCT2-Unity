@@ -1,4 +1,4 @@
-using OpenRCT;
+using Lib;
 
 namespace Generation
 {
@@ -8,7 +8,7 @@ namespace Generation
     public interface IElementGenerator
     {
         /// <summary>
-        /// Creates a tile element at the specified position.
+        /// Creates a tile element at the specified tile position.
         /// </summary>
         void CreateElement(int x, int y, ref TileElement tile);
 

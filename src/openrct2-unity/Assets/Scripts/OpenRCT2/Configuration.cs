@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Static class to access OpenRCT2-Unity configuration.

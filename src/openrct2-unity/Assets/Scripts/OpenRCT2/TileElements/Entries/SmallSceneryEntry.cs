@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// A small scenery entry struct.

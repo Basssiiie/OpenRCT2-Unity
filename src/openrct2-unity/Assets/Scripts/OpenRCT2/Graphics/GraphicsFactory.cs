@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Factory for graphics related things in OpenRCT2.

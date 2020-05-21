@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     public partial class OpenRCT2 : MonoBehaviour
     {

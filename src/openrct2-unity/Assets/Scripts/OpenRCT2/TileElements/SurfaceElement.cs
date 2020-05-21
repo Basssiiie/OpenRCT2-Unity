@@ -1,4 +1,4 @@
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// An element representing the surface of the map.

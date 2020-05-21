@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Flags that can be set on a small scenery.

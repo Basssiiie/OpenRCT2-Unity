@@ -1,4 +1,4 @@
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// An element representing a small scenery piece.

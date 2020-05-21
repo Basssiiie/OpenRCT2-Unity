@@ -44,7 +44,6 @@ namespace MeshBuilding
 
 			for (int p = 0; p < 4; p++)
 			{
-				//innerVerts[p] = new Vertex(matrix[p] * a.position + matrix[(p+1)%4] * b.position + matrix[(p+2)%4] * c.position + matrix[(p+3)%4] * d.position);
 				innerVerts[p] = new Vertex(
 					CalculateMatrix(matrix, p, a.position, b.position, c.position, d.position),
 					Vector3.up,

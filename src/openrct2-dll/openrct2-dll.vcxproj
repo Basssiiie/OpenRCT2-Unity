@@ -67,6 +67,7 @@ xcopy /i /y /f "$(SolutionDir)bin\dll-export\*" "$(SolutionDir)src\openrct2-unit
     <ClCompile Include="Export\Game.cpp" />
     <ClCompile Include="Export\Map.cpp" />
     <ClCompile Include="Export\Sprites.cpp" />
+    <ClCompile Include="Export\Tracks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Export\Openrct2-dll.h" />

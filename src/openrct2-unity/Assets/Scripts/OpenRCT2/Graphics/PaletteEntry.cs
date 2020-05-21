@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     [StructLayout(LayoutKind.Sequential, Size = 4)]
     public struct PaletteEntry

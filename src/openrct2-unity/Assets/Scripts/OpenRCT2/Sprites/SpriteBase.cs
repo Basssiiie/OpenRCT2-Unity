@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace OpenRCT
+namespace Lib
 {
     [StructLayout(LayoutKind.Sequential, Size = 31)]
     public struct SpriteBase

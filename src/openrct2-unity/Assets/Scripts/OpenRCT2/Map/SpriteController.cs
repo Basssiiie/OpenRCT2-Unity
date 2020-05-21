@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Abstract base class for shared code in moving sprites around.
@@ -74,7 +74,7 @@ namespace OpenRCT
         /// </summary>
         protected virtual SpriteObject AddSprite(int index, ref TSprite sprite)
         {
-            Vector3 position = Map.CoordsToVector3(sprite.Position);
+            Vector3 position = sprite.Position;
             GameObject peepObj = Instantiate(spritePrefab, position, Quaternion.identity, transform);
 
             SpriteObject instance = new SpriteObject
@@ -108,7 +108,7 @@ namespace OpenRCT
 
             obj.lastUpdate = currentUpdateTick;
 
-            Vector3 target = Map.CoordsToVector3(sprite.Position);
+            Vector3 target = sprite.Position;
 
             if (obj.towards != target)
             {

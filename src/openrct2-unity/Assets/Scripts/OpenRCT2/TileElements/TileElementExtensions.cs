@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Extensions for a tile element struct.

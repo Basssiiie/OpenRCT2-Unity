@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenRCT
+namespace Lib
 {
     [Flags]
     public enum SurfaceSlope : byte

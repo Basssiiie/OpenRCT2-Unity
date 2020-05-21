@@ -1,4 +1,4 @@
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Controller which moves and updates all ride vehicles in the park.

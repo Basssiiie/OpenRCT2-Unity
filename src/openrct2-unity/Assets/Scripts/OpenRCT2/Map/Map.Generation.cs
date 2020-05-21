@@ -2,8 +2,9 @@ using System;
 using Generation;
 using Generation.Retro;
 using UnityEngine;
+using Utilities;
 
-namespace OpenRCT
+namespace Lib
 {
     public partial class Map
     {
@@ -26,15 +27,14 @@ namespace OpenRCT
 
         [SerializeField] TileElementFlags generationFlags = TileElementFlags.All;
 
-        [Header("Generators")]
-        [SerializeReference] IElementGenerator surfaceGenerator = new SurfaceGenerator();
-        [SerializeReference] IElementGenerator pathGenerator = new PrefabGenerator();
-        [SerializeReference] IElementGenerator trackGenerator = new PrefabGenerator();
-        [SerializeReference] IElementGenerator smallSceneryGenerator = new SmallSceneryGenerator();
-        [SerializeReference] IElementGenerator entranceGenerator = new PrefabGenerator();
-        [SerializeReference] IElementGenerator wallGenerator = new WallGenerator();
-        [SerializeReference] IElementGenerator largeSceneryGenerator = new PrefabGenerator();
-        [SerializeReference] IElementGenerator bannerGenerator = new PrefabGenerator();
+        [SerializeReference, ScriptSelector] IElementGenerator surfaceGenerator = new SurfaceGenerator();
+        [SerializeReference, ScriptSelector] IElementGenerator pathGenerator = new PrefabGenerator();
+        [SerializeReference, ScriptSelector] IElementGenerator trackGenerator = new TrackGenerator();
+        [SerializeReference, ScriptSelector] IElementGenerator smallSceneryGenerator = new SmallSceneryGenerator();
+        [SerializeReference, ScriptSelector] IElementGenerator entranceGenerator = new PrefabGenerator();
+        [SerializeReference, ScriptSelector] IElementGenerator wallGenerator = new WallGenerator();
+        [SerializeReference, ScriptSelector] IElementGenerator largeSceneryGenerator = new PrefabGenerator();
+        [SerializeReference, ScriptSelector] IElementGenerator bannerGenerator = new PrefabGenerator();
 
 
         /// <summary>

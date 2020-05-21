@@ -1,4 +1,4 @@
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Static helper class for pointer information.

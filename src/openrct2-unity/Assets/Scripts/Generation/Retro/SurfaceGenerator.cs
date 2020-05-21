@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MeshBuilding;
-using OpenRCT;
+using Lib;
 using UnityEngine;
 
 namespace Generation.Retro

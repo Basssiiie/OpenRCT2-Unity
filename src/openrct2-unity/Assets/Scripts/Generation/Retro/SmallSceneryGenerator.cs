@@ -1,4 +1,4 @@
-using OpenRCT;
+using Lib;
 using UnityEngine;
 
 namespace Generation.Retro
@@ -8,7 +8,6 @@ namespace Generation.Retro
     /// </summary>
     public class SmallSceneryGenerator : IElementGenerator
     {
-        [Header("Meshes")]
         [SerializeField] GameObject crossShape;
 
         Map map;

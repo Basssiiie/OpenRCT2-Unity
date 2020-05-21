@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// The struct of a peep, which can be either a guest or a staff member.
@@ -95,9 +95,9 @@ namespace OpenRCT
 
 
         /// <summary>
-        /// Returns the peep's position in RCT2 coordinates.
+        /// Returns the peep's position in Unity coordinates.
         /// </summary>
         public Vector3 Position
-            => new Vector3(sprite.x, sprite.z, sprite.y);
+            => Map.CoordsToVector3(sprite.x, sprite.z, sprite.y);
     }
 }

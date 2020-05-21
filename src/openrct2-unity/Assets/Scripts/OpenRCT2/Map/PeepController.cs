@@ -1,7 +1,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// Controller which moves and updates all the peeps in the park.

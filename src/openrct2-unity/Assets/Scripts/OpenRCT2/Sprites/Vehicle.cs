@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace OpenRCT
+namespace Lib
 {
     /// <summary>
     /// The struct of a ride vehicle.
@@ -13,7 +13,7 @@ namespace OpenRCT
         public int x;
         public int y;
         public int z;
-        public byte direction; // 0-31 to indicate direction, 0 = negative x axis
+        public byte direction; // 0-31 to indicate direction, 0 = negative x axis direction
         public byte bankRotation;
         public byte pitchRotation; // this is a index describing what sprite should be used; maybe useless for pitch?
 
@@ -26,10 +26,10 @@ namespace OpenRCT
 
 
         /// <summary>
-        /// Returns the vehicle's position in RCT2 coordinates.
+        /// Returns the vehicle's position in Unity coordinates.
         /// </summary>
         public Vector3 Position
-            => new Vector3(x, z, y);
+            => Map.CoordsToVector3(x, z, y);
 
 
         /// <summary>
