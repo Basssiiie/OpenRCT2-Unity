@@ -1,3 +1,51 @@
+# OpenRCT2 implementation in Unity3D
+
+This fork of the original OpenRCT2 repository is an open-source attempt at running OpenRCT2 in a 3D game engine.
+
+## How to get it running
+
+As of now there are no release builds yet, because the project is still very much in alpha stage.
+
+### Prerequisites
+
+To get it running inside of Unity, you need the following prerequisites:
+
+- Everything mentioned in OpenRCT2's original [building prerequisites](#31-building-prerequisites).
+- [Unity Editor version 2019.3.8f1](https://unity3d.com/get-unity/download/archive).
+
+**Note:** only the Windows setup has been tested.
+
+### Running the game
+
+1. Follow the steps in [compiling and running](#32-compiling-and-running) chapter for OpenRCT2. It is not necessary to run OpenRCT2, but make sure to read the paragraph after step 4!
+
+2. Open openrct2.sln in Visual Studio 2019.
+
+3. Find the `openrct2-dll` project in the Solution Explorer and build it. (If it doesn't build, you messed something up in the previous steps.)
+
+4. Start the Unity Editor and navigate to wherever you cloned the repository.
+
+5. Open the project in this directory: [`/src/openrct2-unity/`](https://github.com/Basssiiie/OpenRCT2-Unity/tree/develop/src/openrct2-unity)
+
+6. Once Unity has launched with the project, go to the 'Scenes' folder in the Project window and open ParkScene.
+
+7. Select the OpenRCT2 object in the Hierarchy and copy/paste the paths of your RCT games into the correct fields in the Inspector.
+
+8. Select a park from the dropdown box and press the Play button at the top of the editor.
+
+## How?
+
+OpenRCT2 is an open source C++ project, which allows easy forking and extending the project. Internally this project is seperated into a few different subprojects, all found in the [`/src/`](https://github.com/Basssiiie/OpenRCT2-Unity/tree/develop/src) folder. The interesting one of the bunch is the static library project called `libopenrct2`, because it contains all the code to run logic of the game.
+
+This fork adds two more projects to the mix: `openrct2-dll` and `openrct2-unity`:
+
+- `openrct2-dll` imports `libopenrct2` and adds  bindings for useful functions within OpenRCT2. These functions together with the static library are then exported as a Dynamicly Linked Library (DLL) for use.
+- `openrct2-unity` is the Unity project. The DLL is imported into this project and its C++ functions are then [marshalled through Platform Invoke](https://docs.microsoft.com/en-us/dotnet/framework/interop/marshaling-data-with-platform-invoke), which is a technology which allows me to call unmanaged C++ libraries from managed C# .NET Framework code. 
+
+From there on, the C# code can call the right functions to start the game, load any park and retrieve information about said park, like where it's scenery, rides and peeps are. All this information is then displayed in Unity in real-time, while `libopenrct2` keeps doing all the logic of the game in the background.
+
+---
+
 # OpenRCT2
 An open-source re-implementation of RollerCoaster Tycoon 2. A construction and management simulation video game that simulates amusement park management.
 
