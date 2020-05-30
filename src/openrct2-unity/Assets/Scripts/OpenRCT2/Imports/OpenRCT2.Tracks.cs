@@ -1,21 +1,26 @@
 using System.Runtime.InteropServices;
 
+#pragma warning disable CA1401 // P/Invokes should not be visible -> intended
 
 namespace Lib
 {
     public partial class OpenRCT2
     {
+        // Maximum number of colour schemes to retrieve.
+        const int MaxColourSchemes = 4;
+
+
         /// <summary>
         /// Returns the amount of path nodes in the pathing route for the specified track type.
         /// </summary>
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
         static extern int GetTrackElementRouteSize(int trackVariant, int typeAndDirection);
 
 
         /// <summary>
         /// Writes all the path nodes up to size into the array.
         /// </summary>
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
         static extern void GetTrackElementRoute(int trackVariant, int typeAndDirection, [Out] TrackNode[] nodes, int size);
 
 
@@ -54,5 +59,31 @@ namespace Lib
         /// </param>
         public static TrackNode[] GetTrackElementRoute(int trackType)
             => GetTrackElementRoute(trackType, 0);
+
+
+        /// <summary>
+        /// Gets the track height offset for this specific ride index.
+        /// (Might get replaced by a more ride related method in the future.)
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        public static extern sbyte GetTrackHeightOffset(short rideIndex);
+
+
+        /// <summary>
+        /// Gets the ride colours for the specified ride index.
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        static extern void GetRideTrackColours(short rideIndex, [Out] TrackColour[] colours);
+
+
+        /// <summary>
+        /// Gets the ride colours for the specified ride index.
+        /// </summary>
+        public static TrackColour[] GetRideTrackColours(short rideIndex)
+        {
+            TrackColour[] colours = new TrackColour[MaxColourSchemes];
+            GetRideTrackColours(rideIndex, colours);
+            return colours;
+        }
     }
 }

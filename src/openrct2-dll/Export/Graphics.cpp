@@ -1,4 +1,5 @@
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/interface/Colour.h>
 #include <openrct2/object/TerrainSurfaceObject.h>
 #include <openrct2/object/TerrainEdgeObject.h>
 #include <openrct2/object/ObjectManager.h>
@@ -12,6 +13,7 @@
 
 extern "C"
 {
+    // Gets the full colour palette currently in use.
     EXPORT void GetPalette(rct_palette_entry* entries)
     {
         for (int i = 0; i < 256; i++)
@@ -19,6 +21,13 @@ extern "C"
             entries[i] = gPalette[i];
             entries[i].alpha = (i == 0) ? 0 : 255;
         }
+    }
+
+
+    // Converts any of the colour ids (0-31) to the corresponding palette index (0-255).
+    EXPORT uint8_t GetPaletteIndexForColourId(uint8_t colourId)
+    {
+        return ColourMapA[colourId].mid_light;
     }
 
 

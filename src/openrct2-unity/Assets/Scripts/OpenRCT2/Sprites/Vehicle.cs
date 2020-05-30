@@ -1,4 +1,7 @@
 using System.Runtime.InteropServices;
+using Generation.Retro;
+using Sprites;
+using Tracks;
 using UnityEngine;
 
 namespace Lib
@@ -6,7 +9,7 @@ namespace Lib
     /// <summary>
     /// The struct of a ride vehicle.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 17)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct Vehicle : ISprite
     {
         public ushort idx;
@@ -15,7 +18,11 @@ namespace Lib
         public int z;
         public byte direction; // 0-31 to indicate direction, 0 = negative x axis direction
         public byte bankRotation;
-        public byte pitchRotation; // this is a index describing what sprite should be used; maybe useless for pitch?
+        public byte vehicleSprite; // this is a index describing what sprite should be used; maybe useless for pitch?
+
+        public byte trackType; // current track type its on.
+        public byte trackDirection; // the direction this track type is in.
+        public ushort trackProgress; // current track node index.
 
 
         /// <summary>
@@ -36,26 +43,8 @@ namespace Lib
         /// Gets the vehicles rotation as a quaternion.
         /// </summary>
         public Quaternion Rotation
-            => Quaternion.Euler(
-                0,
-                ((360f / 32f) * direction) + 270f,
-                GetBankingRotationAngle()
-            );
-
-
-        /// <summary>
-        /// Gets the banking rotation angle.
-        /// </summary>
-        float GetBankingRotationAngle()
-        {
-            switch (bankRotation)
-            {
-                case 1: return 22.5f;
-                case 2: return 45f;
-                case 3: return -22.5f;
-                case 4: return -45f;
-                default: return 0;
-            }
-        }
+            => TrackFactory
+                .GetTrackPiece(trackType)
+                .GetVehicleRotation(trackDirection, trackProgress);
     }
 }

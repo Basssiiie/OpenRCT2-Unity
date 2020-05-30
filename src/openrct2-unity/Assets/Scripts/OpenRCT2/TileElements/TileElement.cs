@@ -28,11 +28,11 @@ namespace Lib
 
 
         // The mask skim off the extra bits, to retrieve the actual type.
-        const byte TypeMask = 0b00111100;
+        const byte TypeMask = 0b_0011_1100;
 
 
         // The mask skim off the extra bits, to retrieve the rotation.
-        const byte RotationMask = 0b00000011;
+        const byte RotationMask = 0b_0000_0011;
 
 
         /// <summary>

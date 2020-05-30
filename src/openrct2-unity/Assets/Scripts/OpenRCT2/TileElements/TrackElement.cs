@@ -5,8 +5,11 @@ namespace Lib
     /// </summary>
     public readonly ref struct TrackElement
     {
-        // Mask to get the bits for the scenery quadrant/wall side.
-        const byte ChainliftMask = 0b10000000;
+        // Mask to get the bits for whether the track has a chainlift.
+        const byte ChainliftMask = 0b_1000_0000;
+
+        // Mask to get the bits for the colour scheme.
+        const byte ColourSchemeMask = 0b_0000_0011;
 
 
         /// <summary>
@@ -38,7 +41,7 @@ namespace Lib
         /// <summary>
         /// Returns the index of which colour scheme this track element uses. 
         /// </summary>
-        public byte ColourScheme => element.slot0x4;
+        public byte ColourScheme => (byte)(element.slot0x4 & ColourSchemeMask);
 
 
         /// <summary>

@@ -44,7 +44,7 @@ namespace Lib
         static extern void LoadPark([MarshalAs(UnmanagedType.LPStr)] string path);
 
 
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr GetParkNamePtr();
 
 

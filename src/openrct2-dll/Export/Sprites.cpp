@@ -43,6 +43,9 @@ extern "C"
         uint8_t direction;
         uint8_t bankRotation;
         uint8_t pitchRotation;
+        uint8_t trackType;
+        uint8_t trackDirection;
+        uint16_t trackProgress;
     };
 
     
@@ -66,12 +69,18 @@ extern "C"
 
                 RideVehicle* target = &vehicles[vehicleCount];
                 target->idx = vehicle->sprite_index;
+
                 target->x = vehicle->x;
                 target->y = vehicle->y;
                 target->z = vehicle->z;
+
                 target->direction = vehicle->sprite_direction;
                 target->bankRotation = vehicle->bank_rotation;
                 target->pitchRotation = vehicle->vehicle_sprite_type;
+
+                target->trackType = (vehicle->track_type >> 2);
+                target->trackDirection = (vehicle->track_direction & 0b11);
+                target->trackProgress = vehicle->track_progress;
 
                 vehicleCount++;
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Lib
+namespace Sprites
 {
     /// <summary>
     /// Abstract base class for shared code in moving sprites around.

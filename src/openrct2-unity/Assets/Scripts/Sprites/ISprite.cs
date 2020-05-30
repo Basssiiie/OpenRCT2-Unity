@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Lib
+namespace Sprites
 {
     /// <summary>
     /// Generic sprite information.

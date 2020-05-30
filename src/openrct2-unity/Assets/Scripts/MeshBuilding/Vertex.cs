@@ -99,6 +99,16 @@ namespace MeshBuilding
         #endregion
 
 
+        /// <summary>
+        /// Applies a matrix transformation on the position and normal.
+        /// </summary>
+        public void ApplyMatrix(Matrix4x4 matrix)
+        {
+            position = matrix.MultiplyPoint3x4(position);
+            normal = matrix.MultiplyVector(normal);
+        }
+
+
         #region IEquatable implementation
 
         /// <summary>
@@ -106,9 +116,9 @@ namespace MeshBuilding
         /// and uv values.
         /// </summary>
         public static bool Equals(Vertex left, Vertex right)
-            => (left.position == right.position
-            && left.normal == right.normal
-            && left.uv == right.uv);
+            => (left.position == right.position)
+            && (left.normal == right.normal)
+            && (left.uv == right.uv);
 
 
 

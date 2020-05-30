@@ -6,7 +6,7 @@ namespace Lib
     public readonly ref struct WallElement
     {
         // Mask to get the bits for the scenery quadrant/wall side.
-        const byte SlopeMask = 0b11000000;
+        const byte SlopeMask = 0b_1100_0000;
 
 
         /// <summary>

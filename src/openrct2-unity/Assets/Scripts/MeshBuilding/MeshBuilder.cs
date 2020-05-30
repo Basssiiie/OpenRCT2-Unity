@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,9 +28,6 @@ namespace MeshBuilding
 
         // List of triangles per submesh.
         readonly List<List<int>> triangles;
-
-
-        Mesh mesh = null;
 
 
         #region Constructors
@@ -112,6 +110,10 @@ namespace MeshBuilding
 		/// </summary>
 		public void AddTriangle(Vertex a, Vertex b, Vertex c, int submesh = 0)
 		{
+            // Useless triangle, if 2 vertices are in the same location.
+            if (a.position == b.position || b.position == c.position || a.position == c.position)
+                return;
+
 			while (submesh >= triangles.Count)
 				triangles.Add(new List<int>(16));
 
@@ -142,9 +144,6 @@ namespace MeshBuilding
 		{
 			vertices.Clear();
 			triangles.Clear();
-
-            if (mesh != null)
-			    mesh.Clear();
 		}
 
 
@@ -153,10 +152,7 @@ namespace MeshBuilding
 		/// </summary>
 		public Mesh ToMesh()
 		{
-			if (mesh == null)
-				mesh = new Mesh();
-			else
-				mesh.Clear();
+            Mesh mesh = new Mesh();
 
 			int count = vertices.Count;
 			if (count == 0)

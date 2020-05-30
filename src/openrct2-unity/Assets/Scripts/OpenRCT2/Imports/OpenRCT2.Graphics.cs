@@ -1,11 +1,14 @@
 using System.Runtime.InteropServices;
+using UnityEngine;
+
+#pragma warning disable CA1401 // P/Invokes should not be visible -> intended
 
 namespace Lib
 {
     public partial class OpenRCT2
     {
         // Amount of colors in a RCT palette.
-        const int PalleteSize = 256;
+        const int PaletteSize = 256;
 
 
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
@@ -15,48 +18,54 @@ namespace Lib
         /// <summary>
         /// Returns all the palette color entries.
         /// </summary>
-        internal static PaletteEntry[] GetPalette()
+        public static PaletteEntry[] GetPalette()
         {
-            PaletteEntry[] entries = new PaletteEntry[PalleteSize];
+            PaletteEntry[] entries = new PaletteEntry[PaletteSize];
             GetPalette(entries);
-
             return entries;
         }
+
+
+        /// <summary>
+        /// Converts any of the colour ids (0-31) to the corresponding palette index (0-255).
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        public static extern byte GetPaletteIndexForColourId(byte colourId);
 
 
         /// <summary>
         /// Gets the surface image entry for the specified surface tile.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern uint GetSurfaceImageIndex(TileElement tileElement, int tileX, int tileY, byte direction);
+        public static extern uint GetSurfaceImageIndex(TileElement tileElement, int tileX, int tileY, byte direction);
 
 
         /// <summary>
         /// Gets the surface edge image entry for the specified surface tile.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern uint GetSurfaceEdgeImageIndex(TileElement tileElement);
+        public static extern uint GetSurfaceEdgeImageIndex(TileElement tileElement);
 
 
         /// <summary>
         /// Gets the image entry for a water tile.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern uint GetWaterImageIndex();
+        public static extern uint GetWaterImageIndex();
 
 
         /// <summary>
         /// Gets the image entry for the specified small scenery tile.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern uint GetSmallSceneryImageIndex(TileElement tileElement, byte direction);
+        public static extern uint GetSmallSceneryImageIndex(TileElement tileElement, byte direction);
 
 
         /// <summary>
         /// Gets the image entry for the specified small scenery tile.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern uint GetWallImageIndex(TileElement tileElement, byte direction);
+        public static extern uint GetWallImageIndex(TileElement tileElement, byte direction);
 
 
         /// <summary>

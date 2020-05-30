@@ -7,20 +7,14 @@ public static class Maths
 	/// Y-axis is ignored.
     /// </summary>
     public static float GetAngleTo2D(Vector3 from, Vector3 to)
-	{
-		return ((Mathf.Atan2(to.x - from.x, to.z - from.z) * 180 / Mathf.PI) + 360) % 360;
-	}
+        => ((Mathf.Atan2(to.x - from.x, to.z - from.z) * 180 / Mathf.PI) + 360) % 360;
 
 
     /// <summary>
     /// Returns the difference between two world angles.
     /// </summary>
 	public static float GetAngleDifference(float angleA, float angleB)
-	{
-        // Only clock-wise? otherwise Mathf.DeltaAngle
-        //float dif = (((((angleA - angleB) % 360) + 540) % 360) - 180); //((angleA - angleB) % 360);
-        return ((angleB - angleA) + 360) % 360;
-    }
+        => ((angleB - angleA) + 360) % 360;
 
 
     /// <summary>
@@ -30,7 +24,6 @@ public static class Maths
 	public static Vector3 GetPosAtAngle(Vector3 position, float angle, float distance)
 	{
 		Vector3 newpos = position;
-		//float angle_radians = -((angle - 90) * (Mathf.PI / 180));
 		newpos.x += (distance * Mathf.Sin(angle * Mathf.Deg2Rad));
 		newpos.z += (distance * Mathf.Cos(angle * Mathf.Deg2Rad));
 		return newpos;
@@ -42,13 +35,11 @@ public static class Maths
 	/// 0,0,0 , with help of a world angle.
     /// </summary>
 	public static Vector3 GetNormalAtAngle(float angle, float distance)
-    {
-        return new Vector3(
+        => new Vector3(
             (distance * Mathf.Sin(angle * Mathf.Deg2Rad)),
             0f,
             (distance * Mathf.Cos(angle * Mathf.Deg2Rad))
         );
-    }
 
 
     /// <summary>
@@ -108,18 +99,14 @@ public static class Maths
     /// Gets the center position in between the two specified positions.
     /// </summary>
     public static Vector3 GetCenter(Vector3 left, Vector3 right)
-    {
-        return (left + right) / 2;
-    }
+        => (left + right) / 2;
 
 
     /// <summary>
     /// Gets the center position in between the two specified positions.
     /// </summary>
     public static Vector2 GetCenter(Vector2 left, Vector2 right)
-    {
-        return (left + right) / 2;
-    }
+        => (left + right) / 2;
 
 
     /// <summary>
@@ -167,7 +154,18 @@ public static class Maths
 	{
 		int remainder = value % divider;
 		return remainder < 0 ? remainder + divider : remainder;
-	}
+    }
+
+
+    /// <summary>
+    /// Calculates the remainder using the Modulo operation, which makes sure 
+    /// negative numbers follow the positive % sign, instead of reversing. 
+    /// </summary>
+    public static float Modulo(float value, float divider)
+    {
+        float remainder = value % divider;
+        return remainder < 0 ? remainder + divider : remainder;
+    }
 
 
     /// <summary>

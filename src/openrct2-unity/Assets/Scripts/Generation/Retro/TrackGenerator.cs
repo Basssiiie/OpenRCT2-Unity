@@ -1,23 +1,30 @@
 using System.Collections.Generic;
+using Graphics;
 using Lib;
+using MeshBuilding;
+using Tracks;
 using UnityEngine;
 
 namespace Generation.Retro
 {
     public class TrackGenerator : IElementGenerator
     {
-        static Dictionary<int, TrackNode[]> trackNodesCache = new Dictionary<int, TrackNode[]>();
+        static Dictionary<short, Mesh> trackMeshCache = new Dictionary<short, Mesh>();
+        static Dictionary<short, TrackColour[]> trackColoursCache = new Dictionary<short, TrackColour[]>();
 
 
         [SerializeField] GameObject prefab;
+        [SerializeField] Mesh trackMesh;
 
         Map map;
+        MeshExtruder meshExtruder;
 
 
         /// <inheritdoc/>
         public void StartGenerator(Map map)
         {
             this.map = map;
+            meshExtruder = new MeshExtruder(trackMesh);
         }
 
 
@@ -25,8 +32,8 @@ namespace Generation.Retro
         public void FinishGenerator()
         {
             map = null;
+            meshExtruder = null;
         }
-
 
 
         /// <inheritdoc/>
@@ -37,38 +44,61 @@ namespace Generation.Retro
             if (track.PartIndex != 0)
                 return;
 
-            int trackType = track.TrackType;
+            short trackType = track.TrackType;
 
-            if (!trackNodesCache.TryGetValue(trackType, out TrackNode[] nodes))
+            if (!trackMeshCache.TryGetValue(trackType, out Mesh trackMesh))
             {
-                nodes = OpenRCT2.GetTrackElementRoute(trackType);
-                trackNodesCache.Add(trackType, nodes);
+                TrackPiece piece = TrackFactory.GetTrackPiece(trackType);
+                meshExtruder.Clear();
+
+                float offset = 0;
+                int len = (piece.Points.Length - 1);
+                for (int i = 0, j; i < len; i = j)
+                {
+                    j = (i + 1);
+
+                    TransformPoint nodeA = piece.Points[i];
+                    TransformPoint nodeB = piece.Points[j];
+
+                    Vector3 start = nodeA.Position;
+                    Vector3 end = nodeB.Position;
+                    float length = Vector3.Distance(start, end);
+
+                    Vector3 startOffset = new Vector3(start.x, start.y, start.z);
+                    Matrix4x4 matrix = Matrix4x4.TRS(startOffset, nodeA.Rotation, Vector3.one);
+
+                    meshExtruder.AddExtrusion(matrix, offset, length, 1, Vector3.forward, Vector3.forward, 0);
+
+                    offset += length;
+                }
+
+                trackMesh = meshExtruder.ToMesh();
+                trackMeshCache.Add(trackType, trackMesh);
             }
 
-            const float trackOffset = -0.5f;
+            Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
+            position.y += OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsToVector3Multiplier;
 
-            GameObject parent = new GameObject($"[{x}, {y}] rot: {tile.Rotation}, type: {trackType}")
+            GameObject obj = GameObject.Instantiate(prefab, position, Quaternion.Euler(0, tile.Rotation * 90f, 0), map.transform);
+
+            obj.name = $"[{x}, {y}] scheme: {track.ColourScheme}, rot: {tile.Rotation}, type: {trackType}";
+            MeshFilter filter = obj.GetComponent<MeshFilter>();
+            filter.sharedMesh = trackMesh;
+
+            short rideIndex = track.RideIndex;
+            if (!trackColoursCache.TryGetValue(rideIndex, out TrackColour[] colours))
             {
-                isStatic = true
-            };
-
-            Transform tfParent = parent.transform;
-            tfParent.parent = map.transform;
-            tfParent.localPosition = Map.TileCoordsToUnity(x, tile.baseHeight, y);
-            tfParent.localRotation = Quaternion.Euler(0, tile.Rotation * 90f, 0);
-
-            for (int i = 0; i < nodes.Length; i++)
-            {
-                TrackNode node = nodes[i];
-
-                GameObject obj = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, tfParent);
-                obj.name = $"#{i} = dir: {node.direction}, bank: {node.bankRotation}, sprite: {node.vehicleSprite}";
-
-                Vector3 local = node.LocalPosition;
-                Transform tf = obj.transform;
-                tf.localPosition = new Vector3(local.x + trackOffset, local.y, local.z + trackOffset);
-                tf.localRotation = Quaternion.Euler(0, ((360f / 32f) * node.direction) + 270f, 0);
+                colours = OpenRCT2.GetRideTrackColours(rideIndex);
+                trackColoursCache.Add(rideIndex, colours);
             }
+
+            MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
+            renderer.material.color = GraphicsFactory.PaletteToColor(OpenRCT2.GetPaletteIndexForColourId(colours[0].main));
+
+            var trackGizmos = obj.AddComponent<TrackGizmosDrawer>();
+            trackGizmos.trackType = trackType;
+            return;
         }
     }
+
 }

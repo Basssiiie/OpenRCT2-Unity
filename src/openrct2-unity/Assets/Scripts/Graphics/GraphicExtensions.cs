@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Lib
+namespace Graphics
 {
     /// <summary>
     /// Extensions for the Graphic struct.

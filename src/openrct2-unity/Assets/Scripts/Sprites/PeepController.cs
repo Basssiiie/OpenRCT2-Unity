@@ -1,7 +1,8 @@
 using System.Linq;
+using Lib;
 using UnityEngine;
 
-namespace Lib
+namespace Sprites
 {
     /// <summary>
     /// Controller which moves and updates all the peeps in the park.

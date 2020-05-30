@@ -1,6 +1,6 @@
 using System;
 
-namespace Lib
+namespace Graphics
 {
     /// <summary>
     /// A small struct that contains RCT graphic information.

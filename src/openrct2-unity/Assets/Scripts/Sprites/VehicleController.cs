@@ -1,4 +1,7 @@
-namespace Lib
+using Lib;
+using UnityEngine;
+
+namespace Sprites
 {
     /// <summary>
     /// Controller which moves and updates all ride vehicles in the park.

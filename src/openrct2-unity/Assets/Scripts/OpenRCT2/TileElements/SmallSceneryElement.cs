@@ -6,7 +6,7 @@ namespace Lib
     public readonly ref struct SmallSceneryElement
     {
         // Mask to get the bits for the scenery quadrant.
-        const byte QuadrantMask = 0b11000000;
+        const byte QuadrantMask = 0b_1100_0000;
 
 
         /// <summary>
