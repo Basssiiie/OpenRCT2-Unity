@@ -74,7 +74,7 @@ namespace Generation.Retro
             }
 
             Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
-            position.y += OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsToVector3Multiplier;
+            position.y += OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsXYMultiplier;
 
             GameObject obj = GameObject.Instantiate(prefab, position, Quaternion.Euler(0, tile.Rotation * 90f, 0), map.transform);
 

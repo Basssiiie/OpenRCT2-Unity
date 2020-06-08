@@ -43,7 +43,7 @@ namespace Generation.Retro
             // If not a full tile, move small scenery to the correct quadrant.
             if ((flags & SmallSceneryFlags.FullTile) == 0)
             {
-                const float distanceToQuadrant = (Map.TileCoordsToVector3Multiplier / 4);
+                const float distanceToQuadrant = (Map.TileCoordsXYMultiplier / 4);
                 byte quadrant = smallScenery.Quadrant;
 
                 switch (quadrant)

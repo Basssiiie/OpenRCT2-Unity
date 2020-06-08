@@ -16,7 +16,7 @@ namespace Lib
 
 
         // Offset to offset the node relative to the center of the start of the track, instead of the corner.
-        const int trackOffset = -(Map.TileCoordsToCoords / 2); 
+        const int trackOffset = -(Map.TileCoordsXYToCoordsXY / 2); 
 
 
         /// <summary>

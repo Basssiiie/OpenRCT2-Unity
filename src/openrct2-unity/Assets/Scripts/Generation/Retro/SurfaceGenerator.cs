@@ -83,7 +83,7 @@ namespace Generation.Retro
             int waterHeight = surface.WaterHeight;
             if (waterHeight != NoWater)
             {
-                float waterVertexHeight = (waterHeight * Map.TileHeightMultiplier * Map.TileHeightStep);
+                float waterVertexHeight = (waterHeight * Map.TileCoordsZMultiplier * Map.TileHeightStep);
 
                 Vertex waterNorth = new Vertex(north.position.x, waterVertexHeight, north.position.z, Vector3.up, north.uv);
                 Vertex waterEast = new Vertex(east.position.x, waterVertexHeight, east.position.z, Vector3.up, east.uv);
@@ -117,13 +117,13 @@ namespace Generation.Retro
             if (waterHeight != NoWater && other.WaterHeight != waterHeight)
             {
                 // Render water edge at different height
-                float waterY = (waterHeight * Map.TileHeightMultiplier * Map.TileHeightStep);
+                float waterY = (waterHeight * Map.TileCoordsZMultiplier * Map.TileHeightStep);
                 leftTop.position.y = waterY;
                 rightTop.position.y = waterY;
             }
 
-            float leftBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, leftOtherCorner) * Map.TileHeightMultiplier;
-            float rightBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, rightOtherCorner) * Map.TileHeightMultiplier;
+            float leftBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, leftOtherCorner) * Map.TileCoordsZMultiplier;
+            float rightBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, rightOtherCorner) * Map.TileCoordsZMultiplier;
 
             if (leftTop.position.y > leftBottomY || rightTop.position.y > rightBottomY)
             {
@@ -151,9 +151,9 @@ namespace Generation.Retro
             int height = GetSurfaceCornerHeight(startHeight, surfaceSlope, surfaceCorner);
 
             Vector3 position = new Vector3(
-                x * Map.TileCoordsToVector3Multiplier,
-                height * Map.TileHeightMultiplier,
-                y * Map.TileCoordsToVector3Multiplier
+                x * Map.TileCoordsXYMultiplier,
+                height * Map.TileCoordsZMultiplier,
+                y * Map.TileCoordsXYMultiplier
             );
 
             return new Vertex(position, Vector3.zero, new Vector2(x, y));
