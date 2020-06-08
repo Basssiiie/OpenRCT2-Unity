@@ -64,10 +64,7 @@ namespace Generation.Retro
                     Vector3 end = nodeB.Position;
                     float length = Vector3.Distance(start, end);
 
-                    Vector3 startOffset = new Vector3(start.x, start.y, start.z);
-                    Matrix4x4 matrix = Matrix4x4.TRS(startOffset, nodeA.Rotation, Vector3.one);
-
-                    meshExtruder.AddExtrusion(matrix, offset, length, 1, Vector3.forward, Vector3.forward, 0);
+                    meshExtruder.AddSegment(nodeA, nodeB, offset, 1, 0);
 
                     offset += length;
                 }
@@ -100,5 +97,4 @@ namespace Generation.Retro
             return;
         }
     }
-
 }

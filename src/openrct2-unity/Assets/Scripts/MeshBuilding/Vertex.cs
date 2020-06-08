@@ -99,23 +99,13 @@ namespace MeshBuilding
         #endregion
 
 
-        /// <summary>
-        /// Applies a matrix transformation on the position and normal.
-        /// </summary>
-        public void ApplyMatrix(Matrix4x4 matrix)
-        {
-            position = matrix.MultiplyPoint3x4(position);
-            normal = matrix.MultiplyVector(normal);
-        }
-
-
         #region IEquatable implementation
 
         /// <summary>
         /// Determines whether two vertices are equal based on their position, normals
         /// and uv values.
         /// </summary>
-        public static bool Equals(Vertex left, Vertex right)
+        public static bool Equals(in Vertex left, in Vertex right)
             => (left.position == right.position)
             && (left.normal == right.normal)
             && (left.uv == right.uv);
@@ -157,7 +147,7 @@ namespace MeshBuilding
         /// Determines whether two vertices are equal based on their position,
         /// normals and uv values.
         /// </summary>
-        public static bool operator ==(Vertex left, Vertex right)
+        public static bool operator ==(in Vertex left, in Vertex right)
             => (Equals(left, right));
 
 
@@ -165,7 +155,7 @@ namespace MeshBuilding
         /// Determines whether two vertices are not equal based on their position,
         /// normals and uv values.
         /// </summary>
-        public static bool operator !=(Vertex left, Vertex right)
+        public static bool operator !=(in Vertex left, in Vertex right)
             => (!Equals(left, right));
 
         #endregion

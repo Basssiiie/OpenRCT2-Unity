@@ -173,4 +173,27 @@ public static class Maths
     /// </summary>
     public static float ManhattenDistance(Vector3 start, Vector3 end)
         => (Mathf.Abs(start.x - end.x) + Mathf.Abs(start.y - end.y) + Mathf.Abs(start.z - end.z));
+
+
+    /// <summary>
+    /// Returns true and its intersection point of the line between the points
+    /// intersects the plane.
+    /// </summary>
+    public static bool Intersects(in this Plane plane, Vector3 start, Vector3 end, out Vector3 intersection)
+    {
+        Vector3 normal = plane.normal;
+        Vector3 direction = (end - start);
+
+        float time = (plane.distance - Vector3.Dot(normal, start)) / Vector3.Dot(normal, direction);
+
+        if (-Mathf.Epsilon <= time && time <= (1 + Mathf.Epsilon))
+        {
+            intersection = start + time * direction;
+
+            return true;
+        }
+
+        intersection = Vector3.zero;
+        return false;
+    }
 }
