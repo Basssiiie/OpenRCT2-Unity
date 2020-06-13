@@ -307,10 +307,9 @@ namespace Tracks
                 case 46: rot.x = SlopeSpiralBig; break; // downwards big
                 case 47: rot.x = SlopeSpiralSmall; break; // downwards small
 
-                // Spirals that only rotate 90 degrees
+                // Spirals that only turn 90 degrees
                 case 48: rot.x = -SlopeSpiralQuarter; break; // upwards
-
-                // case 49: ?
+                case 49: rot.x = SlopeSpiralQuarter; break; // downwards
 
                 // Diagonal upwards
                 case 50: rot.x = -SlopeDiagonalFlatToGentle; break;
@@ -322,10 +321,10 @@ namespace Tracks
                 case 54: rot.x = SlopeDiagonalGentle; break;
                 case 55: rot.x = SlopeDiagonalSteep; break;
 
-                // Inverted half loop? 
-                // case 56: break;
-                // case 57: break;
-                // case 58: break;
+                // Inverted half loop (bottom part only)
+                case 56: rot.x = SlopeGentle; break;
+                case 57: rot.x = SlopeGentleToSteep; break;
+                case 58: rot.x = SlopeSteep; break;
 
                 // Circular lifthil
                 case 59: rot.x = -SlopeSpiralLifthill; break;

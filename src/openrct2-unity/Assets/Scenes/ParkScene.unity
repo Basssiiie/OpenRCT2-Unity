@@ -495,7 +495,7 @@ Transform:
   m_Father: {fileID: 1709003191}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: -13.808001, z: -22.334002}
---- !u!43 &1275196074
+--- !u!43 &1134483270
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -737,7 +737,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f4353bcde699fe4dbc7f9641bcd509e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generationFlags: 47
+  generationFlags: 4
   surfaceGenerator:
     id: 0
   pathGenerator:
@@ -775,11 +775,9 @@ MonoBehaviour:
         prefab: {fileID: 6681454114598486694, guid: d5e4b199bf0e87b47b14b43c86d8c12f,
           type: 3}
     00000002:
-      type: {class: TrackGenerator, ns: Generation.Retro, asm: Assembly-CSharp}
+      type: {class: TrackSubpositionGenerator, ns: Generation, asm: Assembly-CSharp}
       data:
-        prefab: {fileID: 3460111253241373034, guid: 5a37f2014057431499fb5a7f9cdc9b3e,
-          type: 3}
-        trackMesh: {fileID: 2150044562243273127, guid: 19105baef7c447146b787e881f13d4f1,
+        prefab: {fileID: 3460111253241373034, guid: ac7c5b20c9776c2458a7c5f077e645f0,
           type: 3}
     00000003:
       type: {class: SmallSceneryGenerator, ns: Generation.Retro, asm: Assembly-CSharp}
@@ -901,7 +899,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1491562768}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce5c6edf3d4246c41b9dd8be02d5846c, type: 3}
   m_Name: 
@@ -1082,7 +1080,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1709003187}
-  m_Mesh: {fileID: 1275196074}
+  m_Mesh: {fileID: 1134483270}
 --- !u!4 &1709003191
 Transform:
   m_ObjectHideFlags: 0

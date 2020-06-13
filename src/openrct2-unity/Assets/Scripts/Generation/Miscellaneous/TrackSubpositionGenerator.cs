@@ -49,7 +49,7 @@ namespace Generation
             }
 
             // Create objects
-            GameObject parent = new GameObject($"[{x}, {y}] type: {trackType}, rot: {tile.Rotation}, count: {nodes.Length}")
+            GameObject parent = new GameObject($"[{x}, {y}] type: {trackType}, inv: {track.IsInverted}, rot: {tile.Rotation}, nodes: {nodes.Length}")
             {
                 isStatic = true
             };

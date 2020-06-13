@@ -74,12 +74,15 @@ namespace Generation.Retro
                 trackMeshCache.Add(trackType, trackMesh);
             }
 
+            if (track.IsInverted)
+                Debug.Log($"Is inverted tracktype: {trackType}");
+
             Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
             position.y += OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsXYMultiplier;
 
             GameObject obj = GameObject.Instantiate(prefab, position, Quaternion.Euler(0, tile.Rotation * 90f, 0), map.transform);
 
-            obj.name = $"[{x}, {y}] scheme: {track.ColourScheme}, rot: {tile.Rotation}, type: {trackType}";
+            obj.name = $"[{x}, {y}] scheme: {track.ColourScheme}, rot: {tile.Rotation}, type: {trackType}, inv: {track.IsInverted}";
             MeshFilter filter = obj.GetComponent<MeshFilter>();
             filter.sharedMesh = trackMesh;
 
