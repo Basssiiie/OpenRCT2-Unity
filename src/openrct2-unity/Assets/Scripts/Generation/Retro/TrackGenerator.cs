@@ -9,15 +9,15 @@ namespace Generation.Retro
 {
     public class TrackGenerator : IElementGenerator
     {
-        static Dictionary<short, Mesh> trackMeshCache = new Dictionary<short, Mesh>();
-        static Dictionary<short, TrackColour[]> trackColoursCache = new Dictionary<short, TrackColour[]>();
+        static readonly Dictionary<short, Mesh> trackMeshCache = new Dictionary<short, Mesh>();
+        static readonly Dictionary<short, TrackColour[]> trackColoursCache = new Dictionary<short, TrackColour[]>();
 
 
         [SerializeField] GameObject prefab;
         [SerializeField] Mesh trackMesh;
 
         Map map;
-        MeshExtruder meshExtruder;
+        MeshExtruder meshExtruder; 
 
 
         /// <inheritdoc/>
@@ -34,6 +34,7 @@ namespace Generation.Retro
             map = null;
             meshExtruder = null;
         }
+
 
 
         /// <inheritdoc/>
@@ -94,7 +95,7 @@ namespace Generation.Retro
 
             var trackGizmos = obj.AddComponent<TrackGizmosDrawer>();
             trackGizmos.trackType = trackType;
-            return;
+            return; 
         }
     }
 }

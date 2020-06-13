@@ -15,13 +15,14 @@ namespace Lib
         enum TileElementFlags
         {
             None = 0,
-            Path = (1 << 0),
-            Track = (1 << 1),
-            SmallScenery = (1 << 2),
-            Entrance = (1 << 3),
-            Wall = (1 << 4),
-            LargeScenery = (1 << 5),
-            Banner = (1 << 6),
+            Surface = (1 << 0),
+            Path = (1 << 1),
+            Track = (1 << 2),
+            SmallScenery = (1 << 3),
+            Entrance = (1 << 4),
+            Wall = (1 << 5),
+            LargeScenery = (1 << 6),
+            Banner = (1 << 7),
             All = ~0
         };
 
@@ -92,7 +93,8 @@ namespace Lib
             switch (tile.Type)
             {
                 case TileElementType.Surface:
-                    surfaceGenerator.CreateElement(x, y, ref tile);
+                    if ((generationFlags & TileElementFlags.Surface) != 0)
+                        surfaceGenerator.CreateElement(x, y, ref tile);
                     break;
 
                 case TileElementType.Path:

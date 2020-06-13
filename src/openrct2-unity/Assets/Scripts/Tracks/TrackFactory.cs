@@ -10,8 +10,6 @@ namespace Tracks
     /// </summary>
     public static class TrackFactory
     {
-        const float BankingStep = 22.5f;
-
         // A cache of track pieces with the track type as key.
         static readonly Dictionary<int, TrackPiece> trackPiecesCache = new Dictionary<int, TrackPiece>();
 
@@ -186,30 +184,41 @@ namespace Tracks
                     return 0;
 
                 // Right way banking
-                case 1:
-                case 2:
+                case 1: // 1x
+                case 2: // 2x
                     return (bankRotation * BankingStep);
 
+                // Left way banking
+                case 3: // -1x
+                case 4: // -2x
+                    return ((2 - bankRotation) * BankingStep);
+
                 // Right way barrel roll
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
+                case 5: // 3x
+                case 6: // 4x
+                case 7: // 5x
+                case 8: // 6x
+                case 9: // 7x
                     return ((bankRotation - 2) * BankingStep);
 
-                // Left way banking
-                case 3:
-                case 4:
-                    return -((bankRotation - 2) * BankingStep);
-
                 // Left way barrel roll
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                case 14:
-                    return -((bankRotation - 7) * BankingStep);
+                case 10: // -3x
+                case 11: // -4x
+                case 12: // -5x
+                case 13: // -6x
+                case 14: // -7x
+                    return ((7 - bankRotation) * BankingStep);
+
+                // Right way inverted barrel roll
+                case 16: // 2x
+                case 17: // 1x
+                    return ((18 - bankRotation) * BankingStep);
+
+                // Left way inverted barrel roll
+                case 18: // -2x
+                case 19: // -1x
+                    return ((bankRotation - 20) * BankingStep);
+
             }
 
             Debug.LogWarning($"Unknown banking rotation: {bankRotation}");
@@ -217,7 +226,10 @@ namespace Tracks
         }
 
 
-        public static void ApplySpriteRotation(byte vehicleSprite, ref Vector3 rotation)
+        /// <summary>
+        /// Applies additional rotation to the vector based on the vehicle sprite index.
+        /// </summary>
+        public static void ApplySpriteRotation(byte vehicleSprite, ref Vector3 rot)
         {
             switch (vehicleSprite)
             {
@@ -225,63 +237,166 @@ namespace Tracks
                 case 0: break;
 
                 // Upwards
-                case 1: rotation.x = -13f; break;
-                case 2: rotation.x = -26.56f; break;
-                case 3: rotation.x = -43.15f; break;
-                case 4: rotation.x = -63.79f; break;
+                case 1: rot.x = -SlopeFlatToGentle; break;
+                case 2: rot.x = -SlopeGentle; break;
+                case 3: rot.x = -SlopeGentleToSteep; break;
+                case 4: rot.x = -SlopeSteep; break;
 
                 // Downwards
-                case 5: rotation.x = 13f; break;
-                case 6: rotation.x = 26.56f; break;
-                case 7: rotation.x = 43.15f; break;
-                case 8: rotation.x = 63.79f; break;
+                case 5: rot.x = SlopeFlatToGentle; break;
+                case 6: rot.x = SlopeGentle; break;
+                case 7: rot.x = SlopeGentleToSteep; break;
+                case 8: rot.x = SlopeSteep; break;
 
                 // Steep to vertical upwards
-                case 9: rotation.x = -76.5f; break;
-                case 10: rotation.x = -90f; break;
+                case 9: rot.x = -SlopeSteepToVertical; break;
+                case 10: rot.x = -SlopeVertical; break;
 
                 // Vertical to inverted upwards
-                case 11: rotation.x = -100.31f; break;
-                case 12: rotation.x = -111.04f; break;
-                case 13: rotation.x = -119.75f; break;
-                case 14: rotation.x = -132.51f; break;
-                case 15: rotation.x = -148.4f; break;
+                case 11: rot.x = -SlopeInvertedStep1; break; 
+                case 12: rot.x = -SlopeInvertedStep2; break; 
+                case 13: rot.x = -SlopeInvertedStep3; break; 
+                case 14: rot.x = -SlopeInvertedStep4; break; 
+                case 15: rot.x = -SlopeInvertedStep5; break; 
 
                 // Inverted
-                case 16: rotation.x = 180f; break;
+                case 16: rot.x = SlopeInvertedFull; break;
 
                 // Steep to vertical downwards
-                case 17: rotation.x = 76.5f; break;
-                case 18: rotation.x = 90f; break;
+                case 17: rot.x = SlopeSteepToVertical; break;
+                case 18: rot.x = SlopeVertical; break;
 
                 // Vertical to inverted downwards
-                case 19: rotation.x = 100.31f; break;
-                case 20: rotation.x = 111.04f; break;
-                case 21: rotation.x = 119.75f; break;
-                case 22: rotation.x = 132.51f; break;
-                case 23: rotation.x = 148.4f; break;
+                case 19: rot.x = SlopeInvertedStep1; break; 
+                case 20: rot.x = SlopeInvertedStep2; break; 
+                case 21: rot.x = SlopeInvertedStep3; break; 
+                case 22: rot.x = SlopeInvertedStep4; break; 
+                case 23: rot.x = SlopeInvertedStep5; break;
+
+                // Corkscrew start rightward roll
+                case 24: rot.x = -SlopeCorkscrew1; rot.y += RotationCorkscrew1; rot.z -= BankingCorkscrew1; break;
+                case 25: rot.x = -SlopeCorkscrew2; rot.y += RotationCorkscrew2; rot.z -= BankingCorkscrew2; break;
+                case 26: rot.x = -SlopeCorkscrew3; rot.y += RotationCorkscrew3; rot.z -= BankingCorkscrew3; break;
+                case 27: rot.x = -SlopeCorkscrew4; rot.y += RotationCorkscrew4; rot.z -= BankingCorkscrew4; break;
+                case 28: rot.x = -SlopeCorkscrew5; rot.y += RotationCorkscrew5; rot.z -= BankingCorkscrew5; break;
+
+                // Corkscrew end rightward roll
+                case 29: rot.x = SlopeCorkscrew1; rot.y += RotationCorkscrew1; rot.z += BankingCorkscrew1; break;
+                case 30: rot.x = SlopeCorkscrew2; rot.y += RotationCorkscrew2; rot.z += BankingCorkscrew2; break;
+                case 31: rot.x = SlopeCorkscrew3; rot.y += RotationCorkscrew3; rot.z += BankingCorkscrew3; break;
+                case 32: rot.x = SlopeCorkscrew4; rot.y += RotationCorkscrew4; rot.z += BankingCorkscrew4; break;
+                case 33: rot.x = SlopeCorkscrew5; rot.y += RotationCorkscrew5; rot.z += BankingCorkscrew5; break;
+
+                // Corkscrew start leftward roll
+                case 34: rot.x = -SlopeCorkscrew1; rot.y -= RotationCorkscrew1; rot.z += BankingCorkscrew1; break;
+                case 35: rot.x = -SlopeCorkscrew2; rot.y -= RotationCorkscrew2; rot.z += BankingCorkscrew2; break;
+                case 36: rot.x = -SlopeCorkscrew3; rot.y -= RotationCorkscrew3; rot.z += BankingCorkscrew3; break;
+                case 37: rot.x = -SlopeCorkscrew4; rot.y -= RotationCorkscrew4; rot.z += BankingCorkscrew4; break;
+                case 38: rot.x = -SlopeCorkscrew5; rot.y -= RotationCorkscrew5; rot.z += BankingCorkscrew5; break;
+
+                // Corkscrew end leftward roll
+                case 39: rot.x = SlopeCorkscrew1; rot.y -= RotationCorkscrew1; rot.z -= BankingCorkscrew1; break;
+                case 40: rot.x = SlopeCorkscrew2; rot.y -= RotationCorkscrew2; rot.z -= BankingCorkscrew2; break;
+                case 41: rot.x = SlopeCorkscrew3; rot.y -= RotationCorkscrew3; rot.z -= BankingCorkscrew3; break;
+                case 42: rot.x = SlopeCorkscrew4; rot.y -= RotationCorkscrew4; rot.z -= BankingCorkscrew4; break;
+                case 43: rot.x = SlopeCorkscrew5; rot.y -= RotationCorkscrew5; rot.z -= BankingCorkscrew5; break;
 
                 // Spirals
-                case 44: rotation.x = -2.156f; break; // upwards big
-                case 45: break; // upwards small
-                case 46: rotation.x = 2.156f; break; // downwards big
-                case 47: break; // downwards small
+                case 44: rot.x = -SlopeSpiralBig; break; // upwards big
+                case 45: rot.x = -SlopeSpiralSmall; break; // upwards small
+                case 46: rot.x = SlopeSpiralBig; break; // downwards big
+                case 47: rot.x = SlopeSpiralSmall; break; // downwards small
+
+                // Spirals that only rotate 90 degrees
+                case 48: rot.x = -SlopeSpiralQuarter; break; // upwards
+
+                // case 49: ?
 
                 // Diagonal upwards
-                case 50: rotation.x = -4.57f; break;
-                case 51: rotation.x = -8.741f; break;
+                case 50: rot.x = -SlopeDiagonalFlatToGentle; break;
+                case 51: rot.x = -SlopeDiagonalGentle; break;
+                case 52: rot.x = -SlopeDiagonalSteep; break;
 
                 // Diagional downwards
-                case 53: rotation.x = 4.57f; break;
-                case 54: rotation.x = 8.741f; break;
-                case 55: rotation.x = 46.686f; break; // steep
+                case 53: rot.x = SlopeDiagonalFlatToGentle; break;
+                case 54: rot.x = SlopeDiagonalGentle; break;
+                case 55: rot.x = SlopeDiagonalSteep; break;
 
-                // Unknown
+                // Inverted half loop? 
+                // case 56: break;
+                // case 57: break;
+                // case 58: break;
+
+                // Circular lifthil
+                case 59: rot.x = -SlopeSpiralLifthill; break;
+
+                // Unknown 
                 default:
-                    Debug.LogWarning($"Unknown track vehicle sprite: {vehicleSprite}");
+                    if (!unknownsprites[vehicleSprite])
+                    {
+                        // avoid console spam
+                        unknownsprites[vehicleSprite] = true;
+                        Debug.LogWarning($"Unknown track vehicle sprite: {vehicleSprite}");
+                    }
                     break;
             }
         }
+
+        static bool[] unknownsprites = new bool[256];
+
+
+        // Thanks to:
+        //  https://github.com/OpenRCT2/OpenRCT2/wiki/Sizes-and-angles-in-the-game-world
+        //  https://github.com/OpenRCT2/OpenRCT2/wiki/Vehicle-Sprite-Layout
+
+        // Banking angle constants
+        const float BankingStep =               (22.5f);
+        const float BankingCorkscrew1 =         (15.8f);
+        const float BankingCorkscrew2 =         (34.4f);
+        const float BankingCorkscrew3 =         (90f);
+        const float BankingCorkscrew4 =         (180 - BankingCorkscrew2);
+        const float BankingCorkscrew5 =         (180 - BankingCorkscrew1);
+
+        // Regular slopes
+        const float SlopeFlatToGentle =         (SlopeGentle / 2);
+        const float SlopeGentle =               (22.2052f);
+        const float SlopeGentleToSteep =        ((SlopeGentle + SlopeSteep) / 2);
+        const float SlopeSteep =                (58.5148f);
+        const float SlopeSteepToVertical =      ((SlopeSteep + SlopeVertical) / 2);
+        const float SlopeVertical =             (90f);
+
+        // Inverted slopes (for loopings etc.)
+        const float SlopeInvertedFull =         (180f);
+        const float SlopeInvertedStep1 =        (SlopeVertical + SlopeFlatToGentle);
+        const float SlopeInvertedStep2 =        (SlopeVertical + SlopeGentle);
+        const float SlopeInvertedStep3 =        (SlopeVertical + SlopeGentleToSteep);
+        const float SlopeInvertedStep4 =        (SlopeVertical + SlopeSteep);
+        const float SlopeInvertedStep5 =        (SlopeVertical + SlopeSteepToVertical);
+
+        // Spiral slopes
+        const float SlopeSpiralSmall =          (5.5266f);
+        const float SlopeSpiralBig =            (3.2933f);
+        const float SlopeSpiralQuarter =        (6.5366f);
+        const float SlopeSpiralLifthill =       (10.8737f);
+
+        // Diagonal slopes
+        const float SlopeDiagonalFlatToGentle = (SlopeDiagonalGentle / 2);
+        const float SlopeDiagonalGentle =       (16.1005f);
+        const float SlopeDiagonalSteep =        (49.1035f);
+
+        // Corkscrew slopes
+        const float SlopeCorkscrew1 =           (16.4f);
+        const float SlopeCorkscrew2 =           (43.3f);
+        const float SlopeCorkscrew3 =           (45);
+        const float SlopeCorkscrew4 =           (SlopeCorkscrew2);
+        const float SlopeCorkscrew5 =           (SlopeCorkscrew1);
+
+        // Corkscrew rotations
+        const float RotationCorkscrew1 =        (2.3f); 
+        const float RotationCorkscrew2 =        (14f); 
+        const float RotationCorkscrew3 =        (45); 
+        const float RotationCorkscrew4 =        (90 - RotationCorkscrew2); 
+        const float RotationCorkscrew5 =        (90 - RotationCorkscrew1);
 
         #endregion
     }

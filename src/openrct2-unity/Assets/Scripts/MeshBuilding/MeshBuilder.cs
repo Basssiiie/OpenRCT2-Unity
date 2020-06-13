@@ -156,7 +156,7 @@ namespace MeshBuilding
 
 			int count = vertices.Count;
 			if (count == 0)
-				return null;
+				return mesh;
 
 			Vector3[] verts = new Vector3[count];
 			Vector3[] norms = new Vector3[count];
