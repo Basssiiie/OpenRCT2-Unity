@@ -36,7 +36,7 @@ namespace Lib
         public const float CoordsXYMultiplier = (TileCoordsXYMultiplier / TileCoordsXYToCoordsXY);
 
         /// <summary>
-        /// Value that is used for converting RCT2 Coords and TileCoords to an Unity Vector3 height.
+        /// Value that is used for converting RCT2 Coords to an Unity Vector3 height.
         /// </summary>
         public const float CoordsZMultiplier = (TileCoordsZMultiplier / TileCoordsZToCoordsZ);
 

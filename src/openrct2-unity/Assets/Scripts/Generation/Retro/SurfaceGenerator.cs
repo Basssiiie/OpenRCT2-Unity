@@ -59,10 +59,10 @@ namespace Generation.Retro
             SurfaceSlope slope = surface.Slope;
             int baseHeight = tile.baseHeight;
 
-            Vertex north = GetSurfaceCorner(x + 1, y + 1, baseHeight, slope, SurfaceSlope.NorthUp);
-            Vertex east = GetSurfaceCorner(x + 1, y, baseHeight, slope, SurfaceSlope.EastUp);
-            Vertex south = GetSurfaceCorner(x, y, baseHeight, slope, SurfaceSlope.SouthUp);
-            Vertex west = GetSurfaceCorner(x, y + 1, baseHeight, slope, SurfaceSlope.WestUp);
+            int northHeight = GetSurfaceCorner(x + 1, y + 1, baseHeight, slope, SurfaceSlope.NorthUp, out Vertex north);
+            int eastHeight = GetSurfaceCorner(x + 1, y, baseHeight, slope, SurfaceSlope.EastUp, out Vertex east);
+            int southHeight = GetSurfaceCorner(x, y, baseHeight, slope, SurfaceSlope.SouthUp, out Vertex south);
+            int westHeight = GetSurfaceCorner(x, y + 1, baseHeight, slope, SurfaceSlope.WestUp, out Vertex west);
 
             uint surfaceImage = OpenRCT2.GetSurfaceImageIndex(tile, x, y, 0);
             int surfaceSubmesh = PushImageIndex(surfaceImage, TypeSurface);
@@ -98,17 +98,17 @@ namespace Generation.Retro
             uint edgeImage = OpenRCT2.GetSurfaceEdgeImageIndex(tile);
             int edgeSubmesh = PushImageIndex(edgeImage, TypeEdge);
 
-            TryAddSurfaceEdge(surfaceMeshBuilder, north, west, x, y, 0, 1, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh); // Edge northwest
-            TryAddSurfaceEdge(surfaceMeshBuilder, east, north, x, y, 1, 0, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh); // Edge northeast
-            TryAddSurfaceEdge(surfaceMeshBuilder, south, east, x, y, 0, -1, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh); // Edge southeast
-            TryAddSurfaceEdge(surfaceMeshBuilder, west, south, x, y, -1, 0, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
+            TryAddSurfaceEdge(surfaceMeshBuilder, x, y, 0, 1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh); // Edge northwest
+            TryAddSurfaceEdge(surfaceMeshBuilder, x, y, 1, 0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh); // Edge northeast
+            TryAddSurfaceEdge(surfaceMeshBuilder, x, y, 0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh); // Edge southeast
+            TryAddSurfaceEdge(surfaceMeshBuilder, x, y, -1, 0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
         }
 
 
         /// <summary>
         /// Tries to add an surface edge to the specified offset.
         /// </summary>
-        void TryAddSurfaceEdge(MeshBuilder builder, Vertex leftTop, Vertex rightTop, int x, int y, int offsetX, int offsetY, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
+        void TryAddSurfaceEdge(MeshBuilder builder, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
         {
             SurfaceElement other = map.Tiles[x + offsetX, y + offsetY].Surface;
             int baseHeight = other.BaseHeight;
@@ -122,21 +122,24 @@ namespace Generation.Retro
                 rightTop.position.y = waterY;
             }
 
-            float leftBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, leftOtherCorner) * Map.TileCoordsZMultiplier;
-            float rightBottomY = GetSurfaceCornerHeight(baseHeight, otherSlope, rightOtherCorner) * Map.TileCoordsZMultiplier;
+            int leftBottomHeight = GetSurfaceCornerHeight(baseHeight, otherSlope, leftOtherCorner);
+            int rightBottomHeight = GetSurfaceCornerHeight(baseHeight, otherSlope, rightOtherCorner);
+            float leftBottomY = (leftBottomHeight * Map.TileCoordsZMultiplier);
+            float rightBottomY = (rightBottomHeight * Map.TileCoordsZMultiplier);
 
             if (leftTop.position.y > leftBottomY || rightTop.position.y > rightBottomY)
             {
+                const float VsPerHeightUnit = 4f;
                 int u = (offsetX == 0) ? x : y; // pick u based on direction
 
                 Vector3 normal = new Vector3(offsetX, 0, offsetY);
                 leftTop.normal = normal;
-                leftTop.uv = new Vector2(u + offsetY, leftTop.position.y);
+                leftTop.uv = new Vector2(u + offsetY, leftTopHeight / VsPerHeightUnit);
                 rightTop.normal = normal;
-                rightTop.uv = new Vector2(u + offsetX, rightTop.position.y);
+                rightTop.uv = new Vector2(u + offsetX, rightTopHeight / VsPerHeightUnit);
 
-                Vertex leftBottom = new Vertex(leftTop.position.x, leftBottomY, leftTop.position.z, normal, u + offsetY, leftBottomY);
-                Vertex rightBottom = new Vertex(rightTop.position.x, rightBottomY, rightTop.position.z, normal, u + offsetX, rightBottomY);
+                Vertex leftBottom = new Vertex(leftTop.position.x, leftBottomY, leftTop.position.z, normal, u + offsetY, leftBottomHeight / VsPerHeightUnit);
+                Vertex rightBottom = new Vertex(rightTop.position.x, rightBottomY, rightTop.position.z, normal, u + offsetX, rightBottomHeight / VsPerHeightUnit);
 
                 builder.AddQuad(leftTop, rightTop, rightBottom, leftBottom, submesh);
             }
@@ -146,7 +149,7 @@ namespace Generation.Retro
         /// <summary>
         /// Gets the specified surface corner as a 3D vertex.
         /// </summary>
-        Vertex GetSurfaceCorner(int x, int y, int startHeight, SurfaceSlope surfaceSlope, SurfaceSlope surfaceCorner)
+        int GetSurfaceCorner(int x, int y, int startHeight, SurfaceSlope surfaceSlope, SurfaceSlope surfaceCorner, out Vertex vertex)
         {
             int height = GetSurfaceCornerHeight(startHeight, surfaceSlope, surfaceCorner);
 
@@ -156,7 +159,8 @@ namespace Generation.Retro
                 y * Map.TileCoordsXYMultiplier
             );
 
-            return new Vertex(position, Vector3.zero, new Vector2(x, y));
+            vertex = new Vertex(position, Vector3.zero, new Vector2(x, y));
+            return height;
         }
 
 
