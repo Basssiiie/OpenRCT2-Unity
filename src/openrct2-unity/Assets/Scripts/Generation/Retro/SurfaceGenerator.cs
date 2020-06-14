@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
-using MeshBuilding;
 using Lib;
+using MeshBuilding;
 using UnityEngine;
 
 namespace Generation.Retro
