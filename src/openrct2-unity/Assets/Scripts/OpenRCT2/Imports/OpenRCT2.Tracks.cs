@@ -42,7 +42,7 @@ namespace Lib
         /// </param>
         public static TrackNode[] GetTrackElementRoute(int trackType, int trackVariant)
         {
-            int typeAndDirection = trackType << 2; // direction right now is defaulted to 0;
+            int typeAndDirection = (trackType << 2); // direction right now is defaulted to 0;
             int size = GetTrackElementRouteSize(trackVariant, typeAndDirection);
 
             TrackNode[] nodes = new TrackNode[size];
@@ -59,6 +59,14 @@ namespace Lib
         /// </param>
         public static TrackNode[] GetTrackElementRoute(int trackType)
             => GetTrackElementRoute(trackType, 0);
+
+
+        /// <summary>
+        /// Gets the flags for a specific track type.
+        /// (Might get replaced by a more tracktype info-struct related method in the future.)
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        public static extern TrackTypeFlags GetTrackTypeFlags(int trackType);
 
 
         /// <summary>

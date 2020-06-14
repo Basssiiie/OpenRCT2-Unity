@@ -331,17 +331,10 @@ namespace Tracks
 
                 // Unknown 
                 default:
-                    if (!unknownsprites[vehicleSprite])
-                    {
-                        // avoid console spam
-                        unknownsprites[vehicleSprite] = true;
-                        Debug.LogWarning($"Unknown track vehicle sprite: {vehicleSprite}");
-                    }
+                    Debug.LogWarning($"Unknown track vehicle sprite: {vehicleSprite}");
                     break;
             }
         }
-
-        static bool[] unknownsprites = new bool[256];
 
 
         // Thanks to:

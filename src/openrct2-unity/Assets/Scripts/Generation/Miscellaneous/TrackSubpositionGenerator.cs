@@ -67,7 +67,7 @@ namespace Generation
                 TrackNode node = nodes[i];
 
                 GameObject obj = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, tfParent);
-                obj.name = $"#{i} = dir: {node.direction}, bank: {node.bankRotation}, sprite: {node.vehicleSprite}";
+                obj.name = $"#{i} = ({node.x}, {node.y}, {node.z}) dir: {node.direction}, bank: {node.bankRotation}, sprite: {node.vehicleSprite}";
 
                 Transform tf = obj.transform;
                 tf.localPosition = node.LocalPosition;

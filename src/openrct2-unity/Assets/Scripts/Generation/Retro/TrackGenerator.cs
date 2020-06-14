@@ -9,12 +9,16 @@ namespace Generation.Retro
 {
     public class TrackGenerator : IElementGenerator
     {
-        static readonly Dictionary<short, Mesh> trackMeshCache = new Dictionary<short, Mesh>();
+        static readonly Dictionary<int, Mesh> trackMeshCache = new Dictionary<int, Mesh>();
         static readonly Dictionary<short, TrackColour[]> trackColoursCache = new Dictionary<short, TrackColour[]>();
 
 
         [SerializeField] GameObject prefab;
         [SerializeField] Mesh trackMesh;
+
+
+        // Only the first 3 flags matter for the mesh.
+        const byte KeyFlagsMask = 0b111;
 
         Map map;
         MeshExtruder meshExtruder; 
@@ -46,10 +50,12 @@ namespace Generation.Retro
                 return;
 
             short trackType = track.TrackType;
+            int meshKey = (trackType << 3) | ((byte)track.Flags2 & KeyFlagsMask);
 
-            if (!trackMeshCache.TryGetValue(trackType, out Mesh trackMesh))
+            if (!trackMeshCache.TryGetValue(meshKey, out Mesh trackMesh))
             {
                 TrackPiece piece = TrackFactory.GetTrackPiece(trackType);
+                TrackTypeFlags flags = OpenRCT2.GetTrackTypeFlags(trackType);
                 meshExtruder.Clear();
 
                 float offset = 0;
@@ -61,6 +67,15 @@ namespace Generation.Retro
                     TransformPoint nodeA = piece.Points[i];
                     TransformPoint nodeB = piece.Points[j];
 
+                    // If the track is inverted, and its not an inversion, rotate
+                    // TODO: still not perfect; some inverted inversions still mess up. Also performance could be better.
+                    if (track.IsInverted && (flags & (TrackTypeFlags.NormalToInversion | TrackTypeFlags.InversionToNormal)) == 0)
+                    {
+                        Quaternion inversionAngle = Quaternion.AngleAxis(180, Vector3.forward);
+                        nodeA = new TransformPoint(nodeA.Position, nodeA.Rotation * inversionAngle);
+                        nodeB = new TransformPoint(nodeB.Position, nodeB.Rotation * inversionAngle);
+                    }
+
                     Vector3 start = nodeA.Position;
                     Vector3 end = nodeB.Position;
                     float length = Vector3.Distance(start, end);
@@ -71,14 +86,15 @@ namespace Generation.Retro
                 }
 
                 trackMesh = meshExtruder.ToMesh();
-                trackMeshCache.Add(trackType, trackMesh);
+                trackMeshCache.Add(meshKey, trackMesh);
             }
 
+            float trackOffset = (OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsXYMultiplier);
             if (track.IsInverted)
-                Debug.Log($"Is inverted tracktype: {trackType}");
+                trackOffset *= 2;
 
             Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
-            position.y += OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsXYMultiplier;
+            position.y += trackOffset;
 
             GameObject obj = GameObject.Instantiate(prefab, position, Quaternion.Euler(0, tile.Rotation * 90f, 0), map.transform);
 
@@ -95,9 +111,6 @@ namespace Generation.Retro
 
             MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
             renderer.material.color = GraphicsFactory.PaletteToColor(OpenRCT2.GetPaletteIndexForColourId(colours[0].main));
-
-            var trackGizmos = obj.AddComponent<TrackGizmosDrawer>();
-            trackGizmos.trackType = trackType;
             return; 
         }
     }

@@ -11,9 +11,6 @@ namespace Lib
         // Mask to get the bits for the colour scheme.
         const byte ColourSchemeMask = 0b_0000_0011;
 
-        // Flag for being inverted. Move to enum if we're gonna use more of these flags.
-        const byte IsInvertedFlag = (1 << 1);
-
 
         /// <summary>
         /// The type of the element. In this case a track element.
@@ -48,9 +45,15 @@ namespace Lib
 
 
         /// <summary>
+        /// The second set of flags, specifically for track elements.
+        /// </summary>
+        public TrackElementFlags Flags2 => (TrackElementFlags)element.slot0x7;
+
+
+        /// <summary>
         /// Returns whether the track piece is inverted.
         /// </summary>
-        public bool IsInverted => ((element.slot0x7 & IsInvertedFlag) != 0);
+        public bool IsInverted => ((element.slot0x7 & (byte)TrackElementFlags.IsInverted) != 0);
 
 
         /// <summary>
