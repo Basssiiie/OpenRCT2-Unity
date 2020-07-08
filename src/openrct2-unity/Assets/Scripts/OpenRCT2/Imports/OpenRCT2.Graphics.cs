@@ -58,6 +58,13 @@ namespace Lib
         /// Gets the image entry for the specified small scenery tile.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        public static extern uint GetPathSurfaceImageIndex(TileElement tileElement);
+
+
+        /// <summary>
+        /// Gets the image entry for the specified small scenery tile.
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
         public static extern uint GetSmallSceneryImageIndex(TileElement tileElement, byte direction);
 
 
@@ -72,17 +79,17 @@ namespace Lib
         /// Gets the texture size for the specified image index.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern void GetTextureSize(uint imageIndex, ref SpriteSize textureSize);
+        static extern void GetTextureData(uint imageIndex, ref SpriteData data);
 
 
         /// <summary>
         /// Gets the texture size for the specified image index.
         /// </summary>
-        public static SpriteSize GetTextureSize(uint imageIndex)
+        public static SpriteData GetTextureData(uint imageIndex)
         {
-            SpriteSize size = new SpriteSize();
-            GetTextureSize(imageIndex, ref size);
-            return size;
+            SpriteData data = new SpriteData();
+            GetTextureData(imageIndex, ref data);
+            return data;
         }
 
 
@@ -105,9 +112,9 @@ namespace Lib
         /// </summary>
         public static byte[] GetTexturePixels(uint imageIndex)
         {
-            SpriteSize size = GetTextureSize(imageIndex);
+            SpriteData data = GetTextureData(imageIndex);
 
-            int total = size.Total;
+            int total = data.PixelCount;
             byte[] byteBuffer = new byte[total];
             GetTexturePixels(imageIndex, byteBuffer, total);
             return byteBuffer;

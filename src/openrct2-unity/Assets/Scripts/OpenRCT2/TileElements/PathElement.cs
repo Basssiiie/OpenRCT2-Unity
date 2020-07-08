@@ -11,6 +11,32 @@ namespace Lib
         public TileElementType Type => element.Type;
 
 
+        /// <summary>
+        /// Bits of which edges and corners are connected, where the first 4
+        /// bits are the edges and the last 4 the corners.
+        /// </summary>
+        public byte EdgesAndCorners => element.slot0x6;
+
+
+        /// <summary>
+        /// A second set of flags for this path element.
+        /// </summary>
+        public PathElementFlags Flags2 => (PathElementFlags)element.slot0x7;
+
+
+        /// <summary>
+        /// Returns whether this path element is sloped or flat.
+        /// </summary>
+        public bool IsSloped => ((element.slot0x7 & (int)PathElementFlags.IsSloped) != 0);
+
+
+        /// <summary>
+        /// Returns the direction in which the slope is, if the IsSloped bit is set.
+        /// </summary>
+        public byte SlopeDirection => element.slot0x8;
+
+
+
         /* 0x1 = SurfaceIndex
          * 0x2 = SurfaceIndex
          * 0x3 = RailingsIndex

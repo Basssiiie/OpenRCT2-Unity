@@ -1,7 +1,10 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments -> this is deliberate
+#pragma warning disable CA1401 // P/Invokes should not be visible -> this is also deliberate
 
 namespace Lib
 {
@@ -24,6 +27,20 @@ namespace Lib
 
 
         /// <summary>
+        /// Starts the game.
+        /// </summary>
+        public static bool StartGame()
+        {
+            LoadPathSettings();
+            if (!ArePathSettingsValid())
+                return false;
+
+            StartGame(openrctDataPath, rct2Path, rct1Path);
+            return true;
+        }
+
+
+        /// <summary>
         /// Performs a single game update.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
@@ -34,7 +51,7 @@ namespace Lib
         /// Shuts down the game.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern void StopGame();
+        public static extern void StopGame();
 
 
         /// <summary>
@@ -53,5 +70,41 @@ namespace Lib
         /// </summary>
         public static string GetParkName()
             => Marshal.PtrToStringAnsi(GetParkNamePtr());
+
+
+        /// <summary>
+        /// Loads the path settings from the player preferences configuration.
+        /// </summary>
+        static void LoadPathSettings()
+        {
+            openrctDataPath = Configuration.OpenRCT2DataPath;
+            rct2Path = Configuration.RCT2Path;
+            rct1Path = Configuration.RCT1Path;
+            parkPath = Configuration.ParkPath;
+        }
+
+
+        /// <summary>
+        /// Checks whether all paths exist.
+        /// </summary>
+        static bool ArePathSettingsValid()
+        {
+            if (!Directory.Exists(openrctDataPath))
+            {
+                Debug.LogError($"Could not load OpenRCT2: openrct path is invalid. ({openrctDataPath})");
+                return false;
+            }
+            if (!Directory.Exists(rct2Path))
+            {
+                Debug.LogError($"Could not load OpenRCT2: rct2 path is invalid. ({rct2Path})");
+                return false;
+            }
+            if (!string.IsNullOrWhiteSpace(rct1Path) && !Directory.Exists(rct1Path))
+            {
+                Debug.LogError($"Could not load OpenRCT2: rct1 path is invalid. ({rct1Path})");
+                return false;
+            }
+            return true;
+        }
     }
 }

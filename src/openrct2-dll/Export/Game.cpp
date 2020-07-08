@@ -16,6 +16,9 @@ extern "C"
 {
     EXPORT void StartGame(const char* datapath, const char* rct2path, const char* rct1path)
     {
+        if (context != nullptr)
+            return;
+
         printf("(me) StartGame( %s )\n", datapath);
         _log_levels[DIAGNOSTIC_LEVEL_VERBOSE] = true;
 

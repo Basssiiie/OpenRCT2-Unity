@@ -79,7 +79,13 @@ namespace Generation.Retro
         static void ApplySprite(GameObject obj, ref TileElement tile)
         {
             uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
-            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D(TextureWrapMode.Clamp);
+            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D();
+
+            if (texture == null)
+            {
+                Debug.LogError($"Missing small scenery sprite image: {imageIndex & 0x7FFFF}");
+                return;
+            }
 
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
             renderer.material.SetTexture("_BaseMap", texture);

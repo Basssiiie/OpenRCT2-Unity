@@ -35,13 +35,16 @@ namespace Graphics
             }
 
             // Retrieve texture in bytes
-            SpriteSize size = OpenRCT2.GetTextureSize(imageIndex);
+            SpriteData data = OpenRCT2.GetTextureData(imageIndex);
 
-            int total = size.Total;
+            int total = data.PixelCount;
+            if (total == 0)
+                return new Graphic();
+
             byte[] byteBuffer = new byte[total];
             OpenRCT2.GetTexturePixels(imageIndex, byteBuffer);
 
-            graphic = new Graphic(imageIndex, size.width, size.height, byteBuffer);
+            graphic = new Graphic(imageIndex, data.width, data.height, byteBuffer);
             graphicCache.Add(imageIndex, graphic);
 
             return graphic;

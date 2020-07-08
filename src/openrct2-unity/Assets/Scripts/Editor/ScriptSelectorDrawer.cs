@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using Utilities;
 
-namespace Lib
+namespace EditorExtensions
 {
     /// <summary>
     /// Property drawer for the <see cref="ScriptSelectorAttribute"/>.

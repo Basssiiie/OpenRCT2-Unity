@@ -86,6 +86,49 @@ extern "C"
     }
 
 
+    // Flat path table, from Paint.Path.cpp
+    static constexpr const uint8_t byte_98D6E0[] = {
+        0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 12, 13, 14, 15, 0, 1, 2, 20, 4, 5, 6, 22, 8, 9, 10, 26, 12, 13, 14, 36,
+        0, 1, 2, 3, 4, 5, 21, 23, 8, 9,  10, 11, 12, 13, 33, 37, 0, 1, 2, 3,  4, 5, 6, 24, 8, 9, 10, 11, 12, 13, 14, 38,
+        0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 29, 30, 34, 39, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 40,
+        0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 12, 13, 35, 41, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 42,
+        0, 1, 2, 3, 4, 5, 6,  7,  8, 25, 10, 27, 12, 31, 14, 43, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 28, 12, 13, 14, 44,
+        0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 12, 13, 14, 45, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 46,
+        0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 12, 32, 14, 47, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 48,
+        0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 12, 13, 14, 49, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 50
+    };
+
+
+    // Returns the sprite image index for a small scenery tile element.
+    //  Inspired by: path_paint()
+    EXPORT uint32_t GetPathSurfaceImageIndex(const TileElement* tileElement)
+    {
+        PathElement* pathElement = tileElement->AsPath();
+        PathSurfaceEntry* footpathEntry = pathElement->GetSurfaceEntry();
+
+        uint32_t imageId;
+        if (tileElement->AsPath()->IsSloped())
+        {
+            imageId = 16; // We just take rotation 0. Always.
+        }
+        else
+        {
+            uint8_t edges = (pathElement->GetEdgesAndCorners());
+            imageId = byte_98D6E0[edges];
+        }
+
+        return (imageId + footpathEntry->image);
+    }
+
+
+    // Returns the sprite image index for a small scenery tile element.
+    //  Inspired by: path_paint()
+    EXPORT uint32_t GetPathRailingImageIndex(const TileElement* tileElement)
+    {
+        return 0;
+    }
+
+
     // Returns the sprite image index for a small scenery tile element.
     EXPORT uint32_t GetSmallSceneryImageIndex(const TileElement* tileElement, uint8_t direction)
     {
@@ -200,46 +243,31 @@ extern "C"
     }
 
 
-    // Returns the image index of the tile element and its texture size.
-    EXPORT void GetTextureSize(uint32_t imageIndex, rct_size16* textureSize)
+    // Struct containing information about the sprite.
+    struct sprite_data
     {
-        /*
-        uint32_t imageIndex = 0;
-        switch (tileElement->GetType())
+        int16_t width;
+        int16_t height;
+        int16_t x_offset;
+        int16_t y_offset;
+    };
+
+
+    // Returns the image index of the tile element and its texture size.
+    EXPORT void GetTextureData(uint32_t imageIndex, sprite_data* data)
+    {
+        const rct_g1_element* g1 = gfx_get_g1_element(imageIndex & 0x7FFFF);
+
+        if (g1 == nullptr)
         {
-            case TILE_ELEMENT_TYPE_SURFACE:
-                imageIndex = GetSurfaceSprite(tileElement, 0, 0, direction);
-                break;
-            case TILE_ELEMENT_TYPE_PATH:
-                // path_paint(session, baseZ, tile_element);
-                break;
-            case TILE_ELEMENT_TYPE_TRACK:
-                // track_paint(session, direction, baseZ, tile_element);
-                break;
-            case TILE_ELEMENT_TYPE_SMALL_SCENERY:
-                imageIndex = GetSmallScenerySprite(tileElement, direction);
-                break;
-            case TILE_ELEMENT_TYPE_ENTRANCE:
-                // entrance_paint(session, direction, baseZ, tile_element);
-                break;
-            case TILE_ELEMENT_TYPE_WALL:
-                // fence_paint(session, direction, baseZ, tile_element);
-                break;
-            case TILE_ELEMENT_TYPE_LARGE_SCENERY:
-                // large_scenery_paint(session, direction, baseZ, tile_element);
-                break;
-            case TILE_ELEMENT_TYPE_BANNER:
-                // banner_paint(session, direction, baseZ, tile_element);
-                break;
+            printf("(me) Could not find g1 element for %i.\n", imageIndex);
+            return;
         }
 
-        if (imageIndex == 0)
-        {
-            printf("(me) GetTileElementTextureInfo: image index = 0\n");
-            return 0;
-        }*/
-
-        *textureSize = gfx_get_sprite_size(imageIndex);
+        data->width = g1->width;
+        data->height = g1->height;
+        data->x_offset = g1->x_offset;
+        data->y_offset = g1->y_offset;
     }
 
 

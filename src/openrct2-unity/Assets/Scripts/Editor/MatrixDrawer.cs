@@ -1,0 +1,75 @@
+using System.Collections;
+using UnityEditor;
+using UnityEngine;
+using Utilities;
+
+namespace EditorExtensions
+{
+    /// <summary>
+    /// Property drawer for the <see cref="ScriptSelectorAttribute"/>.
+    /// </summary>
+    [CustomPropertyDrawer(typeof(Matrix4x4))]
+    public class MatrixDrawer : PropertyDrawer
+    {
+        const int MatrixSize = 4;
+
+        bool foldout = true;
+
+        
+        /// <summary>
+        /// Draws the GUI for a property with a <see cref="ScriptSelectorAttribute"/>.
+        /// </summary>
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            IEnumerator enumerator = property.GetEnumerator();
+            float spacing = EditorGUIUtility.standardVerticalSpacing;
+            float height = EditorGUIUtility.singleLineHeight;
+
+            Rect foldoutRect = position;
+            foldoutRect.height = height;
+
+            if ((foldout = EditorGUI.Foldout(foldoutRect, foldout, label, toggleOnLabelClick: true)))
+            {
+                for (int row = 0; row < MatrixSize; row++)
+                {
+                    float sx = (position.x);
+                    float sy = (position.y + height + spacing);
+                    float width = ((position.width / MatrixSize) - spacing);
+
+                    for (int col = 0; col < MatrixSize; col++)
+                    {
+                        // Draw a single matrix float field.
+                        enumerator.MoveNext();
+                        SerializedProperty matrixProp = (SerializedProperty)enumerator.Current;
+                        float original = matrixProp.floatValue;
+
+                        Rect fieldRect = new Rect
+                        (
+                            sx + col * (width + spacing),
+                            sy + row * (height + spacing),
+                            width,
+                            height
+                        );
+                        float output = EditorGUI.FloatField(fieldRect, original);
+                        if (output != original)
+                        {
+                            matrixProp.floatValue = output;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the height of the property.
+        /// </summary>
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            if (!foldout)
+                return EditorGUIUtility.singleLineHeight;
+
+            return ((1 + MatrixSize) * (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing));
+        }
+    }
+}

@@ -58,6 +58,12 @@ namespace Generation.Retro
                     .ForImageIndex(image.ImageIndex)
                     .ToTexture2D(TextureWrapMode.Repeat);
 
+                if (texture == null)
+                {
+                    Debug.LogError($"Missing surface sprite image: {image.ImageIndex & 0x7FFFF}");
+                    continue;
+                }
+
                 Material material;
 
                 switch (image.Type)
@@ -78,6 +84,12 @@ namespace Generation.Retro
 
                         // HACK: injection of the refraction sprite shouldnt be here.
                         var refraction = GraphicsFactory.ForImageIndex(WaterRefractionImageIndex).ToTexture2D(TextureWrapMode.Repeat);
+                        if (refraction == null)
+                        {
+                            Debug.LogError($"Missing water refraction sprite image: {WaterRefractionImageIndex}");
+                            continue;
+                        }
+
                         material.SetTexture(waterRefractionField, refraction);
                         break;
 

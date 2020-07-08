@@ -12,10 +12,10 @@ namespace Lib
         public string selectedPark;
 
         // Configuration for data paths
-        string openrctDataPath;
-        string rct2Path;
-        string rct1Path;
-        string parkPath;
+        static string openrctDataPath;
+        static string rct2Path;
+        static string rct1Path;
+        static string parkPath;
 
 
         /// <summary>
@@ -24,18 +24,25 @@ namespace Lib
         void Awake()
         {
             LoadPathSettings();
-            if (!ArePathSettingsValid())
+            string parkFilePath = GetParkFilePath();
+            if (!File.Exists(parkFilePath))
             {
-                Debug.LogError("Could not load OpenRCT2: one of the specified paths is invalid.", gameObject);
+                Debug.LogError($"Could not load OpenRCT2: park path is invalid. ({parkFilePath})", gameObject);
 
                 // disable everything to prevent crashes
                 gameObject.SetActive(false); 
                 return;
             }
 
-            Debug.Log("Start OpenRCT2...");
+            if (!StartGame())
+            {
+                // disable everything to prevent crashes
+                gameObject.SetActive(false);
+                return;
+            }
 
-            StartGame(openrctDataPath, rct2Path, rct1Path);
+            Debug.Log("Starting OpenRCT2...");
+
             LoadPark(GetParkFilePath());
 
             string parkname = GetParkName();
@@ -59,30 +66,6 @@ namespace Lib
         {
             StopGame();
             Debug.Log("OpenRCT2 has shutdown.");
-        }
-
-
-        /// <summary>
-        /// Loads the path settings from the player preferences configuration.
-        /// </summary>
-        void LoadPathSettings()
-        {
-            openrctDataPath = Configuration.OpenRCT2DataPath;
-            rct2Path = Configuration.RCT2Path;
-            rct1Path = Configuration.RCT1Path;
-            parkPath = Configuration.ParkPath;
-        }
-
-
-        /// <summary>
-        /// Checks whether all paths exist.
-        /// </summary>
-        bool ArePathSettingsValid()
-        {
-            return (Directory.Exists(openrctDataPath)
-                && Directory.Exists(rct2Path)
-                && (string.IsNullOrWhiteSpace(rct1Path) || Directory.Exists(rct1Path))
-                && File.Exists(GetParkFilePath()));
         }
 
 
