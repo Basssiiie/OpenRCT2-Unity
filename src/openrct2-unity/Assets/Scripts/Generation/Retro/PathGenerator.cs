@@ -107,8 +107,10 @@ namespace Generation.Retro
         /// </summary>
         int GetCacheKey(in PathElement path)
         {
+            // 0b1_0000_0000 for sloped pieces.
+            // 0b0_####_#### for whatever the edges and corners are.
             if (path.IsSloped)
-                return (1 << 8);
+                return (1 << 8); 
 
             return (path.EdgesAndCorners);
         }
