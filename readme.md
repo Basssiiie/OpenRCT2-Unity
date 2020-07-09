@@ -2,6 +2,14 @@
 
 This fork of the original OpenRCT2 repository is an open-source attempt at running OpenRCT2 in a 3D game engine.
 
+## Progress videos
+
+[#3: Three Monkeys Park onride (30th of May)](https://www.youtube.com/watch?v=9JKYXVSoDlE)
+
+[#2: Diamond Heights (3th of May)](https://www.youtube.com/watch?v=9JKYXVSoDlE)
+
+[#1: Iceberg Islands (22nd of April)](https://www.youtube.com/watch?v=9JKYXVSoDlE)
+
 ## How to get it running
 
 As of now there are no release builds yet, because the project is still very much in alpha stage.
@@ -39,10 +47,18 @@ OpenRCT2 is an open source C++ project, which allows easy forking and extending 
 
 This fork adds two more projects to the mix: `openrct2-dll` and `openrct2-unity`:
 
-- `openrct2-dll` imports `libopenrct2` and adds  bindings for useful functions within OpenRCT2. These functions together with the static library are then exported as a Dynamicly Linked Library (DLL) for use.
-- `openrct2-unity` is the Unity project. The DLL is imported into this project and its C++ functions are then [marshalled through Platform Invoke](https://docs.microsoft.com/en-us/dotnet/framework/interop/marshaling-data-with-platform-invoke), which is a technology which allows me to call unmanaged C++ libraries from managed C# .NET Framework code. 
+- `openrct2-dll` imports `libopenrct2` and adds  bindings for useful functions within OpenRCT2. These functions together with the static library are then exported as a C++ Dynamicly Linked Library (DLL) for use elsewhere.
+- `openrct2-unity` is the Unity C# project. The DLL is imported into this project and its C++ functions are then [marshalled through Platform Invoke](https://docs.microsoft.com/en-us/dotnet/framework/interop/marshaling-data-with-platform-invoke), which is a technology which allows me to call unmanaged C++ libraries from managed C# .NET Framework code. 
 
-From there on, the C# code can call the right functions to start the game, load any park and retrieve information about said park, like where it's scenery, rides and peeps are. All this information is then displayed in Unity in real-time, while `libopenrct2` keeps doing all the logic of the game in the background.
+From there on, the C# code can call the right functions to start the game, load any park and retrieve information about said park, like where it's scenery, rides and peeps are. All this information is then displayed in Unity in real-time, while `libopenrct2` runs doing all the logic of the game in the background.
+
+## Note about contributions:
+
+Since this is my work in progress pet project, the code is subject to random changes. I'm open to contributions but it would be benefitial for both of us to let me know via message (over Discord or Youtube). :D
+
+---
+
+---
 
 ---
 
