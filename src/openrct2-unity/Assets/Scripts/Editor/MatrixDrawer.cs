@@ -28,10 +28,8 @@ namespace EditorExtensions
             Rect foldoutRect = position;
             foldoutRect.height = height;
 
-            bool foldout = EditorGUI.Foldout(foldoutRect, cache.Get(property), label, toggleOnLabelClick: true);
-            cache.Set(property, foldout);
-
-            if (foldout)
+            string cacheKey = cache.Get(property, out bool foldout);
+            if ((foldout = EditorGUI.Foldout(foldoutRect, foldout, label, toggleOnLabelClick: true)))
             {
                 IEnumerator enumerator = property.GetEnumerator();
                 float spacing = EditorGUIUtility.standardVerticalSpacing;
@@ -64,6 +62,7 @@ namespace EditorExtensions
                     }
                 }
             }
+            cache.Set(cacheKey, foldout);
         }
 
 
@@ -72,7 +71,9 @@ namespace EditorExtensions
         /// </summary>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            if (!cache.Get(property))
+            cache.Get(property, out bool foldout);
+
+            if (!foldout)
                 return EditorGUIUtility.singleLineHeight;
 
             return ((1 + MatrixSize) * (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing));

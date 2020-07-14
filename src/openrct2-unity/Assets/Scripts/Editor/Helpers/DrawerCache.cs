@@ -14,18 +14,19 @@ namespace EditorExtensions
         /// <summary>
         /// Gets the data for the specified property. Returns the default of <typeparamref name="TData"/> if none saved.
         /// </summary>
-        public TData Get(SerializedProperty property)
+        public string Get(SerializedProperty property, out TData data)
         {
-            cache.TryGetValue(GetCacheKey(property), out TData data);
-            return data;
+            string key = GetCacheKey(property);
+            cache.TryGetValue(key, out data);
+            return key;
         }
 
 
         /// <summary>
         /// Saves the data for the specified property.
         /// </summary>
-        public void Set(SerializedProperty property, TData data)
-            => cache[GetCacheKey(property)] = data;
+        public void Set(string key, TData data)
+            => cache[key] = data;
 
 
         /// <summary>

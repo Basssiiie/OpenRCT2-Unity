@@ -33,7 +33,7 @@ namespace EditorExtensions
             float fieldSpacing = EditorGUIUtility.standardVerticalSpacing;
             float singleLineHeight = EditorGUIUtility.singleLineHeight;
 
-            DrawerData settings = cache.Get(property);
+            string cacheKey = cache.Get(property, out DrawerData settings);
             Rect rect = position;
             rect.height = singleLineHeight;
 
@@ -82,7 +82,7 @@ namespace EditorExtensions
                 }
                 EditorGUI.indentLevel--;
             }
-            cache.Set(property, settings);
+            cache.Set(cacheKey, settings);
         }
 
 
@@ -91,7 +91,7 @@ namespace EditorExtensions
         /// </summary>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            DrawerData settings = cache.Get(property);
+            cache.Get(property, out DrawerData settings);
 
             if (!settings.foldout)
                 return EditorGUIUtility.singleLineHeight;
