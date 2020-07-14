@@ -14,7 +14,7 @@ namespace EditorExtensions
     public class ScriptSelectorDrawer : PropertyDrawer
     {
         // Cache for the drawer, because the same drawer can be used for multiple properties.
-        static readonly Dictionary<string, DrawerData> cache = new Dictionary<string, DrawerData>();
+        static readonly DrawerCache<DrawerData> cache = new DrawerCache<DrawerData>();
 
 
         // The settings for the drawer per property.
@@ -33,9 +33,7 @@ namespace EditorExtensions
             float fieldSpacing = EditorGUIUtility.standardVerticalSpacing;
             float singleLineHeight = EditorGUIUtility.singleLineHeight;
 
-            string cacheKey = GetCacheKey(property);
-            cache.TryGetValue(cacheKey, out DrawerData settings);
-
+            DrawerData settings = cache.Get(property);
             Rect rect = position;
             rect.height = singleLineHeight;
 
@@ -84,7 +82,7 @@ namespace EditorExtensions
                 }
                 EditorGUI.indentLevel--;
             }
-            cache[cacheKey] = settings;
+            cache.Set(property, settings);
         }
 
 
@@ -93,7 +91,7 @@ namespace EditorExtensions
         /// </summary>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            cache.TryGetValue(GetCacheKey(property), out DrawerData settings);
+            DrawerData settings = cache.Get(property);
 
             if (!settings.foldout)
                 return EditorGUIUtility.singleLineHeight;
@@ -168,12 +166,5 @@ namespace EditorExtensions
             instance = Activator.CreateInstance(classType);
             return true;
         }
-
-
-        /// <summary>
-        /// Gets the key (path) of the cache.
-        /// </summary>
-        static string GetCacheKey(SerializedProperty property)
-            => $"{property.propertyPath}<{property.serializedObject.targetObject}>";
     }
 }

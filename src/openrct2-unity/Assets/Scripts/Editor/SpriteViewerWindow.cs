@@ -18,7 +18,7 @@ namespace EditorExtensions
 
 
         [MenuItem("OpenRCT2/Sprite Viewer")]
-        static void ShowWindow()
+        public static void ShowWindow()
         {
             // Get existing open window or if none, make a new one:
             SpriteViewerWindow window = GetWindow<SpriteViewerWindow>("OpenRCT2 Sprite Viewer");
@@ -79,13 +79,17 @@ namespace EditorExtensions
 
         void Awake()
         {
-            OpenRCT2.StartGame();
+            // Only start if currently not already running OpenRCT2.
+            if (!EditorApplication.isPlaying)
+                OpenRCT2.StartGame();
         }
 
 
         void OnDestroy()
         {
-            OpenRCT2.StopGame();
+            // Only stop if currently not already running OpenRCT2.
+            if (!EditorApplication.isPlaying)
+                OpenRCT2.StopGame();
         }
     }
 }

@@ -11,9 +11,11 @@ namespace EditorExtensions
     [CustomPropertyDrawer(typeof(Matrix4x4))]
     public class MatrixDrawer : PropertyDrawer
     {
-        const int MatrixSize = 4;
+        // Cache for the drawer, because the same drawer can be used for multiple properties.
+        static readonly DrawerCache<bool> cache = new DrawerCache<bool>();
 
-        bool foldout = true;
+
+        const int MatrixSize = 4;
 
         
         /// <summary>
@@ -21,15 +23,19 @@ namespace EditorExtensions
         /// </summary>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            IEnumerator enumerator = property.GetEnumerator();
-            float spacing = EditorGUIUtility.standardVerticalSpacing;
             float height = EditorGUIUtility.singleLineHeight;
 
             Rect foldoutRect = position;
             foldoutRect.height = height;
 
-            if ((foldout = EditorGUI.Foldout(foldoutRect, foldout, label, toggleOnLabelClick: true)))
+            bool foldout = EditorGUI.Foldout(foldoutRect, cache.Get(property), label, toggleOnLabelClick: true);
+            cache.Set(property, foldout);
+
+            if (foldout)
             {
+                IEnumerator enumerator = property.GetEnumerator();
+                float spacing = EditorGUIUtility.standardVerticalSpacing;
+
                 for (int row = 0; row < MatrixSize; row++)
                 {
                     float sx = (position.x);
@@ -66,7 +72,7 @@ namespace EditorExtensions
         /// </summary>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            if (!foldout)
+            if (!cache.Get(property))
                 return EditorGUIUtility.singleLineHeight;
 
             return ((1 + MatrixSize) * (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing));
