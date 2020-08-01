@@ -199,6 +199,6 @@ namespace Lib
         /// Returns whether the file entry has a valid extension.
         /// </summary>
         bool HasValidParkExtension(FileSystemInfo fileSystemInfo)
-            => ValidParkExtensions.Any(e => e == fileSystemInfo.Extension);
+            => ValidParkExtensions.Any(e => string.Equals(e, fileSystemInfo.Extension, StringComparison.InvariantCultureIgnoreCase));
     }
 }

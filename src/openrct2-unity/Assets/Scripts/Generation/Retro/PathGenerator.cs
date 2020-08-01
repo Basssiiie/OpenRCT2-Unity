@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Graphics;
 using Lib;
@@ -7,7 +6,8 @@ using UnityEngine;
 
 namespace Generation.Retro
 {
-    public class PathGenerator : IElementGenerator
+    [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(PathGenerator)))]
+    public class PathGenerator : TileElementGenerator
     {
         readonly static Dictionary<int, Mesh> pathMeshCache = new Dictionary<int, Mesh>();
 
@@ -21,27 +21,25 @@ namespace Generation.Retro
         [SerializeField] Material pathMaterial;
         [SerializeField] string pathTextureName;
 
-        Map map;
         MeshBuilder pathMeshBuilder;
 
 
         /// <inheritdoc/>
-        public void StartGenerator(Map map)
+        protected override void Start()
         {
-            this.map = map;
             pathMeshBuilder = new MeshBuilder();
         }
 
 
         /// <inheritdoc/>
-        public void FinishGenerator()
+        protected override void Finish()
         {
             pathMeshBuilder = null;
         }
 
 
         /// <inheritdoc/>
-        public void CreateElement(int x, int y, ref TileElement tile)
+        public override void CreateElement(int x, int y, in TileElement tile)
         {
             PathElement path = tile.AsPath();
             uint imageIndex = OpenRCT2.GetPathSurfaceImageIndex(tile);

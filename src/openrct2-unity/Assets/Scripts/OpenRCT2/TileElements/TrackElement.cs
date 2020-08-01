@@ -78,7 +78,7 @@ namespace Lib
         /// <summary>
         /// Wraps the tile element to access the track element information.
         /// </summary>
-        public TrackElement(ref TileElement element)
+        public TrackElement(in TileElement element)
         {
             this.element = element;
         }

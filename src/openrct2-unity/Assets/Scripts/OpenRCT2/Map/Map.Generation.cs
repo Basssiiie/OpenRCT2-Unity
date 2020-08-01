@@ -1,8 +1,6 @@
 using System;
 using Generation;
-using Generation.Retro;
 using UnityEngine;
-using Utilities;
 
 namespace Lib
 {
@@ -28,32 +26,32 @@ namespace Lib
 
         [SerializeField] TileElementFlags generationFlags = TileElementFlags.All;
 
-        [SerializeReference, ScriptSelector] IElementGenerator surfaceGenerator = new SurfaceGenerator();
-        [SerializeReference, ScriptSelector] IElementGenerator pathGenerator = new PrefabGenerator();
-        [SerializeReference, ScriptSelector] IElementGenerator trackGenerator = new TrackGenerator();
-        [SerializeReference, ScriptSelector] IElementGenerator smallSceneryGenerator = new SmallSceneryGenerator();
-        [SerializeReference, ScriptSelector] IElementGenerator entranceGenerator = new PrefabGenerator();
-        [SerializeReference, ScriptSelector] IElementGenerator wallGenerator = new WallGenerator();
-        [SerializeReference, ScriptSelector] IElementGenerator largeSceneryGenerator = new PrefabGenerator();
-        [SerializeReference, ScriptSelector] IElementGenerator bannerGenerator = new PrefabGenerator();
+        [SerializeField] TileElementGenerator surfaceGenerator;
+        [SerializeField] TileElementGenerator pathGenerator;
+        [SerializeField] TileElementGenerator trackGenerator;
+        [SerializeField] TileElementGenerator smallSceneryGenerator;
+        [SerializeField] TileElementGenerator entranceGenerator;
+        [SerializeField] TileElementGenerator wallGenerator;
+        [SerializeField] TileElementGenerator largeSceneryGenerator;
+        [SerializeField] TileElementGenerator bannerGenerator;
 
 
         /// <summary>
         /// Returns all generators currently selected.
         /// </summary>
-        IElementGenerator[] GetGenerators()
-        { 
-           return new IElementGenerator[]
-           {
-                surfaceGenerator,
-                pathGenerator,
-                trackGenerator,
-                smallSceneryGenerator,
-                entranceGenerator,
-                wallGenerator,
-                largeSceneryGenerator,
-                bannerGenerator
-           };
+        TileElementGenerator[] GetGenerators()
+        {
+            return new TileElementGenerator[]
+            {
+                 surfaceGenerator,
+                 pathGenerator,
+                 trackGenerator,
+                 smallSceneryGenerator,
+                 entranceGenerator,
+                 wallGenerator,
+                 largeSceneryGenerator,
+                 bannerGenerator
+            };
         }
 
 
@@ -62,7 +60,7 @@ namespace Lib
         /// </summary>
         void GenerateMap()
         {
-            IElementGenerator[] generators = GetGenerators();
+            TileElementGenerator[] generators = GetGenerators();
 
             foreach (var generator in generators)
                 generator.StartGenerator(this);
@@ -75,7 +73,7 @@ namespace Lib
                     Tile tile = Tiles[x, y];
                     for (int e = 0; e < tile.Count; e++)
                     {
-                        GenerateTileElement(x, y, ref tile.Elements[e]);
+                        GenerateTileElement(x, y, in tile.Elements[e]);
                     }
                 }
             }
@@ -88,48 +86,48 @@ namespace Lib
         /// <summary>
         /// Generates a tile element based on the type of the given tile.
         /// </summary>
-        void GenerateTileElement(int x, int y, ref TileElement tile)
+        void GenerateTileElement(int x, int y, in TileElement tile)
         {
             switch (tile.Type)
             {
                 case TileElementType.Surface:
                     if ((generationFlags & TileElementFlags.Surface) != 0)
-                        surfaceGenerator.CreateElement(x, y, ref tile);
+                        surfaceGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Path:
                     if ((generationFlags & TileElementFlags.Path) != 0)
-                        pathGenerator.CreateElement(x, y, ref tile);
+                        pathGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Track:
                     if ((generationFlags & TileElementFlags.Track) != 0)
-                        trackGenerator.CreateElement(x, y, ref tile);
+                        trackGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.SmallScenery:
                     if ((generationFlags & TileElementFlags.SmallScenery) != 0)
-                        smallSceneryGenerator.CreateElement(x, y, ref tile);
+                        smallSceneryGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Entrance:
                     if ((generationFlags & TileElementFlags.Entrance) != 0)
-                        entranceGenerator.CreateElement(x, y, ref tile);
+                        entranceGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Wall:
                     if ((generationFlags & TileElementFlags.Wall) != 0)
-                        wallGenerator.CreateElement(x, y, ref tile);
+                        wallGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.LargeScenery:
                     if ((generationFlags & TileElementFlags.LargeScenery) != 0)
-                        largeSceneryGenerator.CreateElement(x, y, ref tile);
+                        largeSceneryGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Banner:
                     if ((generationFlags & TileElementFlags.Banner) != 0)
-                        bannerGenerator.CreateElement(x, y, ref tile);
+                        bannerGenerator.CreateElement(x, y, in tile);
                     break;
             }
         }

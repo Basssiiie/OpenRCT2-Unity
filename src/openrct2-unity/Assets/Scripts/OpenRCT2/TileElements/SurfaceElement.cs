@@ -60,7 +60,7 @@ namespace Lib
         /// <summary>
         /// Wraps the tile element to access the surface level information.
         /// </summary>
-        public SurfaceElement(ref TileElement element)
+        public SurfaceElement(in TileElement element)
         {
             this.element = element;
         }

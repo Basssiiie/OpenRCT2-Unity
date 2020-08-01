@@ -7,7 +7,8 @@ using UnityEngine;
 
 namespace Generation.Retro
 {
-    public class TrackGenerator : IElementGenerator
+    [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(TrackGenerator)))]
+    public class TrackGenerator : TileElementGenerator
     {
         static readonly Dictionary<int, Mesh> trackMeshCache = new Dictionary<int, Mesh>();
         static readonly Dictionary<short, TrackColour[]> trackColoursCache = new Dictionary<short, TrackColour[]>();
@@ -20,29 +21,26 @@ namespace Generation.Retro
         // Only the first 3 flags matter for the mesh.
         const byte KeyFlagsMask = 0b111;
 
-        Map map;
         MeshExtruder meshExtruder; 
 
 
         /// <inheritdoc/>
-        public void StartGenerator(Map map)
+        protected override void Start()
         {
-            this.map = map;
             meshExtruder = new MeshExtruder(trackMesh);
         }
 
 
         /// <inheritdoc/>
-        public void FinishGenerator()
+        protected override void Finish()
         {
-            map = null;
             meshExtruder = null;
         }
 
 
 
         /// <inheritdoc/>
-        public void CreateElement(int x, int y, ref TileElement tile)
+        public override void CreateElement(int x, int y, in TileElement tile)
         {
             TrackElement track = tile.AsTrack();
 

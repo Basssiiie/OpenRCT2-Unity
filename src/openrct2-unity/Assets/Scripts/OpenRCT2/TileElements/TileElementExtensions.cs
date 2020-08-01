@@ -11,36 +11,36 @@ namespace Lib
         /// <summary>
         /// Wraps this tile element in a surface element wrapper.
         /// </summary>
-		public static SurfaceElement AsSurface(this ref TileElement tileElement)
-			=> new SurfaceElement(ref tileElement);
+		public static SurfaceElement AsSurface(this in TileElement tileElement)
+			=> new SurfaceElement(in tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a path element wrapper.
         /// </summary>
-        public static PathElement AsPath(this ref TileElement tileElement)
-			=> new PathElement(ref tileElement);
+        public static PathElement AsPath(this in TileElement tileElement)
+			=> new PathElement(in tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a track element wrapper.
         /// </summary>
-        public static TrackElement AsTrack(this ref TileElement tileElement)
-			=> new TrackElement(ref tileElement);
+        public static TrackElement AsTrack(this in TileElement tileElement)
+			=> new TrackElement(in tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a small scenery element wrapper.
         /// </summary>
-        public static SmallSceneryElement AsSmallScenery(this ref TileElement tileElement)
-			=> new SmallSceneryElement(ref tileElement);
+        public static SmallSceneryElement AsSmallScenery(this in TileElement tileElement)
+			=> new SmallSceneryElement(in tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a wall element wrapper.
         /// </summary>
-        public static WallElement AsWall(this ref TileElement tileElement)
-            => new WallElement(ref tileElement);
+        public static WallElement AsWall(this in TileElement tileElement)
+            => new WallElement(in tileElement);
 
 
         /// <summary>

@@ -8,7 +8,8 @@ namespace Generation.Retro
     /// <summary>
     /// A generator that generates the surface of a map.
     /// </summary>
-    public partial class SurfaceGenerator : IElementGenerator
+    [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(SurfaceGenerator)))]
+    public partial class SurfaceGenerator : TileElementGenerator
     {
         // For now we only use these two water sprites.
         static readonly uint WaterImageIndex = OpenRCT2.GetWaterImageIndex();
@@ -16,21 +17,19 @@ namespace Generation.Retro
 
         const byte NoWater = 0;
 
-        Map map;
         MeshBuilder surfaceMeshBuilder;
 
 
         /// <inheritdoc/>
-        public void StartGenerator(Map map)
+        protected override void Start()
         {
-            this.map = map;
             surfaceMeshBuilder = new MeshBuilder();
             images = new List<RequestedImage>();
         }
 
 
         /// <inheritdoc/>
-        public void FinishGenerator()
+        protected override void Finish()
         {
             Mesh mesh = surfaceMeshBuilder.ToMesh();
             mesh.name = "Map";
@@ -45,7 +44,7 @@ namespace Generation.Retro
 
 
         /// <inheritdoc/>
-        public void CreateElement(int x, int y, ref TileElement tile)
+        public override void CreateElement(int x, int y, in TileElement tile)
         {
             /* Surface coords to Unity:
                  * 

@@ -43,7 +43,7 @@ namespace Lib
         /// <summary>
         /// Wraps the tile element to access the wall element information.
         /// </summary>
-        public WallElement(ref TileElement element)
+        public WallElement(in TileElement element)
         {
             this.element = element;
         }

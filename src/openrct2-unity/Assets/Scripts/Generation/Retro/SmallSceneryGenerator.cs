@@ -7,29 +7,14 @@ namespace Generation.Retro
     /// <summary>
     /// A generator for small scenery tile elements.
     /// </summary>
-    public class SmallSceneryGenerator : IElementGenerator
+    [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(SmallSceneryGenerator)))]
+    public class SmallSceneryGenerator : TileElementGenerator
     {
         [SerializeField] GameObject crossShape;
 
-        Map map;
-
 
         /// <inheritdoc/>
-        public void StartGenerator(Map map)
-        {
-            this.map = map;
-        }
-
-
-        /// <inheritdoc/>
-        public void FinishGenerator()
-        {
-            map = null;
-        }
-
-
-        /// <inheritdoc/>
-        public void CreateElement(int x, int y, ref TileElement tile)
+        public override void CreateElement(int x, int y, in TileElement tile)
         {
             float pos_x = x;
             float pos_y = tile.baseHeight;
@@ -57,7 +42,7 @@ namespace Generation.Retro
 
             // Instantiate the element.
             GameObject obj = InstantiateElement(crossShape, pos_x, pos_y, pos_z, (90 * tile.Rotation + 90));
-            ApplySprite(obj, ref tile);
+            ApplySprite(obj, in tile);
         }
 
 
@@ -76,7 +61,7 @@ namespace Generation.Retro
         /// <summary>
         /// Gets the sprite of the tile element and applies it to the gameobject.
         /// </summary>
-        static void ApplySprite(GameObject obj, ref TileElement tile)
+        static void ApplySprite(GameObject obj, in TileElement tile)
         {
             uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
             Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D();

@@ -10,8 +10,8 @@ static const float radians = 0.785398163; // 45 degrees in radians.
 static const float3x3 rotation_matrix = float3x3 // this is correct now for rotating in 3d
 (
     0.707107, -0.3535535, -0.6123725,
-    0.707107,  0.3535535,  0.6123725,
-    0.,       -0.8660253,  0.5
+    0.707107, 0.3535535, 0.6123725,
+    0., -0.8660253, 0.5
 );
 
 
@@ -85,7 +85,7 @@ void sprite_add_offset_float(float2 uv, float2 size, float2 offset, out float2 O
  * uv:       the input uvs
  * returns:  the output uvs.
  */
-float2 sprite_scale_to_fit(float2 uv)
+float2 sprite_scale_at_center(float2 uv)
 {
     return (uv - 0.5f) * scale + 0.5f;
 }
@@ -93,7 +93,7 @@ float2 sprite_scale_to_fit(float2 uv)
 
 void sprite_scale_to_fit_float(float2 uv, out float2 Out)
 {
-    Out = sprite_scale_to_fit(uv);
+    Out = sprite_scale_at_center(uv);
 }
 
 
@@ -119,7 +119,7 @@ void clamp_no_stretch_float(float2 uv, float1 alpha, out float1 Out)
 
 
 /*
- * Rotates the sprite 45 degrees with the matrix.
+ * Rotates the sprite 45 degrees, 30 degrees down with the matrix.
  * 
  * uv:       the input uvs
  * size:     size in pixels, of the sprite.
@@ -129,7 +129,6 @@ void clamp_no_stretch_float(float2 uv, float1 alpha, out float1 Out)
 float2 sprite_rotate(float2 uv)
 {
     return mul(rotation_matrix, float3(uv, 0));
-    //return mul(rot_matrix, uv);;
 }
 
 
@@ -167,6 +166,24 @@ void sprite_translate_center_float(float2 uv, float2 size, float2 offset, out fl
 }
 
 
+
+
+float angle_triangle(float x1, float y1, float z1,
+                     float x2, float y2, float z2,
+                     float x3, float y3, float z3)
+{
+    float number = (x2 - x1) * (x3 - x1) + (y2 - y1) * (y3 - y1) + (z2 - z1) * (z3 - z1);
+    
+    float den = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2) + pow(z2 - z1, 2))
+              * sqrt(pow(x3 - x1, 2) + pow(y3 - y1, 2) + pow(z3 - z1, 2));
+
+    float angle = acos(number / den) * (180.0 / 3.14159265);
+    return angle;
+}
+
+
+
+
 /*
  * Converts the uvs of the path sprite so that the corners of the path are
  * in the corners of the texture.
@@ -178,50 +195,75 @@ void sprite_translate_center_float(float2 uv, float2 size, float2 offset, out fl
  */
 void Rct_path_matrix_float(float2 uv, float2 size, float2 offset, out float2 Out)
 {
-    //float2 rct_offset = sprite_add_offset(uv, size, offset);
-    //float2 scaled = sprite_scale_to_fit(rct_offset);
-
-    float3x3 a = float3x3
+    float3x3 scale_matrix = float3x3
     (
-        (uv.x - 0.5f) * size.x, 0, 0,
-        0, (uv.y - 0.5f) * size.y, 0,
-        0, 0, 1
-    );    
-    float3x3 b = float3x3
-    (
-        (size.x * aspect_ratio.x) + 0.5f, 0, 0,
-        0, (size.y * aspect_ratio.y) + 0.5f, 0,
+        (1. / size.x), 0, 0,
+        0, (1. / size.y), 0,
         0, 0, 1
     );
+    float3x3 scale_down_matrix = float3x3
+    (
+        size.x, 0, 0,
+        0, size.y, 0,
+        0, 0, 1
+    );
+    float3x3 mat_rs = mul(rotation_matrix, scale_matrix);
     
-    //float2 pixels = uv_to_pixel(uv, size);
-    //float2 rotated = sprite_rotate(pixels);
-    //float2 result = pixel_to_uv(rotated, size);
 
-    float3x3 m = mul(rotation_matrix, mul(a, b));
-    float3 result = float3(uv, 1);
     
-    Out = mul(m, result);
+    // find center
+    float2 center = float2(-offset.x, (size.y + offset.y) - 15.5);
+    float3 retval = float3(uv, 0);
+    
+    if (round(center.x * 3) == round(size.x * uv.x * 3) || round(center.y * 3) == round(size.y * uv.y * 3))
+    {
+        //retval = float3(0, 0, 0);
+    }
+    
+    //float3 upscale = float3(64, 31, 0);
+    //upscale = mul(rotation_matrix, upscale);
+
+    float u = uv.x;
+    float v = uv.y;
+
+    //float tilingX = ((1.0 / size.x));
+    //float tilingY = ((1.0 / size.y));
+    
+    float offsetX = -(offset.x + 32) / 64;
+    float offsetY = -offset.y / 31;
+
+    float scaledX = (u * 64/** tilingX * 37.2*/) + offsetX;
+    float scaledY = (v * 31/** tilingY * 59.6*/) + offsetY;
+
+    float3 scaledVector = float3(scaledX, scaledY, 0); // vector of 3 values
+    
+    float3 rotatedVector = mul(rotation_matrix, scaledVector);
+    rotatedVector.x += 0.5;
+    
+    Out = rotatedVector;
+
+    //rotatedVector *= float3(1.21, 0.79, 1);
+    //rotatedVector += float3(0.53, 0.13, 0);
+
+    /*
+    float
+        x1 = 1, y1 = 0, z1 = 0,
+        x2 = 0, y2 = 1, z2 = 0,
+        x3 = 0, y3 = 0, z3 = -1;
+
+    
+
+    float3x3 matr = float3x3(
+        x1, y1, z1,
+        x2, y2, z2,
+        x3, y3, z3
+    );
+
+    float3 scaled = mul(matr, float3(uv, 0));
+
+    Out = mul(rotation_matrix, scaled);
+    */
     return;
-    
-    float width_multiplier = (size.x / aspect_ratio.x);
-    float height_multiplier = (size.y / aspect_ratio.y);
-    float3 resized_uv = float3(uv.x / width_multiplier, uv.y / height_multiplier, 1);
-
-    float offset_x = (-offset.x / size.x);
-    float offset_y = (-offset.y / size.y);
-
-    float angle_cos = cos(radians) * scale;
-    float angle_sin = sin(radians) * scale;
-    
-    float3x3 trs_matrix = float3x3
-    (
-        angle_cos, angle_sin, 0,
-        -angle_sin, angle_cos, 0,
-        0, 0, 1
-    );
-
-    Out = mul(trs_matrix, resized_uv);
 }
 
 #endif

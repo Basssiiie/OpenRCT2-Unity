@@ -55,7 +55,7 @@ namespace Lib
         /// <summary>
         /// Wraps the tile element to access the path element information.
         /// </summary>
-        public PathElement(ref TileElement element)
+        public PathElement(in TileElement element)
         {
             this.element = element;
         }

@@ -8,7 +8,8 @@ namespace Generation
     /// A track generator that spawns a prefab at every subposition node with the node
     /// information written to the gameobject name.
     /// </summary>
-    public class TrackSubpositionGenerator : IElementGenerator
+    [CreateAssetMenu(menuName = (MenuPath + "Utilities/" + nameof(TrackSubpositionGenerator)))]
+    public class TrackSubpositionGenerator : TileElementGenerator
     {
         static readonly Dictionary<short, TrackNode[]> trackNodesCache = new Dictionary<short, TrackNode[]>();
 
@@ -16,25 +17,8 @@ namespace Generation
         [SerializeField] GameObject prefab;
 
 
-        Map map;
-
-
         /// <inheritdoc/>
-        public void StartGenerator(Map map)
-        {
-            this.map = map;
-        }
-
-
-        /// <inheritdoc/>
-        public void FinishGenerator()
-        {
-            map = null;
-        }
-
-
-        /// <inheritdoc/>
-        public void CreateElement(int x, int y, ref TileElement tile)
+        public override void CreateElement(int x, int y, in TileElement tile)
         {
             TrackElement track = tile.AsTrack();
             if (track.PartIndex != 0)

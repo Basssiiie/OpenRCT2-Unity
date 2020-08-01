@@ -7,31 +7,15 @@ namespace Generation.Retro
     /// <summary>
     /// A generator for wall elements.
     /// </summary>
-    public class WallGenerator : IElementGenerator
+    [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(WallGenerator)))]
+    public class WallGenerator : TileElementGenerator
     {
         [SerializeField] GameObject prefab;
         [SerializeField] string textureField = "Wall";
 
 
-        Map map;
-
-
         /// <inheritdoc/>
-        public void StartGenerator(Map map)
-        {
-            this.map = map;
-        }
-
-
-        /// <inheritdoc/>
-        public void FinishGenerator()
-        {
-            map = null;
-        }
-
-
-        /// <inheritdoc/>
-        public void CreateElement(int x, int y, ref TileElement tile)
+        public override void CreateElement(int x, int y, in TileElement tile)
         {
             Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
             Quaternion rotation = Quaternion.Euler(0, (90 * tile.Rotation + 90), 0);           

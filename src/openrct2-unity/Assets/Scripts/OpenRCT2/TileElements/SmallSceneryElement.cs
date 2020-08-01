@@ -39,7 +39,7 @@ namespace Lib
         /// <summary>
         /// Wraps the tile element to access the small scenery information.
         /// </summary>
-        public SmallSceneryElement(ref TileElement element)
+        public SmallSceneryElement(in TileElement element)
         {
             this.element = element;
         }
