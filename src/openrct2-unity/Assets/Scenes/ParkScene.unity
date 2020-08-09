@@ -570,6 +570,7 @@ MonoBehaviour:
   worldRight: {x: -1.0000002, y: -0, z: 0}
   worldUp: {x: 0, y: -0.00000011920929, z: -1.0000001}
   worldForward: {x: 0, y: -1.0000001, z: -0.00000011920929}
+  drawChildLines: 0
 --- !u!65 &491907135
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -833,6 +834,7 @@ MonoBehaviour:
   worldRight: {x: 0.70710635, y: -0.35355353, z: -0.6123729}
   worldUp: {x: 0.7071072, y: 0.35355362, z: 0.61237186}
   worldForward: {x: 0.00000044703484, y: -0.86602527, z: 0.5000003}
+  drawChildLines: 0
 --- !u!21 &591777536
 Material:
   serializedVersion: 6
@@ -1023,6 +1025,7 @@ MonoBehaviour:
   worldRight: {x: 0.70710635, y: -0.35355353, z: -0.6123729}
   worldUp: {x: 0.7071072, y: 0.35355362, z: 0.61237186}
   worldForward: {x: 0.00000044703484, y: -0.86602527, z: 0.5000003}
+  drawChildLines: 0
 --- !u!65 &774861666
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1219,6 +1222,7 @@ MonoBehaviour:
   worldRight: {x: 0.70710635, y: -0.35355353, z: -0.6123729}
   worldUp: {x: 0.7071072, y: 0.35355362, z: 0.61237186}
   worldForward: {x: 0.00000044703484, y: -0.86602527, z: 0.5000003}
+  drawChildLines: 0
 --- !u!65 &1033817655
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1378,6 +1382,7 @@ MonoBehaviour:
   worldRight: {x: -1.0000002, y: -0, z: 0}
   worldUp: {x: 0, y: -0.00000011920929, z: -1.0000001}
   worldForward: {x: 0, y: -1.0000001, z: -0.00000011920929}
+  drawChildLines: 0
 --- !u!1 &1235066842
 GameObject:
   m_ObjectHideFlags: 0
@@ -1461,6 +1466,7 @@ MonoBehaviour:
   worldRight: {x: 0.7071077, y: -0.000000029802322, z: -0.7071059}
   worldUp: {x: 0.353553, y: 0.8660253, z: 0.35355392}
   worldForward: {x: 0.61237156, y: -0.5000001, z: 0.61237323}
+  drawChildLines: 0
 --- !u!1 &1347800241
 GameObject:
   m_ObjectHideFlags: 0
@@ -1578,6 +1584,7 @@ MonoBehaviour:
   worldRight: {x: -1.0000002, y: -0, z: 0}
   worldUp: {x: 0, y: -0.00000011920929, z: -1.0000001}
   worldForward: {x: 0, y: -1.0000001, z: -0.00000011920929}
+  drawChildLines: 0
 --- !u!65 &1389924469
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1896,6 +1903,7 @@ MonoBehaviour:
   worldRight: {x: 1, y: 0, z: 0}
   worldUp: {x: 0, y: 1, z: 0}
   worldForward: {x: 0, y: 0, z: 1}
+  drawChildLines: 0
 --- !u!1 &1636701859
 GameObject:
   m_ObjectHideFlags: 0
@@ -1994,6 +2002,7 @@ MonoBehaviour:
   worldRight: {x: 1, y: 0, z: 0}
   worldUp: {x: 0, y: 1, z: 0}
   worldForward: {x: 0, y: 0, z: 1}
+  drawChildLines: 0
 --- !u!1 &1675223600
 GameObject:
   m_ObjectHideFlags: 0
@@ -2239,6 +2248,7 @@ MonoBehaviour:
   worldRight: {x: 1, y: 0, z: 0}
   worldUp: {x: 0, y: 1, z: 0}
   worldForward: {x: 0, y: 0, z: 1}
+  drawChildLines: 0
 --- !u!65 &1848699491
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2351,6 +2361,7 @@ MonoBehaviour:
   worldRight: {x: 0.70710635, y: -0.35355353, z: -0.6123729}
   worldUp: {x: 0.7071072, y: 0.35355362, z: 0.61237186}
   worldForward: {x: 0.00000044703484, y: -0.86602527, z: 0.5000003}
+  drawChildLines: 0
 --- !u!65 &1941638615
 BoxCollider:
   m_ObjectHideFlags: 0

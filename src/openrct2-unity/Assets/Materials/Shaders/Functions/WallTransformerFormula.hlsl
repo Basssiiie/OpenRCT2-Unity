@@ -11,7 +11,7 @@ void Transform_float(float u, float v, float width, float height, out float Out)
 {
     float gap = (width / 2);
 
-    Out = (v * ((height - gap) / height) - Slope_float(u, height, gap)) + (gap / height);
+    Out = (v * ((height - gap) / height) - Slope_float(1 - u, height, gap)) + (gap / height);
 }
 
 #endif
