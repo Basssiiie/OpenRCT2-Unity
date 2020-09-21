@@ -6,9 +6,9 @@ This fork of the original OpenRCT2 repository is an open-source attempt at runni
 
 [#3: Three Monkeys Park onride (30th of May)](https://www.youtube.com/watch?v=9JKYXVSoDlE)
 
-[#2: Diamond Heights (3th of May)](https://www.youtube.com/watch?v=9JKYXVSoDlE)
+[#2: Diamond Heights (3th of May)](https://www.youtube.com/watch?v=5NeOn0p9ORY)
 
-[#1: Iceberg Islands (22nd of April)](https://www.youtube.com/watch?v=9JKYXVSoDlE)
+[#1: Iceberg Islands (22nd of April)](https://www.youtube.com/watch?v=Urvp0uQcGX4)
 
 ## How to get it running
 
