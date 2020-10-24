@@ -7,8 +7,16 @@ namespace Tools
 {
     public class SelectionTool : MonoBehaviour
     {
-        [SerializeField] WindowManager canvasManager;
+        [SerializeField] WindowManager windowManager;
         [SerializeField] PeepController peepController;
+
+
+        Camera mainCamera;
+
+        void Start()
+        {
+            mainCamera = Camera.main;
+        }
 
 
         // Update is called once per frame
@@ -16,7 +24,7 @@ namespace Tools
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
@@ -31,9 +39,8 @@ namespace Tools
             switch (obj.tag)
             {
                 case "Peep":
-                    canvasManager.CreatePeepWindow(peepController.FindPeepIdForGameObject(obj));
-                    break;
-                default:
+                    ushort peepId = peepController.FindPeepIdForGameObject(obj);
+                    windowManager.CreatePeepWindow(peepId);
                     break;
             }
         }

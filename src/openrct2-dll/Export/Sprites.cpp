@@ -14,8 +14,21 @@ extern "C"
     }
 
 
+    struct PeepEntity
+    {
+    public:
+        uint16_t idx;
+        int32_t x;
+        int32_t y;
+        int32_t z;
+
+        uint8_t tshirt_colour;
+        uint8_t trousers_colour;
+    };
+
+
     // Loads all the peeps into the specified buffer, returns the total amount of peeps loaded.
-    EXPORT int GetAllPeeps(Peep* peeps, int arraySize)
+    EXPORT int GetAllPeeps(PeepEntity* peeps, int arraySize)
     {
         Peep* peep;
         uint16_t spriteIndex;
@@ -23,7 +36,14 @@ extern "C"
 
         FOR_ALL_PEEPS (spriteIndex, peep)
         {
-            peeps[peepCount] = *peep;
+            PeepEntity* data = &peeps[peepCount];
+            data->idx = peep->sprite_index;
+            data->x = peep->x;
+            data->y = peep->y;
+            data->z = peep->z;
+            data->tshirt_colour = peep->tshirt_colour;
+            data->trousers_colour = peep->trousers_colour;
+
             peepCount++;
 
             if (peepCount >= arraySize)
@@ -33,7 +53,41 @@ extern "C"
     }
 
 
-    struct RideVehicle
+    struct PeepStats
+    {
+    public:
+        uint8_t energy;
+        uint8_t happiness;
+        uint8_t nausea;
+        uint8_t hunger;
+        uint8_t thirst;
+        uint8_t toilet;
+        uint8_t intensity;
+    };
+
+
+    EXPORT bool GetPeepStats(uint16_t spriteIndex, PeepStats* peepStats)
+    {
+        Peep* peep = GET_PEEP(spriteIndex);
+
+        if (peep != nullptr)
+        {
+            printf("(me) Peep does not exist anymore. ( sprite id: %i )\n", spriteIndex);
+            return false;
+        }
+
+        peepStats->energy = peep->energy;
+        peepStats->happiness = peep->happiness;
+        peepStats->nausea = peep->nausea;
+        peepStats->hunger = peep->hunger;
+        peepStats->thirst = peep->thirst;
+        peepStats->toilet = peep->toilet;
+        peepStats->intensity = peep->intensity;
+        return true;
+    }
+
+
+    struct VehicleEntity
     {
     public:
         uint16_t idx;
@@ -50,7 +104,7 @@ extern "C"
 
     
     // Loads all the vehicles into the specified buffer, returns the total amount of vehicles loaded.
-    EXPORT int GetAllVehicles(RideVehicle* vehicles, int arraySize)
+    EXPORT int GetAllVehicles(VehicleEntity* vehicles, int arraySize)
     {
         Vehicle *train, *vehicle;
         int vehicleCount = 0;
@@ -67,7 +121,7 @@ extern "C"
 
                 //printf("(me) %i vehicle %i at %i, %i, %i\n", vehicleCount, vehicle->sprite_index, vehicle->x, vehicle->y, vehicle->z);
 
-                RideVehicle* target = &vehicles[vehicleCount];
+                VehicleEntity* target = &vehicles[vehicleCount];
                 target->idx = vehicle->sprite_index;
 
                 target->x = vehicle->x;

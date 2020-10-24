@@ -168,7 +168,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!114 &108384298
 MonoBehaviour:
@@ -465,7 +465,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49e4dcf5847a0b1499de244f93c83a43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canvasManager: {fileID: 1779574330}
+  windowManager: {fileID: 1779574330}
   peepController: {fileID: 1491562773}
 --- !u!1 &457888653
 GameObject:
@@ -1057,7 +1057,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &885425400
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1496,7 +1496,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Three Monkeys Park.sv6
+  selectedPark: Europe - European Cultural Festival.SC6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
@@ -2141,7 +2141,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!114 &1779574330
 MonoBehaviour:
@@ -2155,9 +2155,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb1ffec044d775144bb9308228979414, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  peepBox: {fileID: 8219538139994365458, guid: 8f7aedb4e26ded34b9d6c0a26bff6792, type: 3}
-  peepCanvas: {fileID: 885425399}
-  peepController: {fileID: 1491562773}
+  peepWindowPrefab: {fileID: 8219538139994365458, guid: 8f7aedb4e26ded34b9d6c0a26bff6792,
+    type: 3}
+  parentCanvas: {fileID: 885425399}
 --- !u!224 &1779574331
 RectTransform:
   m_ObjectHideFlags: 0

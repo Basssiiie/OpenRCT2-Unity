@@ -16,10 +16,6 @@ namespace Lib
         static extern int GetAllPeeps([Out] Peep[] elements, int arraySize);
 
 
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern int GetAllVehicles([Out] Vehicle[] elements, int arraySize);
-
-
         /// <summary>
         /// Returns all peeps in the park.
         /// </summary>
@@ -40,6 +36,19 @@ namespace Lib
         /// </summary>
         public static int GetAllPeeps(Peep[] buffer)
             => GetAllPeeps(buffer, buffer.Length);
+
+
+        /// <summary>
+        /// Gets certain statiscics about this peep, like its hunger or energy.
+        /// Returns true if the peep stats were succesfully read, or false if
+        /// the peep does not exist (anymore).
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern bool GetPeepStats(ushort spriteIndex, ref PeepStats peepStats);
+
+
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        static extern int GetAllVehicles([Out] Vehicle[] elements, int arraySize);
 
 
         /// <summary>

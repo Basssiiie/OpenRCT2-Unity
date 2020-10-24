@@ -4,7 +4,6 @@
 
 static const float2 aspect_ratio = float2(64, 31); // max pixel width+height of a tile.
 static const float scale = 1 / 1.41421356237; // diagonal tile distance.
-static const float radians = 0.785398163; // 45 degrees in radians.
 
 
 static const float3x3 rotation_matrix = float3x3 // this is correct now for rotating in 3d
@@ -265,5 +264,99 @@ void Rct_path_matrix_float(float2 uv, float2 size, float2 offset, out float2 Out
     */
     return;
 }
+
+
+
+float3x3 matrix_euler_rot(float3 rotation)
+{
+    float x = radians(rotation.x);
+    float3x3 mat_x = float3x3
+    (
+        1, 0, 0,
+        0, cos(x), -sin(x),
+        0, sin(x), cos(x)
+    );
+
+    float y = radians(rotation.y);
+    float3x3 mat_y = float3x3
+    (
+        cos(y), 0, sin(y),
+        0, 1, 0,
+       -sin(y), 0, cos(y)
+    );
+    
+    float z = radians(rotation.z);
+    float3x3 mat_z = float3x3
+    (
+        cos(z), -sin(z), 0,
+        sin(z), cos(z), 0,
+        0, 0, 1
+    );
+
+    return (mat_z * mat_y * mat_x);
+}
+
+
+
+float3x3 rotationMatrix(float3 axis, float angle)
+{
+    // the usual method, copied from
+    // http://www.neilmendoza.com/glsl-rotation-about-an-arbitrary-axis/
+    //
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return float3x3
+    (
+        oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s,
+        oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s,
+        oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c
+    );
+}
+
+float3x3 createCameraYPR(float cameraYaw, float cameraPitch, float cameraRoll)
+{
+    float3 forward = -normalize(float3(sin(cameraYaw), sin(cameraPitch), cos(cameraYaw)));
+    float3 up = float3(0.0, 1.0, 0.0);
+    float3 cameraRight = normalize(cross(forward, up));
+    float3 cameraUp = normalize(cross(cameraRight, forward));
+    return rotationMatrix(forward, cameraRoll) * float3x3(cameraRight, cameraUp, forward);
+}
+
+
+float remap(float value, float2 from, float2 to)
+{
+    return ((value - from.x) / (from.y - from.x)) * (to.y - to.x) + to.x;
+}
+
+
+float2 resize_rct(float2 uv, float2 size, float2 offset)
+{
+    float2 scaled = uv * size;
+    
+    return float2
+    (
+        remap(scaled.x, float2(0, size.x), float2(-offset.x - 32, -offset.x + 32)),
+        remap(scaled.y, float2(0, size.y), float2((size.y + offset.y) - 31, size.y + offset.y)) 
+    );
+}
+
+
+void resize_rct_float(float2 uv, float2 size, float2 offset, out float2 Out)
+{
+    Out = resize_rct(uv, size, offset);
+}
+
+
+void matrix_euler_rot_float(float2 uv, float3 rotation, out float3 Out)
+{
+        float3x3 cameraMatrix = createCameraYPR(radians(rotation.x), radians(rotation.y), radians(rotation.z));
+        Out = mul(cameraMatrix, normalize(float3(uv, 1)));
+
+    //float3x3 mat = matrix_euler_rot(rotation);
+    //Out = mul(mat, float3(uv, 1));
+    }
 
 #endif

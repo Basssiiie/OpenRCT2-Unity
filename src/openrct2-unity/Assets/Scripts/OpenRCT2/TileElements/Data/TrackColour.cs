@@ -2,11 +2,11 @@ using System.Runtime.InteropServices;
 
 namespace Lib
 {
-    [StructLayout(LayoutKind.Sequential, Size = 3)]
-    public struct TrackColour
+    [StructLayout(LayoutKind.Sequential)]
+    public readonly struct TrackColour
     {
-        public byte main;
-        public byte additional;
-        public byte supports;
+        public readonly byte main;
+        public readonly byte additional;
+        public readonly byte supports;
     }
 }

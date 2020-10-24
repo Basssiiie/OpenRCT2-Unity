@@ -5,14 +5,14 @@ using UnityEngine;
 namespace Lib
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct TrackNode
+    public readonly struct TrackNode
     {
-        public short x;
-        public short y;
-        public short z;
-        public byte direction; // 0-31 to indicate direction, 0 = negative x axis direction
-        public byte vehicleSprite;
-        public byte bankRotation;
+        public readonly short x;
+        public readonly short y;
+        public readonly short z;
+        public readonly byte direction; // 0-31 to indicate direction, 0 = negative x axis direction
+        public readonly byte vehicleSprite;
+        public readonly byte bankRotation;
 
 
         // Offset to offset the node relative to the center of the start of the track, instead of the corner.

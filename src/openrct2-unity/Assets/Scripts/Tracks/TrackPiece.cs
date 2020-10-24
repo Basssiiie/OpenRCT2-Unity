@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Lib;
 using MeshBuilding;
 using UnityEngine;
 

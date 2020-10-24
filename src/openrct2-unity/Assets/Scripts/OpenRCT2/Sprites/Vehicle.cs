@@ -10,19 +10,19 @@ namespace Lib
     /// The struct of a ride vehicle.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct Vehicle : ISprite
+    public readonly struct Vehicle : ISprite
     {
-        public ushort idx;
-        public int x;
-        public int y;
-        public int z;
-        public byte direction; // 0-31 to indicate direction, 0 = negative x axis direction
-        public byte bankRotation;
-        public byte vehicleSprite; // this is a index describing what sprite should be used; maybe useless for pitch?
+        public readonly ushort idx;
+        public readonly int x;
+        public readonly int y;
+        public readonly int z;
+        public readonly byte direction; // 0-31 to indicate direction, 0 = negative x axis direction
+        public readonly byte bankRotation;
+        public readonly byte vehicleSprite; // this is a index describing what sprite should be used; maybe useless for pitch?
 
-        public byte trackType; // current track type its on.
-        public byte trackDirection; // the direction this track type is in.
-        public ushort trackProgress; // current track node index.
+        public readonly byte trackType; // current track type its on.
+        public readonly byte trackDirection; // the direction this track type is in.
+        public readonly ushort trackProgress; // current track node index.
 
 
         /// <summary>

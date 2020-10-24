@@ -7,12 +7,12 @@ namespace Lib
     /// It's explicit because it seems C# likes to swap members around for performance?
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size = (26 + Ptr.Size))]
-    public struct SmallSceneryEntry
+    public readonly struct SmallSceneryEntry
     {
         /// <summary>
         /// The flags of this small scenery entry.
         /// </summary>
-        [FieldOffset(0x06)] public SmallSceneryFlags Flags;
+        [FieldOffset(0x06)] public readonly SmallSceneryFlags Flags;
 
 
         /* Memory map:

@@ -19,7 +19,7 @@ As of now there are no release builds yet, because the project is still very muc
 To get it running inside of Unity, you need the following prerequisites:
 
 - Everything mentioned in OpenRCT2's original [building prerequisites](#31-building-prerequisites).
-- [Unity Editor version LTS 2019.4.6f1](https://unity3d.com/unity/qa/lts-releases?version=2019.4).
+- [Unity Editor version LTS 2019.4.13f1](https://unity3d.com/unity/qa/lts-releases?version=2019.4).
 
 **Note:** only the Windows setup has been tested.
 

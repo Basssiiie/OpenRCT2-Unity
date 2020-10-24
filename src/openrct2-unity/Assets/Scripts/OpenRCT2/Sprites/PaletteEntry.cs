@@ -4,12 +4,12 @@ using UnityEngine;
 namespace Lib
 {
     [StructLayout(LayoutKind.Sequential, Size = 4)]
-    public struct PaletteEntry
+    public readonly struct PaletteEntry
     {
-        public byte blue;
-        public byte green;
-        public byte red;
-        public byte alpha;
+        public readonly byte blue;
+        public readonly byte green;
+        public readonly byte red;
+        public readonly byte alpha;
 
 
         // Converts the 0-255 color byte to a float between 0 and 1.

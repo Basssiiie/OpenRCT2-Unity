@@ -6,16 +6,17 @@ namespace UI
 {
     public class WindowManager : MonoBehaviour
     {
-        [SerializeField] GameObject peepBox;
-        [SerializeField] GameObject peepCanvas;
-        [SerializeField] PeepController peepController;
+        [SerializeField] GameObject peepWindowPrefab;
+        [SerializeField] GameObject parentCanvas;
 
 
-        public void CreatePeepWindow(ushort id)
+        public void CreatePeepWindow(ushort peepId)
         {
-            GameObject obj = Instantiate(peepBox, peepCanvas.transform);
-            obj.name = $"PeepBox: {id}";
-            obj.GetComponent<PeepWindow>().LoadPeepController(peepController, id);
+            GameObject obj = Instantiate(peepWindowPrefab, parentCanvas.transform);
+            obj.name = $"PeepWindow: {peepId}";
+
+            var window = obj.GetComponent<PeepWindow>();
+            window.SetPeep(peepId);
         }
     }
 }

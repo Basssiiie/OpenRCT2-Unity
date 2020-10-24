@@ -15,14 +15,12 @@ namespace UI
         [SerializeField] Slider nauseaBar;
         [SerializeField] Slider toiletBar;
 
-        PeepController peepController;
         ushort peepId;
 
 
-        public void LoadPeepController(PeepController peepController, ushort peepId)
+        public void SetPeep(ushort peepId)
         {
             this.peepId = peepId;
-            this.peepController = peepController;
 
             title.text = $"Guest {this.peepId}";
             InvokeRepeating(nameof(UpdateData), 0f, 5f);
@@ -31,22 +29,20 @@ namespace UI
 
         void UpdateData()
         {
-            Peep? peep = peepController.GetPeepById(peepId);
-            if (peep == null)
+            PeepStats stats = new PeepStats();
+
+            if (!OpenRCT2.GetPeepStats(peepId, ref stats))
             {
                 Destroy(gameObject);
                 return;
             }
 
-            Peep value = peep.Value;
-
-            happinessBar.value = value.happiness;
-            energyBar.value = value.energy;
-            hungerBar.value = value.hunger;
-            thirstBar.value = value.thirst;
-            nauseaBar.value = value.nausea;
-            toiletBar.value = value.toilet;
-
+            happinessBar.value = stats.happiness;
+            energyBar.value = stats.energy;
+            hungerBar.value = stats.hunger;
+            thirstBar.value = stats.thirst;
+            nauseaBar.value = stats.nausea;
+            toiletBar.value = stats.toilet;
             /*
             var intensityBinary = System.Convert.ToString(peep.intensity, 2);
             var maxIntensityString = System.Convert.ToString(peep.intensity >> 4);

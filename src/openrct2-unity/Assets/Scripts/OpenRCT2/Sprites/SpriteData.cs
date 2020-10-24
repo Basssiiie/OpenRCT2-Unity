@@ -6,16 +6,16 @@ namespace Lib
     /// Struct with data on the sprite.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Size = 8)]
-    public struct SpriteData
+    public readonly struct SpriteData
     {
         // Width + height of the sprite.
-        public short width;
-        public short height;
+        public readonly short width;
+        public readonly short height;
 
         // The x and y offset that is used to draw the sprite in
         // the correct position.
-        public short offsetX;
-        public short offsetY;
+        public readonly short offsetX;
+        public readonly short offsetY;
 
 
         /// <summary>
