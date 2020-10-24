@@ -194,7 +194,7 @@ namespace MeshBuilding
         /// <summary>
         /// Add a triangle that is potentially sliced by one or more planes.
         /// </summary>
-        public static void AddSlicedTriangle(this MeshBuilder builder, Vertex a, Vertex b, Vertex c, int submesh = 0, params Plane[] slicePlanes)
+        public static void AddSlicedTriangle(this MeshBuilder builder, in Vertex a, in Vertex b, in Vertex c, int submesh = 0, params Plane[] slicePlanes)
         {
             List<Vertex> output = new List<Vertex>(capacity: 8)
             {

@@ -133,7 +133,7 @@ namespace Tracks
 
             for (int idx = 0; idx < len; idx++)
             {
-                if (TrackNode.HasEqualRotation(ref nodes[chunkStart], ref nodes[idx]))
+                if (TrackNode.HasEqualRotation(nodes[chunkStart], nodes[idx]))
                     continue;
 
                 lerpNodes.Add(chunkStart + (idx - chunkStart) / 2);

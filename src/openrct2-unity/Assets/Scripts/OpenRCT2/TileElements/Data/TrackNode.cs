@@ -37,7 +37,7 @@ namespace Lib
         /// <summary>
         /// Returns true if both track nodes have equal rotation bytes.
         /// </summary>
-        public static bool HasEqualRotation(ref TrackNode left, ref TrackNode right)
+        public static bool HasEqualRotation(in TrackNode left, in TrackNode right)
             => (left.direction == right.direction)
             && (left.bankRotation == right.bankRotation)
             && (left.vehicleSprite == right.vehicleSprite);

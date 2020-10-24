@@ -12,55 +12,55 @@ namespace Lib
         /// Wraps this tile element in a surface element wrapper.
         /// </summary>
 		public static SurfaceElement AsSurface(this in TileElement tileElement)
-			=> new SurfaceElement(in tileElement);
+			=> new SurfaceElement(tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a path element wrapper.
         /// </summary>
         public static PathElement AsPath(this in TileElement tileElement)
-			=> new PathElement(in tileElement);
+			=> new PathElement(tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a track element wrapper.
         /// </summary>
         public static TrackElement AsTrack(this in TileElement tileElement)
-			=> new TrackElement(in tileElement);
+			=> new TrackElement(tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a small scenery element wrapper.
         /// </summary>
         public static SmallSceneryElement AsSmallScenery(this in TileElement tileElement)
-			=> new SmallSceneryElement(in tileElement);
+			=> new SmallSceneryElement(tileElement);
 
 
         /// <summary>
         /// Wraps this tile element in a wall element wrapper.
         /// </summary>
         public static WallElement AsWall(this in TileElement tileElement)
-            => new WallElement(in tileElement);
+            => new WallElement(tileElement);
 
 
         /// <summary>
         /// Dumps all values on this tile element to the console log.
         /// </summary>
-		public static void DumpToConsole(this ref TileElement tile)
-            => Console.WriteLine(DumpToString(ref tile));
+		public static void DumpToConsole(this in TileElement tile)
+            => Console.WriteLine(DumpToString(tile));
 
 
         /// <summary>
         /// Dumps all values on this tile element to the debug log.
         /// </summary>
-        public static void DumpToDebug(this ref TileElement tile)
-            => Debug.Log(DumpToString(ref tile));
+        public static void DumpToDebug(this in TileElement tile)
+            => Debug.Log(DumpToString(tile));
 
 
         /// <summary>
         /// Dumps the byte content of the tile element to a readable string.
         /// </summary>
-        static string DumpToString(ref TileElement tile)
+        static string DumpToString(in TileElement tile)
         {
             return
 $@"(me) TileElement:

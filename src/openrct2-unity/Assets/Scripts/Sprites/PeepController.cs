@@ -48,9 +48,9 @@ namespace Sprites
         /// <summary>
         /// Sets the name and colors of the peep sprite.
         /// </summary>
-        protected override SpriteObject AddSprite(int index, ref Peep sprite)
+        protected override SpriteObject AddSprite(int index, in Peep sprite)
         {
-            SpriteObject spriteObject = base.AddSprite(index, ref sprite);
+            SpriteObject spriteObject = base.AddSprite(index, sprite);
             GameObject obj = spriteObject.gameObject;
 
             ushort id = sprite.Id;
@@ -58,7 +58,7 @@ namespace Sprites
             //PeepType type = sprite.type;
             //obj.name = $"{type} {id}";
 
-            UpdateColours(obj, ref sprite);
+            UpdateColours(obj, sprite);
             return spriteObject;
         }
 
@@ -87,7 +87,7 @@ namespace Sprites
         }
 
 
-        void UpdateColours(GameObject peepObj, ref Peep peep)
+        void UpdateColours(GameObject peepObj, in Peep peep)
         {
             // TODO: for now tshirt and trousers child indices are hardcoded..
             GameObject tshirt = peepObj.transform.GetChild(0).gameObject;

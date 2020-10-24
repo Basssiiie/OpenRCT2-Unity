@@ -36,7 +36,7 @@ namespace Sprites
 
             for (int i = 0; i < amount; i++)
             {
-                AddSprite(i, ref spriteBuffer[i]);
+                AddSprite(i, spriteBuffer[i]);
             }
         }
 
@@ -52,7 +52,7 @@ namespace Sprites
 
             for (int i = 0; i < amount; i++)
             {
-                UpdateSprite(i, ref spriteBuffer[i]);
+                UpdateSprite(i, spriteBuffer[i]);
             }
         }
 
@@ -72,7 +72,7 @@ namespace Sprites
         /// <summary>
         /// Adds a new peep object to the dictionary.
         /// </summary>
-        protected virtual SpriteObject AddSprite(int index, ref TSprite sprite)
+        protected virtual SpriteObject AddSprite(int index, in TSprite sprite)
         {
             Vector3 position = sprite.Position;
             GameObject peepObj = Instantiate(spritePrefab, position, Quaternion.identity, transform);
@@ -93,13 +93,13 @@ namespace Sprites
         /// <summary>
         /// Sets the new start and end positions for this game tick.
         /// </summary>
-        protected virtual SpriteObject UpdateSprite(int index, ref TSprite sprite)
+        protected virtual SpriteObject UpdateSprite(int index, in TSprite sprite)
         {
             ushort id = sprite.Id;
 
             if (!spriteObjects.TryGetValue(id, out SpriteObject obj))
             {
-                obj = AddSprite(index, ref sprite);
+                obj = AddSprite(index, sprite);
             }
             else
             {

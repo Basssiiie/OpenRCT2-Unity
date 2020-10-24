@@ -18,9 +18,9 @@ namespace Sprites
         /// <summary>
         /// Updates the vehicle with the correct rotation.
         /// </summary>
-        protected override SpriteObject UpdateSprite(int index, ref Vehicle sprite)
+        protected override SpriteObject UpdateSprite(int index, in Vehicle sprite)
         {
-            var obj = base.UpdateSprite(index, ref sprite);
+            var obj = base.UpdateSprite(index, sprite);
 
             obj.gameObject.transform.rotation = sprite.Rotation;
             return obj;

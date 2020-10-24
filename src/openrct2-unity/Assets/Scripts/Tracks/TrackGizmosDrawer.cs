@@ -94,7 +94,7 @@ namespace Tracks
             List<int> lerpNodes = new List<int> { 0 };
             for (int idx = 0; idx < len; idx++)
             {
-                if (TrackNode.HasEqualRotation(ref tracknodes[chunkStart], ref tracknodes[idx]))
+                if (TrackNode.HasEqualRotation(tracknodes[chunkStart], tracknodes[idx]))
                     continue;
 
                 Gizmos.DrawRay(tracknodes[idx].LocalPosition, tracknodes[idx].LocalRotation * Vector3.up * 0.3f);
