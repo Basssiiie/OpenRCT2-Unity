@@ -10,21 +10,21 @@
 #include "Openrct2-dll.h"
 
 
-std::unique_ptr<IContext> context;
+std::unique_ptr<IContext> unityContext;
 
 extern "C"
 {
     EXPORT void StartGame(const char* datapath, const char* rct2path, const char* rct1path)
     {
-        if (context != nullptr)
+        if (unityContext != nullptr)
             return;
 
         printf("(me) StartGame( %s )\n", datapath);
-        _log_levels[DIAGNOSTIC_LEVEL_VERBOSE] = true;
+        _log_levels[static_cast<uint8_t>(DiagnosticLevel::Verbose)] = true;
 
         gOpenRCT2Headless = true;
 
-        Path::GetAbsolute(gCustomOpenrctDataPath, std::size(gCustomOpenrctDataPath), datapath);
+        Path::GetAbsolute(gCustomOpenRCT2DataPath, std::size(gCustomOpenRCT2DataPath), datapath);
 
         if (rct1path != nullptr)
             Path::GetAbsolute(gCustomRCT1DataPath, std::size(gCustomRCT1DataPath), rct1path);
@@ -33,13 +33,13 @@ extern "C"
 
         printf(
             "(me) gCustomOpenrctDataPath = %s\n(me) gCustomRCT1DataPath = %s\n(me) gCustomRCT2DataPath = %s\n",
-            gCustomOpenrctDataPath, gCustomRCT1DataPath, gCustomRCT2DataPath
+            gCustomOpenRCT2DataPath, gCustomRCT1DataPath, gCustomRCT2DataPath
         );
 
         // Create a plain context
         core_init();
-        context = CreateContext(); // OpenRCT2::CreateContext()
-        bool result = context->Initialise();
+        unityContext = CreateContext(); // OpenRCT2::CreateContext()
+        bool result = unityContext->Initialise();
 
         printf("(me) Initialise = %i\n", result);
     }
@@ -47,7 +47,7 @@ extern "C"
 
     EXPORT void PerformGameUpdate()
     {
-        context->GetGameState()->Update();
+        unityContext->GetGameState()->Update();
     }
 
 
@@ -55,7 +55,8 @@ extern "C"
     {
         printf("(me) StopGame()\n");
 
-        context = nullptr;
+        unityContext->Finish();
+        unityContext = nullptr;
     }
 
 
@@ -63,9 +64,9 @@ extern "C"
     {
         printf("(me) LoadPark( %s )\n", filepath);
 
-        context->LoadParkFromFile(std::string(filepath));
+        unityContext->LoadParkFromFile(std::string(filepath));
 
-        Park& park = context->GetGameState()->GetPark();
+        Park& park = unityContext->GetGameState()->GetPark();
         const char* name = park.Name.c_str();
 
         printf("(me) LoadPark() = %s\n", name);
@@ -75,7 +76,7 @@ extern "C"
 
     EXPORT const char* GetParkNamePtr()
     {
-        Park& park = context->GetGameState()->GetPark();
+        Park& park = unityContext->GetGameState()->GetPark();
         const char* name = park.Name.c_str();
 
         printf("(me) GetParkName() = %s\n", name);

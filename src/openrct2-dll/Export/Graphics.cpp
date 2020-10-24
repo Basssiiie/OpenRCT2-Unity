@@ -7,12 +7,12 @@
 extern "C"
 {
     // Gets the full colour palette currently in use.
-    EXPORT void GetPalette(rct_palette_entry* entries)
+EXPORT void GetPalette(PaletteBGRA* entries)
     {
         for (int i = 0; i < 256; i++)
         {
-            entries[i] = gPalette[i];
-            entries[i].alpha = (i == 0) ? 0 : 255;
+            entries[i] = gPalette.Colour[i];
+            entries[i].Alpha = (i == 0) ? 0 : 255;
         }
     }
 
@@ -80,7 +80,7 @@ extern "C"
         dpi.pitch = 0;
         dpi.zoom_level = 0;
 
-        gfx_draw_sprite_software(&dpi, ImageId::FromUInt32(imageIndex), 0, 0);
+        gfx_draw_sprite_software(&dpi, ImageId::FromUInt32(imageIndex), { 0, 0 });
 
         for (int i = 0; i < numPixels; i++)
         {

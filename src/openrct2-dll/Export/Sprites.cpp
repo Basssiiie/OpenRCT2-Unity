@@ -30,19 +30,17 @@ extern "C"
     // Loads all the peeps into the specified buffer, returns the total amount of peeps loaded.
     EXPORT int GetAllPeeps(PeepEntity* peeps, int arraySize)
     {
-        Peep* peep;
-        uint16_t spriteIndex;
         int peepCount = 0;
 
-        FOR_ALL_PEEPS (spriteIndex, peep)
+        for (Peep* peep : EntityList<Peep>(EntityListId::Peep))
         {
             PeepEntity* data = &peeps[peepCount];
             data->idx = peep->sprite_index;
             data->x = peep->x;
             data->y = peep->y;
             data->z = peep->z;
-            data->tshirt_colour = peep->tshirt_colour;
-            data->trousers_colour = peep->trousers_colour;
+            data->tshirt_colour = peep->TshirtColour;
+            data->trousers_colour = peep->TrousersColour;
 
             peepCount++;
 
@@ -68,21 +66,21 @@ extern "C"
 
     EXPORT bool GetPeepStats(uint16_t spriteIndex, PeepStats* peepStats)
     {
-        Peep* peep = GET_PEEP(spriteIndex);
+        Peep* peep = TryGetEntity<Peep>(spriteIndex);
 
-        if (peep != nullptr)
+        if (peep == nullptr)
         {
             printf("(me) Peep does not exist anymore. ( sprite id: %i )\n", spriteIndex);
             return false;
         }
 
-        peepStats->energy = peep->energy;
-        peepStats->happiness = peep->happiness;
-        peepStats->nausea = peep->nausea;
-        peepStats->hunger = peep->hunger;
-        peepStats->thirst = peep->thirst;
-        peepStats->toilet = peep->toilet;
-        peepStats->intensity = peep->intensity;
+        peepStats->energy = peep->Energy;
+        peepStats->happiness = peep->Happiness;
+        peepStats->nausea = peep->Nausea;
+        peepStats->hunger = peep->Hunger;
+        peepStats->thirst = peep->Thirst;
+        peepStats->toilet = peep->Toilet;
+        peepStats->intensity = (uint8_t)peep->Intensity;
         return true;
     }
 
@@ -106,41 +104,32 @@ extern "C"
     // Loads all the vehicles into the specified buffer, returns the total amount of vehicles loaded.
     EXPORT int GetAllVehicles(VehicleEntity* vehicles, int arraySize)
     {
-        Vehicle *train, *vehicle;
         int vehicleCount = 0;
-        uint16_t train_index, vehicle_index;
 
-        for (train_index = gSpriteListHead[SPRITE_LIST_TRAIN_HEAD]; train_index != SPRITE_INDEX_NULL; train_index = train->next)
+        for (Vehicle* vehicle : EntityList<Vehicle>(EntityListId::Vehicle))
         {
-            train = GET_VEHICLE(train_index);
-            for (vehicle_index = train_index; vehicle_index != SPRITE_INDEX_NULL; vehicle_index = vehicle->next_vehicle_on_train)
-            {
-                vehicle = GET_VEHICLE(vehicle_index);
-                if (vehicle->x == LOCATION_NULL)
-                    continue;
+            //printf("(me) %i vehicle %i at %i, %i, %i\n", vehicleCount, vehicle->sprite_index, vehicle->x, vehicle->y, vehicle->z);
 
-                //printf("(me) %i vehicle %i at %i, %i, %i\n", vehicleCount, vehicle->sprite_index, vehicle->x, vehicle->y, vehicle->z);
+            VehicleEntity* target = &vehicles[vehicleCount];
+            target->idx = vehicle->sprite_index;
 
-                VehicleEntity* target = &vehicles[vehicleCount];
-                target->idx = vehicle->sprite_index;
+            target->x = vehicle->x;
+            target->y = vehicle->y;
+            target->z = vehicle->z;
 
-                target->x = vehicle->x;
-                target->y = vehicle->y;
-                target->z = vehicle->z;
+            target->direction = vehicle->sprite_direction;
+            target->bankRotation = vehicle->bank_rotation;
+            target->pitchRotation = vehicle->vehicle_sprite_type;
 
-                target->direction = vehicle->sprite_direction;
-                target->bankRotation = vehicle->bank_rotation;
-                target->pitchRotation = vehicle->vehicle_sprite_type;
+            target->trackType = (vehicle->track_type >> 2);
+            target->trackDirection = (vehicle->track_direction & 0b11);
+            target->trackProgress = vehicle->track_progress;
 
-                target->trackType = (vehicle->track_type >> 2);
-                target->trackDirection = (vehicle->track_direction & 0b11);
-                target->trackProgress = vehicle->track_progress;
+            vehicleCount++;
 
-                vehicleCount++;
-
-                if (vehicleCount >= arraySize)
-                    break;
-            }
+            if (vehicleCount >= arraySize)
+                break;
+        
         }
         return vehicleCount;
     }

@@ -86,7 +86,7 @@ extern "C"
             return 0;
         }
 
-        return RideData5[ride->type].z_offset;
+        return RideTypeDescriptors[ride->type].Heights.VehicleZOffset;
     }
 
 
