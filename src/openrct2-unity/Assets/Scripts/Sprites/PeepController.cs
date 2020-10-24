@@ -89,14 +89,18 @@ namespace Sprites
 
         void UpdateColours(GameObject peepObj, ref Peep peep)
         {
+            // TODO: for now tshirt and trousers child indices are hardcoded..
             GameObject tshirt = peepObj.transform.GetChild(0).gameObject;
             GameObject trousers = peepObj.transform.GetChild(1).gameObject;
 
             var tshirtRenderer = tshirt.GetComponent<Renderer>();
             var trousersRenderer = trousers.GetComponent<Renderer>();
 
-            tshirtRenderer.material.color = GraphicsFactory.PaletteToColor(peep.tshirtColour);
-            trousersRenderer.material.color = GraphicsFactory.PaletteToColor(peep.trousersColour);
+            byte tshirtPaletteIdx = OpenRCT2.GetPaletteIndexForColourId(peep.tshirtColour);
+            byte trousersPaletteIdx = OpenRCT2.GetPaletteIndexForColourId(peep.trousersColour);
+
+            tshirtRenderer.material.color = GraphicsFactory.PaletteToColor(tshirtPaletteIdx);
+            trousersRenderer.material.color = GraphicsFactory.PaletteToColor(trousersPaletteIdx);
         }
     }
 }
