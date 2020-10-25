@@ -7,7 +7,7 @@
 #include <openrct2/platform/platform.h>
 #include <openrct2/world/Park.h>
 
-#include "Openrct2-dll.h"
+#include "OpenRCT2-DLL.h"
 
 
 std::unique_ptr<IContext> unityContext;
@@ -19,7 +19,7 @@ extern "C"
         if (unityContext != nullptr)
             return;
 
-        printf("(me) StartGame( %s )\n", datapath);
+        dll_log("StartGame( %s )", datapath);
         _log_levels[static_cast<uint8_t>(DiagnosticLevel::Verbose)] = true;
 
         gOpenRCT2Headless = true;
@@ -31,8 +31,8 @@ extern "C"
         if (rct2path != nullptr)
             Path::GetAbsolute(gCustomRCT2DataPath, std::size(gCustomRCT2DataPath), rct2path);
 
-        printf(
-            "(me) gCustomOpenrctDataPath = %s\n(me) gCustomRCT1DataPath = %s\n(me) gCustomRCT2DataPath = %s\n",
+        dll_log(
+            "gCustomOpenrctDataPath = %s\n(me) gCustomRCT1DataPath = %s\n(me) gCustomRCT2DataPath = %s",
             gCustomOpenRCT2DataPath, gCustomRCT1DataPath, gCustomRCT2DataPath
         );
 
@@ -41,7 +41,7 @@ extern "C"
         unityContext = CreateContext(); // OpenRCT2::CreateContext()
         bool result = unityContext->Initialise();
 
-        printf("(me) Initialise = %i\n", result);
+        dll_log("Initialise = %i", result);
     }
 
 
@@ -53,7 +53,7 @@ extern "C"
 
     EXPORT void StopGame()
     {
-        printf("(me) StopGame()\n");
+        dll_log("StopGame()");
 
         unityContext->Finish();
         unityContext = nullptr;
@@ -62,15 +62,14 @@ extern "C"
 
     EXPORT void LoadPark(const char* filepath)
     {
-        printf("(me) LoadPark( %s )\n", filepath);
+        dll_log("LoadPark( %s )", filepath);
 
         unityContext->LoadParkFromFile(std::string(filepath));
 
         Park& park = unityContext->GetGameState()->GetPark();
         const char* name = park.Name.c_str();
 
-        printf("(me) LoadPark() = %s\n", name);
-
+        dll_log("LoadPark() = %s", name);
     }
 
 
@@ -79,7 +78,7 @@ extern "C"
         Park& park = unityContext->GetGameState()->GetPark();
         const char* name = park.Name.c_str();
 
-        printf("(me) GetParkName() = %s\n", name);
+        dll_log("GetParkName() = %s", name);
         return name;
     }
 }

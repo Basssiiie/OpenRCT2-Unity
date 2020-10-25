@@ -3,7 +3,7 @@
 #include <openrct2/ride/Vehicle.h>
 #include <openrct2/ride/VehicleSubpositionData.h>
 
-#include "Openrct2-dll.h"
+#include "OpenRCT2-DLL.h"
 
 
 // Rounds a number to the nearest multiple of 'multiple'.
@@ -82,7 +82,7 @@ extern "C"
         auto ride = get_ride(rideIndex);
         if (ride == nullptr)
         {
-            printf("(me) GetTrackHeightOffset: ride %i not found.\n", rideIndex);
+            dll_log("GetTrackHeightOffset: ride %i not found.", rideIndex);
             return 0;
         }
 
@@ -96,7 +96,7 @@ extern "C"
         auto ride = get_ride(rideIndex);
         if (ride == nullptr)
         {
-            printf("(me) GetRideTrackColours: ride %i not found.\n", rideIndex);
+            dll_log("GetRideTrackColours: ride %i not found.", rideIndex);
             return;
         }
 

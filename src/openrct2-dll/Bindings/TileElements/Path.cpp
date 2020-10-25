@@ -1,6 +1,6 @@
 #include <openrct2/world/TileElement.h>
 
-#include "..\Openrct2-dll.h"
+#include "..\OpenRCT2-DLL.h"
 
 
 extern "C"

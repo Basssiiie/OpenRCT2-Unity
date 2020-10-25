@@ -1,13 +1,13 @@
 #include <openrct2/sprites.h>
 #include <openrct2/world/SmallScenery.h>
 
-#include "Openrct2-dll.h"
+#include "OpenRCT2-DLL.h"
 
 
 extern "C"
 {
     // Gets the full colour palette currently in use.
-EXPORT void GetPalette(PaletteBGRA* entries)
+    EXPORT void GetPalette(PaletteBGRA* entries)
     {
         for (int i = 0; i < 256; i++)
         {
@@ -41,7 +41,7 @@ EXPORT void GetPalette(PaletteBGRA* entries)
 
         if (g1 == nullptr)
         {
-            printf("(me) Could not find g1 element for %i.\n", imageIndex);
+            dll_log("Could not find g1 element for %i.", imageIndex);
             return;
         }
 
@@ -60,7 +60,7 @@ EXPORT void GetPalette(PaletteBGRA* entries)
 
         if (g1 == nullptr)
         {
-            printf("(me) Could not find g1 element for %i.\n", maskedImageId);
+            dll_log("Could not find g1 element for %i.", maskedImageId);
             return;
         }
 

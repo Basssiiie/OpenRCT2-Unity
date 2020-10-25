@@ -1,7 +1,7 @@
 #include <openrct2/world/TileElement.h>
 #include <openrct2/world/SmallScenery.h>
 
-#include "..\Openrct2-dll.h"
+#include "..\OpenRCT2-DLL.h"
 
 
 extern "C"
@@ -14,7 +14,7 @@ extern "C"
 
         if (entry == nullptr)
         {
-            printf("(me) Small scenery sprite entry = null\n");
+            dll_log("Small scenery sprite entry = null");
             return 0;
         }
 

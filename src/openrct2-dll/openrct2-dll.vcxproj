@@ -63,18 +63,21 @@ xcopy /i /y /f "$(SolutionDir)bin\dll-export\*" "$(SolutionDir)src\openrct2-unit
     <ResourceCompile Include="..\..\resources\OpenRCT2.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Export\Graphics.cpp" />
-    <ClCompile Include="Export\Game.cpp" />
-    <ClCompile Include="Export\Map.cpp" />
-    <ClCompile Include="Export\Sprites.cpp" />
-    <ClCompile Include="Export\TileElements\SmallScenery.cpp" />
-    <ClCompile Include="Export\TileElements\Wall.cpp" />
-    <ClCompile Include="Export\TileElements\Path.cpp" />
-    <ClCompile Include="Export\TileElements\Surface.cpp" />
-    <ClCompile Include="Export\Tracks.cpp" />
+    <ClCompile Include="Bindings\OpenRCT2-DLL.cpp" />
+    <ClCompile Include="Bindings\Graphics.cpp" />
+    <ClCompile Include="Bindings\Game.cpp" />
+    <ClCompile Include="Bindings\Map.cpp" />
+    <ClCompile Include="Bindings\Peeps.cpp" />
+    <ClCompile Include="Bindings\Sprites.cpp" />
+    <ClCompile Include="Bindings\TileElements\SmallScenery.cpp" />
+    <ClCompile Include="Bindings\TileElements\Wall.cpp" />
+    <ClCompile Include="Bindings\TileElements\Path.cpp" />
+    <ClCompile Include="Bindings\TileElements\Surface.cpp" />
+    <ClCompile Include="Bindings\Tracks.cpp" />
+    <ClCompile Include="Bindings\Vehicles.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Export\Openrct2-dll.h" />
+    <ClInclude Include="Bindings\OpenRCT2-DLL.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
