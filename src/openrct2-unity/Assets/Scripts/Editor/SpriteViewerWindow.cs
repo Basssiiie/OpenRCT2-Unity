@@ -1,3 +1,4 @@
+using System.IO;
 using Graphics;
 using Lib;
 using UnityEditor;
@@ -51,19 +52,31 @@ namespace EditorExtensions
                 EditorGUILayout.BeginHorizontal();
                 for (int x = 0; x < horizontalCount; x++)
                 {
-                    Texture2D texture = GraphicsFactory
-                        .ForImageIndex(offset)
-                        .ToTexture2D();
+                    Graphic graphic = GraphicsFactory.ForImageIndex(offset);
 
                     SpriteData data = OpenRCT2.GetTextureData(offset);
                     string information = $"Index:\t{offset}\nSize:\t{data.width}x{data.height} px\nOffset:\t({data.offsetX}, {data.offsetY})";
 
                     GUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.ExpandHeight(true));
 
-                    if (texture == null)
+                    if (graphic == null)
+                    {
                         GUILayout.Box("Not found");
+                    }
                     else
+                    {
+                        Texture2D texture = graphic.GetTexture();
+                        GUIContent icon = EditorGUIUtility.IconContent("SavePassive", "Save sprite");
+
+                        GUILayout.BeginHorizontal();
                         GUILayout.Box(texture);
+                        GUILayout.FlexibleSpace();
+
+                        if (GUILayout.Button(icon, GUILayout.ExpandWidth(false)))
+                            DownloadSprite(texture, $"sprite{offset}({data.offsetX},{data.offsetY})");
+
+                        GUILayout.EndHorizontal();
+                    }
 
                     GUILayout.Label(information, new GUIStyle { alignment = TextAnchor.LowerLeft }, GUILayout.ExpandHeight(true));
 
@@ -74,6 +87,26 @@ namespace EditorExtensions
                 EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.EndScrollView();
+        }
+
+
+        /// <summary>
+        /// Saves the texture file to disk.
+        /// </summary>
+        static void DownloadSprite(Texture2D texture, string name)
+        {
+            string filename = $"{name}.png";
+            string path = EditorUtility.SaveFilePanel("Save sprite", "", filename, "png");
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            Debug.Log($"Saving texture '{filename}' to path: {path}");
+
+            byte[] pngBytes = texture.EncodeToPNG();
+            File.WriteAllBytes(path, pngBytes);
         }
 
 

@@ -127,7 +127,7 @@ void clamp_no_stretch_float(float2 uv, float1 alpha, out float1 Out)
  */
 float2 sprite_rotate(float2 uv)
 {
-    return mul(rotation_matrix, float3(uv, 0));
+    return mul(rotation_matrix, float3(uv, 0)).xy;
 }
 
 
@@ -239,7 +239,7 @@ void Rct_path_matrix_float(float2 uv, float2 size, float2 offset, out float2 Out
     float3 rotatedVector = mul(rotation_matrix, scaledVector);
     rotatedVector.x += 0.5;
     
-    Out = rotatedVector;
+    Out = rotatedVector.xy;
 
     //rotatedVector *= float3(1.21, 0.79, 1);
     //rotatedVector += float3(0.53, 0.13, 0);

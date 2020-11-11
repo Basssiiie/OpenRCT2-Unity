@@ -13,6 +13,8 @@ namespace Lib
         /// The flags of this small scenery entry.
         /// </summary>
         [FieldOffset(0x06)] public readonly SmallSceneryFlags Flags;
+        [FieldOffset(0x11)] public readonly ushort AnimationDelay;
+        [FieldOffset(0x15)] public readonly ushort NumberOfFrames;
 
 
         /* Memory map:

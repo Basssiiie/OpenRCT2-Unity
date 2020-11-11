@@ -21,12 +21,10 @@ namespace Generation.Retro
             float pos_z = y;
 
             SmallSceneryElement smallScenery = tile.AsSmallScenery();
-
             SmallSceneryEntry entry = OpenRCT2.GetSmallSceneryEntry(smallScenery.EntryIndex);
-            SmallSceneryFlags flags = entry.Flags;
 
             // If not a full tile, move small scenery to the correct quadrant.
-            if ((flags & SmallSceneryFlags.FullTile) == 0)
+            if ((entry.Flags & SmallSceneryFlags.FullTile) == 0)
             {
                 const float distanceToQuadrant = (Map.TileCoordsXYMultiplier / 4);
                 byte quadrant = smallScenery.Quadrant;
@@ -42,7 +40,14 @@ namespace Generation.Retro
 
             // Instantiate the element.
             GameObject obj = InstantiateElement(crossShape, pos_x, pos_y, pos_z, (90 * tile.Rotation + 90));
-            ApplySprite(obj, in tile);
+
+            if ((entry.Flags & SmallSceneryFlags.Animated) != 0
+                && TryApplyAnimation(obj, tile, entry))
+            {
+                return;
+            }
+
+            ApplySprite(obj, tile);
         }
 
 
@@ -64,20 +69,63 @@ namespace Generation.Retro
         static void ApplySprite(GameObject obj, in TileElement tile)
         {
             uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
-            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D();
+            Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
 
-            if (texture == null)
+            if (graphic == null)
             {
                 Debug.LogError($"Missing small scenery sprite image: {imageIndex & 0x7FFFF}");
                 return;
             }
 
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
-            renderer.material.SetTexture("_BaseMap", texture);
+            renderer.material.SetTexture("_BaseMap", graphic.GetTexture());
 
             // Set the visual scale of the model.
-            float width = (texture.width * Map.PixelPerUnitMultiplier);
-            obj.transform.localScale = new Vector3(width, texture.height * Map.PixelPerUnitMultiplier, width);
+            float width = (graphic.Width * Map.PixelPerUnitMultiplier);
+            obj.transform.localScale = new Vector3(width, graphic.Height * Map.PixelPerUnitMultiplier, width);
+        }
+
+
+        /// <summary>
+        /// Applies a sprite animation to the specified gameobject.
+        /// </summary>
+        static bool TryApplyAnimation(GameObject obj, in TileElement tile, in SmallSceneryEntry entry)
+        {
+            int numberOfSupposedFrames = entry.NumberOfFrames;
+            if (numberOfSupposedFrames == 0)
+            {
+                // Some entries do not use this property, they use a default of 0xF (15) instead.
+                numberOfSupposedFrames = 0xF;
+            }
+
+            int animationDelay = entry.AnimationDelay;
+
+            uint[] imageIndices = new uint[numberOfSupposedFrames];
+            int actualFrameCount = OpenRCT2.GetSmallSceneryAnimationIndices(tile, 0, imageIndices, numberOfSupposedFrames);
+
+            obj.name = $"frame count, supposed: {numberOfSupposedFrames}, actual: {actualFrameCount}, delay: {animationDelay & 0xFF}";
+
+            if (actualFrameCount == 0)
+            {
+                Debug.LogWarning($"Applying animation failed.", obj);
+                return false;
+            }
+            /*
+            Graphic[] graphics = GraphicsFactory.ForAnimationIndices(imageIndices);
+            Texture2D[] frames = new Texture2D[actualFrameCount];
+
+            for (int i = 0; i < actualFrameCount; i++)
+            {
+                frames[i] = graphics[i].ToTexture2D();
+            }
+
+            AnimatedMaterial material = obj.AddComponent<AnimatedMaterial>();
+
+            material.animationDelay = 0.2f;
+            material.frames = frames;
+            material.StartAnimating();
+            */
+            return true;
         }
     }
 }

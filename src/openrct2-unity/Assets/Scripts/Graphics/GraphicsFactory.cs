@@ -9,27 +9,27 @@ namespace Graphics
     /// </summary>
     public static class GraphicsFactory
     {
-        static readonly PaletteEntry[] palette = OpenRCT2.GetPalette();
+        static readonly PaletteEntry[] _palette = OpenRCT2.GetPalette();
 
         // A cache of previously generated graphics.
-        static readonly Dictionary<uint, Graphic> graphicCache = new Dictionary<uint, Graphic>();
+        static readonly Dictionary<uint, Graphic> _graphicCache = new Dictionary<uint, Graphic>();
 
 
         /// <summary>
         /// Returns a Unity color for the specified RCT2 color index on the palette.
         /// </summary>
-        public static Color PaletteToColor(ushort colorIndex)
+        public static Color32 PaletteToColor(ushort colorIndex)
         {
-            return palette[colorIndex].Color;
+            return _palette[colorIndex].ToColor32();
         }
 
 
         /// <summary>
-        /// Returns the graphic for the given image index.
+        /// Returns the (potentially cached) graphic for the given image index.
         /// </summary>
         public static Graphic ForImageIndex(uint imageIndex)
         {
-            if (graphicCache.TryGetValue(imageIndex, out Graphic graphic))
+            if (_graphicCache.TryGetValue(imageIndex, out Graphic graphic))
             {
                 return graphic;
             }
@@ -39,15 +39,31 @@ namespace Graphics
 
             int total = data.PixelCount;
             if (total == 0)
-                return new Graphic();
+                return null;
 
             byte[] byteBuffer = new byte[total];
             OpenRCT2.GetTexturePixels(imageIndex, byteBuffer);
 
-            graphic = new Graphic(imageIndex, data.width, data.height, byteBuffer);
-            graphicCache.Add(imageIndex, graphic);
+            graphic = new Graphic(imageIndex, data, byteBuffer);
+            _graphicCache.Add(imageIndex, graphic);
 
             return graphic;
+        }
+
+
+        /// <summary>
+        /// Returns an array of graphics as an animation, for the given image indices.
+        /// </summary>
+        public static Graphic[] ForAnimationIndices(params uint[] imageIndices)
+        {
+            int frameCount = imageIndices.Length;
+            Graphic[] frames = new Graphic[frameCount];
+
+            for (int i = 0; i < frameCount; i++)
+            {
+                frames[i] = ForImageIndex(imageIndices[i]);
+            }
+            return frames;
         }
     }
 }

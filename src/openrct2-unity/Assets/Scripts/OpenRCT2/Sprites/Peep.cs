@@ -14,9 +14,11 @@ namespace Lib
         public readonly int x;
         public readonly int y;
         public readonly int z;
+        public readonly byte direction;
+        public readonly uint imageId;
 
-        public readonly byte tshirtColour;
-        public readonly byte trousersColour;
+        //public readonly byte tshirtColour;
+        //public readonly byte trousersColour;
 
 
         /// <summary>

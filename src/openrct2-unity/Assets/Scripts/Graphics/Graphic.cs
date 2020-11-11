@@ -1,11 +1,12 @@
-using System;
+using Lib;
+using UnityEngine;
 
 namespace Graphics
 {
     /// <summary>
     /// A small struct that contains RCT graphic information.
     /// </summary>
-    public readonly struct Graphic : IEquatable<Graphic>
+    public class Graphic
     {
         /// <summary>
         /// The image index of the specific graphic, that is used in the OpenRCT2 lib.
@@ -26,9 +27,15 @@ namespace Graphics
 
 
         /// <summary>
-        /// The actual byte data of the graphic. Each byte represents a palette color index.
+        /// X offset of the graphic in pixels.
         /// </summary>
-        public byte[] Data { get; }
+        public short OffsetX { get; }
+
+
+        /// <summary>
+        /// Y offset of the graphic in pixels.
+        /// </summary>
+        public short OffsetY { get; }
 
 
         /// <summary>
@@ -39,51 +46,79 @@ namespace Graphics
 
 
         /// <summary>
+        /// The actual byte data of the graphic. Each byte represents a palette color index.
+        /// </summary>
+        public byte[] ColorData { get; }
+
+
+        Texture2D _texture;
+
+
+        #region Constructors
+
+        /// <summary>
         /// Creates a new graphic structure based on the input.
         /// </summary>
-        public Graphic(uint imageId, short width, short height, byte[] data)
+        public Graphic(uint imageId, short width, short height, short offsetX, short offsetY, byte[] colorData)
         {
             ImageIndex = imageId;
             Width = width;
             Height = height;
-            Data = data;
+            OffsetX = offsetX;
+            OffsetY = offsetY;
+            ColorData = colorData;
         }
 
 
-        #region IEquatable implementation
-
         /// <summary>
-        /// Graphics are considered equal by their internal image id, regardless
-        /// of the other data it contains.
+        /// Creates a new graphic structure based on the input.
         /// </summary>
-        public static bool Equals(Graphic left, Graphic right)
-            => (left.ImageIndex == right.ImageIndex);
-
-
-        /// <inheritdoc/>
-        public override bool Equals(object obj)
-            => (obj is Graphic graphic && Equals(this, graphic));
-
-
-        /// <inheritdoc/>
-        public bool Equals(Graphic other)
-            => (Equals(this, other));
-
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-            => (ImageIndex.GetHashCode());
-
-
-        /// <inheritdoc/>
-        public static bool operator ==(Graphic left, Graphic right)
-            => (Equals(left, right));
-
-
-        /// <inheritdoc/>
-        public static bool operator !=(Graphic left, Graphic right)
-            => (!Equals(left, right));
+        public Graphic(uint imageId, in SpriteData spriteData, byte[] colorData)
+        {
+            ImageIndex = imageId;
+            Width = spriteData.width;
+            Height = spriteData.height;
+            OffsetX = spriteData.offsetX;
+            OffsetY = spriteData.offsetY;
+            ColorData = colorData;
+        }
 
         #endregion
+
+
+        /// <summary>
+        /// Gets the texture for this graphic.
+        /// </summary>
+        public Texture2D GetTexture(TextureWrapMode wrapMode = TextureWrapMode.Clamp)
+        {
+            if (_texture != null)
+                return _texture;
+
+            uint imageIndex = ImageIndex;
+            int pixelCount = PixelCount;
+            int width = Width;
+            int height = Height;
+
+            // Convert to color and mirror sprite vertically
+            Color32[] colors = new Color32[pixelCount];
+            for (int outRow = 0, inRow = (pixelCount - width); outRow < pixelCount; outRow += width, inRow -= width)
+            {
+                for (int column = 0; column < width; ++column)
+                {
+                    colors[outRow + column] = GraphicsFactory.PaletteToColor(ColorData[inRow + column]);
+                }
+            }
+
+            // Export as Texture2D image.
+            _texture = new Texture2D(width, height, TextureFormat.RGBA32, mipChain: false)
+            {
+                name = $"i:{imageIndex}",
+                filterMode = FilterMode.Point,
+                wrapMode = wrapMode
+            };
+            _texture.SetPixels32(colors);
+            _texture.Apply(updateMipmaps: false, makeNoLongerReadable: true);
+            return _texture;
+        }
     }
 }

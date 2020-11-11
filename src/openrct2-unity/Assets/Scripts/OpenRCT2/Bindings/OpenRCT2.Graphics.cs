@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using UnityEngine;
 
 #pragma warning disable CA1401 // P/Invokes should not be visible -> intended
 
@@ -66,6 +65,13 @@ namespace Lib
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
         public static extern uint GetSmallSceneryImageIndex(TileElement tileElement, byte direction);
+
+
+        /// <summary>
+        /// Gets all image entries in the animation for the specified small scenery tile.
+        /// </summary>
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetSmallSceneryAnimationIndices(TileElement tileElement, byte direction, [Out] uint[] indices, int arraySize);
 
 
         /// <summary>

@@ -53,7 +53,7 @@ namespace Generation.Retro
 
             GameObject pathObject = new GameObject
             {
-                name = imageIndex.ToString(),
+                name = $"Path (index: {imageIndex})",
                 isStatic = true
             };
             Transform pathTF = pathObject.transform;
@@ -67,15 +67,15 @@ namespace Generation.Retro
             MeshRenderer renderer = pathObject.AddComponent<MeshRenderer>();
             renderer.material = pathMaterial;
 
-            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D();
-            if (texture == null)
+            Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
+            if (graphic == null)
             {
                 Debug.LogError($"Missing path sprite image: {imageIndex}");
                 return;
             }
 
             Material material = renderer.material;
-            material.SetTexture(pathTextureName, texture);
+            material.SetTexture(pathTextureName, graphic.GetTexture());
 
             SpriteData data = OpenRCT2.GetTextureData(imageIndex);
             material.SetVector("ImageOffset", new Vector2(data.offsetX, data.offsetY));

@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
+#pragma warning disable CA1401 // P/Invokes should not be visible -> intended
+
 namespace Lib
 {
     public partial class OpenRCT2
@@ -9,7 +11,7 @@ namespace Lib
         /// Gets the amount of sprites for the specified type currently on the map.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int GetSpriteCount(SpriteType spriteType);
+        public static extern int GetSpriteCount(SpriteType spriteType);
 
 
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
@@ -44,7 +46,7 @@ namespace Lib
         /// the peep does not exist (anymore).
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern bool GetPeepStats(ushort spriteIndex, ref PeepStats peepStats);
+        public static extern bool GetPeepStats(ushort spriteIndex, ref PeepStats peepStats);
 
 
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]

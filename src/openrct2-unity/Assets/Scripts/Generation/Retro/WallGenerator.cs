@@ -24,20 +24,21 @@ namespace Generation.Retro
 
             // Apply the wall sprite
             uint imageIndex = OpenRCT2.GetWallImageIndex(tile, 0);
-            Texture2D texture = GraphicsFactory.ForImageIndex(imageIndex).ToTexture2D(TextureWrapMode.Repeat);
-            if (texture == null)
+            Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
+
+            if (graphic == null)
             {
                 Debug.LogError($"Missing wall sprite image: {imageIndex & 0x7FFFF}");
                 return;
             }
 
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
-            renderer.material.SetTexture(textureField, texture);
+            renderer.material.SetTexture(textureField, graphic.GetTexture(TextureWrapMode.Repeat));
 
             // Set the visual scale of the model.
             const int diagonalPixelHeight = 15;
 
-            obj.transform.localScale = new Vector3(1, (texture.height - diagonalPixelHeight) / 10f, 1);
+            obj.transform.localScale = new Vector3(1, (graphic.Height - diagonalPixelHeight) / 10f, 1);
         }
     }
 }

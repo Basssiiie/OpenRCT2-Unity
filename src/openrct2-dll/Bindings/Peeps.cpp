@@ -11,16 +11,39 @@ extern "C"
         int32_t x;
         int32_t y;
         int32_t z;
+        uint8_t direction;
+        uint32_t imageId;
 
-        uint8_t tshirt_colour;
-        uint8_t trousers_colour;
+        //uint8_t tshirt_colour;
+        //uint8_t trousers_colour;
     };
 
 
-    // Loads all the peeps into the specified buffer, returns the total amount of peeps loaded.
-    EXPORT int GetAllPeeps(PeepEntity* peeps, int arraySize)
+    // Gets the current sprite image id of this peep, excluding rotation.
+    uint32_t GetCurrentImageId(Peep* peep)
     {
-        int peepCount = 0;
+        // Borrowed from Paint.Peep.cpp/peep_paint()
+        rct_peep_animation_entry sprite = g_peep_animation_entries[peep->SpriteType];
+
+        PeepActionSpriteType spriteType = peep->ActionSpriteType;
+        uint8_t imageOffset = peep->ActionSpriteImageOffset;
+
+        if (peep->Action == PEEP_ACTION_NONE_1)
+        {
+            spriteType = peep->NextActionSpriteType;
+            imageOffset = 0;
+        }
+
+        uint32_t baseImageId = /*(imageDirection >> 3) +*/ sprite.sprite_animation[spriteType].base_image + imageOffset * 4;
+        uint32_t imageId = baseImageId | peep->TshirtColour << 19 | peep->TrousersColour << 24 | IMAGE_TYPE_REMAP | IMAGE_TYPE_REMAP_2_PLUS;
+        return imageId;
+    }
+
+
+    // Loads all the peeps into the specified buffer, returns the total amount of peeps loaded.
+    EXPORT int32_t GetAllPeeps(PeepEntity* peeps, int32_t arraySize)
+    {
+        int32_t peepCount = 0;
 
         for (Peep* peep : EntityList<Peep>(EntityListId::Peep))
         {
@@ -29,8 +52,11 @@ extern "C"
             data->x = peep->x;
             data->y = peep->y;
             data->z = peep->z;
-            data->tshirt_colour = peep->TshirtColour;
-            data->trousers_colour = peep->TrousersColour;
+            data->direction = peep->sprite_direction;
+            data->imageId = GetCurrentImageId(peep);
+
+            //data->tshirt_colour = peep->TshirtColour;
+            //data->trousers_colour = peep->TrousersColour;
 
             peepCount++;
 

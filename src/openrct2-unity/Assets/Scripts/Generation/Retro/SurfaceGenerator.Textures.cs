@@ -53,16 +53,15 @@ namespace Generation.Retro
             {
                 RequestedImage image = images[i];
 
-                Texture2D texture = GraphicsFactory
-                    .ForImageIndex(image.ImageIndex)
-                    .ToTexture2D(TextureWrapMode.Repeat);
+                Graphic graphic = GraphicsFactory.ForImageIndex(image.ImageIndex);
 
-                if (texture == null)
+                if (graphic == null)
                 {
                     Debug.LogError($"Missing surface sprite image: {image.ImageIndex & 0x7FFFF}");
                     continue;
                 }
 
+                Texture2D texture = graphic.GetTexture(TextureWrapMode.Repeat);
                 Material material;
 
                 switch (image.Type)
@@ -82,14 +81,14 @@ namespace Generation.Retro
                         material.SetTexture(waterTextureField, texture);
 
                         // HACK: injection of the refraction sprite shouldnt be here.
-                        var refraction = GraphicsFactory.ForImageIndex(WaterRefractionImageIndex).ToTexture2D(TextureWrapMode.Repeat);
+                        Graphic refraction = GraphicsFactory.ForImageIndex(WaterRefractionImageIndex);
                         if (refraction == null)
                         {
                             Debug.LogError($"Missing water refraction sprite image: {WaterRefractionImageIndex}");
                             continue;
                         }
 
-                        material.SetTexture(waterRefractionField, refraction);
+                        material.SetTexture(waterRefractionField, refraction.GetTexture(TextureWrapMode.Repeat));
                         break;
 
                     default:

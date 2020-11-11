@@ -12,18 +12,15 @@ namespace Lib
         public readonly byte alpha;
 
 
-        // Converts the 0-255 color byte to a float between 0 and 1.
-        const float ByteToUnityColorValue = 255f;
+        /// <summary>
+        /// Gets the palette entry as a Unity Color32. (more efficient than Color)
+        /// </summary>
+        public Color32 ToColor32() => new Color32(red, green, blue, alpha);
 
 
         /// <summary>
-        /// Gets the palette entry as a Unity color.
+        /// Gets the palette entry as a Unity Color. (less efficient than Color32)
         /// </summary>
-        public Color Color => new Color(
-            red / ByteToUnityColorValue,
-            green / ByteToUnityColorValue,
-            blue / ByteToUnityColorValue,
-            alpha / ByteToUnityColorValue
-        );
+        public Color ToColor() => ToColor32(); // use the implicit cast
     }
 }

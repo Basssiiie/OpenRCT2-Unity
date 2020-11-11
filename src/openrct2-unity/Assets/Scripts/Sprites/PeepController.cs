@@ -55,14 +55,12 @@ namespace Sprites
 
             ushort id = sprite.Id;
             obj.name = $"Peep sprite {id}";
-            //PeepType type = sprite.type;
-            //obj.name = $"{type} {id}";
 
-            UpdateColours(obj, sprite);
+            //UpdateColours(obj, sprite);
             return spriteObject;
         }
 
-
+        /*
         /// <summary>
         /// Rotates the sprite to look towards where its walking.
         /// </summary>
@@ -85,8 +83,48 @@ namespace Sprites
                     .rotation = Quaternion.LookRotation(forward);
             }
         }
+        */
 
 
+        protected override SpriteObject UpdateSprite(int index, in Peep sprite)
+        {
+            var obj = base.UpdateSprite(index, sprite);
+
+            SetPeepBillboard(obj.gameObject, sprite);
+            return obj;
+        }
+
+        readonly Dictionary<uint, Graphic> _flipbookCache = new Dictionary<uint, Graphic>();
+
+
+        void SetPeepBillboard(GameObject peepObj, in Peep sprite)
+        {
+            uint imageId = sprite.imageId;
+
+            if (!_flipbookCache.TryGetValue(imageId, out Graphic flipbook))
+            {
+                Graphic[] rotations = new Graphic[]
+                {
+                    GraphicsFactory.ForImageIndex(imageId),
+                    GraphicsFactory.ForImageIndex(imageId + 1),
+                    GraphicsFactory.ForImageIndex(imageId + 2),
+                    GraphicsFactory.ForImageIndex(imageId + 3)
+                };
+
+                flipbook = FlipbookFactory.CreateFlipbookGraphic(rotations);
+                _flipbookCache.Add(imageId, flipbook);
+            }
+
+            //var filter = peepObj.GetComponent<MeshFilter>();
+            var renderer = peepObj.GetComponent<MeshRenderer>();
+
+            Material material = renderer.material;
+            material.mainTexture = flipbook.GetTexture(TextureWrapMode.Repeat);
+            material.SetInt("_StartIndex", sprite.direction >> 3);
+            material.SetVector("_SpriteSizeOffset", new Vector4((flipbook.Width / 4), flipbook.Height, flipbook.OffsetX, flipbook.OffsetY));
+        }
+
+        /*
         void UpdateColours(GameObject peepObj, in Peep peep)
         {
             // TODO: for now tshirt and trousers child indices are hardcoded..
@@ -102,5 +140,6 @@ namespace Sprites
             tshirtRenderer.material.color = GraphicsFactory.PaletteToColor(tshirtPaletteIdx);
             trousersRenderer.material.color = GraphicsFactory.PaletteToColor(trousersPaletteIdx);
         }
+        */
     }
 }

@@ -23,7 +23,7 @@ extern "C"
 
 
     // Loads all the vehicles into the specified buffer, returns the total amount of vehicles loaded.
-    EXPORT int GetAllVehicles(VehicleEntity* vehicles, int arraySize)
+    EXPORT int32_t GetAllVehicles(VehicleEntity* vehicles, int32_t arraySize)
     {
         int vehicleCount = 0;
 
