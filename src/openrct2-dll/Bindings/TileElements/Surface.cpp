@@ -48,7 +48,7 @@ extern "C"
         if (obj != nullptr)
         {
             auto tobj = static_cast<TerrainEdgeObject*>(obj);
-            return tobj->BaseImageId;
+            return tobj->BaseImageId + 5; // EDGE_BOTTOMRIGHT = +5
         }
         return 0;
     }
