@@ -40,7 +40,7 @@ To get it running inside of Unity, you need the following prerequisites:
     - **Parks path:** the folder where to load parks from. Defaults to a folder in the repository, but can be changed to another folder.
 8. Select a park from the dropdown box and press the Play button at the top of the editor.
 
-## Ingame camera controls
+### Ingame camera controls
 
 When the Unity editor is in playmode, the controls for the camera are as follows:
 - **Hold right mouse button + move mouse:** rotate the camera.
