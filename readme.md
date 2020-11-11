@@ -38,7 +38,8 @@ To get it running inside of Unity, you need the following prerequisites:
     - **RCT2 path:** points to where RCT2 base game is installed, e.g. `C:/Games/Rollercoaster Tycoon 2`. Required for showing sprites.
     - **RCT1 path:** points to where RCT1 game is installed, e.g. `C:/Games/Rollercoaster Tycoon 1`. Required for showing RCT1 sprites, if the park has any.
     - **Parks path:** the folder where to load parks from. Defaults to a folder in the repository, but can be changed to another folder.
-8. Select a park from the dropdown box and press the Play button at the top of the editor.
+8. Select a park from the dropdown box.
+9. Press the Play button at the top of the editor.
 
 ### Ingame camera controls
 
