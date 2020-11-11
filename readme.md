@@ -33,7 +33,7 @@ To get it running inside of Unity, you need the following prerequisites:
 4. Start the Unity Editor and navigate to wherever you cloned the repository.
 5. Open the project in this directory: [`/src/openrct2-unity/`](https://github.com/Basssiiie/OpenRCT2-Unity/tree/develop/src/openrct2-unity)
 6. Once Unity has launched with the project, go to the 'Scenes' folder in the Project window and open ParkScene.
-7. Select the OpenRCT2 object in the Hierarchy and copy/paste the full paths of your RCT games into the correct fields in the Inspector.
+7. Select the OpenRCT2 object in the Hierarchy and copy/paste the full path(s) of your RCT game(s) into the correct fields in the Inspector.
     - **OpenRCT2 data path:** data folder for OpenRCT2 data, like new sprites objects. This should be set to use the repository's data path automatically, but can be changed if you know what you are doing.
     - **RCT2 path:** points to where RCT2 base game is installed, e.g. `C:/Games/Rollercoaster Tycoon 2`. Required for showing sprites.
     - **RCT1 path:** points to where RCT1 game is installed, e.g. `C:/Games/Rollercoaster Tycoon 1`. Required for showing RCT1 sprites, if the park has any.
