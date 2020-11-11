@@ -25,21 +25,30 @@ To get it running inside of Unity, you need the following prerequisites:
 
 ### Running the game
 
-1. Follow the steps in [compiling and running](#32-compiling-and-running) chapter for OpenRCT2. It is not necessary to run OpenRCT2, but make sure to read the paragraph after step 4!
-
+1. Follow the steps in [compiling and running](#32-compiling-and-running) chapter for OpenRCT2. 
+    - Make sure to set the target platform to x64 if you have a 64-bit OS! (As explained in the paragraph after step 4 in the linked chapter.)    
+    - It is not necessary to run OpenRCT2.
 2. Open openrct2.sln in Visual Studio 2019.
-
 3. Find the `openrct2-dll` project in the Solution Explorer and build it. (If it doesn't build, you messed something up in the previous steps.)
-
 4. Start the Unity Editor and navigate to wherever you cloned the repository.
-
 5. Open the project in this directory: [`/src/openrct2-unity/`](https://github.com/Basssiiie/OpenRCT2-Unity/tree/develop/src/openrct2-unity)
-
 6. Once Unity has launched with the project, go to the 'Scenes' folder in the Project window and open ParkScene.
-
-7. Select the OpenRCT2 object in the Hierarchy and copy/paste the paths of your RCT games into the correct fields in the Inspector.
-
+7. Select the OpenRCT2 object in the Hierarchy and copy/paste the full paths of your RCT games into the correct fields in the Inspector.
+    - **OpenRCT2 data path:** data folder for OpenRCT2 data, this should be set to use the repo's data path automatically.
+    - **RCT2 path:** points to where RCT2 base game is installed, e.g. `C:/Games/Rollercoaster Tycoon 2`. Required for showing sprites.
+    - **RCT1 path:** points to where RCT1 game is installed, e.g. `C:/Games/Rollercoaster Tycoon 1`. Required for showing RCT1 sprites, if the park has any.
+    - **Parks path:** the folder where to load parks from. Defaults to a folder in the repository, but can be changed to another folder.
 8. Select a park from the dropdown box and press the Play button at the top of the editor.
+
+## Ingame camera controls
+
+When the Unity editor is in playmode, the controls for the camera are as follows:
+- **Hold right mouse button + move mouse:** rotate the camera.
+- **Hold middle mouse button + move mouse:** pan the camera.
+- **Arrow keys or WASD keys:** pan the camera faster.
+- **Scroll mouse wheel:** zoom in and out.
+- **Numpad plus:** make the game run twice as fast.
+- **Numpad minus:** make the game run twice as slow.
 
 ## How?
 
