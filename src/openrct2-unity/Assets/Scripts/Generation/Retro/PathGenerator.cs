@@ -9,32 +9,32 @@ namespace Generation.Retro
     [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(PathGenerator)))]
     public class PathGenerator : TileElementGenerator
     {
-        readonly static Dictionary<int, Mesh> pathMeshCache = new Dictionary<int, Mesh>();
+        readonly static Dictionary<int, Mesh> _pathMeshCache = new Dictionary<int, Mesh>();
 
 
-        const float surfaceExtents = (Map.TileCoordsXYMultiplier / 2f);
-        const float surfaceHeight = (0.01f);
-        const float railingHeight = (0.4f);
-        const float railingDistance = (surfaceExtents * 0.8f);
+        const float SurfaceExtents = (Map.TileCoordsXYMultiplier / 2f);
+        const float SurfaceHeight = (0.01f);
+        const float RailingHeight = (0.4f);
+        const float RailingDistance = (SurfaceExtents * 0.8f);
 
 
-        [SerializeField] Material pathMaterial;
-        [SerializeField] string pathTextureName;
+        [SerializeField] Material _pathMaterial;
+        [SerializeField] string _pathTextureName;
 
-        MeshBuilder pathMeshBuilder;
+        MeshBuilder _pathMeshBuilder;
 
 
         /// <inheritdoc/>
         protected override void Start()
         {
-            pathMeshBuilder = new MeshBuilder();
+            _pathMeshBuilder = new MeshBuilder();
         }
 
 
         /// <inheritdoc/>
         protected override void Finish()
         {
-            pathMeshBuilder = null;
+            _pathMeshBuilder = null;
         }
 
 
@@ -45,10 +45,10 @@ namespace Generation.Retro
             uint imageIndex = OpenRCT2.GetPathSurfaceImageIndex(tile);
             int cacheKey = GetCacheKey(path);
 
-            if (!pathMeshCache.TryGetValue(cacheKey, out Mesh mesh))
+            if (!_pathMeshCache.TryGetValue(cacheKey, out Mesh mesh))
             {
                 mesh = GeneratePathMesh(x, y, path);
-                pathMeshCache.Add(cacheKey, mesh);
+                _pathMeshCache.Add(cacheKey, mesh);
             }
 
             GameObject pathObject = new GameObject
@@ -57,7 +57,7 @@ namespace Generation.Retro
                 isStatic = true
             };
             Transform pathTF = pathObject.transform;
-            pathTF.parent = map.transform;
+            pathTF.parent = _map.transform;
             pathTF.localPosition = Map.TileCoordsToUnity(x, tile.baseHeight, y);
             pathTF.localRotation = Quaternion.Euler(0, 180, 0);
 
@@ -65,7 +65,7 @@ namespace Generation.Retro
             filter.sharedMesh = mesh;
 
             MeshRenderer renderer = pathObject.AddComponent<MeshRenderer>();
-            renderer.material = pathMaterial;
+            renderer.material = _pathMaterial;
 
             Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
             if (graphic == null)
@@ -75,7 +75,7 @@ namespace Generation.Retro
             }
 
             Material material = renderer.material;
-            material.SetTexture(pathTextureName, graphic.GetTexture());
+            material.SetTexture(_pathTextureName, graphic.GetTexture());
 
             SpriteData data = OpenRCT2.GetTextureData(imageIndex);
             material.SetVector("ImageOffset", new Vector2(data.offsetX, data.offsetY));
@@ -88,15 +88,15 @@ namespace Generation.Retro
         /// </summary>
         Mesh GeneratePathMesh(int x, int y, in PathElement path)
         {
-            pathMeshBuilder.Clear();
+            _pathMeshBuilder.Clear();
 
-            Vertex a = new Vertex(surfaceExtents, surfaceHeight, surfaceExtents, Vector3.up, Vector2.one);
-            Vertex b = new Vertex(surfaceExtents, surfaceHeight, -surfaceExtents, Vector3.up, Vector2.right);
-            Vertex c = new Vertex(-surfaceExtents, surfaceHeight, -surfaceExtents, Vector3.up, Vector2.zero);
-            Vertex d = new Vertex(-surfaceExtents, surfaceHeight, surfaceExtents, Vector3.up, Vector2.up);
+            Vertex a = new Vertex(SurfaceExtents, SurfaceHeight, SurfaceExtents, Vector3.up, Vector2.one);
+            Vertex b = new Vertex(SurfaceExtents, SurfaceHeight, -SurfaceExtents, Vector3.up, Vector2.right);
+            Vertex c = new Vertex(-SurfaceExtents, SurfaceHeight, -SurfaceExtents, Vector3.up, Vector2.zero);
+            Vertex d = new Vertex(-SurfaceExtents, SurfaceHeight, SurfaceExtents, Vector3.up, Vector2.up);
 
-            pathMeshBuilder.AddQuad(a, b, c, d);
-            return pathMeshBuilder.ToMesh();
+            _pathMeshBuilder.AddQuad(a, b, c, d);
+            return _pathMeshBuilder.ToMesh();
         }
 
 

@@ -6,13 +6,13 @@ namespace Generation.Retro
 {
     public partial class SurfaceGenerator 
     {
-        [SerializeField] Shader surfaceShader;
-        [SerializeField] string surfaceTextureField = "Surface";
-        [SerializeField] Shader edgeShader;
-        [SerializeField] string edgeTextureField = "Edge";
-        [SerializeField] Shader waterShader;
-        [SerializeField] string waterTextureField = "Water";
-        [SerializeField] string waterRefractionField = "WaterRefraction";
+        [SerializeField] Shader _surfaceShader;
+        [SerializeField] string _surfaceTextureField = "Surface";
+        [SerializeField] Shader _edgeShader;
+        [SerializeField] string _edgeTextureField = "Edge";
+        [SerializeField] Shader _waterShader;
+        [SerializeField] string _waterTextureField = "Water";
+        [SerializeField] string _waterRefractionField = "WaterRefraction";
 
 
         const byte TypeSurface = 1;
@@ -20,22 +20,20 @@ namespace Generation.Retro
         const byte TypeWater = 3;
 
 
-        List<RequestedImage> images;
+        List<RequestedImage> _images;
 
 
         /// <summary>
-        /// Pushes a image index to the materials stack and returns its mesh index.
+        /// Pushes a image index to the materials stack and returns its list index.
         /// </summary>
         int PushImageIndex(uint imageIndex, byte type)
         {
-            int position = images.FindIndex(i => i.ImageIndex == imageIndex);
-
-            if (position != -1)
-                return position;
-
-            position = images.Count;
-            images.Add(new RequestedImage(imageIndex, type));
-
+            int position = _images.FindIndex(i => i.ImageIndex == imageIndex);
+            if (position == -1)
+            {
+                position = _images.Count;
+                _images.Add(new RequestedImage(imageIndex, type));
+            }
             return position;
         }
 
@@ -43,15 +41,14 @@ namespace Generation.Retro
         /// <summary>
         /// Generates the required materials for the surface mesh.
         /// </summary>
-        /// <returns></returns>
         Material[] GenerateSurfaceMaterials()
         {
-            int count = images.Count;
+            int count = _images.Count;
             Material[] materials = new Material[count];
 
             for (int i = 0; i < count; i++)
             {
-                RequestedImage image = images[i];
+                RequestedImage image = _images[i];
 
                 Graphic graphic = GraphicsFactory.ForImageIndex(image.ImageIndex);
 
@@ -67,18 +64,18 @@ namespace Generation.Retro
                 switch (image.Type)
                 {
                     case TypeSurface:
-                        material = new Material(surfaceShader);
-                        material.SetTexture(surfaceTextureField, texture);
+                        material = new Material(_surfaceShader);
+                        material.SetTexture(_surfaceTextureField, texture);
                         break;
 
                     case TypeEdge:
-                        material = new Material(edgeShader);
-                        material.SetTexture(edgeTextureField, texture);
+                        material = new Material(_edgeShader);
+                        material.SetTexture(_edgeTextureField, texture);
                         break;
 
                     case TypeWater:
-                        material = new Material(waterShader);
-                        material.SetTexture(waterTextureField, texture);
+                        material = new Material(_waterShader);
+                        material.SetTexture(_waterTextureField, texture);
 
                         // HACK: injection of the refraction sprite shouldnt be here.
                         Graphic refraction = GraphicsFactory.ForImageIndex(WaterRefractionImageIndex);
@@ -88,7 +85,7 @@ namespace Generation.Retro
                             continue;
                         }
 
-                        material.SetTexture(waterRefractionField, refraction.GetTexture(TextureWrapMode.Repeat));
+                        material.SetTexture(_waterRefractionField, refraction.GetTexture(TextureWrapMode.Repeat));
                         break;
 
                     default:
@@ -100,12 +97,6 @@ namespace Generation.Retro
             }
 
             return materials;
-        }
-
-
-        void ResetImages()
-        {
-            images.Clear();
         }
 
 

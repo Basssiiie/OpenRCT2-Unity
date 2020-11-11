@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb755727c9ed637499a59fb3df9d04f5, type: 3}
   m_Name: SurfaceGenerator
   m_EditorClassIdentifier: 
-  surfaceShader: {fileID: -6465566751694194690, guid: c5119169087bdc14bb9a8a4b72cab9e7,
+  _surfaceShader: {fileID: -6465566751694194690, guid: c5119169087bdc14bb9a8a4b72cab9e7,
     type: 3}
-  surfaceTextureField: Surface
-  edgeShader: {fileID: -6465566751694194690, guid: 5be9d4f19d70f504d90b782f27c81015,
+  _surfaceTextureField: Surface
+  _edgeShader: {fileID: -6465566751694194690, guid: 5be9d4f19d70f504d90b782f27c81015,
     type: 3}
-  edgeTextureField: Edge
-  waterShader: {fileID: -6465566751694194690, guid: f2b2dbc11d613b9478c958f95f47ef17,
+  _edgeTextureField: Edge
+  _waterShader: {fileID: -6465566751694194690, guid: f2b2dbc11d613b9478c958f95f47ef17,
     type: 3}
-  waterTextureField: Water
-  waterRefractionField: WaterRefraction
+  _waterTextureField: Water
+  _waterRefractionField: WaterRefraction
+  _chunkSize: 64

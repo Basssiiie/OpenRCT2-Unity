@@ -10,8 +10,8 @@ namespace Generation.Retro
     [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(WallGenerator)))]
     public class WallGenerator : TileElementGenerator
     {
-        [SerializeField] GameObject prefab;
-        [SerializeField] string textureField = "Wall";
+        [SerializeField] GameObject _prefab;
+        [SerializeField] string _textureField = "Wall";
 
 
         /// <inheritdoc/>
@@ -20,7 +20,7 @@ namespace Generation.Retro
             Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
             Quaternion rotation = Quaternion.Euler(0, (90 * tile.Rotation + 90), 0);           
 
-            GameObject obj = GameObject.Instantiate(prefab, position, rotation, map.transform);
+            GameObject obj = GameObject.Instantiate(_prefab, position, rotation, _map.transform);
 
             // Apply the wall sprite
             uint imageIndex = OpenRCT2.GetWallImageIndex(tile, 0);
@@ -33,7 +33,7 @@ namespace Generation.Retro
             }
 
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
-            renderer.material.SetTexture(textureField, graphic.GetTexture(TextureWrapMode.Repeat));
+            renderer.material.SetTexture(_textureField, graphic.GetTexture(TextureWrapMode.Repeat));
 
             // Set the visual scale of the model.
             const int diagonalPixelHeight = 15;

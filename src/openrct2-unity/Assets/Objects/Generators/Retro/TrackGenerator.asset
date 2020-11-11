@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b626c25729c8694a9b1b122fdc92b0f, type: 3}
   m_Name: TrackGenerator
   m_EditorClassIdentifier: 
-  prefab: {fileID: 3460111253241373034, guid: 5a37f2014057431499fb5a7f9cdc9b3e, type: 3}
-  trackMesh: {fileID: 2150044562243273127, guid: 19105baef7c447146b787e881f13d4f1,
+  _prefab: {fileID: 3460111253241373034, guid: 5a37f2014057431499fb5a7f9cdc9b3e, type: 3}
+  _trackMesh: {fileID: 2150044562243273127, guid: 19105baef7c447146b787e881f13d4f1,
     type: 3}

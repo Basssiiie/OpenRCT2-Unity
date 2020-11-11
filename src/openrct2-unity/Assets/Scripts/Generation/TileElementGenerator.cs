@@ -10,7 +10,7 @@ namespace Generation
     {
         protected const string MenuPath = "OpenRCT2/Generators/";
 
-        protected Map map;
+        protected Map _map;
 
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace Generation
         /// </summary>
         public void StartGenerator(Map map)
         {
-            this.map = map;
+            _map = map;
             Start();
         }
 
@@ -30,7 +30,7 @@ namespace Generation
         public void FinishGenerator()
         {
             Finish();
-            map = null;
+            _map = null;
         }
 
 

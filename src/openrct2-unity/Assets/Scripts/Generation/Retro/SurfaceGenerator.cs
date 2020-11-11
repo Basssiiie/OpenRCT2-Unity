@@ -12,40 +12,118 @@ namespace Generation.Retro
     public partial class SurfaceGenerator : TileElementGenerator
     {
         // For now we only use these two water sprites.
-        static readonly uint WaterImageIndex = OpenRCT2.GetWaterImageIndex();
-        static readonly uint WaterRefractionImageIndex = 5053;
+        static readonly uint _waterImageIndex = OpenRCT2.GetWaterImageIndex();
+        const uint WaterRefractionImageIndex = 5053;
+
+        [SerializeField] int _chunkSize = 64;
 
         const byte NoWater = 0;
 
-        MeshBuilder surfaceMeshBuilder;
+        List<Chunk> _chunks;
+
+
+        class Chunk
+        {
+            public int x;
+            public int y;
+
+            public MeshBuilder builder = new MeshBuilder();
+            public List<int> materialIndices = new List<int>();
+
+
+            /// <summary>
+            /// Adds a material from the generator-wide material stack, and returns its
+            /// local index for use in submeshes.
+            /// </summary>
+            public int AddMaterialIndex(int materialIndex)
+            {
+                int position = materialIndices.IndexOf(materialIndex);
+                if (position == -1)
+                {
+                    position = materialIndices.Count;
+                    materialIndices.Add(materialIndex);
+                }
+                return position; // == submesh index
+            }
+        }
 
 
         /// <inheritdoc/>
         protected override void Start()
         {
-            surfaceMeshBuilder = new MeshBuilder();
-            images = new List<RequestedImage>();
+            _chunks = new List<Chunk>();
+            _images = new List<RequestedImage>();
         }
 
 
         /// <inheritdoc/>
         protected override void Finish()
         {
-            Mesh mesh = surfaceMeshBuilder.ToMesh();
-            mesh.name = "Map";
-            mesh.RecalculateNormals();
+            Material[] materials = GenerateSurfaceMaterials();
 
-            map.Mesh = mesh;
-            map.Materials = GenerateSurfaceMaterials();
+            foreach (Chunk chunk in _chunks)
+            {
+                Mesh mesh = chunk.builder.ToMesh();
+                mesh.name = $"Chunk ({chunk.x}, {chunk.y})";
+                mesh.RecalculateNormals();
 
-            surfaceMeshBuilder = null;
-            images = null;
+                GameObject chunkObj = new GameObject($"Mapchunk ({chunk.x}, {chunk.y})");
+                chunkObj.transform.parent = _map.transform;
+                chunkObj.transform.localPosition = new Vector3(chunk.x * _chunkSize, 0, chunk.y * _chunkSize);
+
+                MeshFilter filter = chunkObj.AddComponent<MeshFilter>();
+                MeshRenderer renderer = chunkObj.AddComponent<MeshRenderer>();
+
+                filter.sharedMesh = mesh;
+
+                // Apply all used materials in this chunk.
+                int materialCount = chunk.materialIndices.Count;
+                Material[] chunkMaterials = new Material[materialCount];
+
+                for (int i = 0; i < materialCount; i++)
+                {
+                    int matIdx = chunk.materialIndices[i];
+                    chunkMaterials[i] = materials[matIdx];
+                }
+
+                renderer.sharedMaterials = chunkMaterials;
+            }
+
+            _chunks = null;
+            _images = null;
         }
 
 
         /// <inheritdoc/>
         public override void CreateElement(int x, int y, in TileElement tile)
         {
+            int chunkX = (x / _chunkSize);
+            int chunkY = (y / _chunkSize);
+
+            Chunk chunk = _chunks.Find(c => c.x == chunkX && c.y == chunkY);
+            if (chunk == null)
+            {
+                chunk = new Chunk
+                {
+                    x = chunkX,
+                    y = chunkY,
+                };
+                _chunks.Add(chunk);
+            }
+
+            CreateSurfaceElement(chunk, x, y, tile);
+        }
+
+
+        /// <summary>
+        /// Adds triangles for terrain surface and edges to the specified chunk.
+        /// </summary>
+        void CreateSurfaceElement(Chunk chunk, int x, int y, in TileElement tile)
+        {
+            // Convert to local chunk space.
+            int localX = x - (chunk.x * _chunkSize);
+            int localY = y - (chunk.y * _chunkSize);
+
             /* Surface coords to Unity:
                  * 
                  *  ^   W N
@@ -57,24 +135,24 @@ namespace Generation.Retro
             SurfaceSlope slope = surface.Slope;
             int baseHeight = tile.baseHeight;
 
-            int northHeight = GetSurfaceCorner(x + 1, y + 1, baseHeight, slope, SurfaceSlope.NorthUp, out Vertex north);
-            int eastHeight = GetSurfaceCorner(x + 1, y, baseHeight, slope, SurfaceSlope.EastUp, out Vertex east);
-            int southHeight = GetSurfaceCorner(x, y, baseHeight, slope, SurfaceSlope.SouthUp, out Vertex south);
-            int westHeight = GetSurfaceCorner(x, y + 1, baseHeight, slope, SurfaceSlope.WestUp, out Vertex west);
+            int northHeight = GetSurfaceCorner(localX + 1, localY + 1, baseHeight, slope, SurfaceSlope.NorthUp, out Vertex north);
+            int eastHeight =  GetSurfaceCorner(localX + 1, localY,     baseHeight, slope, SurfaceSlope.EastUp,  out Vertex east);
+            int southHeight = GetSurfaceCorner(localX,     localY,     baseHeight, slope, SurfaceSlope.SouthUp, out Vertex south);
+            int westHeight =  GetSurfaceCorner(localX,     localY + 1, baseHeight, slope, SurfaceSlope.WestUp,  out Vertex west);
 
             uint surfaceImage = OpenRCT2.GetSurfaceImageIndex(tile, x, y, 0);
-            int surfaceSubmesh = PushImageIndex(surfaceImage, TypeSurface);
+            int surfaceSubmesh = chunk.AddMaterialIndex(PushImageIndex(surfaceImage, TypeSurface));
 
             SurfaceSlope rotatedSlope = (slope & SurfaceSlope.WestEastValley);
             if (rotatedSlope == 0 || rotatedSlope == SurfaceSlope.WestEastValley)
             {
                 // In these cases the quad has to be rotated to show the correct kind of slope
-                surfaceMeshBuilder.AddTriangle(west, north, east, surfaceSubmesh);
-                surfaceMeshBuilder.AddTriangle(east, south, west, surfaceSubmesh);
+                chunk.builder.AddTriangle(west, north, east, surfaceSubmesh);
+                chunk.builder.AddTriangle(east, south, west, surfaceSubmesh);
             }
             else
             {
-                surfaceMeshBuilder.AddQuad(north, east, south, west, surfaceSubmesh);
+                chunk.builder.AddQuad(north, east, south, west, surfaceSubmesh);
             }
 
             // Water
@@ -84,31 +162,48 @@ namespace Generation.Retro
                 float waterVertexHeight = (waterHeight * Map.TileCoordsZMultiplier * Map.TileHeightStep);
 
                 Vertex waterNorth = new Vertex(north.position.x, waterVertexHeight, north.position.z, Vector3.up, north.uv);
-                Vertex waterEast = new Vertex(east.position.x, waterVertexHeight, east.position.z, Vector3.up, east.uv);
+                Vertex waterEast =  new Vertex(east.position.x,  waterVertexHeight, east.position.z,  Vector3.up, east.uv);
                 Vertex waterSouth = new Vertex(south.position.x, waterVertexHeight, south.position.z, Vector3.up, south.uv);
-                Vertex waterWest = new Vertex(west.position.x, waterVertexHeight, west.position.z, Vector3.up, west.uv);
+                Vertex waterWest =  new Vertex(west.position.x,  waterVertexHeight, west.position.z,  Vector3.up, west.uv);
 
-                int waterSubmesh = PushImageIndex(WaterImageIndex, TypeWater);
-                surfaceMeshBuilder.AddQuad(waterNorth, waterEast, waterSouth, waterWest, waterSubmesh);
+                int waterSubmesh = chunk.AddMaterialIndex(PushImageIndex(_waterImageIndex, TypeWater));
+                chunk.builder.AddQuad(waterNorth, waterEast, waterSouth, waterWest, waterSubmesh);
             }
 
             // Edges
             uint edgeImage = OpenRCT2.GetSurfaceEdgeImageIndex(tile);
-            int edgeSubmesh = PushImageIndex(edgeImage, TypeEdge);
 
-            TryAddSurfaceEdge(surfaceMeshBuilder, x, y, 0, 1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh); // Edge northwest
-            TryAddSurfaceEdge(surfaceMeshBuilder, x, y, 1, 0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh); // Edge northeast
-            TryAddSurfaceEdge(surfaceMeshBuilder, x, y, 0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh); // Edge southeast
-            TryAddSurfaceEdge(surfaceMeshBuilder, x, y, -1, 0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
+            // HACK: only add the material stack index when any of the add-edges succeed.
+            // Otherwise it will create inconsistency in materials, because some may not be used.
+            int materialStackIndex = PushImageIndex(edgeImage, TypeEdge);
+            int edgeSubmesh = chunk.materialIndices.IndexOf(materialStackIndex);
+            bool addIndexOnSuccess = false;
+            if (edgeSubmesh == -1)
+            {
+                edgeSubmesh = chunk.materialIndices.Count;
+                addIndexOnSuccess = true;
+            }
+
+            bool anyEdge = 
+                  TryAddSurfaceEdge(chunk, x, y,  0,  1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh)  // Edge northwest
+                | TryAddSurfaceEdge(chunk, x, y,  1,  0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh)  // Edge northeast
+                | TryAddSurfaceEdge(chunk, x, y,  0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh)  // Edge southeast
+                | TryAddSurfaceEdge(chunk, x, y, -1,  0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
+
+            if (anyEdge && addIndexOnSuccess)
+            {
+                chunk.materialIndices.Add(materialStackIndex);
+            }
         }
 
 
         /// <summary>
         /// Tries to add an surface edge to the specified offset.
         /// </summary>
-        void TryAddSurfaceEdge(MeshBuilder builder, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
+        bool TryAddSurfaceEdge(Chunk chunk, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
         {
-            SurfaceElement other = map.Tiles[x + offsetX, y + offsetY].Surface;
+            SurfaceElement other = _map.Tiles[x + offsetX, y + offsetY].Surface;
+
             int baseHeight = other.BaseHeight;
             SurfaceSlope otherSlope = other.Slope;
 
@@ -139,25 +234,27 @@ namespace Generation.Retro
                 Vertex leftBottom = new Vertex(leftTop.position.x, leftBottomY, leftTop.position.z, normal, u + offsetY, leftBottomHeight / VsPerHeightUnit);
                 Vertex rightBottom = new Vertex(rightTop.position.x, rightBottomY, rightTop.position.z, normal, u + offsetX, rightBottomHeight / VsPerHeightUnit);
 
-                builder.AddQuad(leftTop, rightTop, rightBottom, leftBottom, submesh);
+                chunk.builder.AddQuad(leftTop, rightTop, rightBottom, leftBottom, submesh);
+                return true;
             }
+            return false;
         }
 
 
         /// <summary>
         /// Gets the specified surface corner as a 3D vertex.
         /// </summary>
-        int GetSurfaceCorner(int x, int y, int startHeight, SurfaceSlope surfaceSlope, SurfaceSlope surfaceCorner, out Vertex vertex)
+        int GetSurfaceCorner(int localX, int localY, int startHeight, SurfaceSlope surfaceSlope, SurfaceSlope surfaceCorner, out Vertex vertex)
         {
             int height = GetSurfaceCornerHeight(startHeight, surfaceSlope, surfaceCorner);
 
             Vector3 position = new Vector3(
-                x * Map.TileCoordsXYMultiplier,
+                localX * Map.TileCoordsXYMultiplier,
                 height * Map.TileCoordsZMultiplier,
-                y * Map.TileCoordsXYMultiplier
+                localY * Map.TileCoordsXYMultiplier
             );
 
-            vertex = new Vertex(position, Vector3.zero, new Vector2(x, y));
+            vertex = new Vertex(position, Vector3.zero, new Vector2(localX, localY));
             return height;
         }
 
@@ -186,6 +283,15 @@ namespace Generation.Retro
                     height += Map.TileHeightStep;
             }
             return height;
+        }
+
+
+        /// <summary>
+        /// Gets a hash for the specified chunk position.
+        /// </summary>
+        int GetChunkPositionHash(short x, short y)
+        {
+            return (x << 16) | (int)y;
         }
 
     }

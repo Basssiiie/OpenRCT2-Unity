@@ -10,7 +10,7 @@ namespace Generation.Retro
     [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(SmallSceneryGenerator)))]
     public class SmallSceneryGenerator : TileElementGenerator
     {
-        [SerializeField] GameObject crossShape;
+        [SerializeField] GameObject _crossShape;
 
 
         /// <inheritdoc/>
@@ -39,7 +39,7 @@ namespace Generation.Retro
             }
 
             // Instantiate the element.
-            GameObject obj = InstantiateElement(crossShape, pos_x, pos_y, pos_z, (90 * tile.Rotation + 90));
+            GameObject obj = InstantiateElement(_crossShape, pos_x, pos_y, pos_z, (90 * tile.Rotation + 90));
 
             if ((entry.Flags & SmallSceneryFlags.Animated) != 0
                 && TryApplyAnimation(obj, tile, entry))
@@ -59,7 +59,7 @@ namespace Generation.Retro
             Vector3 position = Map.TileCoordsToUnity(x, y, z);
             Quaternion quatRot = Quaternion.Euler(0, rotation, 0);
 
-            return GameObject.Instantiate(prefab, position, quatRot, map.transform);
+            return GameObject.Instantiate(prefab, position, quatRot, _map.transform);
         }
 
 

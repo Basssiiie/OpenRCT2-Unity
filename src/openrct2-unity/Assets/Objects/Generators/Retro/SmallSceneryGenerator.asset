@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28af2eb3d2845f444837f44047f843eb, type: 3}
   m_Name: SmallSceneryGenerator
   m_EditorClassIdentifier: 
-  crossShape: {fileID: 4881190563108725493, guid: e5123beefdc062f42b5e3fb98e104cef,
+  _crossShape: {fileID: 4881190563108725493, guid: e5123beefdc062f42b5e3fb98e104cef,
     type: 3}

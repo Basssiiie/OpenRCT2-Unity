@@ -24,16 +24,16 @@ namespace Lib
             All = ~0
         };
 
-        [SerializeField] TileElementFlags generationFlags = TileElementFlags.All;
+        [SerializeField] TileElementFlags _generationFlags = TileElementFlags.All;
 
-        [SerializeField] TileElementGenerator surfaceGenerator;
-        [SerializeField] TileElementGenerator pathGenerator;
-        [SerializeField] TileElementGenerator trackGenerator;
-        [SerializeField] TileElementGenerator smallSceneryGenerator;
-        [SerializeField] TileElementGenerator entranceGenerator;
-        [SerializeField] TileElementGenerator wallGenerator;
-        [SerializeField] TileElementGenerator largeSceneryGenerator;
-        [SerializeField] TileElementGenerator bannerGenerator;
+        [SerializeField] TileElementGenerator _surfaceGenerator;
+        [SerializeField] TileElementGenerator _pathGenerator;
+        [SerializeField] TileElementGenerator _trackGenerator;
+        [SerializeField] TileElementGenerator _smallSceneryGenerator;
+        [SerializeField] TileElementGenerator _entranceGenerator;
+        [SerializeField] TileElementGenerator _wallGenerator;
+        [SerializeField] TileElementGenerator _largeSceneryGenerator;
+        [SerializeField] TileElementGenerator _bannerGenerator;
 
 
         /// <summary>
@@ -43,14 +43,14 @@ namespace Lib
         {
             return new TileElementGenerator[]
             {
-                 surfaceGenerator,
-                 pathGenerator,
-                 trackGenerator,
-                 smallSceneryGenerator,
-                 entranceGenerator,
-                 wallGenerator,
-                 largeSceneryGenerator,
-                 bannerGenerator
+                 _surfaceGenerator,
+                 _pathGenerator,
+                 _trackGenerator,
+                 _smallSceneryGenerator,
+                 _entranceGenerator,
+                 _wallGenerator,
+                 _largeSceneryGenerator,
+                 _bannerGenerator
             };
         }
 
@@ -91,43 +91,43 @@ namespace Lib
             switch (tile.Type)
             {
                 case TileElementType.Surface:
-                    if ((generationFlags & TileElementFlags.Surface) != 0)
-                        surfaceGenerator.CreateElement(x, y, in tile);
+                    if ((_generationFlags & TileElementFlags.Surface) != 0)
+                        _surfaceGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Path:
-                    if ((generationFlags & TileElementFlags.Path) != 0)
-                        pathGenerator.CreateElement(x, y, in tile);
+                    if ((_generationFlags & TileElementFlags.Path) != 0)
+                        _pathGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Track:
-                    if ((generationFlags & TileElementFlags.Track) != 0)
-                        trackGenerator.CreateElement(x, y, in tile);
+                    if ((_generationFlags & TileElementFlags.Track) != 0)
+                        _trackGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.SmallScenery:
-                    if ((generationFlags & TileElementFlags.SmallScenery) != 0)
-                        smallSceneryGenerator.CreateElement(x, y, in tile);
+                    if ((_generationFlags & TileElementFlags.SmallScenery) != 0)
+                        _smallSceneryGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Entrance:
-                    if ((generationFlags & TileElementFlags.Entrance) != 0)
-                        entranceGenerator.CreateElement(x, y, in tile);
+                    if ((_generationFlags & TileElementFlags.Entrance) != 0)
+                        _entranceGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Wall:
-                    if ((generationFlags & TileElementFlags.Wall) != 0)
-                        wallGenerator.CreateElement(x, y, in tile);
+                    if ((_generationFlags & TileElementFlags.Wall) != 0)
+                        _wallGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.LargeScenery:
-                    if ((generationFlags & TileElementFlags.LargeScenery) != 0)
-                        largeSceneryGenerator.CreateElement(x, y, in tile);
+                    if ((_generationFlags & TileElementFlags.LargeScenery) != 0)
+                        _largeSceneryGenerator.CreateElement(x, y, in tile);
                     break;
 
                 case TileElementType.Banner:
-                    if ((generationFlags & TileElementFlags.Banner) != 0)
-                        bannerGenerator.CreateElement(x, y, in tile);
+                    if ((_generationFlags & TileElementFlags.Banner) != 0)
+                        _bannerGenerator.CreateElement(x, y, in tile);
                     break;
             }
         }

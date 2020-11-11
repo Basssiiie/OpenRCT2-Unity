@@ -11,10 +11,10 @@ namespace Generation
     [CreateAssetMenu(menuName = (MenuPath + "Utilities/" + nameof(TrackSubpositionGenerator)))]
     public class TrackSubpositionGenerator : TileElementGenerator
     {
-        static readonly Dictionary<short, TrackNode[]> trackNodesCache = new Dictionary<short, TrackNode[]>();
+        static readonly Dictionary<short, TrackNode[]> _trackNodesCache = new Dictionary<short, TrackNode[]>();
 
 
-        [SerializeField] GameObject prefab;
+        [SerializeField] GameObject _prefab;
 
 
         /// <inheritdoc/>
@@ -26,10 +26,10 @@ namespace Generation
 
             short trackType = track.TrackType;
 
-            if (!trackNodesCache.TryGetValue(trackType, out TrackNode[] nodes))
+            if (!_trackNodesCache.TryGetValue(trackType, out TrackNode[] nodes))
             {
                 nodes = OpenRCT2.GetTrackElementRoute(trackType);
-                trackNodesCache.Add(trackType, nodes);
+                _trackNodesCache.Add(trackType, nodes);
             }
 
             // Create objects
@@ -42,7 +42,7 @@ namespace Generation
             position.y += OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsXYMultiplier;
 
             Transform tfParent = parent.transform;
-            tfParent.parent = map.transform;
+            tfParent.parent = _map.transform;
             tfParent.localPosition = position;
             tfParent.localRotation = Quaternion.Euler(0, tile.Rotation * 90f, 0);
 
@@ -50,7 +50,7 @@ namespace Generation
             {
                 TrackNode node = nodes[i];
 
-                GameObject obj = GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity, tfParent);
+                GameObject obj = GameObject.Instantiate(_prefab, Vector3.zero, Quaternion.identity, tfParent);
                 obj.name = $"#{i} = ({node.x}, {node.y}, {node.z}) dir: {node.direction}, bank: {node.bankRotation}, sprite: {node.vehicleSprite}";
 
                 Transform tf = obj.transform;

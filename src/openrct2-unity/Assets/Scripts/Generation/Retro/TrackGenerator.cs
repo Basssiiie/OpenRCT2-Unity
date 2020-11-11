@@ -14,8 +14,8 @@ namespace Generation.Retro
         static readonly Dictionary<short, TrackColour[]> trackColoursCache = new Dictionary<short, TrackColour[]>();
 
 
-        [SerializeField] GameObject prefab;
-        [SerializeField] Mesh trackMesh;
+        [SerializeField] GameObject _prefab;
+        [SerializeField] Mesh _trackMesh;
 
 
         // Only the first 3 flags matter for the mesh.
@@ -27,7 +27,7 @@ namespace Generation.Retro
         /// <inheritdoc/>
         protected override void Start()
         {
-            meshExtruder = new MeshExtruder(trackMesh);
+            meshExtruder = new MeshExtruder(_trackMesh);
         }
 
 
@@ -94,7 +94,7 @@ namespace Generation.Retro
             Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
             position.y += trackOffset;
 
-            GameObject obj = GameObject.Instantiate(prefab, position, Quaternion.Euler(0, tile.Rotation * 90f, 0), map.transform);
+            GameObject obj = GameObject.Instantiate(_prefab, position, Quaternion.Euler(0, tile.Rotation * 90f, 0), _map.transform);
 
             obj.name = $"[{x}, {y}] scheme: {track.ColourScheme}, rot: {tile.Rotation}, type: {trackType}, inv: {track.IsInverted}";
             MeshFilter filter = obj.GetComponent<MeshFilter>();

@@ -5,8 +5,6 @@ namespace Lib
     /// <summary>
     /// The map of the park.
     /// </summary>
-    [RequireComponent(typeof(MeshFilter))]
-    [RequireComponent(typeof(MeshRenderer))]
     public partial class Map : MonoBehaviour
     {
         /// <summary>
@@ -21,38 +19,7 @@ namespace Lib
         public Tile[,] Tiles { get; private set; }
 
 
-        /// <summary>
-        /// Gets or sets the map's mesh.
-        /// </summary>
-        public Mesh Mesh
-        {
-            get => meshFilter.sharedMesh;
-            set => meshFilter.sharedMesh = value;
-        }
-
-
-        /// <summary>
-        /// Gets or sets the map's materials.
-        /// </summary>
-        public Material[] Materials
-        {
-            get => meshRenderer.sharedMaterials;
-            set => meshRenderer.sharedMaterials = value;
-        }
-
-
         const int MaxElementsPerTile = 128;
-
-
-        MeshFilter meshFilter;
-        MeshRenderer meshRenderer;
-
-
-        void Awake()
-		{
-			meshFilter = gameObject.GetComponent<MeshFilter>();
-            meshRenderer = gameObject.GetComponent<MeshRenderer>();
-        }
 
 
 		void Start()

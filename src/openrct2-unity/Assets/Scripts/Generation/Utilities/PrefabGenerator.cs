@@ -9,7 +9,7 @@ namespace Generation
     [CreateAssetMenu(menuName = (MenuPath + "Utilities/" + nameof(PrefabGenerator)))]
     public class PrefabGenerator : TileElementGenerator
     {
-        [SerializeField] GameObject prefab;
+        [SerializeField] GameObject _prefab;
 
 
         /// <inheritdoc/>
@@ -18,7 +18,7 @@ namespace Generation
             Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
             Quaternion rotation = Quaternion.Euler(0, 90 * tile.Rotation + 90, 0);
 
-            GameObject.Instantiate(prefab, position, rotation, map.transform);
+            GameObject.Instantiate(_prefab, position, rotation, _map.transform);
         }
     }
 }
