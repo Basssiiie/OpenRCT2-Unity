@@ -14,15 +14,19 @@ extern "C"
     EXPORT uint32_t GetSurfaceImageIndex(const TileElement* tileElement, int32_t tileX, int32_t tileY, uint8_t direction)
     {
         SurfaceElement* surface = tileElement->AsSurface();
-        auto surfaceIndex = surface->GetSurfaceStyle();
-        auto grassLength = surface->GetGrassLength();
+        uint32_t surfaceIndex = surface->GetSurfaceStyle();
+        uint8_t grassLength = surface->GetGrassLength();
 
-        auto imageId = (uint32_t)SPR_NONE;
+        uint32_t imageId = (uint32_t)SPR_NONE;
 
-        auto& objMgr = OpenRCT2::GetContext()->GetObjectManager();
-        auto obj = objMgr.GetLoadedObject(OBJECT_TYPE_TERRAIN_SURFACE, surfaceIndex);
+        IObjectManager& objMgr = OpenRCT2::GetContext()->GetObjectManager();
+        Object* obj = objMgr.GetLoadedObject(OBJECT_TYPE_TERRAIN_SURFACE, surfaceIndex);
 
-        if (obj != nullptr)
+        if (obj == nullptr)
+        {
+            dll_log("Could not find surface object: %i", surfaceIndex);
+        }
+        else
         {
             TerrainSurfaceObject* result = static_cast<TerrainSurfaceObject*>(obj);
 
@@ -41,11 +45,16 @@ extern "C"
     EXPORT uint32_t GetSurfaceEdgeImageIndex(const TileElement* tileElement)
     {
         SurfaceElement* surface = tileElement->AsSurface();
-        auto edgeIndex = surface->GetEdgeStyle();
+        uint32_t edgeIndex = surface->GetEdgeStyle();
 
-        auto& objMgr = OpenRCT2::GetContext()->GetObjectManager();
-        auto obj = objMgr.GetLoadedObject(OBJECT_TYPE_TERRAIN_EDGE, edgeIndex);
-        if (obj != nullptr)
+        IObjectManager& objMgr = OpenRCT2::GetContext()->GetObjectManager();
+        Object* obj = objMgr.GetLoadedObject(OBJECT_TYPE_TERRAIN_EDGE, edgeIndex);
+
+        if (obj == nullptr)
+        {
+            dll_log("Could not find surface edge object: %i", edgeIndex);
+        }
+        else
         {
             auto tobj = static_cast<TerrainEdgeObject*>(obj);
             return tobj->BaseImageId + 5; // EDGE_BOTTOMRIGHT = +5

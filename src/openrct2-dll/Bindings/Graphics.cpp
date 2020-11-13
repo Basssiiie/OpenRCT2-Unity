@@ -37,11 +37,12 @@ extern "C"
     // Returns the image index of the tile element and its texture size.
     EXPORT void GetTextureData(uint32_t imageIndex, sprite_data* data)
     {
-        const rct_g1_element* g1 = gfx_get_g1_element(imageIndex & 0x7FFFF);
+        const int32_t maskedImageId = imageIndex & 0x7FFFF;
+        const rct_g1_element* g1 = gfx_get_g1_element(maskedImageId);
 
         if (g1 == nullptr)
         {
-            dll_log("Could not find g1 element for %i.", imageIndex);
+            dll_log("Could not find g1 element data for %i. (Unmasked: %i)", maskedImageId, imageIndex);
             return;
         }
 
@@ -60,7 +61,7 @@ extern "C"
 
         if (g1 == nullptr)
         {
-            dll_log("Could not find g1 element for %i.", maskedImageId);
+            dll_log("Could not find g1 element pixels for %i. (Unmasked: %i)", maskedImageId, imageIndex);
             return;
         }
 

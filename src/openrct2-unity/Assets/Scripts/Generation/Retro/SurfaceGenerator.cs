@@ -64,6 +64,10 @@ namespace Generation.Retro
             foreach (Chunk chunk in _chunks)
             {
                 Mesh mesh = chunk.builder.ToMesh();
+
+                if (mesh.vertexCount == 0)
+                    continue;
+
                 mesh.name = $"Chunk ({chunk.x}, {chunk.y})";
                 mesh.RecalculateNormals();
 
@@ -131,6 +135,16 @@ namespace Generation.Retro
                  *  y 
                  *    x -->
                  */
+
+            uint surfaceImage = OpenRCT2.GetSurfaceImageIndex(tile, x, y, 0);
+            if (surfaceImage == uint.MaxValue)
+            {
+                Debug.LogWarning($"Invalid surface image at ({x}, {y}).");
+                return; // empty tile can happen?
+            }
+
+            int surfaceSubmesh = chunk.AddMaterialIndex(PushImageIndex(surfaceImage, TextureType.Surface));
+
             SurfaceElement surface = tile.AsSurface();
             SurfaceSlope slope = surface.Slope;
             int baseHeight = tile.baseHeight;
@@ -139,9 +153,6 @@ namespace Generation.Retro
             int eastHeight =  GetSurfaceCorner(localX + 1, localY,     baseHeight, slope, SurfaceSlope.EastUp,  out Vertex east);
             int southHeight = GetSurfaceCorner(localX,     localY,     baseHeight, slope, SurfaceSlope.SouthUp, out Vertex south);
             int westHeight =  GetSurfaceCorner(localX,     localY + 1, baseHeight, slope, SurfaceSlope.WestUp,  out Vertex west);
-
-            uint surfaceImage = OpenRCT2.GetSurfaceImageIndex(tile, x, y, 0);
-            int surfaceSubmesh = chunk.AddMaterialIndex(PushImageIndex(surfaceImage, TypeSurface));
 
             SurfaceSlope rotatedSlope = (slope & SurfaceSlope.WestEastValley);
             if (rotatedSlope == 0 || rotatedSlope == SurfaceSlope.WestEastValley)
@@ -166,16 +177,21 @@ namespace Generation.Retro
                 Vertex waterSouth = new Vertex(south.position.x, waterVertexHeight, south.position.z, Vector3.up, south.uv);
                 Vertex waterWest =  new Vertex(west.position.x,  waterVertexHeight, west.position.z,  Vector3.up, west.uv);
 
-                int waterSubmesh = chunk.AddMaterialIndex(PushImageIndex(_waterImageIndex, TypeWater));
+                int waterSubmesh = chunk.AddMaterialIndex(PushImageIndex(_waterImageIndex, TextureType.Water));
                 chunk.builder.AddQuad(waterNorth, waterEast, waterSouth, waterWest, waterSubmesh);
             }
 
             // Edges
             uint edgeImage = OpenRCT2.GetSurfaceEdgeImageIndex(tile);
+            if (edgeImage == uint.MaxValue)
+            {
+                Debug.LogWarning($"Invalid surface edge image at ({x}, {y}).");
+                return; // empty tile can happen?
+            }
 
             // HACK: only add the material stack index when any of the add-edges succeed.
             // Otherwise it will create inconsistency in materials, because some may not be used.
-            int materialStackIndex = PushImageIndex(edgeImage, TypeEdge);
+            int materialStackIndex = PushImageIndex(edgeImage, TextureType.Edge);
             int edgeSubmesh = chunk.materialIndices.IndexOf(materialStackIndex);
             bool addIndexOnSuccess = false;
             if (edgeSubmesh == -1)

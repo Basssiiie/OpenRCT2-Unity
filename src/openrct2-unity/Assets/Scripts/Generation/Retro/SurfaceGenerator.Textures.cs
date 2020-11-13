@@ -15,9 +15,12 @@ namespace Generation.Retro
         [SerializeField] string _waterRefractionField = "WaterRefraction";
 
 
-        const byte TypeSurface = 1;
-        const byte TypeEdge = 2;
-        const byte TypeWater = 3;
+        enum TextureType : byte
+        {
+            Surface = 1,
+            Edge = 2,
+            Water = 3
+        }
 
 
         List<RequestedImage> _images;
@@ -26,7 +29,7 @@ namespace Generation.Retro
         /// <summary>
         /// Pushes a image index to the materials stack and returns its list index.
         /// </summary>
-        int PushImageIndex(uint imageIndex, byte type)
+        int PushImageIndex(uint imageIndex, TextureType type)
         {
             int position = _images.FindIndex(i => i.ImageIndex == imageIndex);
             if (position == -1)
@@ -63,17 +66,17 @@ namespace Generation.Retro
 
                 switch (image.Type)
                 {
-                    case TypeSurface:
+                    case TextureType.Surface:
                         material = new Material(_surfaceShader);
                         material.SetTexture(_surfaceTextureField, texture);
                         break;
 
-                    case TypeEdge:
+                    case TextureType.Edge:
                         material = new Material(_edgeShader);
                         material.SetTexture(_edgeTextureField, texture);
                         break;
 
-                    case TypeWater:
+                    case TextureType.Water:
                         material = new Material(_waterShader);
                         material.SetTexture(_waterTextureField, texture);
 
@@ -103,10 +106,10 @@ namespace Generation.Retro
         readonly struct RequestedImage
         {
             public readonly uint ImageIndex;
-            public readonly byte Type;
+            public readonly TextureType Type;
 
 
-            public RequestedImage(uint imageIndex, byte type)
+            public RequestedImage(uint imageIndex, TextureType type)
             {
                 ImageIndex = imageIndex;
                 Type = type;

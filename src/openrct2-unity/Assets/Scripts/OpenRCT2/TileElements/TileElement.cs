@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Lib
 {
-    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    [StructLayout(LayoutKind.Sequential)]
     public readonly struct TileElement : IEquatable<TileElement>
     {
         public readonly byte type;
