@@ -65,7 +65,7 @@ namespace EditorExtensions
                     }
                     else
                     {
-                        Texture2D texture = graphic.GetTexture();
+                        Texture2D texture = graphic.GetTexture(makeTextureReadable: true);
                         GUIContent icon = EditorGUIUtility.IconContent("SavePassive", "Save sprite");
 
                         GUILayout.BeginHorizontal();

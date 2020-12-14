@@ -16,48 +16,48 @@ namespace Lib
         const string DefaultOpenRCT2Path = @"bin\data"; // from repo root
         const string DefaultParkPath = @"Parks"; // from unity project/executable root
 
-        static readonly string[] ValidParkExtensions = { ".sv6", ".sc6", ".sv4", ".sc4" };
+        static readonly string[] _validParkExtensions = { ".sv6", ".sc6", ".sv4", ".sc4" };
 
 
-        bool groupToggleDataPaths = true;
-        string openrct2DataPath;
-        string rct2Path;
-        string rct1Path;
-        string parkPath;
+        bool _groupToggleDataPaths = true;
+        string _openrct2DataPath;
+        string _rct2Path;
+        string _rct1Path;
+        string _parkPath;
 
-        bool groupToggleSelectedPark = true;
-        string[] allDiscoveredParks;
-        int selectedParkIndex = -1;
+        bool _groupToggleSelectedPark = true;
+        string[] _allDiscoveredParks;
+        int _selectedParkIndex = -1;
 
 
         void OnEnable()
         {
-            openrct2DataPath = Configuration.OpenRCT2DataPath;
+            _openrct2DataPath = Configuration.OpenRCT2DataPath;
 
             // If openrct2 path is null, take the default bin folder in the project.
-            if (string.IsNullOrWhiteSpace(openrct2DataPath))
-                openrct2DataPath = GetDefaultOpenRCT2DataPath();
+            if (string.IsNullOrWhiteSpace(_openrct2DataPath))
+                _openrct2DataPath = GetDefaultOpenRCT2DataPath();
 
-            rct2Path = Configuration.RCT2Path;
-            rct1Path = Configuration.RCT1Path;
+            _rct2Path = Configuration.RCT2Path;
+            _rct1Path = Configuration.RCT1Path;
 
-            parkPath = Configuration.ParkPath;
+            _parkPath = Configuration.ParkPath;
 
             // If park path is null, take the default park folder in the project.
-            if (string.IsNullOrWhiteSpace(parkPath))
+            if (string.IsNullOrWhiteSpace(_parkPath))
             {
                 DirectoryInfo unityRoot = FindUnityRootFolder();
-                parkPath = Path.Combine(unityRoot.FullName, DefaultParkPath);
+                _parkPath = Path.Combine(unityRoot.FullName, DefaultParkPath);
             }
         }
 
 
         void OnDisable()
         {
-            Configuration.OpenRCT2DataPath = openrct2DataPath;
-            Configuration.RCT2Path = rct2Path;
-            Configuration.RCT1Path = rct1Path;
-            Configuration.ParkPath = parkPath;
+            Configuration.OpenRCT2DataPath = _openrct2DataPath;
+            Configuration.RCT2Path = _rct2Path;
+            Configuration.RCT1Path = _rct1Path;
+            Configuration.ParkPath = _parkPath;
         }
 
 
@@ -66,64 +66,68 @@ namespace Lib
         /// </summary>
         public override void OnInspectorGUI()
         {
-            groupToggleDataPaths = EditorGUILayout.BeginFoldoutHeaderGroup(groupToggleDataPaths, "Source paths");
+            _groupToggleDataPaths = EditorGUILayout.BeginFoldoutHeaderGroup(_groupToggleDataPaths, "Source paths");
 
-            if (groupToggleDataPaths)
+            if (_groupToggleDataPaths)
             {
                 // OpenRCT2
-                openrct2DataPath = EditorGUILayout.TextField("OpenRCT2 data path", openrct2DataPath);
+                _openrct2DataPath = EditorGUILayout.TextField("OpenRCT2 data path", _openrct2DataPath);
 
-                if (string.IsNullOrWhiteSpace(openrct2DataPath))
+                if (string.IsNullOrWhiteSpace(_openrct2DataPath))
                     EditorGUILayout.HelpBox("The OpenRCT2 data path is not specified! Point it to the 'data' folder for OpenRCT2.", MessageType.Error);
-                else if (!Directory.Exists(openrct2DataPath))
+                else if (!Directory.Exists(_openrct2DataPath))
                 {
                     string defaultPath = GetDefaultOpenRCT2DataPath();
-                    if (openrct2DataPath == defaultPath)
-                        EditorGUILayout.HelpBox($"The default OpenRCT2 data path does not exist:\n'{openrct2DataPath}'\n\nYou need to succesfully build the C++ OpenRCT2 project at least one to use this data folder.", MessageType.Error);
+                    if (_openrct2DataPath == defaultPath)
+                        EditorGUILayout.HelpBox($"The default OpenRCT2 data path does not exist:\n'{_openrct2DataPath}'\n\nYou need to succesfully build the C++ OpenRCT2 project at least one to use this data folder.", MessageType.Error);
                     else
-                        EditorGUILayout.HelpBox($"The specified OpenRCT2 data path does not exist:\n'{openrct2DataPath}'\n\nPoint it to the 'data' folder for OpenRCT2.", MessageType.Error);
+                        EditorGUILayout.HelpBox($"The specified OpenRCT2 data path does not exist:\n'{_openrct2DataPath}'\n\nPoint it to the 'data' folder for OpenRCT2.", MessageType.Error);
                 }
 
                 // RCT2 path
-                rct2Path = EditorGUILayout.TextField("RCT2 path", rct2Path);
+                _rct2Path = EditorGUILayout.TextField("RCT2 path", _rct2Path);
 
-                if (string.IsNullOrWhiteSpace(rct2Path))
+                if (string.IsNullOrWhiteSpace(_rct2Path))
                     EditorGUILayout.HelpBox("The RCT2 path is not specified! Point it to the folder where RCT2 is installed.", MessageType.Error);
-                else if (!Directory.Exists(rct2Path))
-                    EditorGUILayout.HelpBox($"The specified RCT2 path does not exist:\n'{rct2Path}'\n\nPoint it to the folder where RCT2 is installed.", MessageType.Error);
+                else if (!Directory.Exists(_rct2Path))
+                    EditorGUILayout.HelpBox($"The specified RCT2 path does not exist:\n'{_rct2Path}'\n\nPoint it to the folder where RCT2 is installed.", MessageType.Error);
 
                 // RCT1 path
-                rct1Path = EditorGUILayout.TextField("RCT1 path (optional)", rct1Path);
+                _rct1Path = EditorGUILayout.TextField("RCT1 path (optional)", _rct1Path);
 
-                if (!string.IsNullOrWhiteSpace(rct1Path) && !Directory.Exists(rct1Path))
-                    EditorGUILayout.HelpBox($"The specified RCT1 path does not exist:\n{rct1Path}\n\nPoint it to the folder where RCT1 is installed or leave it empty.", MessageType.Error);
+                if (!string.IsNullOrWhiteSpace(_rct1Path) && !Directory.Exists(_rct1Path))
+                    EditorGUILayout.HelpBox($"The specified RCT1 path does not exist:\n{_rct1Path}\n\nPoint it to the folder where RCT1 is installed or leave it empty.", MessageType.Error);
 
                 // Parks path
-                parkPath = EditorGUILayout.TextField("Parks path", parkPath);
+                _parkPath = EditorGUILayout.TextField("Parks path", _parkPath);
 
-                if (string.IsNullOrWhiteSpace(parkPath))
+                if (string.IsNullOrWhiteSpace(_parkPath))
                     EditorGUILayout.HelpBox("The parks path is not specified! Point it to a folder where your parks are located.", MessageType.Error);
-                else if (!Directory.Exists(parkPath))
-                    EditorGUILayout.HelpBox($"The specified parks path does not exist:\n'{parkPath}'\n\nPoint it to the folder where your parks are located.", MessageType.Error);
+                else if (!Directory.Exists(_parkPath))
+                    EditorGUILayout.HelpBox($"The specified parks path does not exist:\n'{_parkPath}'\n\nPoint it to the folder where your parks are located.", MessageType.Error);
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
 
             // Select a park
-            groupToggleSelectedPark = EditorGUILayout.BeginFoldoutHeaderGroup(groupToggleSelectedPark, "Selected park");
+            _groupToggleSelectedPark = EditorGUILayout.BeginFoldoutHeaderGroup(_groupToggleSelectedPark, "Selected park");
 
-            if (groupToggleSelectedPark)
+            if (_groupToggleSelectedPark)
             {
                 bool parkFoundError = false;
-                if (allDiscoveredParks == null)
+                if (_allDiscoveredParks == null)
                 {
                     // Search for all park files in the specified park folder...
-                    DirectoryInfo parkDirectory = new DirectoryInfo(parkPath);
-                    if (parkDirectory.Exists)
+                    DirectoryInfo parkDirectory = new DirectoryInfo(_parkPath);
+                    if (!parkDirectory.Exists)
+                    {
+                        parkFoundError = true;
+                    }
+                    else
                     {
                         int cutoff = parkDirectory.FullName.Length + 1;
 
-                        allDiscoveredParks = parkDirectory
+                        _allDiscoveredParks = parkDirectory
                             .EnumerateFiles("*.*", SearchOption.AllDirectories)
                             .Where(HasValidParkExtension)
                             .Select(e => e
@@ -135,27 +139,29 @@ namespace Lib
                         OpenRCT2 game = (OpenRCT2)target;
                         string selected = game.selectedPark;
 
-                        selectedParkIndex = Array.IndexOf(allDiscoveredParks, selected);
+                        _selectedParkIndex = Array.IndexOf(_allDiscoveredParks, selected);
 
-                        if (selectedParkIndex != -1)
-                            game.selectedPark = allDiscoveredParks[selectedParkIndex];
+                        if (_selectedParkIndex != -1)
+                        {
+                            game.selectedPark = _allDiscoveredParks[_selectedParkIndex];
+                        }
                     }
-                    else
-                        parkFoundError = true;
                 }
 
                 // Set the current selected park + update if another is selected
                 if (!parkFoundError)
                 {
-                    int currentSelection = selectedParkIndex;
-                    currentSelection = EditorGUILayout.Popup(currentSelection, allDiscoveredParks);
+                    int currentSelection = _selectedParkIndex;
+                    currentSelection = EditorGUILayout.Popup(currentSelection, _allDiscoveredParks);
 
-                    if (currentSelection != selectedParkIndex)
+                    if (currentSelection != _selectedParkIndex)
                     {
-                        selectedParkIndex = currentSelection;
+                        _selectedParkIndex = currentSelection;
 
                         OpenRCT2 game = (OpenRCT2)target;
-                        game.selectedPark = allDiscoveredParks[currentSelection];
+                        Undo.RecordObject(game, "Select park");
+
+                        game.selectedPark = _allDiscoveredParks[currentSelection];
                     }
                 }
             }
@@ -199,6 +205,6 @@ namespace Lib
         /// Returns whether the file entry has a valid extension.
         /// </summary>
         bool HasValidParkExtension(FileSystemInfo fileSystemInfo)
-            => ValidParkExtensions.Any(e => string.Equals(e, fileSystemInfo.Extension, StringComparison.InvariantCultureIgnoreCase));
+            => _validParkExtensions.Any(e => string.Equals(e, fileSystemInfo.Extension, StringComparison.InvariantCultureIgnoreCase));
     }
 }

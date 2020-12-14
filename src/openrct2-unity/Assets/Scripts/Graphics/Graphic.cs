@@ -89,10 +89,14 @@ namespace Graphics
         /// <summary>
         /// Gets the texture for this graphic.
         /// </summary>
-        public Texture2D GetTexture(TextureWrapMode wrapMode = TextureWrapMode.Clamp)
+        public Texture2D GetTexture(TextureWrapMode wrapMode = TextureWrapMode.Clamp, bool makeTextureReadable = false)
         {
-            if (_texture != null)
+            if (_texture != null
+                // if caller requires a readable texture, but cached is not; do not return the cached.
+                && (!makeTextureReadable || _texture.isReadable)) 
+            {
                 return _texture;
+            }
 
             uint imageIndex = ImageIndex;
             int pixelCount = PixelCount;
@@ -112,12 +116,12 @@ namespace Graphics
             // Export as Texture2D image.
             _texture = new Texture2D(width, height, TextureFormat.RGBA32, mipChain: false)
             {
-                name = $"i:{imageIndex}",
+                name = $"sprite{imageIndex & 0x7FFFF}(unmasked{imageIndex})",
                 filterMode = FilterMode.Point,
                 wrapMode = wrapMode
             };
             _texture.SetPixels32(colors);
-            _texture.Apply(updateMipmaps: false, makeNoLongerReadable: true);
+            _texture.Apply(updateMipmaps: false, makeNoLongerReadable: !makeTextureReadable);
             return _texture;
         }
     }

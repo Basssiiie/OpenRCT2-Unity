@@ -35,7 +35,7 @@ namespace Lib
             if (!ArePathSettingsValid())
                 return false;
 
-            StartGame(openrctDataPath, rct2Path, rct1Path);
+            StartGame(_openrctDataPath, _rct2Path, _rct1Path);
             return true;
         }
 
@@ -77,10 +77,10 @@ namespace Lib
         /// </summary>
         static void LoadPathSettings()
         {
-            openrctDataPath = Configuration.OpenRCT2DataPath;
-            rct2Path = Configuration.RCT2Path;
-            rct1Path = Configuration.RCT1Path;
-            parkPath = Configuration.ParkPath;
+            _openrctDataPath = Configuration.OpenRCT2DataPath;
+            _rct2Path = Configuration.RCT2Path;
+            _rct1Path = Configuration.RCT1Path;
+            _parkPath = Configuration.ParkPath;
         }
 
 
@@ -89,19 +89,19 @@ namespace Lib
         /// </summary>
         static bool ArePathSettingsValid()
         {
-            if (!Directory.Exists(openrctDataPath))
+            if (!Directory.Exists(_openrctDataPath))
             {
-                Debug.LogError($"Could not load OpenRCT2: openrct path is invalid. ({openrctDataPath})");
+                Debug.LogError($"Could not load OpenRCT2: openrct path is invalid. ({_openrctDataPath})");
                 return false;
             }
-            if (!Directory.Exists(rct2Path))
+            if (!Directory.Exists(_rct2Path))
             {
-                Debug.LogError($"Could not load OpenRCT2: rct2 path is invalid. ({rct2Path})");
+                Debug.LogError($"Could not load OpenRCT2: rct2 path is invalid. ({_rct2Path})");
                 return false;
             }
-            if (!string.IsNullOrWhiteSpace(rct1Path) && !Directory.Exists(rct1Path))
+            if (!string.IsNullOrWhiteSpace(_rct1Path) && !Directory.Exists(_rct1Path))
             {
-                Debug.LogError($"Could not load OpenRCT2: rct1 path is invalid. ({rct1Path})");
+                Debug.LogError($"Could not load OpenRCT2: rct1 path is invalid. ({_rct1Path})");
                 return false;
             }
             return true;

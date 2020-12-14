@@ -12,10 +12,10 @@ namespace Lib
         public string selectedPark;
 
         // Configuration for data paths
-        static string openrctDataPath;
-        static string rct2Path;
-        static string rct1Path;
-        static string parkPath;
+        static string _openrctDataPath;
+        static string _rct2Path;
+        static string _rct1Path;
+        static string _parkPath;
 
 
         /// <summary>
@@ -73,6 +73,6 @@ namespace Lib
         /// Gets the file path to the park file.
         /// </summary>
         string GetParkFilePath()
-            => Path.Combine(parkPath, selectedPark);
+            => Path.Combine(_parkPath, selectedPark);
     }
 }
