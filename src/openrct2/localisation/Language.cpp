@@ -47,6 +47,7 @@ const language_descriptor LanguagesDescriptors[LANGUAGE_COUNT] =
     { "ru-RU", "Russian",               u8"Русский",             FAMILY_OPENRCT2_SPRITE,                false }, // LANGUAGE_RUSSIAN
     { "fi-FI", "Finnish",               "Suomi",                 FAMILY_OPENRCT2_SPRITE,                false }, // LANGUAGE_FINNISH
     { "sv-SE", "Swedish",               "Svenska",               FAMILY_OPENRCT2_SPRITE,                false }, // LANGUAGE_SWEDISH
+    { "th-TH", "Thai",                  "Thai",                  FAMILY(&TTFFamilyThai),                false }, // LANGUAGE_THAI
     { "tr-TR", "Turkish",               "Türkçe",                FAMILY_OPENRCT2_SPRITE,                false }, // LANGUAGE_TURKISH
 };
 // clang-format on

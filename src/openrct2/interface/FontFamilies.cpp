@@ -36,6 +36,10 @@ TTFontFamily const TTFFamilyKorean = {
     &TTFFontNanum,
 };
 
+TTFontFamily const TTFFamilyThai = {
+    &TTFFontTahoma,
+};
+
 TTFontFamily const TTFFamilySansSerif = {
     &TTFFontArialUnicode,
     &TTFFontArial,

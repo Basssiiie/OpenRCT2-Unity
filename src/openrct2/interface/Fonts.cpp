@@ -90,6 +90,12 @@ TTFFontSetDescriptor TTFFontArialUnicode = { {
     { "arialuni.ttf", "Arial Unicode MS", 12, 0, -1, 12, HINTING_THRESHOLD_LOW, nullptr },
 } };
 
+TTFFontSetDescriptor TTFFontTahoma = { {
+    { "tahoma.ttf", "Tahoma",  9, 0,  0, 10, HINTING_THRESHOLD_MEDIUM, nullptr },
+    { "tahoma.ttf", "Tahoma", 13, 0,  0, 15, HINTING_THRESHOLD_MEDIUM, nullptr },
+    { "tahoma.ttf", "Tahoma", 14, 0,  -4, 17, HINTING_THRESHOLD_MEDIUM, nullptr },
+} };
+
 TTFFontSetDescriptor TTFFontMicroHei = { {
     { "wqy-microhei.ttc", "WenQuanYi Micro Hei", 10, -1, -1,  10, HINTING_THRESHOLD_MEDIUM, nullptr },
     { "wqy-microhei.ttc", "WenQuanYi Micro Hei", 11,  1, -1, 14, HINTING_THRESHOLD_MEDIUM, nullptr },

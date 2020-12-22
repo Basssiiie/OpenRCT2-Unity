@@ -29,6 +29,7 @@ extern TTFFontSetDescriptor TTFFontGulim;
 extern TTFFontSetDescriptor TTFFontNanum;
 extern TTFFontSetDescriptor TTFFontArial;
 extern TTFFontSetDescriptor TTFFontArialUnicode;
+extern TTFFontSetDescriptor TTFFontTahoma;
 extern TTFFontSetDescriptor TTFFontMicroHei;
 #    define FONT(x) x
 #else
