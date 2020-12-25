@@ -1,7 +1,9 @@
+#include <openrct2/object/ObjectManager.h>
 #include <openrct2/world/TileElement.h>
 #include <openrct2/world/SmallScenery.h>
 
 #include "..\OpenRCT2-DLL.h"
+#include <iostream>
 
 
 extern "C"
@@ -117,5 +119,41 @@ extern "C"
 
         dll_log("This small scenery entry is animated in a way that is not supported yet (flags = %i).", entry->small_scenery.flags);
         return 0;
+    }
+
+
+    const uint8_t IdentifierSize = sizeof(rct_object_entry::name);
+
+    struct SmallSceneryEntry
+    {
+    public:
+        char identifier[IdentifierSize];
+        uint32_t flags;
+        uint16_t animationDelay;
+        uint16_t animationFrameCount;
+    };
+
+
+    // Returns the RCT object entry for the specified small scenery.
+    EXPORT void GetSmallSceneryEntry(uint32_t entryIndex, SmallSceneryEntry* entry)
+    {
+        IObjectManager& objManager = OpenRCT2::GetContext()->GetObjectManager();
+        Object* obj = objManager.GetLoadedObject(OBJECT_TYPE_SMALL_SCENERY, entryIndex);
+
+        if (obj == nullptr)
+        {
+            dll_log("Small scenery object entry = null");
+            return;
+        }
+
+        rct_scenery_entry* rctEntry = static_cast<rct_scenery_entry*>(obj->GetLegacyData());
+        rct_small_scenery_entry* sceneryEntry = &rctEntry->small_scenery;
+
+        entry->flags = sceneryEntry->flags;
+        entry->animationDelay = sceneryEntry->animation_delay;
+        entry->animationFrameCount = sceneryEntry->num_frames;
+
+        const rct_object_entry* objectEntry = obj->GetObjectEntry();
+        std::memcpy(entry->identifier, objectEntry->name, IdentifierSize);
     }
 }

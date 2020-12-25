@@ -36,8 +36,8 @@ namespace Lib
         /// Retrieves information about the scenery entry. Only works for the
         /// following types: path, small scenery, wall, large scenery, banner.
         /// </summary>
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern void GetSceneryEntry(TileElementType type, uint entryIndex, ref SmallSceneryEntry entry);
+        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        static extern void GetSmallSceneryEntry(uint entryIndex, ref SmallSceneryEntry entry);
 
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Lib
         public static SmallSceneryEntry GetSmallSceneryEntry(uint entryIndex)
         {
             SmallSceneryEntry entry = new SmallSceneryEntry();
-            GetSceneryEntry(TileElementType.SmallScenery, entryIndex, ref entry);
+            GetSmallSceneryEntry(entryIndex, ref entry);
             return entry;
         }
     }

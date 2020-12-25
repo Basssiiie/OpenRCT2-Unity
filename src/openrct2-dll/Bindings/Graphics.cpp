@@ -90,29 +90,4 @@ extern "C"
 
         delete[] dpi.bits;
     }
-
-
-    // Returns the RCT Scenery entry for the specified path, smallscenery, wall, largescenery or banner.
-    EXPORT void GetSceneryEntry(uint8_t type, uint32_t entryIndex, rct_scenery_entry* entry)
-    {
-        switch (type)
-        {
-            case TILE_ELEMENT_TYPE_PATH:
-                break;
-
-            case TILE_ELEMENT_TYPE_SMALL_SCENERY:
-                *entry = *get_small_scenery_entry(entryIndex);
-                break;
-
-            case TILE_ELEMENT_TYPE_WALL:
-                *entry = *get_wall_entry(entryIndex);
-                break;
-
-            case TILE_ELEMENT_TYPE_LARGE_SCENERY:
-                break;
-
-            case TILE_ELEMENT_TYPE_BANNER:
-                break;
-        }
-    }
 }

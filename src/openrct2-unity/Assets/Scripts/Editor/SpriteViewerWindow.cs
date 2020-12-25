@@ -12,10 +12,10 @@ namespace EditorExtensions
     /// </summary>
     public class SpriteViewerWindow : EditorWindow
     {
-        int imageIndexOffset = 0;
-        int horizontalCount = 10;
-        int verticalCount = 10;
-        Vector2 scrollPosition;
+        int _imageIndexOffset = 0;
+        int _horizontalCount = 10;
+        int _verticalCount = 10;
+        Vector2 _scrollPosition;
 
 
         [MenuItem("OpenRCT2/Sprite Viewer")]
@@ -30,27 +30,27 @@ namespace EditorExtensions
         void OnGUI()
         {
 
-            imageIndexOffset = Mathf.Clamp(EditorGUILayout.IntField("Image index offset", imageIndexOffset), 0, 0x7FFFE);
-            horizontalCount = EditorGUILayout.IntSlider("Horizontal sprite count", horizontalCount, 1, 20);
-            verticalCount = EditorGUILayout.IntSlider("Vertical sprite count", verticalCount, 1, 20);
+            _imageIndexOffset = Mathf.Clamp(EditorGUILayout.IntField("Image index offset", _imageIndexOffset), 0, 0x7FFFE);
+            _horizontalCount = EditorGUILayout.IntSlider("Horizontal sprite count", _horizontalCount, 1, 20);
+            _verticalCount = EditorGUILayout.IntSlider("Vertical sprite count", _verticalCount, 1, 20);
 
             GUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Previous page"))
-                imageIndexOffset -= (horizontalCount * verticalCount);
+                _imageIndexOffset -= (_horizontalCount * _verticalCount);
             if (GUILayout.Button("Next page"))
-                imageIndexOffset += (horizontalCount * verticalCount);
+                _imageIndexOffset += (_horizontalCount * _verticalCount);
 
             GUILayout.EndHorizontal();
 
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
-            uint offset = (uint)imageIndexOffset;
+            uint offset = (uint)_imageIndexOffset;
 
-            for (int y = 0; y < verticalCount; y++)
+            for (int y = 0; y < _verticalCount; y++)
             {
                 EditorGUILayout.BeginHorizontal();
-                for (int x = 0; x < horizontalCount; x++)
+                for (int x = 0; x < _horizontalCount; x++)
                 {
                     Graphic graphic = GraphicsFactory.ForImageIndex(offset);
 

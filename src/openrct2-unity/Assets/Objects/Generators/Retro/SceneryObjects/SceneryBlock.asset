@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6632b5999eef4045bf0c131706f65ab, type: 3}
+  m_Name: SceneryBlock
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 5275838848359540594, guid: 8104fba65125982408954986146ca47d, type: 3}
+  scaleMode: 0
+  _objectIds:
+  - BRBASE
+  - BRBASE2
+  - BRBASE3
+  - CHBBASE
+  - CORROOF
+  - SKTBASE
+  - STBASE
+  - WDBASE
+  - XXBBBR0

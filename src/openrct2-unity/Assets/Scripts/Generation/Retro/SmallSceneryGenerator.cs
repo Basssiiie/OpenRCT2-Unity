@@ -10,7 +10,9 @@ namespace Generation.Retro
     [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(SmallSceneryGenerator)))]
     public class SmallSceneryGenerator : TileElementGenerator
     {
-        [SerializeField] GameObject _crossShape;
+        [SerializeField] GameObject _defaultPrefab;
+        [SerializeField] ObjectScaleMode _defaultScaleMode;
+        [SerializeField] ObjectEntry[] _prefabOverrides;
 
 
         /// <inheritdoc/>
@@ -39,7 +41,23 @@ namespace Generation.Retro
             }
 
             // Instantiate the element.
-            GameObject obj = InstantiateElement(_crossShape, pos_x, pos_y, pos_z, (90 * tile.Rotation + 90));
+            string identifier = entry.Identifier.Trim();
+            ObjectEntry objectEntry = FindObjectEntry(identifier);
+
+            GameObject prefab;
+            ObjectScaleMode scaleMode;
+            if (objectEntry != null)
+            {
+                prefab = objectEntry.prefab;
+                scaleMode = objectEntry.scaleMode;
+            }
+            else
+            {
+                prefab = _defaultPrefab;
+                scaleMode = _defaultScaleMode;
+            }
+
+            GameObject obj = InstantiateElement(prefab, pos_x, pos_y, pos_z, (90 * tile.Rotation + 90));
 
             if ((entry.Flags & SmallSceneryFlags.Animated) != 0
                 && TryApplyAnimation(obj, tile, entry))
@@ -47,7 +65,27 @@ namespace Generation.Retro
                 return;
             }
 
-            ApplySprite(obj, tile);
+            uint imageId = ApplySprite(obj, scaleMode, tile);
+            obj.name = $"SmallScenery (ID: {identifier}, idx: {imageId})";
+        }
+
+
+        /// <summary>
+        /// Find the correct prefab for the specified entry name.
+        /// </summary>
+        ObjectEntry FindObjectEntry(string entryName)
+        {
+            for (int i = 0; i < _prefabOverrides.Length; i++)
+            {
+                ObjectEntry prefabOverride = _prefabOverrides[i];
+
+                if (prefabOverride.IsMatch(entryName))
+                {
+                    return prefabOverride;
+                }
+            }
+
+            return null;
         }
 
 
@@ -66,23 +104,24 @@ namespace Generation.Retro
         /// <summary>
         /// Gets the sprite of the tile element and applies it to the gameobject.
         /// </summary>
-        static void ApplySprite(GameObject obj, in TileElement tile)
+        static uint ApplySprite(GameObject obj, ObjectScaleMode scaleMode, in TileElement tile)
         {
             uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
             Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
 
+            uint unmaskedImageIndex = (imageIndex & 0x7FFFF);
+
             if (graphic == null)
             {
-                Debug.LogError($"Missing small scenery sprite image: {imageIndex & 0x7FFFF}");
-                return;
+                Debug.LogError($"Missing small scenery sprite image: {unmaskedImageIndex}");
+                return unmaskedImageIndex;
             }
 
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
-            renderer.material.SetTexture("_BaseMap", graphic.GetTexture());
+            renderer.material.mainTexture = graphic.GetTexture();
 
-            // Set the visual scale of the model.
-            float width = (graphic.Width * Map.PixelPerUnitMultiplier);
-            obj.transform.localScale = new Vector3(width, graphic.Height * Map.PixelPerUnitMultiplier, width);
+            ApplyScaleMode(obj, scaleMode, graphic);
+            return unmaskedImageIndex;
         }
 
 
@@ -91,7 +130,7 @@ namespace Generation.Retro
         /// </summary>
         static bool TryApplyAnimation(GameObject obj, in TileElement tile, in SmallSceneryEntry entry)
         {
-            int numberOfSupposedFrames = entry.NumberOfFrames;
+            int numberOfSupposedFrames = entry.AnimationFrameCount;
             if (numberOfSupposedFrames == 0)
             {
                 // Some entries do not use this property, they use a default of 0xF (15) instead.
@@ -126,6 +165,23 @@ namespace Generation.Retro
             material.StartAnimating();
             */
             return true;
+        }
+
+
+        static void ApplyScaleMode(GameObject obj, ObjectScaleMode scaleMode, Graphic graphic)
+        {
+            switch (scaleMode)
+            {
+                case ObjectScaleMode.ObjectHeight:
+
+                    break;
+
+                case ObjectScaleMode.SpriteSize:
+                    // Set the visual scale of the model.
+                    float width = (graphic.Width * Map.PixelPerUnitMultiplier);
+                    obj.transform.localScale = new Vector3(width, graphic.Height * Map.PixelPerUnitMultiplier, width);
+                    break;
+            }
         }
     }
 }
