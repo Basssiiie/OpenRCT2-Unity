@@ -164,7 +164,7 @@ namespace Generation.Retro
 
             if (actualFrameCount == 0)
             {
-                Debug.LogWarning($"Applying animation failed.", obj);
+                Debug.LogWarning($"Applying animation failed for {entry.Identifier.Trim()}.", obj);
                 return false;
             }
             /*

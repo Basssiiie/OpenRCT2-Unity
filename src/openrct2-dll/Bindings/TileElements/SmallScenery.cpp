@@ -98,11 +98,6 @@ extern "C"
 
             for (; frame < max_frames; frame++)
             {
-                // 6E0222:
-                uint16_t delay = entry->small_scenery.animation_delay & 0xFF;
-                frame >>= delay;
-                frame &= entry->small_scenery.animation_mask;
-
                 int32_t image_id = entry->small_scenery.frame_offsets[frame];
                 image_id = (image_id * 4) + direction + entry->image;
 
@@ -127,7 +122,7 @@ extern "C"
     struct SmallSceneryEntry
     {
     public:
-        char identifier[IdentifierSize];
+        char identifier[IdentifierSize + 1]; // extra byte for null terminator
         uint32_t flags;
         uint16_t animationDelay;
         uint16_t animationFrameCount;

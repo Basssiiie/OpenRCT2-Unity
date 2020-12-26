@@ -15,20 +15,59 @@ MonoBehaviour:
   prefab: {fileID: 5275838848359540594, guid: 8104fba65125982408954986146ca47d, type: 3}
   scaleMode: 0
   _objectIds:
-  - ARTDEC2
+  - ARTDEC28
   - BRBASE
   - BRBASE2
   - BRBASE3
   - CHBBASE
-  - CORROOF
-  - FUTSKY3
-  - FUTSKY5
-  - GEOROOF
-  - JAILXX0
-  - OLDNYK0
-  - ROMROOF
+  - CHOCROOF
+  - CORROOF2
+  - FUTSKY34
+  - FUTSKY54
+  - GEOROOF1
+  - HEVBTH15
+  - JAILXX07
+  - OLDNYK05
+  - ROMROOF2
+  - RUNWAY01
+  - RUNWAY02
+  - RUNWAY03
+  - RUNWAY04
+  - RUNWAY05
+  - RUNWAY06
   - SKTBASE
   - STBASE
-  - WAZTEC0
+  - TG1
+  - TG10
+  - TG11
+  - TG12
+  - TG13
+  - TG14
+  - TG15
+  - TG16
+  - TG17
+  - TG18
+  - TG19
+  - TG2
+  - TG20
+  - TG21
+  - TG3
+  - TG4
+  - TG5
+  - TG6
+  - TG7
+  - TG8
+  - TG9
+  - WABORG01
+  - WABORG02
+  - WABORG03
+  - WABORG04
+  - WABORG05
+  - WABORG06
+  - WABORG07
+  - WABORG08
+  - WAZTEC01
+  - WAZTEC02
   - WDBASE
-  - XXBBBR0
+  - WMAYAN02
+  - XXBBBR01

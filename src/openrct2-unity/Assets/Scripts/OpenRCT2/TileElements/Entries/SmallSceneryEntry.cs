@@ -11,7 +11,7 @@ namespace Lib
         /// <summary>
         /// The *.DAT object identifier for the entry.
         /// </summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 9)]
         public readonly string Identifier;
 
 
