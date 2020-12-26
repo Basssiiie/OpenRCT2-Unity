@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using Generation;
 using UnityEngine;
+using UnityEngine.Events;
+using Utilities;
 
 namespace Lib
 {
@@ -35,6 +38,9 @@ namespace Lib
         [SerializeField] TileElementGenerator _largeSceneryGenerator;
         [SerializeField] TileElementGenerator _bannerGenerator;
 
+        [SerializeField] LoaderView _loader;
+        [SerializeField] UnityEvent _onGenerationComplete;
+
 
         /// <summary>
         /// Returns all generators currently selected.
@@ -58,14 +64,52 @@ namespace Lib
         /// <summary>
         /// Generates the surface of the map.public 
         /// </summary>
-        void GenerateMap()
+        IEnumerator GenerateMap()
         {
+            // Remove all children
+            foreach (Transform child in transform)
+                Destroy(child.gameObject);
+
+            // Load the map
+            Size = OpenRCT2.GetMapSize();
+            Tiles = new Tile[Size, Size];
+
+            _loader.SetText($"Loading tiles...");
+            _loader.SetMaximumProgress(Size * Size);
+            yield return null;
+
+            TileElement[] buffer = new TileElement[MaxElementsPerTile];
+
+            for (int x = 0; x < Size; x++)
+            {
+                for (int y = 0; y < Size; y++)
+                {
+                    int amount = OpenRCT2.GetMapElementsAt(x, y, buffer);
+
+                    Tiles[x, y] = new Tile(buffer, amount);
+                    yield return null;
+                }
+            }
+
+            // Start the generators
             TileElementGenerator[] generators = GetGenerators();
+            _loader.SetMaximumProgress(generators.Length);
 
-            foreach (var generator in generators)
+            foreach (TileElementGenerator generator in generators)
+            {
+                _loader.SetText($"Starting generator '{generator.name}'...");
+                yield return null;
+
                 generator.StartGenerator(this);
+            }
 
+            // Create the tile objects
             int end = (Size - 1);
+
+            _loader.SetText("Creating tiles...");
+            _loader.SetMaximumProgress(end * end);
+            yield return null;
+
             for (int x = 1; x < end; x++)
             {
                 for (int y = 1; y < end; y++)
@@ -75,11 +119,22 @@ namespace Lib
                     {
                         GenerateTileElement(x, y, in tile.Elements[e]);
                     }
+                    yield return null;
                 }
             }
 
-            foreach (var generator in generators)
+            // Finish up the generators
+            _loader.SetMaximumProgress(generators.Length);
+            foreach (TileElementGenerator generator in generators)
+            {
+                _loader.SetText($"Finalizing generator '{generator.name}'...");
+                yield return null;
+
                 generator.FinishGenerator();
+            }
+
+            Debug.Log($"Map load complete!");
+            _onGenerationComplete.Invoke();
         }
 
 

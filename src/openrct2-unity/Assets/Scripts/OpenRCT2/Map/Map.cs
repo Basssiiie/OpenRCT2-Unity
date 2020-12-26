@@ -1,4 +1,5 @@
 using UnityEngine;
+using Utilities;
 
 namespace Lib
 {
@@ -24,37 +25,7 @@ namespace Lib
 
 		void Start()
 		{
-			LoadMap();
-            GenerateMap();
-
-            Debug.Log($"Map load complete!");
+            _loader.RunCoroutine(GenerateMap());
         }
-
-
-        /// <summary>
-        /// Loads the map of the currently loaded park into Unity.
-        /// </summary>
-		void LoadMap()
-		{
-            // Remove all children
-            foreach (Transform child in transform)
-                Destroy(child.gameObject);
-
-            // Load the map
-            Size = OpenRCT2.GetMapSize();
-			Tiles = new Tile[Size, Size];
-
-			TileElement[] buffer = new TileElement[MaxElementsPerTile];
-
-			for (int x = 0; x < Size; x++)
-			{
-				for (int y = 0; y < Size; y++)
-				{
-					int amount = OpenRCT2.GetMapElementsAt(x, y, buffer);
-
-					Tiles[x, y] = new Tile(buffer, amount);
-				}
-			}
-        }        
     }
 }
