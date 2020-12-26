@@ -827,7 +827,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Six Flags Magic Mountain.SC6
+  selectedPark: My test park/Test park big with scenery blocks.sv6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0
