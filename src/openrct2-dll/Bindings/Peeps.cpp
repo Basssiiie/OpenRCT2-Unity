@@ -23,18 +23,19 @@ extern "C"
     uint32_t GetCurrentImageId(Peep* peep)
     {
         // Borrowed from Paint.Peep.cpp/peep_paint()
-        rct_peep_animation_entry sprite = g_peep_animation_entries[peep->SpriteType];
+        rct_peep_animation_entry sprite = g_peep_animation_entries[EnumValue(peep->SpriteType)];
 
         PeepActionSpriteType spriteType = peep->ActionSpriteType;
         uint8_t imageOffset = peep->ActionSpriteImageOffset;
 
-        if (peep->Action == PEEP_ACTION_NONE_1)
+        if (peep->Action == PeepActionType::None1)
         {
             spriteType = peep->NextActionSpriteType;
             imageOffset = 0;
         }
 
-        uint32_t baseImageId = /*(imageDirection >> 3) +*/ sprite.sprite_animation[spriteType].base_image + imageOffset * 4;
+        uint32_t baseImageId = (sprite.sprite_animation[EnumValue(spriteType)].base_image + imageOffset * 4);
+        /* + (imageDirection >> 3)*/
         uint32_t imageId = baseImageId | peep->TshirtColour << 19 | peep->TrousersColour << 24 | IMAGE_TYPE_REMAP | IMAGE_TYPE_REMAP_2_PLUS;
         return imageId;
     }

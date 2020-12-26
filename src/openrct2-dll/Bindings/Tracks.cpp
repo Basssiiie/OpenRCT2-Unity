@@ -1,4 +1,5 @@
 #include <openrct2/ride/RideData.h>
+#include <openrct2/ride/Track.h>
 #include <openrct2/ride/TrackData.h>
 #include <openrct2/ride/Vehicle.h>
 #include <openrct2/ride/VehicleSubpositionData.h>
@@ -37,8 +38,8 @@ void FixTrackPiecePosition(rct_vehicle_info* target, uint32_t trackType, uint8_t
     // Custom hacks for specific track types.
     switch (trackType)
     {
-        case TRACK_ELEM_LEFT_CURVED_LIFT_HILL:
-        case TRACK_ELEM_RIGHT_CURVED_LIFT_HILL:
+        case TrackElemType::LeftCurvedLiftHill:
+        case TrackElemType::RightCurvedLiftHill:
             target->vehicle_sprite_type = 0;
             break;
     }
