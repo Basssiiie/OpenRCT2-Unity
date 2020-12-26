@@ -13,6 +13,7 @@ namespace Generation.Retro
         public GameObject prefab;
         public ObjectScaleMode scaleMode;
 
+        [ContextMenuItem("Sort alphabetically ", nameof(SortObjectIds))]
         [SerializeField] string[] _objectIds;
 
 
@@ -30,6 +31,15 @@ namespace Generation.Retro
                 }
             }
             return false;
+        }
+
+
+        /// <summary>
+        /// Sorts all object ids alphabetically.
+        /// </summary>
+        void SortObjectIds()
+        {
+            Array.Sort(_objectIds);
         }
     }
 }

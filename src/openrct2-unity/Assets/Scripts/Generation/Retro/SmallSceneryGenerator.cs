@@ -106,21 +106,39 @@ namespace Generation.Retro
         /// </summary>
         static uint ApplySprite(GameObject obj, ObjectScaleMode scaleMode, in TileElement tile)
         {
-            uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
-            Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
+            MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
+            Material[] materials = renderer.materials;
+            int materialCount = materials.Length;
 
-            uint unmaskedImageIndex = (imageIndex & 0x7FFFF);
-
-            if (graphic == null)
+            if (materialCount > 4)
             {
-                Debug.LogError($"Missing small scenery sprite image: {unmaskedImageIndex}");
-                return unmaskedImageIndex;
+                Debug.LogWarning($"Material count for mesh of is greater than 4: {materialCount}");
+                materialCount = 4;
             }
 
-            MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
-            renderer.material.mainTexture = graphic.GetTexture();
+            uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
+            uint unmaskedImageIndex = (imageIndex & 0x7FFFF);
+            Graphic graphicForScaling = null; // TODO: refactor this file
 
-            ApplyScaleMode(obj, scaleMode, graphic);
+            // Get all rotations that fit within the material count.
+            for (uint i = 0; i < materialCount; i++)
+            {
+                Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex + i);
+
+                if (graphic == null)
+                {
+                    Debug.LogError($"Missing small scenery sprite image: {unmaskedImageIndex}");
+                    return unmaskedImageIndex;
+                }
+                else if (graphicForScaling == null)
+                {
+                    graphicForScaling = graphic;
+                }
+
+                materials[i].mainTexture = graphic.GetTexture();
+            }
+
+            ApplyScaleMode(obj, scaleMode, graphicForScaling);
             return unmaskedImageIndex;
         }
 

@@ -10,25 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6632b5999eef4045bf0c131706f65ab, type: 3}
-  m_Name: SceneryBlock
+  m_Name: RoofSideH2
   m_EditorClassIdentifier: 
-  prefab: {fileID: 5275838848359540594, guid: 8104fba65125982408954986146ca47d, type: 3}
+  prefab: {fileID: 6135319879212020766, guid: 7cc5bdbf00434d64f9262b8c98536bcd, type: 3}
   scaleMode: 0
   _objectIds:
-  - ARTDEC2
-  - BRBASE
-  - BRBASE2
-  - BRBASE3
-  - CHBBASE
-  - CORROOF
-  - FUTSKY3
-  - FUTSKY5
-  - GEOROOF
-  - JAILXX0
-  - OLDNYK0
-  - ROMROOF
-  - SKTBASE
-  - STBASE
-  - WAZTEC0
-  - WDBASE
-  - XXBBBR0
+  - ROOF1
+  - ROOF2
+  - ROOF5
+  - ROOF6
+  - ROOF9
+  - ROOF10
+  - ROOF13
+  - ROOF14

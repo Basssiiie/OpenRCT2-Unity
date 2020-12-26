@@ -17,3 +17,4 @@ MonoBehaviour:
   _defaultScaleMode: 2
   _prefabOverrides:
   - {fileID: 11400000, guid: b6132f03b3909504b8143ece3af3b1fe, type: 2}
+  - {fileID: 11400000, guid: 6988240bb8ac8b34c8c30e6de73182bb, type: 2}
