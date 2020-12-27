@@ -11,6 +11,8 @@ namespace Sprites
     /// </summary>
     public class PeepController : SpriteController<Peep>
     {
+        readonly Dictionary<uint, Graphic> _flipbookCache = new Dictionary<uint, Graphic>();
+
 
         /// <summary>
         /// Find the associated peep id for the specified gameobject.
@@ -56,36 +58,11 @@ namespace Sprites
             ushort id = sprite.Id;
             obj.name = $"Peep sprite {id}";
 
-            //UpdateColours(obj, sprite);
             return spriteObject;
         }
 
-        /*
-        /// <summary>
-        /// Rotates the sprite to look towards where its walking.
-        /// </summary>
-        protected override void MoveSprite(SpriteObject spriteObject)
-        {
-            base.MoveSprite(spriteObject);
 
-            // Update rotation
-            Vector3 forward = new Vector3(
-                spriteObject.towards.x - spriteObject.from.x,
-                0,
-                spriteObject.towards.z - spriteObject.from.z
-            );
-
-            if (forward != Vector3.zero)
-            {
-                spriteObject
-                    .gameObject
-                    .transform
-                    .rotation = Quaternion.LookRotation(forward);
-            }
-        }
-        */
-
-
+        /// <inheritdoc/>
         protected override SpriteObject UpdateSprite(int index, in Peep sprite)
         {
             var obj = base.UpdateSprite(index, sprite);
@@ -93,8 +70,6 @@ namespace Sprites
             SetPeepBillboard(obj.gameObject, sprite);
             return obj;
         }
-
-        readonly Dictionary<uint, Graphic> _flipbookCache = new Dictionary<uint, Graphic>();
 
 
         void SetPeepBillboard(GameObject peepObj, in Peep sprite)
@@ -115,7 +90,6 @@ namespace Sprites
                 _flipbookCache.Add(imageId, flipbook);
             }
 
-            //var filter = peepObj.GetComponent<MeshFilter>();
             var renderer = peepObj.GetComponent<MeshRenderer>();
 
             Material material = renderer.material;
@@ -123,23 +97,5 @@ namespace Sprites
             material.SetInt("_StartIndex", sprite.direction >> 3);
             material.SetVector("_SpriteSizeOffset", new Vector4((flipbook.Width / 4), flipbook.Height, flipbook.OffsetX, flipbook.OffsetY));
         }
-
-        /*
-        void UpdateColours(GameObject peepObj, in Peep peep)
-        {
-            // TODO: for now tshirt and trousers child indices are hardcoded..
-            GameObject tshirt = peepObj.transform.GetChild(0).gameObject;
-            GameObject trousers = peepObj.transform.GetChild(1).gameObject;
-
-            var tshirtRenderer = tshirt.GetComponent<Renderer>();
-            var trousersRenderer = trousers.GetComponent<Renderer>();
-
-            byte tshirtPaletteIdx = OpenRCT2.GetPaletteIndexForColourId(peep.tshirtColour);
-            byte trousersPaletteIdx = OpenRCT2.GetPaletteIndexForColourId(peep.trousersColour);
-
-            tshirtRenderer.material.color = GraphicsFactory.PaletteToColor(tshirtPaletteIdx);
-            trousersRenderer.material.color = GraphicsFactory.PaletteToColor(trousersPaletteIdx);
-        }
-        */
     }
 }

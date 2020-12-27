@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Graphics
 {
     /// <summary>
-    /// A small struct that contains RCT graphic information.
+    /// A small object that contains RCT graphic information.
     /// </summary>
     public class Graphic
     {

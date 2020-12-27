@@ -132,7 +132,9 @@ namespace Sprites
                 return;
             }
             else
+            {
                 EnableSprite(spriteObject);
+            }
 
             Transform transf = spriteObject.gameObject.transform;
 

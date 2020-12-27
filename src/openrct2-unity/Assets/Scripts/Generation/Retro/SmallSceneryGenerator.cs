@@ -10,6 +10,7 @@ namespace Generation.Retro
     [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(SmallSceneryGenerator)))]
     public class SmallSceneryGenerator : TileElementGenerator
     {
+        [SerializeField] Shader _animationShader;
         [SerializeField] GameObject _defaultPrefab;
         [SerializeField] ObjectScaleMode _defaultScaleMode;
         [SerializeField] ObjectEntry[] _prefabOverrides;
@@ -57,16 +58,25 @@ namespace Generation.Retro
                 scaleMode = _defaultScaleMode;
             }
 
-            GameObject obj = InstantiateElement(prefab, pos_x, pos_y, pos_z, (90 * tile.Rotation + 90));
+            Vector3 position = Map.TileCoordsToUnity(pos_x, pos_y, pos_z);
+            Quaternion quatRot = Quaternion.Euler(0, (90 * tile.Rotation + 90), 0);
 
-            if ((entry.Flags & SmallSceneryFlags.Animated) != 0
-                && TryApplyAnimation(obj, tile, entry))
+            GameObject obj = GameObject.Instantiate(prefab, position, quatRot, _map.transform);
+
+            // Apply the sprites
+            bool spriteApplied = false;
+            if ((entry.Flags & SmallSceneryFlags.Animated) != 0)
             {
-                return;
+                // Animate if possible
+                spriteApplied = TryApplyAnimation(obj, scaleMode, tile, entry, identifier);
             }
 
-            uint imageId = ApplySprite(obj, scaleMode, tile);
-            obj.name = $"SmallScenery (ID: {identifier}, idx: {imageId})";
+            if (!spriteApplied)
+            {
+                ApplySprite(obj, scaleMode, tile, identifier);
+            }
+
+
         }
 
 
@@ -89,22 +99,11 @@ namespace Generation.Retro
         }
 
 
-        /// <summary>
-        /// Instantiates the prefab in the place of a tile element.
-        /// </summary>
-        GameObject InstantiateElement(GameObject prefab, float x, float y, float z, float rotation)
-        {
-            Vector3 position = Map.TileCoordsToUnity(x, y, z);
-            Quaternion quatRot = Quaternion.Euler(0, rotation, 0);
-
-            return GameObject.Instantiate(prefab, position, quatRot, _map.transform);
-        }
-
 
         /// <summary>
         /// Gets the sprite of the tile element and applies it to the gameobject.
         /// </summary>
-        static uint ApplySprite(GameObject obj, ObjectScaleMode scaleMode, in TileElement tile)
+        static void ApplySprite(GameObject obj, ObjectScaleMode scaleMode, in TileElement tile, string identifier)
         {
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
             Material[] materials = renderer.materials;
@@ -117,7 +116,7 @@ namespace Generation.Retro
             }
 
             uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
-            uint unmaskedImageIndex = (imageIndex & 0x7FFFF);
+            uint maskedImageIndex = (imageIndex & 0x7FFFF);
             Graphic graphicForScaling = null; // TODO: refactor this file
 
             // Get all rotations that fit within the material count.
@@ -127,8 +126,8 @@ namespace Generation.Retro
 
                 if (graphic == null)
                 {
-                    Debug.LogError($"Missing small scenery sprite image: {unmaskedImageIndex}");
-                    return unmaskedImageIndex;
+                    Debug.LogError($"Missing small scenery sprite image: {maskedImageIndex}");
+                    break;
                 }
                 else if (graphicForScaling == null)
                 {
@@ -139,14 +138,14 @@ namespace Generation.Retro
             }
 
             ApplyScaleMode(obj, scaleMode, graphicForScaling);
-            return unmaskedImageIndex;
+            obj.name = $"SmallScenery (ID: {identifier}, idx: {maskedImageIndex})";
         }
 
 
         /// <summary>
         /// Applies a sprite animation to the specified gameobject.
         /// </summary>
-        static bool TryApplyAnimation(GameObject obj, in TileElement tile, in SmallSceneryEntry entry)
+        bool TryApplyAnimation(GameObject obj, ObjectScaleMode scaleMode, in TileElement tile, in SmallSceneryEntry entry, string identifier)
         {
             int numberOfSupposedFrames = entry.AnimationFrameCount;
             if (numberOfSupposedFrames == 0)
@@ -160,28 +159,30 @@ namespace Generation.Retro
             uint[] imageIndices = new uint[numberOfSupposedFrames];
             int actualFrameCount = OpenRCT2.GetSmallSceneryAnimationIndices(tile, 0, imageIndices, numberOfSupposedFrames);
 
-            obj.name = $"frame count, supposed: {numberOfSupposedFrames}, actual: {actualFrameCount}, delay: {animationDelay & 0xFF}";
+            obj.name = $"SmallScenery (ID: {identifier}, frames: {actualFrameCount}, delay: {animationDelay & 0xFF})";
 
             if (actualFrameCount == 0)
             {
                 Debug.LogWarning($"Applying animation failed for {entry.Identifier.Trim()}.", obj);
                 return false;
             }
-            /*
+
             Graphic[] graphics = GraphicsFactory.ForAnimationIndices(imageIndices);
-            Texture2D[] frames = new Texture2D[actualFrameCount];
+            Graphic flipbook = FlipbookFactory.CreateFlipbookGraphic(graphics);
+            // TODO: cache flipbooks for multiple instances.
 
-            for (int i = 0; i < actualFrameCount; i++)
-            {
-                frames[i] = graphics[i].ToTexture2D();
-            }
+            MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
+            Material material = renderer.material;
 
-            AnimatedMaterial material = obj.AddComponent<AnimatedMaterial>();
+            material.shader = _animationShader;
+            material.mainTexture = flipbook.GetTexture(TextureWrapMode.Repeat);
 
-            material.animationDelay = 0.2f;
-            material.frames = frames;
-            material.StartAnimating();
-            */
+            // Fps => delay;  40 => 0;  20 => 1;  10 => 2;  5 => 3.
+            int framerate = (40 / Mathf.FloorToInt(Mathf.Pow(2, animationDelay)));
+            material.SetInt("_FrameRate", framerate);
+            material.SetInt("_FrameCount", actualFrameCount);
+
+            ApplyScaleMode(obj, scaleMode, graphics[0]);
             return true;
         }
 

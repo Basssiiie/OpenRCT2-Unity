@@ -39,7 +39,10 @@ namespace Graphics
 
             int total = data.PixelCount;
             if (total == 0)
+            {
+                Debug.LogError($"Sprite at index '{imageIndex}' has 0 pixels.");
                 return null;
+            }
 
             byte[] byteBuffer = new byte[total];
             OpenRCT2.GetTexturePixels(imageIndex, byteBuffer);
