@@ -1,5 +1,8 @@
+using System;
 using UnityEngine;
 using Utilities;
+
+#nullable enable
 
 namespace Lib
 {
@@ -17,7 +20,7 @@ namespace Lib
         /// <summary>
         /// Gets all tiles of the map as a 2-dimensional array.
         /// </summary>
-        public Tile[,] Tiles { get; private set; }
+        public Tile[,] Tiles { get; private set; } = new Tile[0, 0];
 
 
         const int MaxElementsPerTile = 128;
@@ -25,7 +28,14 @@ namespace Lib
 
 		void Start()
 		{
-            _loader.RunCoroutine(GenerateMap());
+            if (_loader != null)
+            {
+                _loader.RunCoroutine(GenerateMap());
+            }
+            else
+            {
+                StartCoroutine(GenerateMap());
+            }
         }
     }
 }

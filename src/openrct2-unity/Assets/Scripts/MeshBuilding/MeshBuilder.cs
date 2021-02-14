@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+#nullable enable
+
 namespace MeshBuilding
 {
     /// <summary>
@@ -13,7 +15,7 @@ namespace MeshBuilding
         /// Returns all vertices currently added to the builder.
         /// </summary>
         public IReadOnlyCollection<Vertex> Vertices
-            => vertices.Keys;
+            => _vertices.Keys;
 
 
         /// <summary>
@@ -24,10 +26,10 @@ namespace MeshBuilding
 
 
         // Dictionary of vertices and their indexes.
-        readonly Dictionary<Vertex, int> vertices;
+        readonly Dictionary<Vertex, int> _vertices;
 
         // List of triangles per submesh.
-        readonly List<List<int>> triangles;
+        readonly List<List<int>> _triangles;
 
 
         #region Constructors
@@ -37,8 +39,8 @@ namespace MeshBuilding
         /// </summary>
         public MeshBuilder()
         {
-            vertices = new Dictionary<Vertex, int>(64);
-            triangles = new List<List<int>>(1);
+            _vertices = new Dictionary<Vertex, int>(64);
+            _triangles = new List<List<int>>(1);
         }
 
 
@@ -53,7 +55,7 @@ namespace MeshBuilding
             Vector2[] meshUvs = mesh.uv;
 
             int vertexCount = mesh.vertexCount;
-            vertices = new Dictionary<Vertex, int>(vertexCount);
+            _vertices = new Dictionary<Vertex, int>(vertexCount);
 
             int index = 0;
             for (int v = 0; v < vertexCount; v++)
@@ -64,23 +66,23 @@ namespace MeshBuilding
                     uvs: meshUvs[v]
                 );
 
-                if (vertices.ContainsKey(vertex))
+                if (_vertices.ContainsKey(vertex))
                     continue;
 
-                vertices.Add(vertex, index);
+                _vertices.Add(vertex, index);
                 index++;
             }
 
             // Load triangles
             int submeshCount = mesh.subMeshCount;
-            triangles = new List<List<int>>(submeshCount);
+            _triangles = new List<List<int>>(submeshCount);
 
             for (int s = 0; s < submeshCount; s++)
             {
                 List<int> buffer = new List<int>(0);
                 mesh.GetTriangles(buffer, s);
 
-                triangles[s] = buffer;
+                _triangles[s] = buffer;
             }
         }
 
@@ -92,14 +94,14 @@ namespace MeshBuilding
         /// </summary>
         int AddVertex(Vertex a)
 		{
-			if (vertices.ContainsKey(a))
+			if (_vertices.ContainsKey(a))
 			{
-				return vertices[a];
+				return _vertices[a];
 			}
 			else
 			{
-				int idx = vertices.Count;
-				vertices[a] = idx;
+				int idx = _vertices.Count;
+				_vertices[a] = idx;
 				return idx;
 			}
 		}
@@ -114,10 +116,10 @@ namespace MeshBuilding
             if (a.position == b.position || b.position == c.position || a.position == c.position)
                 return;
 
-			while (submesh >= triangles.Count)
-				triangles.Add(new List<int>(16));
+			while (submesh >= _triangles.Count)
+				_triangles.Add(new List<int>(16));
 
-			triangles[submesh].AddRange(new int[]
+			_triangles[submesh].AddRange(new int[]
             {
 				AddVertex(a),
 				AddVertex(b),
@@ -142,8 +144,8 @@ namespace MeshBuilding
 		/// </summary>
 		public void Clear()
 		{
-			vertices.Clear();
-			triangles.Clear();
+			_vertices.Clear();
+			_triangles.Clear();
 		}
 
 
@@ -154,7 +156,7 @@ namespace MeshBuilding
 		{
             Mesh mesh = new Mesh();
 
-			int count = vertices.Count;
+			int count = _vertices.Count;
 			if (count == 0)
 				return mesh;
 
@@ -162,7 +164,7 @@ namespace MeshBuilding
 			Vector3[] norms = new Vector3[count];
 			Vector2[] uvs = new Vector2[count];
 			int idx;
-			foreach (KeyValuePair<Vertex, int> vert in vertices)
+			foreach (KeyValuePair<Vertex, int> vert in _vertices)
 			{
 				idx = vert.Value;
 
@@ -176,11 +178,11 @@ namespace MeshBuilding
 			mesh.uv = uvs;
 
 			// Add all submeshes
-			int subMeshCount = triangles.Count;
+			int subMeshCount = _triangles.Count;
 			mesh.subMeshCount = subMeshCount;
 
 			for (int i = 0; i < subMeshCount; i++)
-				mesh.SetTriangles(triangles[i], i);
+				mesh.SetTriangles(_triangles[i], i);
 
 			return mesh;
 		}
@@ -194,7 +196,7 @@ namespace MeshBuilding
             float min_x = float.MaxValue, min_y = float.MaxValue, min_z = float.MaxValue,
                 max_x = float.MinValue, max_y = float.MinValue, max_z = float.MinValue;
 
-            foreach (Vertex vertex in vertices.Keys)
+            foreach (Vertex vertex in _vertices.Keys)
             {
                 Vector3 pos = vertex.position;
 

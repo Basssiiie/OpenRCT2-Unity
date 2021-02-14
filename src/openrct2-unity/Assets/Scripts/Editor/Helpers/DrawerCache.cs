@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEditor;
 
+#nullable enable
+
 namespace EditorExtensions
 {
     /// <summary>
@@ -8,7 +10,7 @@ namespace EditorExtensions
     /// </summary>
     class DrawerCache<TData>
     {
-        readonly Dictionary<string, TData> cache = new Dictionary<string, TData>();
+        readonly Dictionary<string, TData> _cache = new Dictionary<string, TData>();
 
 
         /// <summary>
@@ -17,7 +19,7 @@ namespace EditorExtensions
         public string Get(SerializedProperty property, out TData data)
         {
             string key = GetCacheKey(property);
-            cache.TryGetValue(key, out data);
+            _cache.TryGetValue(key, out data);
             return key;
         }
 
@@ -26,7 +28,7 @@ namespace EditorExtensions
         /// Saves the data for the specified property.
         /// </summary>
         public void Set(string key, TData data)
-            => cache[key] = data;
+            => _cache[key] = data;
 
 
         /// <summary>

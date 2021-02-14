@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 
+#nullable enable
+
 namespace Lib
 {
     [StructLayout(LayoutKind.Sequential)]

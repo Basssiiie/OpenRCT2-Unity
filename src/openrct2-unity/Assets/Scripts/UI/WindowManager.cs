@@ -1,18 +1,22 @@
-using Sprites;
 using UnityEngine;
+using Utilities;
 
+#nullable enable
 
 namespace UI
 {
     public class WindowManager : MonoBehaviour
     {
-        [SerializeField] GameObject peepWindowPrefab;
-        [SerializeField] GameObject parentCanvas;
+        [SerializeField] GameObject? _peepWindowPrefab;
+        [SerializeField] GameObject? _parentCanvas;
 
 
         public void CreatePeepWindow(ushort peepId)
         {
-            GameObject obj = Instantiate(peepWindowPrefab, parentCanvas.transform);
+            Assert.IsNotNull(_peepWindowPrefab, nameof(_peepWindowPrefab));
+            Assert.IsNotNull(_parentCanvas, nameof(_parentCanvas));
+
+            GameObject obj = Instantiate(_peepWindowPrefab, _parentCanvas.transform);
             obj.name = $"PeepWindow: {peepId}";
 
             var window = obj.GetComponent<PeepWindow>();

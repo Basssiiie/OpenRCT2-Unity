@@ -1,6 +1,8 @@
 using Lib;
 using UnityEngine;
 
+#nullable enable
+
 namespace Graphics
 {
     /// <summary>
@@ -51,7 +53,7 @@ namespace Graphics
         public byte[] ColorData { get; }
 
 
-        Texture2D _texture;
+        Texture2D? _texture;
 
 
         #region Constructors

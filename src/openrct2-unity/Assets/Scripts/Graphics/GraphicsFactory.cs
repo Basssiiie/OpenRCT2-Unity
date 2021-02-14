@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using Lib;
 using UnityEngine;
+
+#nullable enable
 
 namespace Graphics
 {
@@ -40,14 +43,16 @@ namespace Graphics
             int total = data.PixelCount;
             if (total == 0)
             {
-                Debug.LogError($"Sprite at index '{imageIndex}' has 0 pixels.");
-                return null;
+                Debug.LogError($"Sprite at index '{imageIndex}' (masked: {imageIndex & 0x7FFFF}) has 0 pixels.");
+                graphic = new Graphic(imageIndex, data, Array.Empty<byte>());
             }
+            else
+            {
+                byte[] byteBuffer = new byte[total];
+                OpenRCT2.GetTexturePixels(imageIndex, byteBuffer);
 
-            byte[] byteBuffer = new byte[total];
-            OpenRCT2.GetTexturePixels(imageIndex, byteBuffer);
-
-            graphic = new Graphic(imageIndex, data, byteBuffer);
+                graphic = new Graphic(imageIndex, data, byteBuffer);
+            }
             _graphicCache.Add(imageIndex, graphic);
 
             return graphic;

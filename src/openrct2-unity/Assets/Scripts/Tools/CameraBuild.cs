@@ -1,10 +1,12 @@
 using UnityEngine;
+using Utilities;
 
 
 // Old look around script
 public class CameraBuild : MonoBehaviour 
 {
-	public GameObject terrainMap;
+    [Required]
+	public GameObject terrainMap = null!;
 	
 	public float cameraRotateSpeed = 100.0f;
 	public float cameraMoveSpeed = 100.0f;
@@ -16,11 +18,11 @@ public class CameraBuild : MonoBehaviour
 	public float outsideMapDistance = 250.0f;
 
 	
-	Vector3 rotatepos = Vector3.zero;
-	float distancepos = 0.0f;
+	Vector3 _rotatepos = Vector3.zero;
+	float _distancepos = 0.0f;
 
-	float x = 0.0f;
-	float y = 0.0f;
+	float _x = 0.0f;
+	float _y = 0.0f;
 	
 	// ---------------------------------------------------------------------
 	
@@ -53,35 +55,34 @@ public class CameraBuild : MonoBehaviour
 			// The first click
 			if (Input.GetMouseButtonDown(1))
 			{
-				RaycastHit hit;
-				Ray ray = new Ray (transform.position, transform.forward);
-				if (terrainMap.GetComponent<Collider>().Raycast (ray, out hit, Mathf.Infinity)) 
+                Ray ray = new Ray(transform.position, transform.forward);
+                if (terrainMap.GetComponent<Collider>().Raycast (ray, out RaycastHit hit, Mathf.Infinity)) 
 				{
-					rotatepos = hit.point;
-					distancepos = hit.distance;
+					_rotatepos = hit.point;
+					_distancepos = hit.distance;
 					
-					x = transform.eulerAngles.y;
-					y = transform.eulerAngles.x;
+					_x = transform.eulerAngles.y;
+					_y = transform.eulerAngles.x;
 				}
 			}
 
             // Rotate camera with mouse axis
-            if (rotatepos != Vector3.zero && distancepos != 0.0f)
+            if (_rotatepos != Vector3.zero && _distancepos != 0.0f)
             {
                 float xAxis = Input.GetAxis("Mouse X");
                 float yAxis = Input.GetAxis("Mouse Y");
 
                 if (xAxis != 0f || yAxis != 0f)
                 { 
-                    x += xAxis * cameraRotateSpeed * Time.deltaTime;
-                    y -= yAxis * cameraRotateSpeed * Time.deltaTime;
+                    _x += xAxis * cameraRotateSpeed * Time.deltaTime;
+                    _y -= yAxis * cameraRotateSpeed * Time.deltaTime;
 
-                    if (y < -360) y += 360;
-                    if (y > 360) y -= 360;
-                    y = Mathf.Clamp(y, 5, 89);
+                    if (_y < -360) _y += 360;
+                    if (_y > 360) _y -= 360;
+                    _y = Mathf.Clamp(_y, 5, 89);
 
-                    Quaternion rotation = Quaternion.Euler(y, x, 0.0f);
-                    Vector3 position = rotation * new Vector3(0.0f, 0.0f, -distancepos) + rotatepos;
+                    Quaternion rotation = Quaternion.Euler(_y, _x, 0.0f);
+                    Vector3 position = rotation * new Vector3(0.0f, 0.0f, -_distancepos) + _rotatepos;
 
                     transform.rotation = rotation;
                     transform.position = position;

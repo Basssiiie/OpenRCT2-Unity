@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
+#nullable enable
+
 namespace Utilities
 {
     /// <summary>
@@ -10,13 +12,13 @@ namespace Utilities
     /// </summary>
     public class LoaderView : MonoBehaviour
     {
-        [SerializeField] Text _text;
-        [SerializeField] Text _counter;
-        [SerializeField] Slider _slider;
+        [SerializeField] Text? _text;
+        [SerializeField] Text? _counter;
+        [SerializeField] Slider? _slider;
         [SerializeField] int _updateInterval = 250;
 
 
-        string _mostRecentText;
+        string _mostRecentText = string.Empty;
         int _currentProgress;
         int _maximumProgress;
 

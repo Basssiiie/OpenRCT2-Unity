@@ -4,6 +4,8 @@ using Lib;
 using UnityEditor;
 using UnityEngine;
 
+#nullable enable
+
 namespace EditorExtensions
 {
     /// <summary>

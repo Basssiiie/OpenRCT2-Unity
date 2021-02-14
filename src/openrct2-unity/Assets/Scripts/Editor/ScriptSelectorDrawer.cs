@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Utilities;
+
+#nullable enable
 
 namespace EditorExtensions
 {
@@ -14,7 +17,7 @@ namespace EditorExtensions
     public class ScriptSelectorDrawer : PropertyDrawer
     {
         // Cache for the drawer, because the same drawer can be used for multiple properties.
-        static readonly DrawerCache<DrawerData> cache = new DrawerCache<DrawerData>();
+        static readonly DrawerCache<DrawerData> _cache = new DrawerCache<DrawerData>();
 
 
         // The settings for the drawer per property.
@@ -33,7 +36,7 @@ namespace EditorExtensions
             float fieldSpacing = EditorGUIUtility.standardVerticalSpacing;
             float singleLineHeight = EditorGUIUtility.singleLineHeight;
 
-            string cacheKey = cache.Get(property, out DrawerData settings);
+            string cacheKey = _cache.Get(property, out DrawerData settings);
             Rect rect = position;
             rect.height = singleLineHeight;
 
@@ -43,10 +46,10 @@ namespace EditorExtensions
                 EditorGUI.indentLevel++;
 
                 // Script
-                if (!TryFindManagedType(property.managedReferenceFullTypename, out Type managedType))
+                if (!TryFindManagedType(property.managedReferenceFullTypename, out Type? managedType))
                     return;
 
-                MonoScript script;
+                MonoScript? script;
 
                 if (settings.script != null)
                     script = settings.script;
@@ -57,7 +60,7 @@ namespace EditorExtensions
                 GUIContent scriptLabel = new GUIContent(fieldInfo.FieldType.Name);
                 MonoScript selected = (MonoScript)EditorGUI.ObjectField(rect, scriptLabel, script, typeof(MonoScript), allowSceneObjects: false);
 
-                if (selected != script && ValidateSelectedScript(selected, fieldInfo, out object instance))
+                if (selected != script && ValidateSelectedScript(selected, fieldInfo, out object? instance))
                 {
                     property.serializedObject.Update();
                     property.managedReferenceValue = instance;
@@ -82,7 +85,7 @@ namespace EditorExtensions
                 }
                 EditorGUI.indentLevel--;
             }
-            cache.Set(cacheKey, settings);
+            _cache.Set(cacheKey, settings);
         }
 
 
@@ -91,7 +94,7 @@ namespace EditorExtensions
         /// </summary>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            cache.Get(property, out DrawerData settings);
+            _cache.Get(property, out DrawerData settings);
 
             if (!settings.foldout)
                 return EditorGUIUtility.singleLineHeight;
@@ -104,7 +107,7 @@ namespace EditorExtensions
         /// <summary>
         /// Try to find the managed type from the Unity provided type name.
         /// </summary>
-        static bool TryFindManagedType(string fullUnityTypeName, out Type managedType)
+        static bool TryFindManagedType(string fullUnityTypeName, [NotNullWhen(true)] out Type? managedType)
         {
             string[] parts = fullUnityTypeName.Split(' ');
 
@@ -123,7 +126,7 @@ namespace EditorExtensions
         /// <summary>
         /// Try to find the <see cref="MonoScript"/> asset that contains the specified class.
         /// </summary>
-        static bool TryFindMonoScriptAsset(string className, out MonoScript script)
+        static bool TryFindMonoScriptAsset(string className, [NotNullWhen(true)] out MonoScript? script)
         {
             string[] assetGuids = AssetDatabase.FindAssets($"{className} t:MonoScript");
 
@@ -145,7 +148,7 @@ namespace EditorExtensions
         /// Validate the selected <see cref="MonoScript"/> to see whether it can
         /// produce a valid instance for the specified property.
         /// </summary>
-        static bool ValidateSelectedScript(MonoScript selected, FieldInfo fieldInfo, out object instance)
+        static bool ValidateSelectedScript(MonoScript selected, FieldInfo fieldInfo, [NotNullWhen(true)] out object? instance)
         {
             Type classType = selected.GetClass();
             if (classType == null)

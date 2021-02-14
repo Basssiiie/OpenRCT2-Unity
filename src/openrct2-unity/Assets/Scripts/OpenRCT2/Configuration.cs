@@ -1,5 +1,7 @@
 using UnityEngine;
 
+#nullable enable
+
 namespace Lib
 {
     /// <summary>
@@ -17,7 +19,7 @@ namespace Lib
         /// <summary>
         /// Location of the OpenRCT2 data folder.
         /// </summary>
-        public static string OpenRCT2DataPath
+        public static string? OpenRCT2DataPath
         {
             get => PlayerPrefs.GetString(OpenRCT2DataPathKey);
             set => PlayerPrefs.SetString(OpenRCT2DataPathKey, value);
@@ -27,7 +29,7 @@ namespace Lib
         /// <summary>
         /// Location of the RCT2 installation.
         /// </summary>
-        public static string RCT2Path
+        public static string? RCT2Path
         {
             get => PlayerPrefs.GetString(RCT2PathKey);
             set => PlayerPrefs.SetString(RCT2PathKey, value);
@@ -37,7 +39,7 @@ namespace Lib
         /// <summary>
         /// Location of the RCT1 installation.
         /// </summary>
-        public static string RCT1Path
+        public static string? RCT1Path
         {
             get => PlayerPrefs.GetString(RCT1PathKey);
             set => PlayerPrefs.SetString(RCT1PathKey, value);
@@ -47,7 +49,7 @@ namespace Lib
         /// <summary>
         /// Location of where to look for parks.
         /// </summary>
-        public static string ParkPath
+        public static string? ParkPath
         {
             get => PlayerPrefs.GetString(ParkPathKey);
             set => PlayerPrefs.SetString(ParkPathKey, value);

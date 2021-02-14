@@ -1,16 +1,19 @@
 using System.Collections.Generic;
 using Graphics;
 using UnityEngine;
+using Utilities;
+
+#nullable enable
 
 namespace Generation.Retro
 {
     public partial class SurfaceGenerator 
     {
-        [SerializeField] Shader _surfaceShader;
+        [SerializeField] Shader? _surfaceShader;
         [SerializeField] string _surfaceTextureField = "Surface";
-        [SerializeField] Shader _edgeShader;
+        [SerializeField] Shader? _edgeShader;
         [SerializeField] string _edgeTextureField = "Edge";
-        [SerializeField] Shader _waterShader;
+        [SerializeField] Shader? _waterShader;
         [SerializeField] string _waterTextureField = "Water";
         [SerializeField] string _waterRefractionField = "WaterRefraction";
 
@@ -23,7 +26,7 @@ namespace Generation.Retro
         }
 
 
-        List<RequestedImage> _images;
+        List<RequestedImage>? _images;
 
 
         /// <summary>
@@ -31,6 +34,8 @@ namespace Generation.Retro
         /// </summary>
         int PushImageIndex(uint imageIndex, TextureType type)
         {
+            Assert.IsNotNull(_images, nameof(_images));
+
             int position = _images.FindIndex(i => i.ImageIndex == imageIndex);
             if (position == -1)
             {
@@ -46,6 +51,8 @@ namespace Generation.Retro
         /// </summary>
         Material[] GenerateSurfaceMaterials()
         {
+            Assert.IsNotNull(_images, nameof(_images));
+
             int count = _images.Count;
             Material[] materials = new Material[count];
 
@@ -54,13 +61,6 @@ namespace Generation.Retro
                 RequestedImage image = _images[i];
 
                 Graphic graphic = GraphicsFactory.ForImageIndex(image.ImageIndex);
-
-                if (graphic == null)
-                {
-                    Debug.LogError($"Missing surface sprite image: {image.ImageIndex & 0x7FFFF}");
-                    continue;
-                }
-
                 Texture2D texture = graphic.GetTexture(TextureWrapMode.Repeat);
                 Material material;
 
@@ -82,12 +82,6 @@ namespace Generation.Retro
 
                         // HACK: injection of the refraction sprite shouldnt be here.
                         Graphic refraction = GraphicsFactory.ForImageIndex(WaterRefractionImageIndex);
-                        if (refraction == null)
-                        {
-                            Debug.LogError($"Missing water refraction sprite image: {WaterRefractionImageIndex}");
-                            continue;
-                        }
-
                         material.SetTexture(_waterRefractionField, refraction.GetTexture(TextureWrapMode.Repeat));
                         break;
 

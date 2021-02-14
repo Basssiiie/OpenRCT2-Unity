@@ -3,6 +3,9 @@ using Graphics;
 using Lib;
 using MeshBuilding;
 using UnityEngine;
+using Utilities;
+
+#nullable enable
 
 namespace Generation.Retro
 {
@@ -18,28 +21,28 @@ namespace Generation.Retro
         const float RailingDistance = (SurfaceExtents * 0.8f);
 
 
-        [SerializeField] Material _pathMaterial;
-        [SerializeField] string _pathTextureName;
+        [SerializeField, Required] Material _pathMaterial = null!;
+        [SerializeField, Required] string _pathTextureName = null!;
 
-        MeshBuilder _pathMeshBuilder;
+        MeshBuilder? _pathMeshBuilder;
 
 
         /// <inheritdoc/>
-        protected override void Start()
+        protected override void Startup(Map map)
         {
             _pathMeshBuilder = new MeshBuilder();
         }
 
 
         /// <inheritdoc/>
-        protected override void Finish()
+        protected override void Finish(Map map)
         {
             _pathMeshBuilder = null;
         }
 
 
         /// <inheritdoc/>
-        public override void CreateElement(int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, in TileElement tile)
         {
             PathElement path = tile.AsPath();
             uint imageIndex = OpenRCT2.GetPathSurfaceImageIndex(tile);
@@ -57,7 +60,7 @@ namespace Generation.Retro
                 isStatic = true
             };
             Transform pathTF = pathObject.transform;
-            pathTF.parent = _map.transform;
+            pathTF.parent = map.transform;
             pathTF.localPosition = Map.TileCoordsToUnity(x, tile.baseHeight, y);
             pathTF.localRotation = Quaternion.Euler(0, 180, 0);
 
@@ -68,12 +71,6 @@ namespace Generation.Retro
             renderer.material = _pathMaterial;
 
             Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
-            if (graphic == null)
-            {
-                Debug.LogError($"Missing path sprite image: {imageIndex}");
-                return;
-            }
-
             Material material = renderer.material;
             material.SetTexture(_pathTextureName, graphic.GetTexture());
 
@@ -88,6 +85,8 @@ namespace Generation.Retro
         /// </summary>
         Mesh GeneratePathMesh(int x, int y, in PathElement path)
         {
+            Assert.IsNotNull(_pathMeshBuilder, nameof(_pathMeshBuilder));
+
             _pathMeshBuilder.Clear();
 
             Vertex a = new Vertex(SurfaceExtents, SurfaceHeight, SurfaceExtents, Vector3.up, Vector2.one);

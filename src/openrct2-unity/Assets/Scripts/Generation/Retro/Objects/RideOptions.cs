@@ -1,5 +1,8 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Utilities;
+
+#nullable enable
 
 namespace Generation.Retro
 {
@@ -9,12 +12,11 @@ namespace Generation.Retro
     public class RideOptions : ScriptableObject
     {
         // The default track piece generation options.
-        [SerializeField] TrackPieceOptions defaultTrackOptions;
+        [SerializeField, Required] TrackPieceOptions? _defaultTrackOptions;
 
 
         // Specific overrides and exceptions to the default track piece options.
-        // TODO: this can be serialized as a dictionary in Unity 2020.1. Update once its stable.
-        [SerializeField] TrackPieceOverride[] trackOptionsOverrides;
+        [SerializeField, Required] Dictionary<int, TrackPieceOptions>? _trackOptionsOverrides;
 
 
         /// <summary>
@@ -22,20 +24,14 @@ namespace Generation.Retro
         /// </summary>
         public TrackPieceOptions FindTrackPieceOptions(int trackPiece)
         {
-            TrackPieceOverride options = Array.Find(trackOptionsOverrides, o => o.TrackPiece == trackPiece);
+            Assert.IsNotNull(_defaultTrackOptions, nameof(_defaultTrackOptions));
+            Assert.IsNotNull(_trackOptionsOverrides, nameof(_trackOptionsOverrides));
 
-            if (options != null)
-                return options?.Options;
-
-            return defaultTrackOptions;
-        }
-
-
-        // Key-value struct for mapping a track piece number to some additional options.
-        class TrackPieceOverride
-        {
-            public int TrackPiece;
-            public TrackPieceOptions Options;
+            if (_trackOptionsOverrides.TryGetValue(trackPiece, out TrackPieceOptions options))
+            {
+                return options;
+            }
+            return _defaultTrackOptions;
         }
     }
 }

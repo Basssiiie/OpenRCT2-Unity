@@ -1,6 +1,8 @@
 using System.IO;
 using UnityEngine;
 
+#nullable enable
+
 namespace Lib
 {
     public partial class OpenRCT2 : MonoBehaviour
@@ -9,13 +11,13 @@ namespace Lib
 
 
         // The relative path to the selected park file.
-        public string selectedPark;
+        public string? selectedPark;
 
         // Configuration for data paths
-        static string _openrctDataPath;
-        static string _rct2Path;
-        static string _rct1Path;
-        static string _parkPath;
+        static string? _openrctDataPath;
+        static string? _rct2Path;
+        static string? _rct1Path;
+        static string? _parkPath;
 
 
         /// <summary>

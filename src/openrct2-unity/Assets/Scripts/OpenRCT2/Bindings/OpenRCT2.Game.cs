@@ -3,8 +3,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
+#nullable enable
+
 #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments -> this is deliberate
-#pragma warning disable CA1401 // P/Invokes should not be visible -> this is also deliberate
 
 namespace Lib
 {
@@ -23,7 +24,7 @@ namespace Lib
         /// The absolute path to the RCT1 directory (optional).
         /// </param>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        static extern void StartGame([MarshalAs(UnmanagedType.LPStr)] string datapath, [MarshalAs(UnmanagedType.LPStr)] string rct2path, [MarshalAs(UnmanagedType.LPStr)] string rct1path = default);
+        static extern void StartGame([MarshalAs(UnmanagedType.LPStr)] string datapath, [MarshalAs(UnmanagedType.LPStr)] string rct2path, [MarshalAs(UnmanagedType.LPStr)] string? rct1path = default);
 
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace Lib
             if (!ArePathSettingsValid())
                 return false;
 
-            StartGame(_openrctDataPath, _rct2Path, _rct1Path);
+            StartGame(_openrctDataPath!, _rct2Path!, _rct1Path);
             return true;
         }
 

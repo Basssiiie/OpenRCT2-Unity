@@ -1,5 +1,8 @@
 using System;
 using UnityEngine;
+using Utilities;
+
+#nullable enable
 
 namespace Generation.Retro
 {
@@ -10,11 +13,11 @@ namespace Generation.Retro
     [CreateAssetMenu(menuName = ("OpenRCT2/Objects/" + nameof(ObjectEntry)))]
     public class ObjectEntry : ScriptableObject
     {
-        public GameObject prefab;
+        [Required] public GameObject? prefab;
         public ObjectScaleMode scaleMode;
 
         [ContextMenuItem("Sort alphabetically ", nameof(SortObjectIds))]
-        [SerializeField] string[] _objectIds;
+        [SerializeField] string[] _objectIds = Array.Empty<string>();
 
 
         /// <summary>

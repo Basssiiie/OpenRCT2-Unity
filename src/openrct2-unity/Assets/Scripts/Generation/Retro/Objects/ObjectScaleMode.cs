@@ -1,3 +1,6 @@
+
+#nullable enable
+
 namespace Generation.Retro
 {
     /// <summary>

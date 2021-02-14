@@ -1,6 +1,10 @@
+using System;
 using Graphics;
 using Lib;
 using UnityEngine;
+using Utilities;
+
+#nullable enable
 
 namespace Generation.Retro
 {
@@ -10,14 +14,14 @@ namespace Generation.Retro
     [CreateAssetMenu(menuName = (MenuPath + "Retro/" + nameof(SmallSceneryGenerator)))]
     public class SmallSceneryGenerator : TileElementGenerator
     {
-        [SerializeField] Shader _animationShader;
-        [SerializeField] GameObject _defaultPrefab;
+        [SerializeField] Shader? _animationShader;
+        [SerializeField, Required] GameObject _defaultPrefab = null!;
         [SerializeField] ObjectScaleMode _defaultScaleMode;
-        [SerializeField] ObjectEntry[] _prefabOverrides;
+        [SerializeField] ObjectEntry[] _prefabOverrides = Array.Empty<ObjectEntry>();
 
 
         /// <inheritdoc/>
-        public override void CreateElement(int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, in TileElement tile)
         {
             float pos_x = x;
             float pos_y = tile.baseHeight;
@@ -43,11 +47,11 @@ namespace Generation.Retro
 
             // Instantiate the element.
             string identifier = entry.Identifier.Trim();
-            ObjectEntry objectEntry = FindObjectEntry(identifier);
+            ObjectEntry? objectEntry = FindObjectEntry(identifier);
 
             GameObject prefab;
             ObjectScaleMode scaleMode;
-            if (objectEntry != null)
+            if (objectEntry != null && objectEntry.prefab != null)
             {
                 prefab = objectEntry.prefab;
                 scaleMode = objectEntry.scaleMode;
@@ -61,7 +65,7 @@ namespace Generation.Retro
             Vector3 position = Map.TileCoordsToUnity(pos_x, pos_y, pos_z);
             Quaternion quatRot = Quaternion.Euler(0, (90 * tile.Rotation + 90), 0);
 
-            GameObject obj = GameObject.Instantiate(prefab, position, quatRot, _map.transform);
+            GameObject obj = GameObject.Instantiate(prefab, position, quatRot, map.transform);
 
             // Apply the sprites
             bool spriteApplied = false;
@@ -83,7 +87,7 @@ namespace Generation.Retro
         /// <summary>
         /// Find the correct prefab for the specified entry name.
         /// </summary>
-        ObjectEntry FindObjectEntry(string entryName)
+        ObjectEntry? FindObjectEntry(string entryName)
         {
             for (int i = 0; i < _prefabOverrides.Length; i++)
             {
@@ -94,7 +98,6 @@ namespace Generation.Retro
                     return prefabOverride;
                 }
             }
-
             return null;
         }
 
@@ -117,14 +120,14 @@ namespace Generation.Retro
 
             uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
             uint maskedImageIndex = (imageIndex & 0x7FFFF);
-            Graphic graphicForScaling = null; // TODO: refactor this file
+            Graphic? graphicForScaling = null; // TODO: refactor this file
 
             // Get all rotations that fit within the material count.
             for (uint i = 0; i < materialCount; i++)
             {
                 Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex + i);
 
-                if (graphic == null)
+                if (graphic.PixelCount == 0)
                 {
                     Debug.LogError($"Missing small scenery sprite image: {maskedImageIndex}");
                     break;
@@ -137,7 +140,7 @@ namespace Generation.Retro
                 materials[i].mainTexture = graphic.GetTexture();
             }
 
-            ApplyScaleMode(obj, scaleMode, graphicForScaling);
+            ApplyScaleMode(obj, scaleMode, graphicForScaling!);
             obj.name = $"SmallScenery (ID: {identifier}, idx: {maskedImageIndex})";
         }
 

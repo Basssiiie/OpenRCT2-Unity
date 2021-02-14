@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using Lib;
 using MeshBuilding;
 using UnityEngine;
+using Utilities;
+
+#nullable enable
 
 namespace Generation.Retro
 {
@@ -19,7 +22,7 @@ namespace Generation.Retro
 
         const byte NoWater = 0;
 
-        List<Chunk> _chunks;
+        List<Chunk>? _chunks;
 
 
         class Chunk
@@ -49,7 +52,7 @@ namespace Generation.Retro
 
 
         /// <inheritdoc/>
-        protected override void Start()
+        protected override void Startup(Map map)
         {
             _chunks = new List<Chunk>();
             _images = new List<RequestedImage>();
@@ -57,8 +60,10 @@ namespace Generation.Retro
 
 
         /// <inheritdoc/>
-        protected override void Finish()
+        protected override void Finish(Map map)
         {
+            Assert.IsNotNull(_chunks, nameof(_chunks));
+
             Material[] materials = GenerateSurfaceMaterials();
 
             foreach (Chunk chunk in _chunks)
@@ -72,7 +77,7 @@ namespace Generation.Retro
                 mesh.RecalculateNormals();
 
                 GameObject chunkObj = new GameObject($"Mapchunk ({chunk.x}, {chunk.y})");
-                chunkObj.transform.parent = _map.transform;
+                chunkObj.transform.parent = map.transform;
                 chunkObj.transform.localPosition = new Vector3(chunk.x * _chunkSize, 0, chunk.y * _chunkSize);
 
                 MeshFilter filter = chunkObj.AddComponent<MeshFilter>();
@@ -99,8 +104,10 @@ namespace Generation.Retro
 
 
         /// <inheritdoc/>
-        public override void CreateElement(int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, in TileElement tile)
         {
+            Assert.IsNotNull(_chunks, nameof(_chunks));
+
             int chunkX = (x / _chunkSize);
             int chunkY = (y / _chunkSize);
 
@@ -115,14 +122,14 @@ namespace Generation.Retro
                 _chunks.Add(chunk);
             }
 
-            CreateSurfaceElement(chunk, x, y, tile);
+            CreateSurfaceElement(map, chunk, x, y, tile);
         }
 
 
         /// <summary>
         /// Adds triangles for terrain surface and edges to the specified chunk.
         /// </summary>
-        void CreateSurfaceElement(Chunk chunk, int x, int y, in TileElement tile)
+        void CreateSurfaceElement(Map map, Chunk chunk, int x, int y, in TileElement tile)
         {
             // Convert to local chunk space.
             int localX = x - (chunk.x * _chunkSize);
@@ -201,10 +208,10 @@ namespace Generation.Retro
             }
 
             bool anyEdge = 
-                  TryAddSurfaceEdge(chunk, x, y,  0,  1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh)  // Edge northwest
-                | TryAddSurfaceEdge(chunk, x, y,  1,  0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh)  // Edge northeast
-                | TryAddSurfaceEdge(chunk, x, y,  0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh)  // Edge southeast
-                | TryAddSurfaceEdge(chunk, x, y, -1,  0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
+                  TryAddSurfaceEdge(map, chunk, x, y,  0,  1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh)  // Edge northwest
+                | TryAddSurfaceEdge(map, chunk, x, y,  1,  0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh)  // Edge northeast
+                | TryAddSurfaceEdge(map, chunk, x, y,  0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh)  // Edge southeast
+                | TryAddSurfaceEdge(map, chunk, x, y, -1,  0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
 
             if (anyEdge && addIndexOnSuccess)
             {
@@ -216,9 +223,9 @@ namespace Generation.Retro
         /// <summary>
         /// Tries to add an surface edge to the specified offset.
         /// </summary>
-        bool TryAddSurfaceEdge(Chunk chunk, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
+        bool TryAddSurfaceEdge(Map map, Chunk chunk, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
         {
-            SurfaceElement other = _map.Tiles[x + offsetX, y + offsetY].Surface;
+            SurfaceElement other = map.Tiles[x + offsetX, y + offsetY].Surface;
 
             int baseHeight = other.BaseHeight;
             SurfaceSlope otherSlope = other.Slope;

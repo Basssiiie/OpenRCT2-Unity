@@ -1,5 +1,7 @@
 using UnityEngine;
 
+#nullable enable
+
 namespace MeshBuilding
 {
     /// <summary>
@@ -9,26 +11,26 @@ namespace MeshBuilding
     [RequireComponent(typeof(MeshRenderer))]
     public class MeshExtruderTester : MonoBehaviour
     {
-        [SerializeField] Mesh mesh;
-        [SerializeField] float offset;
-        [SerializeField, Range(0.1f, 2f)] float multiplier = 1;
-        [SerializeField] Transform start;
-        [SerializeField] Transform end;
+        [SerializeField] Mesh? _mesh;
+        [SerializeField] float _offset;
+        [SerializeField, Range(0.1f, 2f)] float _multiplier = 1;
+        [SerializeField] Transform? _start;
+        [SerializeField] Transform? _end;
 
-        MeshFilter filter;
-        MeshExtruder extruder;
+        MeshFilter? _filter;
+        MeshExtruder? _extruder;
 
 
         void OnValidate()
         {
-            filter = GetComponent<MeshFilter>();
+            _filter = GetComponent<MeshFilter>();
 
-            if (mesh != null && start != null && end != null)
+            if (_mesh != null && _start != null && _end != null)
             {
-                extruder = new MeshExtruder(mesh);
-                extruder.AddSegment(start.position, start.rotation, end.position, end.rotation, offset, multiplier, 0);
+                _extruder = new MeshExtruder(_mesh);
+                _extruder.AddSegment(_start.position, _start.rotation, _end.position, _end.rotation, _offset, _multiplier, 0);
 
-                filter.sharedMesh = extruder.ToMesh();
+                _filter.sharedMesh = _extruder.ToMesh();
             }
         }
 
@@ -37,19 +39,19 @@ namespace MeshBuilding
         {
             const int axis = 2;
 
-            if (mesh == null || start == null || end == null)
+            if (_mesh == null || _start == null || _end == null)
                 return;
 
-            Bounds bounds = mesh.bounds;
+            Bounds bounds = _mesh.bounds;
             Gizmos.color = new Color(1, 1, 1, 0.7f);
 
             Vector3 size = bounds.size + (Vector3.one * 0.15f);
             size[axis] = 0;
 
-            Gizmos.matrix = start.localToWorldMatrix;
+            Gizmos.matrix = _start.localToWorldMatrix;
             Gizmos.DrawCube(Vector3.zero, size);
 
-            Gizmos.matrix = end.localToWorldMatrix;
+            Gizmos.matrix = _end.localToWorldMatrix;
             Gizmos.DrawCube(Vector3.zero, size);
         }
     }

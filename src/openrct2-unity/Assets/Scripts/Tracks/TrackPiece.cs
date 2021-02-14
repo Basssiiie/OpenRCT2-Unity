@@ -1,6 +1,8 @@
 using MeshBuilding;
 using UnityEngine;
 
+#nullable enable
+
 namespace Tracks
 {
     /// <summary>

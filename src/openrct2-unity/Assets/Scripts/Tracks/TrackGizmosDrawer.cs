@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Lib;
 using MeshBuilding;
 using UnityEngine;
+
+#nullable enable
 
 #if UNITY_EDITOR
 namespace Tracks
@@ -15,24 +18,24 @@ namespace Tracks
         // The track type to render.
         public int trackType;
 
-        [SerializeField] bool selectOnly = true;
+        [SerializeField] bool _selectOnly = true;
 
         [Header("Colours")]
         // The nodes as they come from RCT2 import.
-        [SerializeField] Color rct2Nodes = Color.white;
+        [SerializeField] Color _rct2Nodes = Color.white;
         // The points after smoothening.
-        [SerializeField] Color routePosition = Color.cyan;
+        [SerializeField] Color _routePosition = Color.cyan;
         // The rotation of each point after smoothening.
-        [SerializeField] Color routeRotation = Color.blue;
+        [SerializeField] Color _routeRotation = Color.blue;
         // The lerp points that are used for calculating the smooth rotation.
-        [SerializeField] Color rotationLerpPoints = Color.yellow;
+        [SerializeField] Color _rotationLerpPoints = Color.yellow;
         // The zones with equal rotation values, which means every node in this zone uses the same sprite.
-        [SerializeField] Color rotationZones = Color.red;
+        [SerializeField] Color _rotationZones = Color.red;
 
 
-        TrackNode[] tracknodes;
-        TrackPiece piece;
-        int selectedTrackType;
+        TrackNode[]? _tracknodes;
+        TrackPiece _piece;
+        int _selectedTrackType;
 
 
         /// <summary>
@@ -40,13 +43,13 @@ namespace Tracks
         /// </summary>
         void UpdateTrackInformation()
         {
-            if (trackType == selectedTrackType)
+            if (trackType == _selectedTrackType)
                 return;
 
-            selectedTrackType = trackType;
+            _selectedTrackType = trackType;
 
-            tracknodes = OpenRCT2.GetTrackElementRoute(trackType);
-            piece = TrackFactory.GetTrackPiece(trackType);
+            _tracknodes = OpenRCT2.GetTrackElementRoute(trackType);
+            _piece = TrackFactory.GetTrackPiece(trackType);
         }
 
 
@@ -55,49 +58,49 @@ namespace Tracks
         /// </summary>
         void DrawTrackGizmos()
         {
-            if (tracknodes == null)
+            if (_tracknodes == null)
                 return;
 
             Gizmos.matrix = transform.localToWorldMatrix;
 
             // Nodes position + rotation
-            Gizmos.color = rct2Nodes;
+            Gizmos.color = _rct2Nodes;
 
-            for (int i = 0; i < tracknodes.Length; i++)
+            for (int i = 0; i < _tracknodes.Length; i++)
             {
-                var node = tracknodes[i];
+                var node = _tracknodes[i];
                 Gizmos.DrawRay(node.LocalPosition, (node.LocalRotation * new Vector3(0, 0.1f)));
 
                 if (i > 0)
-                    Gizmos.DrawLine(tracknodes[i - 1].LocalPosition, tracknodes[i].LocalPosition);
+                    Gizmos.DrawLine(_tracknodes[i - 1].LocalPosition, _tracknodes[i].LocalPosition);
             }
 
             // Points position + rotation
-            for (int i = 0; i < piece.Points.Length; i++)
+            for (int i = 0; i < _piece.Points.Length; i++)
             {
-                TransformPoint point = piece.Points[i];
+                TransformPoint point = _piece.Points[i];
 
-                Gizmos.color = routeRotation;
+                Gizmos.color = _routeRotation;
                 Gizmos.DrawRay(point.Position, (point.Rotation * new Vector3(0, 0.2f)));
 
                 if (i > 0)
                 {
-                    Gizmos.color = routePosition;
-                    Gizmos.DrawLine(piece.Points[i - 1].Position, point.Position);
+                    Gizmos.color = _routePosition;
+                    Gizmos.DrawLine(_piece.Points[i - 1].Position, point.Position);
                 }
             }
 
             // Rotation lerp points
-            Gizmos.color = rotationLerpPoints;
+            Gizmos.color = _rotationLerpPoints;
 
-            int chunkStart = 0, len = tracknodes.Length;
+            int chunkStart = 0, len = _tracknodes.Length;
             List<int> lerpNodes = new List<int> { 0 };
             for (int idx = 0; idx < len; idx++)
             {
-                if (TrackNode.HasEqualRotation(tracknodes[chunkStart], tracknodes[idx]))
+                if (TrackNode.HasEqualRotation(_tracknodes[chunkStart], _tracknodes[idx]))
                     continue;
 
-                Gizmos.DrawRay(tracknodes[idx].LocalPosition, tracknodes[idx].LocalRotation * Vector3.up * 0.3f);
+                Gizmos.DrawRay(_tracknodes[idx].LocalPosition, _tracknodes[idx].LocalRotation * Vector3.up * 0.3f);
 
                 lerpNodes.Add(chunkStart + (idx - chunkStart) / 2);
                 chunkStart = idx;
@@ -105,11 +108,11 @@ namespace Tracks
             lerpNodes.Add(len - 1);
 
             // Rotation zones
-            Gizmos.color = rotationZones;
+            Gizmos.color = _rotationZones;
 
             foreach (int index in lerpNodes)
             {
-                TrackNode current = tracknodes[index];
+                TrackNode current = _tracknodes[index];
 
                 Gizmos.DrawRay(current.LocalPosition, current.LocalRotation * Vector3.up * 0.3f);
             }
@@ -128,14 +131,14 @@ namespace Tracks
 
         void OnDrawGizmos()
         {
-            if (!selectOnly)
+            if (!_selectOnly)
                 DrawTrackGizmos();
         }
 
 
         void OnDrawGizmosSelected()
         {
-            if (selectOnly)
+            if (_selectOnly)
                 DrawTrackGizmos();
         }
 

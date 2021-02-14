@@ -1,39 +1,52 @@
-﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Utilities;
+
+#nullable enable
 
 public class DragWindow : MonoBehaviour, IDragHandler, IPointerDownHandler
 {
-    [SerializeField] RectTransform dragRectTransform;
-    [SerializeField] GameObject peepWindow;
-    [SerializeField] Canvas canvas;
+    [SerializeField] RectTransform? _dragRectTransform;
+    [SerializeField] GameObject? _peepWindow;
+    [SerializeField] Canvas? _canvas;
+
 
     public void Awake()
     {
-        if (dragRectTransform == null)
+        if (_dragRectTransform == null)
         {
-            dragRectTransform = dragRectTransform.parent.GetComponent<RectTransform>();
+            _dragRectTransform = transform.parent.GetComponent<RectTransform>();
         }
 
-        if (canvas == null)
+        if (_canvas == null)
         {
-            canvas = FindObjectOfType<Canvas>().transform.GetComponent<Canvas>();
+            _canvas = FindObjectOfType<Canvas>().transform.GetComponent<Canvas>();
         }
     }
 
 
     public void CloseWindow()
     {
-        Destroy(peepWindow);
+        if (_peepWindow == null)
+            return;
+
+        Destroy(_peepWindow);
     }
+
 
     public void OnDrag(PointerEventData eventData)
     {
-        dragRectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
+        Assert.IsNotNull(_dragRectTransform, nameof(_dragRectTransform));
+        Assert.IsNotNull(_canvas, nameof(_canvas));
+
+        _dragRectTransform.anchoredPosition += eventData.delta / _canvas.scaleFactor;
     }
+
+
     public void OnPointerDown(PointerEventData eventData)
     {
-        dragRectTransform.SetAsLastSibling();
+        Assert.IsNotNull(_dragRectTransform, nameof(_dragRectTransform));
+        
+        _dragRectTransform.SetAsLastSibling();
     }
 }

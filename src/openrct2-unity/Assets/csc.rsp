@@ -1,1 +1,3 @@
+-nullable:enable
+-langversion:8.0
 -nowarn:649,1401,2235

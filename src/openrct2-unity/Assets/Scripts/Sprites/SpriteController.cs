@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Utilities;
+
+#nullable enable
 
 namespace Sprites
 {
@@ -8,14 +12,14 @@ namespace Sprites
     /// </summary>
     public abstract class SpriteController<TSprite> : MonoBehaviour where TSprite : ISprite
     {
-        [SerializeField] GameObject spritePrefab;
+        [SerializeField, Required] GameObject _spritePrefab = null!;
 
         const int MaxSprites = 8000;
 
 
-        protected TSprite[] spriteBuffer;
-        protected Dictionary<ushort, SpriteObject> spriteObjects;
-        int currentUpdateTick;
+        protected TSprite[] _spriteBuffer = Array.Empty<TSprite>();
+        protected Dictionary<ushort, SpriteObject> _spriteObjects = null!;
+        int _currentUpdateTick;
 
 
         /// <summary>
@@ -29,14 +33,14 @@ namespace Sprites
         /// </summary>
         void Start()
         {
-            spriteBuffer = new TSprite[MaxSprites];
-            int amount = FillSpriteBuffer(spriteBuffer);
+            _spriteBuffer = new TSprite[MaxSprites];
+            int amount = FillSpriteBuffer(_spriteBuffer);
 
-            spriteObjects = new Dictionary<ushort, SpriteObject>(amount);
+            _spriteObjects = new Dictionary<ushort, SpriteObject>(amount);
 
             for (int i = 0; i < amount; i++)
             {
-                AddSprite(i, spriteBuffer[i]);
+                AddSprite(i, _spriteBuffer[i]);
             }
         }
 
@@ -46,13 +50,13 @@ namespace Sprites
         /// </summary>
         void FixedUpdate()
         {
-            currentUpdateTick++;
+            _currentUpdateTick++;
 
-            int amount = FillSpriteBuffer(spriteBuffer);
+            int amount = FillSpriteBuffer(_spriteBuffer);
 
             for (int i = 0; i < amount; i++)
             {
-                UpdateSprite(i, spriteBuffer[i]);
+                UpdateSprite(i, _spriteBuffer[i]);
             }
         }
 
@@ -62,7 +66,7 @@ namespace Sprites
         /// </summary>
         void LateUpdate()
         {
-            foreach (var sprite in spriteObjects.Values)
+            foreach (var sprite in _spriteObjects.Values)
             {
                 MoveSprite(sprite);
             }
@@ -75,17 +79,16 @@ namespace Sprites
         protected virtual SpriteObject AddSprite(int index, in TSprite sprite)
         {
             Vector3 position = sprite.Position;
-            GameObject peepObj = Instantiate(spritePrefab, position, Quaternion.identity, transform);
+            GameObject peepObj = Instantiate(_spritePrefab, position, Quaternion.identity, transform);
 
-            SpriteObject instance = new SpriteObject
+            SpriteObject instance = new SpriteObject(peepObj)
             {
                 bufferIndex = index,
-                gameObject = peepObj,
                 from = position,
                 towards = position
             };
 
-            spriteObjects.Add(sprite.Id, instance);
+            _spriteObjects.Add(sprite.Id, instance);
             return instance;
         }
 
@@ -97,7 +100,7 @@ namespace Sprites
         {
             ushort id = sprite.Id;
 
-            if (!spriteObjects.TryGetValue(id, out SpriteObject obj))
+            if (!_spriteObjects.TryGetValue(id, out SpriteObject obj))
             {
                 obj = AddSprite(index, sprite);
             }
@@ -106,7 +109,7 @@ namespace Sprites
                 obj.bufferIndex = index;
             }
 
-            obj.lastUpdate = currentUpdateTick;
+            obj.lastUpdate = _currentUpdateTick;
 
             Vector3 target = sprite.Position;
 
@@ -126,7 +129,7 @@ namespace Sprites
         /// </summary>
         protected virtual void MoveSprite(SpriteObject spriteObject)
         {
-            if (spriteObject.lastUpdate < currentUpdateTick)
+            if (spriteObject.lastUpdate < _currentUpdateTick)
             {
                 DisableSprite(spriteObject);
                 return;
@@ -174,12 +177,18 @@ namespace Sprites
         /// </summary>
         protected class SpriteObject
         {
+            public readonly GameObject gameObject;
             public int bufferIndex;
-            public GameObject gameObject;
-            public float timeSinceStart;
-            public int lastUpdate;
             public Vector3 from;
             public Vector3 towards;
+            public float timeSinceStart;
+            public int lastUpdate;
+
+
+            public SpriteObject(GameObject gameObject)
+            {
+                this.gameObject = gameObject;
+            }
         }
     }
 }

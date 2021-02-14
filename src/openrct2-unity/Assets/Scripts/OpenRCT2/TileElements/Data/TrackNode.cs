@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 using Tracks;
 using UnityEngine;
 
+#nullable enable
+
 namespace Lib
 {
     [StructLayout(LayoutKind.Sequential)]

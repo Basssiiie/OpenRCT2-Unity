@@ -1,5 +1,7 @@
 using System.Runtime.InteropServices;
 
+#nullable enable
+
 namespace Lib
 {
     /// <summary>

@@ -4,6 +4,8 @@ using Graphics;
 using Lib;
 using UnityEngine;
 
+#nullable enable
+
 namespace Sprites
 {
     /// <summary>
@@ -19,10 +21,10 @@ namespace Sprites
         /// </summary>
         public ushort FindPeepIdForGameObject(GameObject peepObject)
         {
-            KeyValuePair<ushort, SpriteObject> entry = spriteObjects.FirstOrDefault(p => p.Value.gameObject == peepObject);
+            KeyValuePair<ushort, SpriteObject> entry = _spriteObjects.FirstOrDefault(p => p.Value.gameObject == peepObject);
 
             int bufferIndex = entry.Value.bufferIndex;
-            return spriteBuffer[bufferIndex].Id;
+            return _spriteBuffer[bufferIndex].Id;
         }
 
 
@@ -32,11 +34,11 @@ namespace Sprites
         /// </summary>
         public Peep? GetPeepById(ushort peepId)
         {
-            if (!spriteObjects.TryGetValue(peepId, out SpriteObject peepObject))
+            if (!_spriteObjects.TryGetValue(peepId, out SpriteObject peepObject))
                 return null;
 
             int bufferIndex = peepObject.bufferIndex;
-            return spriteBuffer[bufferIndex];
+            return _spriteBuffer[bufferIndex];
         }
 
 

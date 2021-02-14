@@ -1,5 +1,7 @@
 using UnityEngine;
 
+#nullable enable
+
 namespace Generation.Retro
 {
     /// <summary>
@@ -17,6 +19,6 @@ namespace Generation.Retro
         /// <summary>
         /// Specifies the mesh that should be used.
         /// </summary>
-        public Mesh Mesh;
+        public Mesh? Mesh;
     }
 }

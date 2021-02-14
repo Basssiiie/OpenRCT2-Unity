@@ -1,6 +1,8 @@
 using Lib;
 using UnityEngine;
 
+#nullable enable
+
 namespace Generation
 {
     /// <summary>
@@ -10,7 +12,7 @@ namespace Generation
     {
         protected const string MenuPath = "OpenRCT2/Generators/";
 
-        protected Map _map;
+        Map? _map;
 
 
         /// <summary>
@@ -20,7 +22,7 @@ namespace Generation
         public void StartGenerator(Map map)
         {
             _map = map;
-            Start();
+            Startup(map);
         }
 
 
@@ -29,26 +31,29 @@ namespace Generation
         /// </summary>
         public void FinishGenerator()
         {
-            Finish();
-            _map = null;
+            if (_map != null)
+            {
+                Finish(_map);
+                _map = null;
+            }
         }
 
 
         /// <summary>
         /// Creates a tile element at the specified tile position.
         /// </summary>
-        public abstract void CreateElement(int x, int y, in TileElement tile);
+        public abstract void CreateElement(Map map, int x, int y, in TileElement tile);
 
 
         /// <summary>
         /// Override to add startup code.
         /// </summary>
-        protected virtual void Start() {}
+        protected virtual void Startup(Map map) {}
 
 
         /// <summary>
         /// Override to add finish code.
         /// </summary>
-        protected virtual void Finish() {}
+        protected virtual void Finish(Map map) {}
     }
 }

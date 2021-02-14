@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
+#nullable enable
+
 namespace Lib
 {
     [StructLayout(LayoutKind.Sequential, Size = 4)]

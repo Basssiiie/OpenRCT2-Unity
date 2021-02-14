@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 using Sprites;
 using UnityEngine;
 
+#nullable enable
+
 namespace Lib
 {
     /// <summary>

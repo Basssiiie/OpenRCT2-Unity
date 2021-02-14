@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-#pragma warning disable CA1401 // P/Invokes should not be visible -> intended
+#nullable enable
 
 namespace Lib
 {

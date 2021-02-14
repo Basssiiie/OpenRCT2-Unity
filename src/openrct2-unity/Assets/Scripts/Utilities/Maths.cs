@@ -1,5 +1,7 @@
 using UnityEngine;
 
+#nullable enable
+
 public static class Maths
 {
     /// <summary>

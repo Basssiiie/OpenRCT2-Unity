@@ -3,6 +3,8 @@ using Lib;
 using MeshBuilding;
 using UnityEngine;
 
+#nullable enable
+
 namespace Tracks
 {
     /// <summary>
@@ -11,7 +13,7 @@ namespace Tracks
     public static class TrackFactory
     {
         // A cache of track pieces with the track type as key.
-        static readonly Dictionary<int, TrackPiece> trackPiecesCache = new Dictionary<int, TrackPiece>();
+        static readonly Dictionary<int, TrackPiece> _trackPiecesCache = new Dictionary<int, TrackPiece>();
 
 
         /// <summary>
@@ -19,11 +21,11 @@ namespace Tracks
         /// </summary>
         public static TrackPiece GetTrackPiece(int trackType)
         {
-            if (!trackPiecesCache.TryGetValue(trackType, out TrackPiece trackPiece))
+            if (!_trackPiecesCache.TryGetValue(trackType, out TrackPiece trackPiece))
             {
                 TrackNode[] nodes = OpenRCT2.GetTrackElementRoute(trackType);
                 trackPiece = CreateTrackPiece(nodes);
-                trackPiecesCache.Add(trackType, trackPiece);
+                _trackPiecesCache.Add(trackType, trackPiece);
             }
             return trackPiece;
         }

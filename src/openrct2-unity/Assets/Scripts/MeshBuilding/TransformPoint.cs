@@ -1,5 +1,7 @@
 using UnityEngine;
 
+#nullable enable
+
 namespace MeshBuilding
 {
     /// <summary>

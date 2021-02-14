@@ -3,6 +3,8 @@ using UnityEditor;
 using UnityEngine;
 using Utilities;
 
+#nullable enable
+
 namespace EditorExtensions
 {
     /// <summary>
@@ -12,7 +14,7 @@ namespace EditorExtensions
     public class MatrixDrawer : PropertyDrawer
     {
         // Cache for the drawer, because the same drawer can be used for multiple properties.
-        static readonly DrawerCache<bool> cache = new DrawerCache<bool>();
+        static readonly DrawerCache<bool> _cache = new DrawerCache<bool>();
 
 
         const int MatrixSize = 4;
@@ -28,7 +30,7 @@ namespace EditorExtensions
             Rect foldoutRect = position;
             foldoutRect.height = height;
 
-            string cacheKey = cache.Get(property, out bool foldout);
+            string cacheKey = _cache.Get(property, out bool foldout);
             if ((foldout = EditorGUI.Foldout(foldoutRect, foldout, label, toggleOnLabelClick: true)))
             {
                 IEnumerator enumerator = property.GetEnumerator();
@@ -62,7 +64,7 @@ namespace EditorExtensions
                     }
                 }
             }
-            cache.Set(cacheKey, foldout);
+            _cache.Set(cacheKey, foldout);
         }
 
 
@@ -71,7 +73,7 @@ namespace EditorExtensions
         /// </summary>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            cache.Get(property, out bool foldout);
+            _cache.Get(property, out bool foldout);
 
             if (!foldout)
                 return EditorGUIUtility.singleLineHeight;

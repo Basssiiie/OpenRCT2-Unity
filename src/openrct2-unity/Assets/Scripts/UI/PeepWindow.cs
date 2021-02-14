@@ -2,27 +2,30 @@ using Lib;
 using Sprites;
 using UnityEngine;
 using UnityEngine.UI;
+using Utilities;
+
+#nullable enable
 
 namespace UI
 {
     public class PeepWindow : MonoBehaviour
     {
-        [SerializeField] Text title;
-        [SerializeField] Slider happinessBar;
-        [SerializeField] Slider energyBar;
-        [SerializeField] Slider hungerBar;
-        [SerializeField] Slider thirstBar;
-        [SerializeField] Slider nauseaBar;
-        [SerializeField] Slider toiletBar;
+        [SerializeField, Required] Text _title = null!;
+        [SerializeField, Required] Slider _happinessBar = null!;
+        [SerializeField, Required] Slider _energyBar = null!;
+        [SerializeField, Required] Slider _hungerBar = null!;
+        [SerializeField, Required] Slider _thirstBar = null!;
+        [SerializeField, Required] Slider _nauseaBar = null!;
+        [SerializeField, Required] Slider _toiletBar = null!;
 
-        ushort peepId;
+        ushort _peepId;
 
 
         public void SetPeep(ushort peepId)
         {
-            this.peepId = peepId;
+            _peepId = peepId;
 
-            title.text = $"Guest {this.peepId}";
+            _title.text = $"Guest {_peepId}";
             InvokeRepeating(nameof(UpdateData), 0f, 5f);
         }
 
@@ -31,18 +34,18 @@ namespace UI
         {
             PeepStats stats = new PeepStats();
 
-            if (!OpenRCT2.GetPeepStats(peepId, ref stats))
+            if (!OpenRCT2.GetPeepStats(_peepId, ref stats))
             {
                 Destroy(gameObject);
                 return;
             }
 
-            happinessBar.value = stats.happiness;
-            energyBar.value = stats.energy;
-            hungerBar.value = stats.hunger;
-            thirstBar.value = stats.thirst;
-            nauseaBar.value = stats.nausea;
-            toiletBar.value = stats.toilet;
+            _happinessBar.value = stats.happiness;
+            _energyBar.value = stats.energy;
+            _hungerBar.value = stats.hunger;
+            _thirstBar.value = stats.thirst;
+            _nauseaBar.value = stats.nausea;
+            _toiletBar.value = stats.toilet;
             /*
             var intensityBinary = System.Convert.ToString(peep.intensity, 2);
             var maxIntensityString = System.Convert.ToString(peep.intensity >> 4);

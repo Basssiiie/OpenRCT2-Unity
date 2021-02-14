@@ -1,21 +1,24 @@
 using Sprites;
 using UI;
 using UnityEngine;
+using Utilities;
 
+#nullable enable
 
 namespace Tools
 {
     public class SelectionTool : MonoBehaviour
     {
-        [SerializeField] WindowManager windowManager;
-        [SerializeField] PeepController peepController;
+        [SerializeField] WindowManager? _windowManager;
+        [SerializeField] PeepController? _peepController;
 
 
-        Camera mainCamera;
+        Camera? _mainCamera;
+
 
         void Start()
         {
-            mainCamera = Camera.main;
+            _mainCamera = Camera.main;
         }
 
 
@@ -24,7 +27,9 @@ namespace Tools
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+                Assert.IsNotNull(_mainCamera, nameof(_mainCamera));
+
+                Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
 
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
@@ -39,8 +44,11 @@ namespace Tools
             switch (obj.tag)
             {
                 case "Peep":
-                    ushort peepId = peepController.FindPeepIdForGameObject(obj);
-                    windowManager.CreatePeepWindow(peepId);
+                    Assert.IsNotNull(_peepController, nameof(_peepController));
+                    Assert.IsNotNull(_windowManager, nameof(_windowManager));
+
+                    ushort peepId = _peepController.FindPeepIdForGameObject(obj);
+                    _windowManager.CreatePeepWindow(peepId);
                     break;
             }
         }

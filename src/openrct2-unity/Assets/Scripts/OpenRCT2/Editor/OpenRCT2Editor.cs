@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
+#nullable enable
+
 namespace Lib
 {
     /// <summary>
@@ -20,13 +22,13 @@ namespace Lib
 
 
         bool _groupToggleDataPaths = true;
-        string _openrct2DataPath;
-        string _rct2Path;
-        string _rct1Path;
-        string _parkPath;
+        string? _openrct2DataPath;
+        string? _rct2Path;
+        string? _rct1Path;
+        string? _parkPath;
 
         bool _groupToggleSelectedPark = true;
-        string[] _allDiscoveredParks;
+        string[]? _allDiscoveredParks;
         int _selectedParkIndex = -1;
 
 
@@ -137,19 +139,22 @@ namespace Lib
                             .ToArray();
 
                         OpenRCT2 game = (OpenRCT2)target;
-                        string selected = game.selectedPark;
+                        string? selected = game.selectedPark;
 
-                        _selectedParkIndex = Array.IndexOf(_allDiscoveredParks, selected);
-
-                        if (_selectedParkIndex != -1)
+                        if (!string.IsNullOrEmpty(selected))
                         {
-                            game.selectedPark = _allDiscoveredParks[_selectedParkIndex];
+                            _selectedParkIndex = Array.IndexOf(_allDiscoveredParks, selected);
+
+                            if (_selectedParkIndex != -1)
+                            {
+                                game.selectedPark = _allDiscoveredParks[_selectedParkIndex];
+                            }
                         }
                     }
                 }
 
                 // Set the current selected park + update if another is selected
-                if (!parkFoundError)
+                if (!parkFoundError && _allDiscoveredParks != null)
                 {
                     int currentSelection = _selectedParkIndex;
                     currentSelection = EditorGUILayout.Popup(currentSelection, _allDiscoveredParks);

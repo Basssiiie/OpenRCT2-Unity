@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using Lib;
 using UnityEngine;
+using Utilities;
+
+#nullable enable
 
 namespace Generation
 {
@@ -14,12 +17,14 @@ namespace Generation
         static readonly Dictionary<short, TrackNode[]> _trackNodesCache = new Dictionary<short, TrackNode[]>();
 
 
-        [SerializeField] GameObject _prefab;
+        [SerializeField, Required] GameObject? _prefab;
 
 
         /// <inheritdoc/>
-        public override void CreateElement(int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, in TileElement tile)
         {
+            Assert.IsNotNull(_prefab, nameof(_prefab));
+
             TrackElement track = tile.AsTrack();
             if (track.PartIndex != 0)
                 return;
@@ -42,7 +47,7 @@ namespace Generation
             position.y += OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsXYMultiplier;
 
             Transform tfParent = parent.transform;
-            tfParent.parent = _map.transform;
+            tfParent.parent = map.transform;
             tfParent.localPosition = position;
             tfParent.localRotation = Quaternion.Euler(0, tile.Rotation * 90f, 0);
 

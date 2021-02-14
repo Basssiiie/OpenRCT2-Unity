@@ -4,6 +4,8 @@ using Sprites;
 using Tracks;
 using UnityEngine;
 
+#nullable enable
+
 namespace Lib
 {
     /// <summary>

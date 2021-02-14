@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+#nullable enable
+
 namespace MeshBuilding
 {
     /// <summary>

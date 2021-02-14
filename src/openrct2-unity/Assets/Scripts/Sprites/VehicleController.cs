@@ -1,6 +1,8 @@
 using Lib;
 using UnityEngine;
 
+#nullable enable
+
 namespace Sprites
 {
     /// <summary>
