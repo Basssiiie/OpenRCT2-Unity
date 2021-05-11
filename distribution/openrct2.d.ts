@@ -239,6 +239,8 @@ declare global {
         queryAction(action: ActionType, args: object, callback: (result: GameActionResult) => void): void;
         queryAction(action: string, args: object, callback: (result: GameActionResult) => void): void;
 
+        queryAction(action: "tilemodify", args: TileModifyArgs, callback: (result: GameActionResult) => void): void;
+
         /**
          * Executes a game action. In a network game, this will send a request to the server and wait
          * for the server to reply.
@@ -248,6 +250,8 @@ declare global {
          */
         executeAction(action: ActionType, args: object, callback: (result: GameActionResult) => void): void;
         executeAction(action: string, args: object, callback: (result: GameActionResult) => void): void;
+
+        executeAction(action: "tilemodify", args: TileModifyArgs, callback: (result: GameActionResult) => void): void;
 
         /**
          * Subscribes to the given hook.
@@ -476,6 +480,43 @@ declare global {
         position?: CoordsXYZ;
         cost?: number;
         expenditureType?: ExpenditureType;
+    }
+	
+    type TileModifyType =
+        "any.remove" |
+        "any.swap" |
+        "any.hide" |
+        "any.rotate" |
+        "any.paste" |
+        "any.sort" |
+        "any.setheight" |
+        "surface.showparkfences" |
+        "surface.togglecorner" |
+        "surface.togglediagonal" |
+        "path.setslope" |
+        "path.setbroken" |
+        "path.toggleedge" |
+        "entrance.makeusable" |
+        "wall.setslope" |
+        "wall.setanimationframe" |
+        "track.setheight" |
+        "track.togglechainliftblock" |
+        "track.togglechainlifttile" |
+        "track.toggleblockbrake" |
+        "track.toggleindestructible" |
+        "smallscenery.setquarterlocation" |
+        "smallscenery.setquartercollision" |
+        "banner.toggleblockingedge" |
+        "corrupt.clamp"
+
+    interface TileModifyArgs {
+        x: number;
+        y: number;
+        z: number;
+        modifyType: TileModifyType;
+        value1: number;
+        value2: number;
+        pasteElement: TileElement;
     }
 
     interface RideCreateGameActionResult extends GameActionResult {

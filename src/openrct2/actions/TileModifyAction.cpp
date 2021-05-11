@@ -13,6 +13,44 @@
 
 using namespace OpenRCT2;
 
+const static std::unordered_map<std::string, TileModifyType> TileModifyNameToType = {
+    { "any.remove", TileModifyType::AnyRemove },
+    { "any.swap", TileModifyType::AnySwap },
+    { "any.hide", TileModifyType::AnyInsertCorrupt },
+    { "any.rotate", TileModifyType::AnyRotate },
+    { "any.paste", TileModifyType::AnyPaste },
+    { "any.sort", TileModifyType::AnySort },
+    { "any.setheight", TileModifyType::AnyBaseHeightOffset },
+    { "surface.showparkfences", TileModifyType::SurfaceShowParkFences },
+    { "surface.togglecorner", TileModifyType::SurfaceToggleCorner },
+    { "surface.togglediagonal", TileModifyType::SurfaceToggleDiagonal },
+    { "path.setslope", TileModifyType::PathSetSlope },
+    { "path.setbroken", TileModifyType::PathSetBroken },
+    { "path.toggleedge", TileModifyType::PathToggleEdge },
+    { "entrance.makeusable", TileModifyType::EntranceMakeUsable },
+    { "wall.setslope", TileModifyType::WallSetSlope },
+    { "wall.setanimationframe", TileModifyType::WallSetAnimationFrame },
+    { "track.setheight", TileModifyType::TrackBaseHeightOffset },
+    { "track.togglechainliftblock", TileModifyType::TrackSetChainBlock },
+    { "track.togglechainlifttile", TileModifyType::TrackSetChain },
+    { "track.toggleblockbrake", TileModifyType::TrackSetBlockBrake },
+    { "track.toggleindestructible", TileModifyType::TrackSetIndestructible },
+    { "smallscenery.setquarterlocation", TileModifyType::ScenerySetQuarterLocation },
+    { "smallscenery.setquartercollision", TileModifyType::ScenerySetQuarterLocation },
+    { "banner.toggleblockingedge", TileModifyType::BannerToggleBlockingEdge },
+    { "corrupt.clamp", TileModifyType::CorruptClamp },
+};
+
+static TileModifyType FindTileModifyTypeByName(const std::string& nameoftype)
+{
+    auto result = TileModifyNameToType.find(nameoftype);
+    if (result != TileModifyNameToType.end())
+    {
+        return result->second;
+    }
+    return TileModifyType::Count;
+}
+
 TileModifyAction::TileModifyAction(
     CoordsXY loc, TileModifyType setting, uint32_t value1, uint32_t value2, TileElement pasteElement)
     : _loc(loc)
@@ -21,6 +59,18 @@ TileModifyAction::TileModifyAction(
     , _value2(value2)
     , _pasteElement(pasteElement)
 {
+}
+
+void TileModifyAction::AcceptParameters(GameActionParameterVisitor& visitor)
+{
+    visitor.Visit(_loc);
+    visitor.Visit("value1", _value1);
+    visitor.Visit("value2", _value2);
+    visitor.Visit("pasteElement", _pasteElement);
+
+    std::string nameoftype;
+    visitor.Visit("modifyType", nameoftype);
+    _setting = FindTileModifyTypeByName(nameoftype);
 }
 
 uint16_t TileModifyAction::GetActionFlags() const
