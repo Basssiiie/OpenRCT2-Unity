@@ -14,14 +14,14 @@ namespace Lib
         /// Returns the amount of path nodes in the pathing route for the specified track type.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern int GetTrackElementRouteSize(int trackVariant, int typeAndDirection);
+        static extern int GetTrackElementRouteSize(byte trackVariant, int typeAndDirection);
 
 
         /// <summary>
         /// Writes all the path nodes up to size into the array.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern void GetTrackElementRoute(int trackVariant, int typeAndDirection, [Out] TrackNode[] nodes, int size);
+        static extern void GetTrackElementRoute(byte trackVariant, int typeAndDirection, [Out] TrackNode[] nodes, int size);
 
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Lib
         ///     <item><term>15-16</term><description>Custom routing for reversers.</description></item>
         /// </list>
         /// </param>
-        public static TrackNode[] GetTrackElementRoute(int trackType, int trackVariant)
+        public static TrackNode[] GetTrackElementRoute(int trackType, byte trackVariant)
         {
             int typeAndDirection = (trackType << 2); // direction right now is defaulted to 0;
             int size = GetTrackElementRouteSize(trackVariant, typeAndDirection);

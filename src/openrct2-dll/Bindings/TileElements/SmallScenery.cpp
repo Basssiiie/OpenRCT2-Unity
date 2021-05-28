@@ -9,7 +9,7 @@
 extern "C"
 {
     // Adjusts the image index if the scenery element has colours or withering.
-    uint32_t GetIndexWithColourAndWither(uint32_t imageIndex, SmallSceneryElement* sceneryElement, rct_scenery_entry* entry)
+    uint32_t GetIndexWithColourAndWither(uint32_t imageIndex, const SmallSceneryElement* sceneryElement, const rct_scenery_entry* entry)
     {
         // Wither flowers
         if (scenery_small_entry_has_flag(entry, SMALL_SCENERY_FLAG_CAN_WITHER))
@@ -46,8 +46,8 @@ extern "C"
     // Returns the sprite image index for a small scenery tile element.
     EXPORT uint32_t GetSmallSceneryImageIndex(const TileElement* tileElement, uint8_t direction)
     {
-        SmallSceneryElement* sceneryElement = tileElement->AsSmallScenery();
-        rct_scenery_entry* entry = sceneryElement->GetEntry();
+        const SmallSceneryElement* sceneryElement = tileElement->AsSmallScenery();
+        const rct_scenery_entry* entry = sceneryElement->GetEntry();
 
         if (entry == nullptr)
         {
@@ -64,8 +64,8 @@ extern "C"
     // Get all indices of the animation of this small scenery element, returns the amount of animation frames.
     EXPORT int32_t GetSmallSceneryAnimationIndices(const TileElement* tileElement, uint8_t direction, uint32_t* indices, int32_t arraySize)
     {
-        SmallSceneryElement* sceneryElement = tileElement->AsSmallScenery();
-        rct_scenery_entry* entry = sceneryElement->GetEntry();
+        const SmallSceneryElement* sceneryElement = tileElement->AsSmallScenery();
+        const rct_scenery_entry* entry = sceneryElement->GetEntry();
 
         if (entry == nullptr)
         {
@@ -133,7 +133,7 @@ extern "C"
     EXPORT void GetSmallSceneryEntry(uint32_t entryIndex, SmallSceneryEntry* entry)
     {
         IObjectManager& objManager = OpenRCT2::GetContext()->GetObjectManager();
-        Object* obj = objManager.GetLoadedObject(OBJECT_TYPE_SMALL_SCENERY, entryIndex);
+        Object* obj = objManager.GetLoadedObject(ObjectType::SmallScenery, entryIndex);
 
         if (obj == nullptr)
         {

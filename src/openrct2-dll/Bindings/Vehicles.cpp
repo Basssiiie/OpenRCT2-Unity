@@ -1,4 +1,5 @@
 #include <openrct2/ride/Vehicle.h>
+#include <openrct2/world/EntityList.h>
 #include <openrct2/world/Sprite.h>
 
 #include "OpenRCT2-DLL.h"
@@ -40,8 +41,8 @@ extern "C"
             target->bankRotation = vehicle->bank_rotation;
             target->pitchRotation = vehicle->vehicle_sprite_type;
 
-            target->trackType = (vehicle->track_type >> 2);
-            target->trackDirection = (vehicle->track_direction & 0b11);
+            target->trackType = vehicle->GetTrackType();
+            target->trackDirection = vehicle->GetTrackDirection();
             target->trackProgress = vehicle->track_progress;
 
             vehicleCount++;

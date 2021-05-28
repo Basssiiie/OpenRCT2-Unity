@@ -1,3 +1,4 @@
+#include <openrct2/world/EntityList.h>
 #include <openrct2/world/Sprite.h>
 
 #include "OpenRCT2-DLL.h"

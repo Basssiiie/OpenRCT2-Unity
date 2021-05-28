@@ -49,14 +49,14 @@ void FixTrackPiecePosition(rct_vehicle_info* target, uint32_t trackType, uint8_t
 extern "C"
 {
     // Returns the amount of path nodes in the pathing route for the specified track type.
-    EXPORT int GetTrackElementRouteSize(int32_t trackVariant, int32_t typeAndDirection)
+EXPORT int GetTrackElementRouteSize(uint8_t trackVariant, int32_t typeAndDirection)
     {
         return gTrackVehicleInfo[trackVariant][typeAndDirection]->size;
     }
 
 
     // Returns the pathing route for the specified track element.
-    EXPORT void GetTrackElementRoute(int32_t trackVariant, int32_t typeAndDirection, rct_vehicle_info* nodes, int32_t arraySize)
+    EXPORT void GetTrackElementRoute(uint8_t trackVariant, int32_t typeAndDirection, rct_vehicle_info* nodes, int32_t arraySize)
     {
         const rct_vehicle_info_list* list = gTrackVehicleInfo[trackVariant][typeAndDirection];
 

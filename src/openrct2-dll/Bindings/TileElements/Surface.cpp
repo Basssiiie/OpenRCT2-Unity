@@ -13,14 +13,14 @@ extern "C"
     //  Inspired by: get_surface_object(), get_surface_image()
     EXPORT uint32_t GetSurfaceImageIndex(const TileElement* tileElement, int32_t tileX, int32_t tileY, uint8_t direction)
     {
-        SurfaceElement* surface = tileElement->AsSurface();
+        const SurfaceElement* surface = tileElement->AsSurface();
         uint32_t surfaceIndex = surface->GetSurfaceStyle();
         uint8_t grassLength = surface->GetGrassLength();
 
         uint32_t imageId = (uint32_t)SPR_NONE;
 
         IObjectManager& objMgr = OpenRCT2::GetContext()->GetObjectManager();
-        Object* obj = objMgr.GetLoadedObject(OBJECT_TYPE_TERRAIN_SURFACE, surfaceIndex);
+        Object* obj = objMgr.GetLoadedObject(ObjectType::TerrainSurface, surfaceIndex);
 
         if (obj == nullptr)
         {
@@ -44,11 +44,11 @@ extern "C"
     //  Inspired by: get_edge_image_with_offset()
     EXPORT uint32_t GetSurfaceEdgeImageIndex(const TileElement* tileElement)
     {
-        SurfaceElement* surface = tileElement->AsSurface();
+        const SurfaceElement* surface = tileElement->AsSurface();
         uint32_t edgeIndex = surface->GetEdgeStyle();
 
         IObjectManager& objMgr = OpenRCT2::GetContext()->GetObjectManager();
-        Object* obj = objMgr.GetLoadedObject(OBJECT_TYPE_TERRAIN_EDGE, edgeIndex);
+        Object* obj = objMgr.GetLoadedObject(ObjectType::TerrainEdge, edgeIndex);
 
         if (obj == nullptr)
         {
@@ -68,7 +68,8 @@ extern "C"
     EXPORT uint32_t GetWaterImageIndex()
     {
         // SPR_WATER_OVERLAY = overlay for water
-        const int32_t imageId = (SPR_WATER_MASK | IMAGE_TYPE_REMAP | IMAGE_TYPE_TRANSPARENT | PALETTE_WATER << 19);
+        const int32_t imageId
+            = (SPR_WATER_MASK | IMAGE_TYPE_REMAP | IMAGE_TYPE_TRANSPARENT | EnumValue(FilterPaletteID::PaletteWater) << 19);
         return imageId;
     }
 }

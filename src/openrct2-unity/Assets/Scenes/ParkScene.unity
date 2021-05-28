@@ -788,7 +788,7 @@ MonoBehaviour:
   _text: {fileID: 1795787443}
   _counter: {fileID: 1009059565}
   _slider: {fileID: 2052279365}
-  _updateInterval: 100
+  _updateInterval: 500
 --- !u!1 &1294640984
 GameObject:
   m_ObjectHideFlags: 0
@@ -896,7 +896,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Fort Anachronism.sv6
+  selectedPark: Temp/Mount_Deurklink.sv6
 --- !u!4 &1347800243
 Transform:
   m_ObjectHideFlags: 0

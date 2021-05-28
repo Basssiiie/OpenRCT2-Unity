@@ -10,8 +10,8 @@ extern "C"
     //  Inspired by: fence_paint
     EXPORT uint32_t GetWallImageIndex(const TileElement* tileElement, uint8_t direction)
     {
-        WallElement* wallElement = tileElement->AsWall();
-        rct_scenery_entry* sceneryEntry = wallElement->GetEntry();
+        const WallElement* wallElement = tileElement->AsWall();
+        const rct_scenery_entry* sceneryEntry = wallElement->GetEntry();
 
         if (sceneryEntry == nullptr)
         {

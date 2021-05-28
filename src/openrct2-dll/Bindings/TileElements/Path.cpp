@@ -22,8 +22,8 @@ extern "C"
     //  Inspired by: path_paint()
     EXPORT uint32_t GetPathSurfaceImageIndex(const TileElement* tileElement)
     {
-        PathElement* pathElement = tileElement->AsPath();
-        PathSurfaceEntry* footpathEntry = pathElement->GetSurfaceEntry();
+        const PathElement* pathElement = tileElement->AsPath();
+        const PathSurfaceEntry* footpathEntry = pathElement->GetSurfaceEntry();
 
         uint32_t imageId;
         if (tileElement->AsPath()->IsSloped())

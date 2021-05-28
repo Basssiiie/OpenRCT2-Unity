@@ -66,22 +66,22 @@ namespace Lib
         {
             return
 $@"(me) TileElement:
-(me)   -> {tile.type}   (type)
-(me)   -> {tile.flags}  (flags)
-(me)   -> {tile.baseHeight}     (base_height)
-(me)   -> {tile.clearanceHeight}    (clearance_height)
-(me)   -> {tile.slot0x1}    (pad 0x1)
-(me)   -> {tile.slot0x2}    (pad 0x2)
-(me)   -> {tile.slot0x3}    (pad 0x3)
-(me)   -> {tile.slot0x4}    (pad 0x4)
-(me)   -> {tile.slot0x5}    (pad 0x5)
-(me)   -> {tile.slot0x6}    (pad 0x6)
-(me)   -> {tile.slot0x7}    (pad 0x7)
-(me)   -> {tile.slot0x8}    (pad 0x8)
-(me)   -> {tile.slot0x9}    (pad 0x9)
-(me)   -> {tile.slot0xA}    (pad 0xA)
-(me)   -> {tile.slot0xB}    (pad 0xB)
-(me)   -> {tile.slot0xC}    (pad 0xC)";
+(me)   -> {tile.type} \t(type)
+(me)   -> {tile.flags} \t(flags)
+(me)   -> {tile.baseHeight} \t(base_height)
+(me)   -> {tile.clearanceHeight} \t(clearance_height)
+(me)   -> {tile.owner} \t(owner)
+(me)   -> {tile.slot0x1} \t(pad 0x1)
+(me)   -> {tile.slot0x2} \t(pad 0x2)
+(me)   -> {tile.slot0x3} \t(pad 0x3)
+(me)   -> {tile.slot0x4} \t(pad 0x4)
+(me)   -> {tile.slot0x5} \t(pad 0x5)
+(me)   -> {tile.slot0x6} \t(pad 0x6)
+(me)   -> {tile.slot0x7} \t(pad 0x7)
+(me)   -> {tile.slot0x8} \t(pad 0x8)
+(me)   -> {tile.slot0x9} \t(pad 0x9)
+(me)   -> {tile.slot0xA} \t(pad 0xA)
+(me)   -> {tile.slot0xB} \t(pad 0xB)";
         }
 	}
 }

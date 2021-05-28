@@ -12,6 +12,7 @@ namespace Lib
         public readonly byte flags;
         public readonly byte baseHeight;
         public readonly byte clearanceHeight;
+        public readonly byte owner;
 
         public readonly byte slot0x1;
         public readonly byte slot0x2;
@@ -26,7 +27,6 @@ namespace Lib
         public readonly byte slot0x9;
         public readonly byte slot0xA;
         public readonly byte slot0xB;
-        public readonly byte slot0xC;
 
 
         // The mask skim off the extra bits, to retrieve the actual type.
@@ -61,6 +61,7 @@ namespace Lib
             && (left.flags == right.flags)
             && (left.baseHeight == right.baseHeight)
             && (left.clearanceHeight == right.clearanceHeight)
+            && (left.owner == right.owner)
             && (left.slot0x1 == right.slot0x1)
             && (left.slot0x2 == right.slot0x2)
             && (left.slot0x3 == right.slot0x3)
@@ -71,8 +72,7 @@ namespace Lib
             && (left.slot0x8 == right.slot0x8)
             && (left.slot0x9 == right.slot0x9)
             && (left.slot0xA == right.slot0xA)
-            && (left.slot0xB == right.slot0xB)
-            && (left.slot0xC == right.slot0xC);
+            && (left.slot0xB == right.slot0xB);
 
 
         /// <inheritdoc/>
@@ -105,6 +105,7 @@ namespace Lib
             hashCode = hashCode * -1521134295 + flags.GetHashCode();
             hashCode = hashCode * -1521134295 + baseHeight.GetHashCode();
             hashCode = hashCode * -1521134295 + clearanceHeight.GetHashCode();
+            hashCode = hashCode * -1521134295 + owner.GetHashCode();
             hashCode = hashCode * -1521134295 + slot0x1.GetHashCode();
             hashCode = hashCode * -1521134295 + slot0x2.GetHashCode();
             hashCode = hashCode * -1521134295 + slot0x3.GetHashCode();
@@ -116,7 +117,6 @@ namespace Lib
             hashCode = hashCode * -1521134295 + slot0x9.GetHashCode();
             hashCode = hashCode * -1521134295 + slot0xA.GetHashCode();
             hashCode = hashCode * -1521134295 + slot0xB.GetHashCode();
-            hashCode = hashCode * -1521134295 + slot0xC.GetHashCode();
             return hashCode;
         }
 
