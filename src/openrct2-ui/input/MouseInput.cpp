@@ -520,7 +520,7 @@ static void InputWindowResizeEnd()
 
 static void InputViewportDragBegin(rct_window* w)
 {
-    w->flags &= ~WF_SCROLLING_TO_LOCATION;
+    w->flags |= WF_SCROLLING_TO_LOCATION;
     _inputState = InputState::ViewportRight;
     _dragWidget.window_classification = w->classification;
     _dragWidget.window_number = w->number;
@@ -579,6 +579,7 @@ static void InputViewportDragContinue()
             {
                 w->savedViewPos += differentialCoords;
             }
+            w->flags |= WF_SCROLLING_TO_LOCATION;
         }
     }
 
@@ -1634,11 +1635,13 @@ void InputScrollViewport(const ScreenCoordsXY& scrollScreenCoords)
         }
 
         mainWindow->savedViewPos.x += dx;
+        mainWindow->flags |= WF_SCROLLING_TO_LOCATION;
         _inputFlags |= INPUT_FLAG_VIEWPORT_SCROLLING;
     }
     if (scrollScreenCoords.y != 0)
     {
         mainWindow->savedViewPos.y += dy;
+        mainWindow->flags |= WF_SCROLLING_TO_LOCATION;
         _inputFlags |= INPUT_FLAG_VIEWPORT_SCROLLING;
     }
 }
