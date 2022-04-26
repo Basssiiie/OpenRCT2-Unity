@@ -14,7 +14,7 @@ namespace Generation.Retro
     public class TrackGenerator : TileElementGenerator
     {
         static readonly Dictionary<int, Mesh> _trackMeshCache = new Dictionary<int, Mesh>();
-        static readonly Dictionary<short, TrackColour[]> _trackColoursCache = new Dictionary<short, TrackColour[]>();
+        static readonly Dictionary<ushort, TrackColour[]> _trackColoursCache = new Dictionary<ushort, TrackColour[]>();
 
 
         [SerializeField, Required] GameObject _prefab = null!;
@@ -105,7 +105,7 @@ namespace Generation.Retro
             MeshFilter filter = obj.GetComponent<MeshFilter>();
             filter.sharedMesh = trackMesh;
 
-            short rideIndex = track.RideIndex;
+            ushort rideIndex = track.RideIndex;
             if (!_trackColoursCache.TryGetValue(rideIndex, out TrackColour[] colours))
             {
                 colours = OpenRCT2.GetRideTrackColours(rideIndex);

@@ -23,21 +23,24 @@ extern "C"
         _log_levels[static_cast<uint8_t>(DiagnosticLevel::Verbose)] = true;
 
         gOpenRCT2Headless = true;
-
-        Path::GetAbsolute(gCustomOpenRCT2DataPath, std::size(gCustomOpenRCT2DataPath), datapath);
+        gCustomOpenRCT2DataPath = Path::GetAbsolute(u8string(datapath));
 
         if (rct1path != nullptr)
-            Path::GetAbsolute(gCustomRCT1DataPath, std::size(gCustomRCT1DataPath), rct1path);
+        {
+            gCustomRCT1DataPath = Path::GetAbsolute(u8string(rct1path));
+        }
         if (rct2path != nullptr)
-            Path::GetAbsolute(gCustomRCT2DataPath, std::size(gCustomRCT2DataPath), rct2path);
+        {
+            gCustomRCT2DataPath = Path::GetAbsolute(u8string(rct2path));
+        }
 
         dll_log(
             "gCustomOpenrctDataPath = %s\n(me) gCustomRCT1DataPath = %s\n(me) gCustomRCT2DataPath = %s",
-            gCustomOpenRCT2DataPath, gCustomRCT1DataPath, gCustomRCT2DataPath
+            datapath, rct1path, rct2path
         );
 
         // Create a plain context
-        core_init();
+        Platform::CoreInit();
         unityContext = CreateContext(); // OpenRCT2::CreateContext()
         bool result = unityContext->Initialise();
 
@@ -47,7 +50,7 @@ extern "C"
 
     EXPORT void PerformGameUpdate()
     {
-        unityContext->GetGameState()->Update();
+        unityContext->GetGameState()->Tick();
     }
 
 

@@ -74,20 +74,20 @@ namespace Lib
         /// (Might get replaced by a more ride related method in the future.)
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        public static extern sbyte GetTrackHeightOffset(short rideIndex);
+        public static extern sbyte GetTrackHeightOffset(ushort rideIndex);
 
 
         /// <summary>
         /// Gets the ride colours for the specified ride index.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        static extern void GetRideTrackColours(short rideIndex, [Out] TrackColour[] colours);
+        static extern void GetRideTrackColours(ushort rideIndex, [Out] TrackColour[] colours);
 
 
         /// <summary>
         /// Gets the ride colours for the specified ride index.
         /// </summary>
-        public static TrackColour[] GetRideTrackColours(short rideIndex)
+        public static TrackColour[] GetRideTrackColours(ushort rideIndex)
         {
             TrackColour[] colours = new TrackColour[MaxColourSchemes];
             GetRideTrackColours(rideIndex, colours);

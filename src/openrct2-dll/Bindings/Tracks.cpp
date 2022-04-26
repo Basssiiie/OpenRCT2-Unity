@@ -40,7 +40,7 @@ void FixTrackPiecePosition(rct_vehicle_info* target, uint32_t trackType, uint8_t
     {
         case TrackElemType::LeftCurvedLiftHill:
         case TrackElemType::RightCurvedLiftHill:
-            target->vehicle_sprite_type = 0;
+            target->Pitch = 0;
             break;
     }
 }
@@ -49,7 +49,7 @@ void FixTrackPiecePosition(rct_vehicle_info* target, uint32_t trackType, uint8_t
 extern "C"
 {
     // Returns the amount of path nodes in the pathing route for the specified track type.
-EXPORT int GetTrackElementRouteSize(uint8_t trackVariant, int32_t typeAndDirection)
+    EXPORT int GetTrackElementRouteSize(uint8_t trackVariant, int32_t typeAndDirection)
     {
         return gTrackVehicleInfo[trackVariant][typeAndDirection]->size;
     }
@@ -62,8 +62,8 @@ EXPORT int GetTrackElementRouteSize(uint8_t trackVariant, int32_t typeAndDirecti
 
         std::memcpy(nodes, list->info, sizeof(rct_vehicle_info) * arraySize);
 
-        int32_t trackType = (typeAndDirection >> 2);
-        const rct_trackdefinition definition = TrackDefinitions[trackType];
+        const int32_t trackType = (typeAndDirection >> 2);
+        const rct_trackdefinition definition = TrackMetaData::GetTrackElementDescriptor(trackType).Definition;
 
         FixTrackPiecePosition(&nodes[0], trackType, definition.vangle_start);
         FixTrackPiecePosition(&nodes[arraySize - 1], trackType, definition.vangle_end);
@@ -73,14 +73,14 @@ EXPORT int GetTrackElementRouteSize(uint8_t trackVariant, int32_t typeAndDirecti
     // (Temporary?) Returns the flags for the specified track type.
     EXPORT uint16_t GetTrackTypeFlags(int32_t trackType)
     {
-        return TrackFlags[trackType];
+        return TrackMetaData::GetTrackElementDescriptor(trackType).Flags;
     }
 
 
     // (Temporary?) Returns the track height offset for this ride index.
-    EXPORT int8_t GetTrackHeightOffset(uint8_t rideIndex)
+    EXPORT int8_t GetTrackHeightOffset(uint16_t rideIndex)
     {
-        auto ride = get_ride(rideIndex);
+        auto ride = get_ride(RideId::FromUnderlying(rideIndex));
         if (ride == nullptr)
         {
             dll_log("GetTrackHeightOffset: ride %i not found.", rideIndex);
@@ -92,15 +92,15 @@ EXPORT int GetTrackElementRouteSize(uint8_t trackVariant, int32_t typeAndDirecti
 
 
     // (Temporary?) Returns the ride colours for this ride.
-    EXPORT void GetRideTrackColours(uint8_t rideIndex, TrackColour* colours)
+    EXPORT void GetRideTrackColours(uint16_t rideIndex, TrackColour* colours)
     {
-        auto ride = get_ride(rideIndex);
+        auto ride = get_ride(RideId::FromUnderlying(rideIndex));
         if (ride == nullptr)
         {
             dll_log("GetRideTrackColours: ride %i not found.", rideIndex);
             return;
         }
 
-        std::memcpy(colours, ride->track_colour, sizeof(TrackColour) * NUM_COLOUR_SCHEMES);
+        std::memcpy(colours, ride->track_colour, sizeof(TrackColour) * Limits::NumColourSchemes);
     }
 }

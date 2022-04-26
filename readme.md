@@ -28,7 +28,7 @@ To get it running inside of Unity, you need the following prerequisites:
 1. Follow the steps in [compiling and running](#32-compiling-and-running) chapter for OpenRCT2. 
     - Make sure to set the target platform to x64 if you have a 64-bit OS! (As explained in the paragraph after step 4 in the linked chapter.)    
     - It is not necessary to run OpenRCT2.
-2. Open openrct2.sln in Visual Studio 2019.
+2. Open openrct2.sln in Visual Studio 2022.
 3. Find the `openrct2-dll` project in the Solution Explorer and build it. (If it doesn't build, you messed something up in the previous steps.)
 4. Start the Unity Editor and navigate to wherever you cloned the repository.
 5. Open the project in this directory: [`/src/openrct2-unity/`](https://github.com/Basssiiie/OpenRCT2-Unity/tree/develop/src/openrct2-unity)

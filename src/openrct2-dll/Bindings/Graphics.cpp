@@ -2,6 +2,7 @@
 #include <openrct2/world/SmallScenery.h>
 
 #include "OpenRCT2-DLL.h"
+#include <openrct2/drawing/Drawing.h>
 
 
 extern "C"
@@ -79,7 +80,7 @@ extern "C"
         dpi.width = width;
         dpi.height = height;
         dpi.pitch = 0;
-        dpi.zoom_level = 0;
+        dpi.zoom_level = ZoomLevel(0);
 
         gfx_draw_sprite_software(&dpi, ImageId::FromUInt32(imageIndex), { 0, 0 });
 

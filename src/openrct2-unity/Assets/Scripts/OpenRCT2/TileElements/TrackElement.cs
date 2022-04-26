@@ -62,7 +62,7 @@ namespace Lib
         /// <summary>
         /// Returns the track type index of this track element.
         /// </summary>
-        public short RideIndex => (short)((element.slot0x9 << 8) + element.slot0x8);
+        public ushort RideIndex => (ushort)((element.slot0x9 << 8) + element.slot0x8);
 
 
         /* 0x1 = TrackType

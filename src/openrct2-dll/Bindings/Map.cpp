@@ -9,7 +9,7 @@ extern "C"
     // Gets the amount of tiles on a single edge of the map.
     EXPORT int GetMapSize()
     {
-        return gMapSize;
+        return gMapSize.x; // TODO: make it work with a different y as well.
     }
 
 

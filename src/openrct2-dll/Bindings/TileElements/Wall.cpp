@@ -11,7 +11,7 @@ extern "C"
     EXPORT uint32_t GetWallImageIndex(const TileElement* tileElement, uint8_t direction)
     {
         const WallElement* wallElement = tileElement->AsWall();
-        const rct_scenery_entry* sceneryEntry = wallElement->GetEntry();
+        const WallSceneryEntry* sceneryEntry = wallElement->GetEntry();
 
         if (sceneryEntry == nullptr)
         {
@@ -24,14 +24,14 @@ extern "C"
         uint32_t imageColourFlags = SPRITE_ID_PALETTE_COLOUR_1(primaryColour);
         //uint32_t dword_141F718 = imageColourFlags + 0x23800006;
 
-        if (sceneryEntry->wall.flags & WALL_SCENERY_HAS_SECONDARY_COLOUR)
+        if (sceneryEntry->flags & WALL_SCENERY_HAS_SECONDARY_COLOUR)
         {
             uint8_t secondaryColour = wallElement->GetSecondaryColour();
             imageColourFlags |= secondaryColour << 24 | IMAGE_TYPE_REMAP_2_PLUS;
         }
 
         uint32_t tertiaryColour = 0;
-        if (sceneryEntry->wall.flags & WALL_SCENERY_HAS_TERNARY_COLOUR)
+        if (sceneryEntry->flags & WALL_SCENERY_HAS_TERTIARY_COLOUR)
         {
             tertiaryColour = wallElement->GetTertiaryColour();
             imageColourFlags &= 0x0DFFFFFFF;
@@ -56,16 +56,16 @@ extern "C"
 
         uint32_t imageId = sceneryEntry->image + imageOffset;
 
-        if (sceneryEntry->wall.flags & WALL_SCENERY_HAS_GLASS)
+        if (sceneryEntry->flags & WALL_SCENERY_HAS_GLASS)
         {
-            if (sceneryEntry->wall.flags & WALL_SCENERY_HAS_PRIMARY_COLOUR)
+            if (sceneryEntry->flags & WALL_SCENERY_HAS_PRIMARY_COLOUR)
             {
                 imageId |= imageColourFlags;
             }
         }
         else
         {
-            if (sceneryEntry->wall.flags & WALL_SCENERY_HAS_PRIMARY_COLOUR)
+            if (sceneryEntry->flags & WALL_SCENERY_HAS_PRIMARY_COLOUR)
             {
                 imageId |= imageColourFlags;
             }

@@ -1,5 +1,7 @@
-#include <openrct2/world/EntityList.h>
-#include <openrct2/world/Sprite.h>
+#include <openrct2/entity/EntityList.h>
+#include <openrct2/entity/Guest.h>
+#include <openrct2/entity/Peep.h>
+#include <openrct2/entity/Staff.h>
 
 #include "OpenRCT2-DLL.h"
 
@@ -29,7 +31,7 @@ extern "C"
         PeepActionSpriteType spriteType = peep->ActionSpriteType;
         uint8_t imageOffset = peep->ActionSpriteImageOffset;
 
-        if (peep->Action == PeepActionType::None1)
+        if (peep->Action == PeepActionType::Idle)
         {
             spriteType = peep->NextActionSpriteType;
             imageOffset = 0;
@@ -42,28 +44,41 @@ extern "C"
     }
 
 
+    void SetPeepInfo(PeepEntity* entity, Peep* peep)
+    {
+        entity->idx = peep->sprite_index.ToUnderlying();
+        entity->x = peep->x;
+        entity->y = peep->y;
+        entity->z = peep->z;
+        entity->direction = peep->sprite_direction;
+        entity->imageId = GetCurrentImageId(peep);
+
+        // entity->tshirt_colour = peep->TshirtColour;
+        // entity->trousers_colour = peep->TrousersColour;
+    }
+
+
     // Loads all the peeps into the specified buffer, returns the total amount of peeps loaded.
     EXPORT int32_t GetAllPeeps(PeepEntity* peeps, int32_t arraySize)
     {
         int32_t peepCount = 0;
 
-        for (Peep* peep : EntityList<Peep>(EntityListId::Peep))
+        for (Guest* guest : EntityList<Guest>())
         {
-            PeepEntity* data = &peeps[peepCount];
-            data->idx = peep->sprite_index;
-            data->x = peep->x;
-            data->y = peep->y;
-            data->z = peep->z;
-            data->direction = peep->sprite_direction;
-            data->imageId = GetCurrentImageId(peep);
-
-            //data->tshirt_colour = peep->TshirtColour;
-            //data->trousers_colour = peep->TrousersColour;
-
-            peepCount++;
-
             if (peepCount >= arraySize)
                 break;
+
+            SetPeepInfo(&peeps[peepCount], guest);
+            peepCount++;
+        }
+        for (Staff* staff : EntityList<Staff>())
+        {
+            if (peepCount >= arraySize)
+                break;
+
+            SetPeepInfo(&peeps[peepCount], staff);
+            peepCount++;
+
         }
         return peepCount;
     }
@@ -86,21 +101,21 @@ extern "C"
     // or false depending on whether the peep existed or not.
     EXPORT bool GetPeepStats(uint16_t spriteIndex, PeepStats* peepStats)
     {
-        Peep* peep = TryGetEntity<Peep>(spriteIndex);
+        Guest* guest = TryGetEntity<Guest>(EntityId::FromUnderlying(spriteIndex));
 
-        if (peep == nullptr)
+        if (guest == nullptr)
         {
             dll_log("Peep does not exist anymore. ( sprite id: %i )", spriteIndex);
             return false;
         }
 
-        peepStats->energy = peep->Energy;
-        peepStats->happiness = peep->Happiness;
-        peepStats->nausea = peep->Nausea;
-        peepStats->hunger = peep->Hunger;
-        peepStats->thirst = peep->Thirst;
-        peepStats->toilet = peep->Toilet;
-        peepStats->intensity = (uint8_t)peep->Intensity;
+        peepStats->energy = guest->Energy;
+        peepStats->happiness = guest->Happiness;
+        peepStats->nausea = guest->Nausea;
+        peepStats->hunger = guest->Hunger;
+        peepStats->thirst = guest->Thirst;
+        peepStats->toilet = guest->Toilet;
+        peepStats->intensity = (uint8_t)guest->Intensity;
         return true;
     }
 }

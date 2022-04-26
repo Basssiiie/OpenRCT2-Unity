@@ -1,3 +1,4 @@
+#include <openrct2/object/FootpathSurfaceObject.h>
 #include <openrct2/world/TileElement.h>
 
 #include "..\OpenRCT2-DLL.h"
@@ -23,7 +24,7 @@ extern "C"
     EXPORT uint32_t GetPathSurfaceImageIndex(const TileElement* tileElement)
     {
         const PathElement* pathElement = tileElement->AsPath();
-        const PathSurfaceEntry* footpathEntry = pathElement->GetSurfaceEntry();
+        const FootpathSurfaceObject* footpathEntry = pathElement->GetSurfaceEntry();
 
         uint32_t imageId;
         if (tileElement->AsPath()->IsSloped())
@@ -36,7 +37,7 @@ extern "C"
             imageId = byte_98D6E0[edges];
         }
 
-        return (imageId + footpathEntry->image);
+        return (imageId + footpathEntry->BaseImageId);
     }
 
 

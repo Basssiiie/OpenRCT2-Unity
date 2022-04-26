@@ -1,6 +1,5 @@
 #include <openrct2/ride/Vehicle.h>
-#include <openrct2/world/EntityList.h>
-#include <openrct2/world/Sprite.h>
+#include <openrct2/entity/EntityList.h>
 
 #include "OpenRCT2-DLL.h"
 
@@ -28,10 +27,10 @@ extern "C"
     {
         int vehicleCount = 0;
 
-        for (Vehicle* vehicle : EntityList<Vehicle>(EntityListId::Vehicle))
+        for (Vehicle* vehicle : EntityList<Vehicle>())
         {
             VehicleEntity* target = &vehicles[vehicleCount];
-            target->idx = vehicle->sprite_index;
+            target->idx = vehicle->sprite_index.ToUnderlying();
 
             target->x = vehicle->x;
             target->y = vehicle->y;
@@ -39,7 +38,7 @@ extern "C"
 
             target->direction = vehicle->sprite_direction;
             target->bankRotation = vehicle->bank_rotation;
-            target->pitchRotation = vehicle->vehicle_sprite_type;
+            target->pitchRotation = vehicle->Pitch;
 
             target->trackType = vehicle->GetTrackType();
             target->trackDirection = vehicle->GetTrackDirection();
