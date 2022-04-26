@@ -24,7 +24,7 @@ namespace CLEARABLE_ITEMS
     constexpr ClearableItems SCENERY_FOOTPATH = 1 << 2;
 } // namespace CLEARABLE_ITEMS
 
-DEFINE_GAME_ACTION(ClearAction, GameCommand::ClearScenery, GameActions::Result)
+class ClearAction final : public GameActionBase<GameCommand::ClearScenery>
 {
 private:
     MapRange _range;
@@ -34,13 +34,13 @@ public:
     ClearAction() = default;
     ClearAction(MapRange range, ClearableItems itemsToClear);
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr CreateResult() const;
-    GameActions::Result::Ptr QueryExecute(bool executing) const;
+    GameActions::Result CreateResult() const;
+    GameActions::Result QueryExecute(bool executing) const;
     money32 ClearSceneryFromTile(const CoordsXY& tilePos, bool executing) const;
 
     /**

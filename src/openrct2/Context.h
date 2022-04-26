@@ -1,4 +1,4 @@
-﻿/*****************************************************************************
+/*****************************************************************************
  * Copyright (c) 2014-2020 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "common.h"
+#include "core/String.hpp"
 #include "world/Location.hpp"
 
 #include <memory>
@@ -32,6 +33,12 @@ class Intent;
 struct rct_window;
 using rct_windowclass = uint8_t;
 struct NewVersionInfo;
+
+struct TTFFontDescriptor;
+namespace OpenRCT2::Ui
+{
+    struct FileDialogDesc;
+}
 
 struct CursorState
 {
@@ -69,6 +76,8 @@ enum
     CURSOR_RELEASED = CURSOR_UP | CURSOR_CHANGED,
     CURSOR_PRESSED = CURSOR_DOWN | CURSOR_CHANGED,
 };
+
+class NetworkBase;
 
 namespace OpenRCT2
 {
@@ -114,10 +123,10 @@ namespace OpenRCT2
     {
         virtual ~IContext() = default;
 
-        virtual std::shared_ptr<Audio::IAudioContext> GetAudioContext() abstract;
-        virtual std::shared_ptr<Ui::IUiContext> GetUiContext() abstract;
+        [[nodiscard]] virtual std::shared_ptr<Audio::IAudioContext> GetAudioContext() abstract;
+        [[nodiscard]] virtual std::shared_ptr<Ui::IUiContext> GetUiContext() abstract;
         virtual GameState* GetGameState() abstract;
-        virtual std::shared_ptr<IPlatformEnvironment> GetPlatformEnvironment() abstract;
+        [[nodiscard]] virtual std::shared_ptr<IPlatformEnvironment> GetPlatformEnvironment() abstract;
         virtual Localisation::LocalisationService& GetLocalisationService() abstract;
         virtual IObjectManager& GetObjectManager() abstract;
         virtual IObjectRepository& GetObjectRepository() abstract;
@@ -131,15 +140,19 @@ namespace OpenRCT2
         virtual DrawingEngine GetDrawingEngineType() abstract;
         virtual Drawing::IDrawingEngine* GetDrawingEngine() abstract;
         virtual Paint::Painter* GetPainter() abstract;
-
+#ifndef DISABLE_NETWORK
+        virtual NetworkBase& GetNetwork() abstract;
+#endif
         virtual int32_t RunOpenRCT2(int argc, const char** argv) abstract;
 
         virtual bool Initialise() abstract;
         virtual void InitialiseDrawingEngine() abstract;
         virtual void DisposeDrawingEngine() abstract;
-        virtual bool LoadParkFromFile(const std::string& path, bool loadTitleScreenOnFail = false) abstract;
+        virtual bool LoadParkFromFile(
+            const std::string& path, bool loadTitleScreenOnFail = false, bool asScenario = false) abstract;
         virtual bool LoadParkFromStream(
-            IStream* stream, const std::string& path, bool loadTitleScreenFirstOnFail = false) abstract;
+            IStream* stream, const std::string& path, bool loadTitleScreenFirstOnFail = false,
+            bool asScenario = false) abstract;
         virtual void WriteLine(const std::string& s) abstract;
         virtual void WriteErrorLine(const std::string& s) abstract;
         virtual void Finish() abstract;
@@ -156,24 +169,24 @@ namespace OpenRCT2
         virtual float GetTimeScale() const abstract;
     };
 
-    std::unique_ptr<IContext> CreateContext();
-    std::unique_ptr<IContext> CreateContext(
+    [[nodiscard]] std::unique_ptr<IContext> CreateContext();
+    [[nodiscard]] std::unique_ptr<IContext> CreateContext(
         const std::shared_ptr<IPlatformEnvironment>& env, const std::shared_ptr<Audio::IAudioContext>& audioContext,
         const std::shared_ptr<Ui::IUiContext>& uiContext);
-    IContext* GetContext();
+    [[nodiscard]] IContext* GetContext();
 } // namespace OpenRCT2
 
-enum
+namespace
 {
-    // The game update interval in milliseconds, (1000 / 40fps) = 25ms
-    GAME_UPDATE_TIME_MS = 25,
     // The number of logical update / ticks per second.
-    GAME_UPDATE_FPS = 40,
+    constexpr uint32_t GAME_UPDATE_FPS = 40;
     // The maximum amount of updates in case rendering is slower
-    GAME_MAX_UPDATES = 4,
+    constexpr uint32_t GAME_MAX_UPDATES = 4;
+    // The game update interval in milliseconds, (1000 / 40fps) = 25ms
+    constexpr float GAME_UPDATE_TIME_MS = 1.0f / GAME_UPDATE_FPS;
     // The maximum threshold to advance.
-    GAME_UPDATE_MAX_THRESHOLD = GAME_UPDATE_TIME_MS * GAME_MAX_UPDATES,
-};
+    constexpr float GAME_UPDATE_MAX_THRESHOLD = GAME_UPDATE_TIME_MS * GAME_MAX_UPDATES;
+}; // namespace
 
 constexpr float GAME_MIN_TIME_SCALE = 0.1f;
 constexpr float GAME_MAX_TIME_SCALE = 5.0f;
@@ -273,3 +286,5 @@ void context_quit();
 const utf8* context_get_path_legacy(int32_t pathId);
 bool context_load_park_from_file(const utf8* path);
 bool context_load_park_from_stream(void* stream);
+bool ContextOpenCommonFileDialog(utf8* outFilename, OpenRCT2::Ui::FileDialogDesc& desc, size_t outSize);
+u8string ContextOpenCommonFileDialog(OpenRCT2::Ui::FileDialogDesc& desc);

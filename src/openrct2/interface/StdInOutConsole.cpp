@@ -14,7 +14,7 @@
 
 #include "../Context.h"
 #include "../OpenRCT2.h"
-#include "../platform/Platform2.h"
+#include "../platform/Platform.h"
 #include "../scripting/ScriptEngine.h"
 #include "InteractiveConsole.h"
 
@@ -50,11 +50,9 @@ void StdInOutConsole::Start()
                     openrct2_finish();
                     break;
                 }
-                else
-                {
-                    lastPromptQuit = true;
-                    std::puts("(To exit, press ^C again)");
-                }
+
+                lastPromptQuit = true;
+                std::puts("(To exit, press ^C again)");
             }
             else
             {
@@ -134,7 +132,23 @@ void StdInOutConsole::WriteLine(const std::string& s, FormatToken colourFormat)
     {
         if (_isPromptShowing)
         {
-            std::printf("\r%s%s\x1b[0m\x1b[0K\r\n", formatBegin.c_str(), s.c_str());
+            auto* mainString = s.c_str();
+
+            // If string contains \n, we need to replace with \r\n
+            std::string newString;
+            if (s.find('\n') != std::string::npos)
+            {
+                for (auto ch : s)
+                {
+                    if (ch == '\n')
+                        newString += "\r\n";
+                    else
+                        newString += ch;
+                }
+                mainString = newString.c_str();
+            }
+
+            std::printf("\r%s%s\x1b[0m\x1b[0K\r\n", formatBegin.c_str(), mainString);
             std::fflush(stdout);
             linenoise::linenoiseEditRefreshLine();
         }

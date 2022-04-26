@@ -17,12 +17,13 @@
 #include <openrct2/Input.h>
 #include <openrct2/config/Config.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Localisation.h>
+#include <openrct2/platform/Platform.h>
 #include <openrct2/sprites.h>
-#include <openrct2/util/Util.h>
 
-// clang-format off
-enum {
+enum
+{
     WINDOW_THEMES_TAB_SETTINGS,
     WINDOW_THEMES_TAB_MAIN_UI,
     WINDOW_THEMES_TAB_PARK,
@@ -35,37 +36,37 @@ enum {
     WINDOW_THEMES_TAB_COUNT
 };
 
-static void window_themes_mouseup(rct_window *w, rct_widgetindex widgetIndex);
-static void window_themes_resize(rct_window *w);
-static void window_themes_mousedown(rct_window *w, rct_widgetindex widgetIndex, rct_widget* widget);
-static void window_themes_dropdown(rct_window *w, rct_widgetindex widgetIndex, int32_t dropdownIndex);
-static void window_themes_update(rct_window *w);
-static void window_themes_scrollgetsize(rct_window *w, int32_t scrollIndex, int32_t *width, int32_t *height);
-static void window_themes_scrollmousedown(rct_window *w, int32_t scrollIndex, const ScreenCoordsXY& screenCoords);
-static void window_themes_scrollmouseover(rct_window *w, int32_t scrollIndex, const ScreenCoordsXY& screenCoords);
-static void window_themes_textinput(rct_window *w, rct_widgetindex widgetIndex, char *text);
-static void window_themes_invalidate(rct_window *w);
-static void window_themes_paint(rct_window *w, rct_drawpixelinfo *dpi);
-static void window_themes_scrollpaint(rct_window *w, rct_drawpixelinfo *dpi, int32_t scrollIndex);
-static void window_themes_draw_tab_images(rct_drawpixelinfo *dpi, rct_window *w);
+static void WindowThemesMouseup(rct_window* w, rct_widgetindex widgetIndex);
+static void WindowThemesResize(rct_window* w);
+static void WindowThemesMousedown(rct_window* w, rct_widgetindex widgetIndex, rct_widget* widget);
+static void WindowThemesDropdown(rct_window* w, rct_widgetindex widgetIndex, int32_t dropdownIndex);
+static void WindowThemesUpdate(rct_window* w);
+static void WindowThemesScrollgetsize(rct_window* w, int32_t scrollIndex, int32_t* width, int32_t* height);
+static void WindowThemesScrollmousedown(rct_window* w, int32_t scrollIndex, const ScreenCoordsXY& screenCoords);
+static void WindowThemesScrollmouseover(rct_window* w, int32_t scrollIndex, const ScreenCoordsXY& screenCoords);
+static void WindowThemesTextinput(rct_window* w, rct_widgetindex widgetIndex, char* text);
+static void WindowThemesInvalidate(rct_window* w);
+static void WindowThemesPaint(rct_window* w, rct_drawpixelinfo* dpi);
+static void WindowThemesScrollpaint(rct_window* w, rct_drawpixelinfo* dpi, int32_t scrollIndex);
+static void WindowThemesDrawTabImages(rct_drawpixelinfo* dpi, rct_window* w);
 
-static rct_window_event_list window_themes_events([](auto& events)
-{
-    events.mouse_up = &window_themes_mouseup;
-    events.resize = &window_themes_resize;
-    events.mouse_down = &window_themes_mousedown;
-    events.dropdown = &window_themes_dropdown;
-    events.update = &window_themes_update;
-    events.get_scroll_size = &window_themes_scrollgetsize;
-    events.scroll_mousedown = &window_themes_scrollmousedown;
-    events.scroll_mouseover = &window_themes_scrollmouseover;
-    events.text_input = &window_themes_textinput;
-    events.invalidate = &window_themes_invalidate;
-    events.paint = &window_themes_paint;
-    events.scroll_paint = &window_themes_scrollpaint;
+static rct_window_event_list window_themes_events([](auto& events) {
+    events.mouse_up = &WindowThemesMouseup;
+    events.resize = &WindowThemesResize;
+    events.mouse_down = &WindowThemesMousedown;
+    events.dropdown = &WindowThemesDropdown;
+    events.update = &WindowThemesUpdate;
+    events.get_scroll_size = &WindowThemesScrollgetsize;
+    events.scroll_mousedown = &WindowThemesScrollmousedown;
+    events.scroll_mouseover = &WindowThemesScrollmouseover;
+    events.text_input = &WindowThemesTextinput;
+    events.invalidate = &WindowThemesInvalidate;
+    events.paint = &WindowThemesPaint;
+    events.scroll_paint = &WindowThemesScrollpaint;
 });
 
-enum WINDOW_THEMES_WIDGET_IDX {
+enum WindowThemesWidgetIdx
+{
     WIDX_THEMES_BACKGROUND,
     WIDX_THEMES_TITLE,
     WIDX_THEMES_CLOSE,
@@ -98,6 +99,7 @@ static constexpr const rct_string_id WINDOW_TITLE = STR_THEMES_TITLE;
 static constexpr const int32_t WW = 320;
 static constexpr const int32_t WH = 107;
 
+// clang-format off
 static rct_widget window_themes_widgets[] = {
     WINDOW_SHIM(WINDOW_TITLE, WW, WH),
     MakeWidget({  0, 43}, {320,  64}, WindowWidgetType::Resize,       WindowColour::Secondary                                                                                     ), // tab content panel
@@ -123,7 +125,7 @@ static rct_widget window_themes_widgets[] = {
     MakeWidget({ 10, 69}, {290,  12}, WindowWidgetType::Checkbox,     WindowColour::Secondary, STR_THEMES_OPTION_RCT1_PARK_CONTROLS                                               ), // rct1 park lights
     MakeWidget({ 10, 84}, {290,  12}, WindowWidgetType::Checkbox,     WindowColour::Secondary, STR_THEMES_OPTION_RCT1_SCENARIO_SELECTION_FONT                                     ), // rct1 scenario font
     MakeWidget({ 10, 99}, {290,  12}, WindowWidgetType::Checkbox,     WindowColour::Secondary, STR_THEMES_OPTION_RCT1_BOTTOM_TOOLBAR                                              ), // rct1 bottom toolbar
-    { WIDGETS_END },
+    WIDGETS_END,
 };
 
 static int32_t window_themes_tab_animation_loops[] = {
@@ -135,7 +137,7 @@ static int32_t window_themes_tab_animation_loops[] = {
     32,
     8,
     14,
-    38
+    38,
 };
 static int32_t window_themes_tab_animation_divisor[] = {
     4,
@@ -146,7 +148,7 @@ static int32_t window_themes_tab_animation_divisor[] = {
     2,
     2,
     2,
-    2
+    2,
 };
 static int32_t window_themes_tab_sprites[] = {
     SPR_TAB_PAINT_0,
@@ -157,7 +159,7 @@ static int32_t window_themes_tab_sprites[] = {
     SPR_TAB_WRENCH_0,
     SPR_TAB_GEARS_0,
     SPR_TAB_STAFF_OPTIONS_0,
-    SPR_TAB_FINANCES_MARKETING_0
+    SPR_TAB_FINANCES_MARKETING_0,
 };
 
 static rct_windowclass window_themes_tab_1_classes[] = {
@@ -168,7 +170,7 @@ static rct_windowclass window_themes_tab_1_classes[] = {
     WC_TITLE_MENU,
     WC_TITLE_EXIT,
     WC_TITLE_OPTIONS,
-    WC_SCENARIO_SELECT
+    WC_SCENARIO_SELECT,
 };
 
 static rct_windowclass window_themes_tab_2_classes[] = {
@@ -178,7 +180,7 @@ static rct_windowclass window_themes_tab_2_classes[] = {
     WC_RESEARCH,
     WC_MAP,
     WC_VIEWPORT,
-    WC_RECENT_NEWS
+    WC_RECENT_NEWS,
 };
 
 static rct_windowclass window_themes_tab_3_classes[] = {
@@ -192,7 +194,8 @@ static rct_windowclass window_themes_tab_3_classes[] = {
     WC_RIDE_CONSTRUCTION,
     WC_TRACK_DESIGN_PLACE,
     WC_CONSTRUCT_RIDE,
-    WC_TRACK_DESIGN_LIST
+    WC_TRACK_DESIGN_LIST,
+    WC_PATROL_AREA,
 };
 
 static rct_windowclass window_themes_tab_4_classes[] = {
@@ -202,7 +205,7 @@ static rct_windowclass window_themes_tab_4_classes[] = {
     WC_GUEST_LIST,
     WC_STAFF,
     WC_STAFF_LIST,
-    WC_BANNER
+    WC_BANNER,
 };
 
 static rct_windowclass window_themes_tab_5_classes[] = {
@@ -212,19 +215,21 @@ static rct_windowclass window_themes_tab_5_classes[] = {
     WC_EDITOR_OBJECTIVE_OPTIONS,
     WC_MAPGEN,
     WC_MANAGE_TRACK_DESIGN,
-    WC_INSTALL_TRACK
+    WC_INSTALL_TRACK,
 };
 
 static rct_windowclass window_themes_tab_6_classes[] = {
     WC_CHEATS,
     WC_TILE_INSPECTOR,
     WC_VIEW_CLIPPING,
+    WC_TRANSPARENCY,
     WC_THEMES,
     WC_TITLE_EDITOR,
     WC_OPTIONS,
     WC_KEYBOARD_SHORTCUT_LIST,
     WC_CHANGE_KEYBOARD_SHORTCUT,
     WC_LOADSAVE,
+    WC_ABOUT,
     WC_CHANGELOG,
     WC_SERVER_LIST,
     WC_MULTIPLAYER,
@@ -241,8 +246,9 @@ static rct_windowclass window_themes_tab_7_classes[] = {
     WC_LOADSAVE_OVERWRITE_PROMPT,
     WC_NETWORK_STATUS,
 };
+// clang-format on
 
-static rct_windowclass *window_themes_tab_classes[] = {
+static rct_windowclass* window_themes_tab_classes[] = {
     nullptr,
     window_themes_tab_1_classes,
     window_themes_tab_2_classes,
@@ -252,7 +258,6 @@ static rct_windowclass *window_themes_tab_classes[] = {
     window_themes_tab_6_classes,
     window_themes_tab_7_classes,
 };
-// clang-format on
 
 static uint8_t _selected_tab = 0;
 static int16_t _colour_index_1 = -1;
@@ -262,18 +267,18 @@ static constexpr const uint8_t _button_offset_x = 220;
 static constexpr const uint8_t _button_offset_y = 3;
 static constexpr const uint8_t _check_offset_y = 3 + 12 + 2;
 
-static void window_themes_init_vars()
+static void WindowThemesInitVars()
 {
     _selected_tab = WINDOW_THEMES_TAB_SETTINGS;
 }
 
-static rct_windowclass get_window_class_tab_index(int32_t index)
+static rct_windowclass GetWindowClassTabIndex(int32_t index)
 {
     rct_windowclass* classes = window_themes_tab_classes[_selected_tab];
     return classes[index];
 }
 
-static int32_t get_colour_scheme_tab_count()
+static int32_t GetColourSchemeTabCount()
 {
     switch (_selected_tab)
     {
@@ -295,7 +300,7 @@ static int32_t get_colour_scheme_tab_count()
     return 0;
 }
 
-static void window_themes_draw_tab_images(rct_drawpixelinfo* dpi, rct_window* w)
+static void WindowThemesDrawTabImages(rct_drawpixelinfo* dpi, rct_window* w)
 {
     for (int32_t i = 0; i < WINDOW_THEMES_TAB_COUNT; i++)
     {
@@ -310,7 +315,7 @@ static void window_themes_draw_tab_images(rct_drawpixelinfo* dpi, rct_window* w)
     }
 }
 
-rct_window* window_themes_open()
+rct_window* WindowThemesOpen()
 {
     rct_window* window;
 
@@ -321,15 +326,8 @@ rct_window* window_themes_open()
 
     window = WindowCreateAutoPos(320, 107, &window_themes_events, WC_THEMES, WF_10 | WF_RESIZABLE);
     window->widgets = window_themes_widgets;
-    window->enabled_widgets = (1 << WIDX_THEMES_CLOSE) | (1 << WIDX_THEMES_SETTINGS_TAB) | (1 << WIDX_THEMES_MAIN_UI_TAB)
-        | (1 << WIDX_THEMES_PARK_TAB) | (1 << WIDX_THEMES_TOOLS_TAB) | (1 << WIDX_THEMES_RIDE_PEEPS_TAB)
-        | (1 << WIDX_THEMES_EDITORS_TAB) | (1 << WIDX_THEMES_MISC_TAB) | (1 << WIDX_THEMES_PROMPTS_TAB)
-        | (1 << WIDX_THEMES_FEATURES_TAB) | (1 << WIDX_THEMES_COLOURBTN_MASK) | (1 << WIDX_THEMES_PRESETS)
-        | (1 << WIDX_THEMES_PRESETS_DROPDOWN) | (1 << WIDX_THEMES_DUPLICATE_BUTTON) | (1 << WIDX_THEMES_DELETE_BUTTON)
-        | (1 << WIDX_THEMES_RENAME_BUTTON) | (1 << WIDX_THEMES_RCT1_RIDE_LIGHTS) | (1 << WIDX_THEMES_RCT1_PARK_LIGHTS)
-        | (1 << WIDX_THEMES_RCT1_SCENARIO_FONT) | (1 << WIDX_THEMES_RCT1_BOTTOM_TOOLBAR);
 
-    window_themes_init_vars();
+    WindowThemesInitVars();
 
     WindowInitScrollWidgets(window);
     window->list_information_type = 0;
@@ -343,7 +341,7 @@ rct_window* window_themes_open()
     return window;
 }
 
-static void window_themes_mouseup(rct_window* w, rct_widgetindex widgetIndex)
+static void WindowThemesMouseup(rct_window* w, rct_widgetindex widgetIndex)
 {
     size_t activeAvailableThemeIndex;
     const utf8* activeThemeName;
@@ -356,8 +354,8 @@ static void window_themes_mouseup(rct_window* w, rct_widgetindex widgetIndex)
         case WIDX_THEMES_DUPLICATE_BUTTON:;
             activeAvailableThemeIndex = ThemeManagerGetAvailableThemeIndex();
             activeThemeName = ThemeManagerGetAvailableThemeName(activeAvailableThemeIndex);
-            window_text_input_open(
-                w, widgetIndex, STR_TITLE_EDITOR_ACTION_DUPLICATE, STR_THEMES_PROMPT_ENTER_THEME_NAME, STR_STRING,
+            WindowTextInputOpen(
+                w, widgetIndex, STR_TITLE_EDITOR_ACTION_DUPLICATE, STR_THEMES_PROMPT_ENTER_THEME_NAME, {}, STR_STRING,
                 reinterpret_cast<uintptr_t>(activeThemeName), 64);
             break;
         case WIDX_THEMES_DELETE_BUTTON:
@@ -379,15 +377,15 @@ static void window_themes_mouseup(rct_window* w, rct_widgetindex widgetIndex)
             {
                 activeAvailableThemeIndex = ThemeManagerGetAvailableThemeIndex();
                 activeThemeName = ThemeManagerGetAvailableThemeName(activeAvailableThemeIndex);
-                window_text_input_open(
-                    w, widgetIndex, STR_TRACK_MANAGE_RENAME, STR_THEMES_PROMPT_ENTER_THEME_NAME, STR_STRING,
+                WindowTextInputOpen(
+                    w, widgetIndex, STR_TRACK_MANAGE_RENAME, STR_THEMES_PROMPT_ENTER_THEME_NAME, {}, STR_STRING,
                     reinterpret_cast<uintptr_t>(activeThemeName), 64);
             }
             break;
     }
 }
 
-static void window_themes_resize(rct_window* w)
+static void WindowThemesResize(rct_window* w)
 {
     if (_selected_tab == WINDOW_THEMES_TAB_SETTINGS)
     {
@@ -475,7 +473,7 @@ static void window_themes_resize(rct_window* w)
     }
 }
 
-static void window_themes_mousedown(rct_window* w, rct_widgetindex widgetIndex, rct_widget* widget)
+static void WindowThemesMousedown(rct_window* w, rct_widgetindex widgetIndex, rct_widget* widget)
 {
     int16_t newSelectedTab;
     int32_t num_items;
@@ -507,8 +505,8 @@ static void window_themes_mousedown(rct_window* w, rct_widgetindex widgetIndex, 
             widget--;
             for (int32_t i = 0; i < num_items; i++)
             {
-                gDropdownItemsFormat[i] = STR_OPTIONS_DROPDOWN_ITEM;
-                gDropdownItemsArgs[i] = reinterpret_cast<uintptr_t>(ThemeManagerGetAvailableThemeName(i));
+                gDropdownItems[i].Format = STR_OPTIONS_DROPDOWN_ITEM;
+                gDropdownItems[i].Args = reinterpret_cast<uintptr_t>(ThemeManagerGetAvailableThemeName(i));
             }
 
             WindowDropdownShowTextCustomWidth(
@@ -567,14 +565,14 @@ static void window_themes_mousedown(rct_window* w, rct_widgetindex widgetIndex, 
     }
 }
 
-static void window_themes_dropdown(rct_window* w, rct_widgetindex widgetIndex, int32_t dropdownIndex)
+static void WindowThemesDropdown(rct_window* w, rct_widgetindex widgetIndex, int32_t dropdownIndex)
 {
     switch (widgetIndex)
     {
         case WIDX_THEMES_LIST:
             if (dropdownIndex != -1)
             {
-                rct_windowclass wc = get_window_class_tab_index(_colour_index_1);
+                rct_windowclass wc = GetWindowClassTabIndex(_colour_index_1);
                 uint8_t colour = ThemeGetColour(wc, _colour_index_2);
                 colour = (colour & COLOUR_FLAG_TRANSLUCENT) | dropdownIndex;
                 ThemeSetColour(wc, _colour_index_2, colour);
@@ -593,7 +591,7 @@ static void window_themes_dropdown(rct_window* w, rct_widgetindex widgetIndex, i
     }
 }
 
-void window_themes_update(rct_window* w)
+void WindowThemesUpdate(rct_window* w)
 {
     w->frame_no++;
     if (w->frame_no >= window_themes_tab_animation_loops[_selected_tab])
@@ -602,12 +600,12 @@ void window_themes_update(rct_window* w)
     widget_invalidate(w, WIDX_THEMES_SETTINGS_TAB + _selected_tab);
 }
 
-void window_themes_scrollgetsize(rct_window* w, int32_t scrollIndex, int32_t* width, int32_t* height)
+void WindowThemesScrollgetsize(rct_window* w, int32_t scrollIndex, int32_t* width, int32_t* height)
 {
     if (_selected_tab == WINDOW_THEMES_TAB_SETTINGS || _selected_tab == WINDOW_THEMES_TAB_FEATURES)
         return;
 
-    int32_t scrollHeight = get_colour_scheme_tab_count() * _row_height;
+    int32_t scrollHeight = GetColourSchemeTabCount() * _row_height;
     int32_t i = scrollHeight - window_themes_widgets[WIDX_THEMES_LIST].bottom + window_themes_widgets[WIDX_THEMES_LIST].top
         + 21;
     if (i < 0)
@@ -622,15 +620,15 @@ void window_themes_scrollgetsize(rct_window* w, int32_t scrollIndex, int32_t* wi
     *height = scrollHeight;
 }
 
-void window_themes_scrollmousedown(rct_window* w, int32_t scrollIndex, const ScreenCoordsXY& screenCoords)
+void WindowThemesScrollmousedown(rct_window* w, int32_t scrollIndex, const ScreenCoordsXY& screenCoords)
 {
-    if (screenCoords.y / _row_height < get_colour_scheme_tab_count())
+    if (screenCoords.y / _row_height < GetColourSchemeTabCount())
     {
         int32_t y2 = screenCoords.y % _row_height;
         _colour_index_1 = screenCoords.y / _row_height;
         _colour_index_2 = ((screenCoords.x - _button_offset_x) / 12);
 
-        rct_windowclass wc = get_window_class_tab_index(_colour_index_1);
+        rct_windowclass wc = GetWindowClassTabIndex(_colour_index_1);
         int32_t numColours = ThemeDescGetNumColours(wc);
         if (_colour_index_2 < numColours)
         {
@@ -688,11 +686,11 @@ void window_themes_scrollmousedown(rct_window* w, int32_t scrollIndex, const Scr
     }
 }
 
-void window_themes_scrollmouseover(rct_window* w, int32_t scrollIndex, const ScreenCoordsXY& screenCoords)
+void WindowThemesScrollmouseover(rct_window* w, int32_t scrollIndex, const ScreenCoordsXY& screenCoords)
 {
 }
 
-static void window_themes_textinput(rct_window* w, rct_widgetindex widgetIndex, char* text)
+static void WindowThemesTextinput(rct_window* w, rct_widgetindex widgetIndex, char* text)
 {
     if (text == nullptr || text[0] == 0)
         return;
@@ -701,7 +699,7 @@ static void window_themes_textinput(rct_window* w, rct_widgetindex widgetIndex, 
     {
         case WIDX_THEMES_DUPLICATE_BUTTON:
         case WIDX_THEMES_RENAME_BUTTON:
-            if (filename_valid_characters(text))
+            if (Platform::IsFilenameValid(text))
             {
                 if (ThemeGetIndexForName(text) == SIZE_MAX)
                 {
@@ -728,7 +726,7 @@ static void window_themes_textinput(rct_window* w, rct_widgetindex widgetIndex, 
     }
 }
 
-void window_themes_invalidate(rct_window* w)
+void WindowThemesInvalidate(rct_window* w)
 {
     int32_t pressed_widgets = w->pressed_widgets
         & ~((1LL << WIDX_THEMES_SETTINGS_TAB) | (1LL << WIDX_THEMES_MAIN_UI_TAB) | (1LL << WIDX_THEMES_PARK_TAB)
@@ -810,11 +808,11 @@ void window_themes_invalidate(rct_window* w)
     }
 }
 
-void window_themes_paint(rct_window* w, rct_drawpixelinfo* dpi)
+void WindowThemesPaint(rct_window* w, rct_drawpixelinfo* dpi)
 {
     // Widgets
     WindowDrawWidgets(w, dpi);
-    window_themes_draw_tab_images(dpi, w);
+    WindowThemesDrawTabImages(dpi, w);
 
     if (_selected_tab == WINDOW_THEMES_TAB_SETTINGS)
     {
@@ -841,7 +839,7 @@ void window_themes_paint(rct_window* w, rct_drawpixelinfo* dpi)
  *
  *  rct2: 0x006BD785
  */
-void window_themes_scrollpaint(rct_window* w, rct_drawpixelinfo* dpi, int32_t scrollIndex)
+void WindowThemesScrollpaint(rct_window* w, rct_drawpixelinfo* dpi, int32_t scrollIndex)
 {
     ScreenCoordsXY screenCoords;
 
@@ -853,7 +851,7 @@ void window_themes_scrollpaint(rct_window* w, rct_drawpixelinfo* dpi, int32_t sc
         // ColourMapA[w->colours[1]].mid_light);
         gfx_clear(dpi, ColourMapA[w->colours[1]].mid_light);
     screenCoords.y = 0;
-    for (int32_t i = 0; i < get_colour_scheme_tab_count(); i++)
+    for (int32_t i = 0; i < GetColourSchemeTabCount(); i++)
     {
         if (screenCoords.y > dpi->y + dpi->height)
         {
@@ -861,38 +859,33 @@ void window_themes_scrollpaint(rct_window* w, rct_drawpixelinfo* dpi, int32_t sc
         }
         if (screenCoords.y + _row_height >= dpi->y)
         {
-            if (i + 1 < get_colour_scheme_tab_count())
+            if (i + 1 < GetColourSchemeTabCount())
             {
                 int32_t colour = w->colours[1];
+
+                auto leftTop = ScreenCoordsXY{ 0, screenCoords.y + _row_height - 2 };
+                auto rightBottom = ScreenCoordsXY{ window_themes_widgets[WIDX_THEMES_LIST].right,
+                                                   screenCoords.y + _row_height - 2 };
+                auto yPixelOffset = ScreenCoordsXY{ 0, 1 };
+
                 if (colour & COLOUR_FLAG_TRANSLUCENT)
                 {
                     translucent_window_palette windowPalette = TranslucentWindowPalettes[BASE_COLOUR(colour)];
 
-                    gfx_filter_rect(
-                        dpi, 0, screenCoords.y + _row_height - 2, window_themes_widgets[WIDX_THEMES_LIST].right,
-                        screenCoords.y + _row_height - 2, windowPalette.highlight);
-                    gfx_filter_rect(
-                        dpi, 0, screenCoords.y + _row_height - 1, window_themes_widgets[WIDX_THEMES_LIST].right,
-                        screenCoords.y + _row_height - 1, windowPalette.shadow);
+                    gfx_filter_rect(dpi, { leftTop, rightBottom }, windowPalette.highlight);
+                    gfx_filter_rect(dpi, { leftTop + yPixelOffset, rightBottom + yPixelOffset }, windowPalette.shadow);
                 }
                 else
                 {
                     colour = ColourMapA[w->colours[1]].mid_dark;
-                    gfx_fill_rect(
-                        dpi,
-                        { { 0, screenCoords.y + _row_height - 2 },
-                          { window_themes_widgets[WIDX_THEMES_LIST].right, screenCoords.y + _row_height - 2 } },
-                        colour);
+                    gfx_fill_rect(dpi, { leftTop, rightBottom }, colour);
+
                     colour = ColourMapA[w->colours[1]].lightest;
-                    gfx_fill_rect(
-                        dpi,
-                        { { 0, screenCoords.y + _row_height - 1 },
-                          { window_themes_widgets[WIDX_THEMES_LIST].right, screenCoords.y + _row_height - 1 } },
-                        colour);
+                    gfx_fill_rect(dpi, { leftTop + yPixelOffset, rightBottom + yPixelOffset }, colour);
                 }
             }
 
-            rct_windowclass wc = get_window_class_tab_index(i);
+            rct_windowclass wc = GetWindowClassTabIndex(i);
             int32_t numColours = ThemeDescGetNumColours(wc);
             for (uint8_t j = 0; j < numColours; j++)
             {

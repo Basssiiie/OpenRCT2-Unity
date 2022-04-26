@@ -9,27 +9,15 @@
 
 #pragma once
 
-#include "../peep/Staff.h"
+#include "../entity/Staff.h"
 #include "GameAction.h"
 
-/* rct2: 0x009929FC */
-static constexpr const PeepSpriteType spriteTypes[] = {
-    PeepSpriteType::Handyman,
-    PeepSpriteType::Mechanic,
-    PeepSpriteType::Security,
-    PeepSpriteType::EntertainerPanda,
-};
-
-class StaffHireNewActionResult final : public GameActions::Result
+struct StaffHireNewActionResult
 {
-public:
-    StaffHireNewActionResult();
-    StaffHireNewActionResult(GameActions::Status error, rct_string_id message);
-
-    uint32_t peepSriteIndex = SPRITE_INDEX_NULL;
+    EntityId StaffEntityId = EntityId::GetNull();
 };
 
-DEFINE_GAME_ACTION(StaffHireNewAction, GameCommand::HireNewStaffMember, StaffHireNewActionResult)
+class StaffHireNewAction final : public GameActionBase<GameCommand::HireNewStaffMember>
 {
 private:
     bool _autoPosition{};
@@ -41,15 +29,15 @@ public:
     StaffHireNewAction() = default;
     StaffHireNewAction(bool autoPosition, StaffType staffType, EntertainerCostume entertainerType, uint32_t staffOrders);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr QueryExecute(bool execute) const;
-    void AutoPositionNewStaff(Peep * newPeep) const;
+    GameActions::Result QueryExecute(bool execute) const;
+    void AutoPositionNewStaff(Peep* newPeep) const;
 };

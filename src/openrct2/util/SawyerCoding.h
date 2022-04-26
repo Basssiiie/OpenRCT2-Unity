@@ -7,8 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef _SAWYERCODING_H_
-#define _SAWYERCODING_H_
+#pragma once
 
 #include "../common.h"
 
@@ -42,8 +41,6 @@ enum
     FILE_TYPE_SC4 = (2 << 2)
 };
 
-extern bool gUseRLE;
-
 uint32_t sawyercoding_calculate_checksum(const uint8_t* buffer, size_t length);
 size_t sawyercoding_write_chunk_buffer(uint8_t* dst_file, const uint8_t* src_buffer, sawyercoding_chunk_header chunkHeader);
 size_t sawyercoding_decode_sv4(const uint8_t* src, uint8_t* dst, size_t length, size_t bufferLength);
@@ -55,5 +52,3 @@ int32_t sawyercoding_validate_track_checksum(const uint8_t* src, size_t length);
 
 int32_t sawyercoding_detect_file_type(const uint8_t* src, size_t length);
 int32_t sawyercoding_detect_rct1_version(int32_t gameVersion);
-
-#endif

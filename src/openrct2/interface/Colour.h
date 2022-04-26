@@ -7,12 +7,13 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef _COLOUR_H_
-#define _COLOUR_H_
+#pragma once
 
 #include "../common.h"
 
 #include <string_view>
+
+using PaletteIndex = uint8_t;
 
 /**
  * Colour IDs as used by the colour dropdown, NOT palette indices.
@@ -52,7 +53,9 @@ enum : colour_t
     COLOUR_BRIGHT_PINK,
     COLOUR_LIGHT_PINK,
 
-    COLOUR_COUNT
+    COLOUR_COUNT,
+
+    COLOUR_NULL = 255,
 };
 
 /**
@@ -64,20 +67,21 @@ enum
     COLOUR_LIGHT_WATER = 10
 };
 
-enum : uint8_t
+enum : PaletteIndex
 {
     PALETTE_INDEX_0 = 0,     // Transparent
-    PALETTE_INDEX_10 = 10,   // Black (0-dark), Dark gray (0)
+    PALETTE_INDEX_10 = 10,   // Black (0-dark), Dark grey (0)
     PALETTE_INDEX_11 = 11,   // Black (middark)
-    PALETTE_INDEX_12 = 12,   // Black (midlight), Dark gray (1-darkest)
-    PALETTE_INDEX_14 = 14,   // Black (lighter), Dark gray (dark)
+    PALETTE_INDEX_12 = 12,   // Black (midlight), Dark grey (1-darkest)
+    PALETTE_INDEX_14 = 14,   // Black (lighter), Dark grey (dark)
     PALETTE_INDEX_13 = 13,   //
     PALETTE_INDEX_16 = 16,   //
-    PALETTE_INDEX_17 = 17,   // Black (11), Dark gray (light), White (dark)
-    PALETTE_INDEX_20 = 20,   // Dark gray (10), White (light)
-    PALETTE_INDEX_21 = 21,   // Dark gray (11), White (lighter-11)
+    PALETTE_INDEX_17 = 17,   // Black (11), Dark grey (light), White (dark)
+    PALETTE_INDEX_20 = 20,   // Dark grey (10), White (light)
+    PALETTE_INDEX_21 = 21,   // Dark grey (11), White (lighter-11)
     PALETTE_INDEX_40 = 40,   //
     PALETTE_INDEX_42 = 42,   // Light Brown (lighter), Saturated brown (11)
+    PALETTE_INDEX_44 = 44,   // Construction marker
     PALETTE_INDEX_46 = 46,   // Tertiary remap 0  / Yellow (darkest)
     PALETTE_INDEX_47 = 47,   // Tertiary remap 1  / Yellow
     PALETTE_INDEX_48 = 48,   // Tertiary remap 2  / Yellow
@@ -216,6 +220,4 @@ namespace Colour
 
 #ifndef NO_TTF
 uint8_t blendColours(const uint8_t paletteIndex1, const uint8_t paletteIndex2);
-#endif
-
 #endif

@@ -12,19 +12,14 @@
 #include "../world/TileElement.h"
 #include "GameAction.h"
 
-class SmallSceneryPlaceActionResult final : public GameActions::Result
+struct SmallSceneryPlaceActionResult
 {
-public:
-    SmallSceneryPlaceActionResult();
-    SmallSceneryPlaceActionResult(GameActions::Status error);
-    SmallSceneryPlaceActionResult(GameActions::Status error, rct_string_id message);
-    SmallSceneryPlaceActionResult(GameActions::Status error, rct_string_id message, uint8_t* args);
-
-    uint8_t GroundFlags{ 0 };
-    TileElement* tileElement = nullptr;
+    uint8_t GroundFlags{};
+    int32_t BaseHeight{};
+    uint8_t SceneryQuadrant{};
 };
 
-DEFINE_GAME_ACTION(SmallSceneryPlaceAction, GameCommand::PlaceScenery, SmallSceneryPlaceActionResult)
+class SmallSceneryPlaceAction final : public GameActionBase<GameCommand::PlaceScenery>
 {
 private:
     CoordsXYZD _loc;
@@ -32,18 +27,20 @@ private:
     ObjectEntryIndex _sceneryType{};
     uint8_t _primaryColour{};
     uint8_t _secondaryColour{};
+    uint8_t _tertiaryColour{};
 
 public:
     SmallSceneryPlaceAction() = default;
     SmallSceneryPlaceAction(
-        const CoordsXYZD& loc, uint8_t quadrant, ObjectEntryIndex sceneryType, uint8_t primaryColour, uint8_t secondaryColour);
+        const CoordsXYZD& loc, uint8_t quadrant, ObjectEntryIndex sceneryType, uint8_t primaryColour, uint8_t secondaryColour,
+        uint8_t tertiaryColour);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint32_t GetCooldownTime() const override;
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

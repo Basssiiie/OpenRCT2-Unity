@@ -147,8 +147,8 @@ STR_0559    :
 STR_0560    :
 STR_0561    :
 STR_0562    :有动力的车辆将会穿梭于有著恐怖景物及特效的多层轨道中
-STR_0563    :乘客坐在舒适并只有简单安全装备的列车上享受巨大而顺滑的下滑, 扭曲的轨道和充足的'空中'时间
-STR_0564    :一款在木製轨道运行的过山车, 这个过山车会嘈吵地飞驰过高低不平的轨道， 给乘客充足的'空中时间'之馀，同时会给人一种'失去控制'的乘坐体验
+STR_0563    :乘客坐在舒适并只有简单安全装备的列车上享受巨大而顺滑的下滑, 扭曲的轨道和充足的‘空中’时间
+STR_0564    :一款在木製轨道运行的过山车, 这个过山车会嘈吵地飞驰过高低不平的轨道， 给乘客充足的‘空中时间’之馀，同时会给人一种‘失去控制’的乘坐体验
 STR_0565    :一款只能使用普通下坡及弯道的简单木製过山车, 车辆只靠产生轨道阻力的车轮及重力滑翔于轨道上
 STR_0566    :每辆单独的过山车都会游走在附有急弯及急短下坡的Z型轨道上
 STR_0567    :乘客坐在悬挂在轨道的不同位置下, 衝下陡下坡及各种倒转轨道时, 会被翻腾得四脚朝天
@@ -241,10 +241,10 @@ STR_0831    :缩小
 STR_0832    :顺时针旋转90°
 STR_0833    :暂停游戏
 STR_0834    :磁盘和游戏选项
-STR_0839    :{UINT16} x {UINT16}
-STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} x {UINT16}
+STR_0839    :{UINT16} × {UINT16}
+STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} × {UINT16}
 # The following six strings were used for display resolutions, but have been replaced.
-STR_0847    :关于'OpenRCT2'
+STR_0847    :关于‘OpenRCT2’
 STR_0850    :{WINDOW_COLOUR_2}版权 © 2002 Chris Sawyer, 版权所有
 STR_0851    :{WINDOW_COLOUR_2}设计及程序 by Chris Sawyer
 STR_0852    :{WINDOW_COLOUR_2}美术 by Simon Foster
@@ -278,7 +278,7 @@ STR_0887    :退出场景编辑器
 STR_0888    :退出轨道设计工具
 STR_0889    :退出轨道设计管理工具
 STR_0891    :截图
-STR_0892    :截图 '{STRINGID}' 已保存
+STR_0892    :截图 ‘{STRINGID}’ 已保存
 STR_0893    :截图失败!
 STR_0894    :Landscape data area full !
 STR_0895    :无法在一半地上一半地下的地形中建造
@@ -315,8 +315,8 @@ STR_0925    :向上螺旋
 STR_0926    :不能移除此物…
 STR_0927    :不能在此建造…
 STR_0928    :提升坡将会把车厢拉上坡
-STR_0929    :'S'型弯道 (向左)
-STR_0930    :'S'型弯道 (向右)
+STR_0929    :‘S’型弯道 (向左)
+STR_0930    :‘S’型弯道 (向右)
 STR_0931    :垂直回环 (向左)
 STR_0932    :垂直回环 (向右)
 STR_0933    :请先将地面抬升或降低
@@ -744,7 +744,7 @@ STR_1354    :{WINDOW_COLOUR_2}最高下落高度: {BLACK}{LENGTH}
 STR_1355    :{WINDOW_COLOUR_2}下落次数: {BLACK}{COMMA16}
 STR_1356    :{WINDOW_COLOUR_2}反转次数: {BLACK}{COMMA16}
 STR_1357    :{WINDOW_COLOUR_2}杆洞次数: {BLACK}{COMMA16}
-STR_1358    :{WINDOW_COLOUR_2}总 '悬空' 时间: {BLACK}{COMMA2DP32}secs
+STR_1358    :{WINDOW_COLOUR_2}总 ‘悬空’ 时间: {BLACK}{COMMA2DP32}secs
 STR_1359    :{WINDOW_COLOUR_2}等待时间: {BLACK}{COMMA16} minute
 STR_1360    :{WINDOW_COLOUR_2}等待时间: {BLACK}{COMMA16} minutes
 STR_1361    :不能改变速度…
@@ -800,14 +800,14 @@ STR_1410    :垂直高塔
 STR_1411    :{STRINGID}挡道
 STR_1412    :{WINDOW_COLOUR_3}无该类型游乐设施数据记录
 STR_1413    :{WINDOW_COLOUR_3}数据将于下一个 {STRINGID} 离开 {STRINGID}后记录
-STR_1414    :{SMALLFONT}{BLACK}{DURATION}
+STR_1414    :{BLACK}{DURATION}
 STR_1415    :{WINDOW_COLOUR_2}速度
 STR_1416    :{WINDOW_COLOUR_2}高度
 STR_1417    :{WINDOW_COLOUR_2}垂直重力
 STR_1418    :{WINDOW_COLOUR_2}水平重力
-STR_1419    :{SMALLFONT}{BLACK}{VELOCITY}
-STR_1420    :{SMALLFONT}{BLACK}{LENGTH}
-STR_1421    :{SMALLFONT}{BLACK}{COMMA16}g
+STR_1419    :{BLACK}{VELOCITY}
+STR_1420    :{BLACK}{LENGTH}
+STR_1421    :{BLACK}{COMMA16}g
 STR_1422    :来自 {POP16}{STRINGID}的记录数据
 STR_1423    :队列线路
 STR_1424    :道路
@@ -866,131 +866,131 @@ STR_1476    :{WINDOW_COLOUR_2}刺激度: {BLACK}暂无
 STR_1477    :{WINDOW_COLOUR_2}刺激度: {OUTLINE}{RED}{COMMA2DP32}  ({STRINGID})
 STR_1478    :{WINDOW_COLOUR_2}恶心度: {BLACK}{COMMA2DP32}  ({STRINGID})
 STR_1479    :{WINDOW_COLOUR_2}恶心度: {BLACK}暂无
-STR_1480    :{SMALLFONT}“我负担不起{STRINGID}”
-STR_1481    :{SMALLFONT}“这个月又要吃土了”
-STR_1482    :{SMALLFONT}“我感到不舒服”
-STR_1483    :{SMALLFONT}“香菇蓝瘦”
-STR_1484    :{SMALLFONT}“我想试试比{STRINGID}更刺激的”
-STR_1485    :{SMALLFONT}“对我来说，{STRINGID}看起来太过刺激了”
-STR_1486    :{SMALLFONT}“等等,我还没试过{STRINGID}”
-STR_1487    :{SMALLFONT}“看看{STRINGID}就让我感到不适”
-STR_1488    :{SMALLFONT}“{STRINGID}太贵了吧，这个乐园真坑爹”
-STR_1489    :{SMALLFONT}“我想回家”
-STR_1490    :{SMALLFONT}“{STRINGID}真是超值””
-STR_1491    :{SMALLFONT}“我已经有{STRINGID}了”
-STR_1492    :{SMALLFONT}“我负担不起{STRINGID}”
-STR_1493    :{SMALLFONT}“我不饿”
-STR_1494    :{SMALLFONT}“我不渴”
-STR_1495    :{SMALLFONT}“救命! 我溺水了!”
-STR_1496    :{SMALLFONT}“我迷路了!”
-STR_1497    :{SMALLFONT}“{STRINGID}棒棒哒”
-STR_1498    :{SMALLFONT}“我等候在这{STRINGID}老久了，啥时才轮到我啊 ”
-STR_1499    :{SMALLFONT}“我累了”
-STR_1500    :{SMALLFONT}“我饿了”
-STR_1501    :{SMALLFONT}“我渴了”
-STR_1502    :{SMALLFONT}“我需要去厕所”
-STR_1503    :{SMALLFONT}“我找不到 {STRINGID}”
-STR_1504    :{SMALLFONT}“我才没有那么多钱去 {STRINGID}”
-STR_1505    :{SMALLFONT}“我不想去 {STRINGID} 因为那里在下雨”
-STR_1506    :{SMALLFONT}“这里是垃圾场吗？”
-STR_1507    :{SMALLFONT}“哇塞！这个乐园的出口在哪？”
-STR_1508    :{SMALLFONT}“我想下车 {STRINGID}”
-STR_1509    :{SMALLFONT}“我想离开 {STRINGID}”
-STR_1510    :{SMALLFONT}“我不想去{STRINGID}，感觉它随时都会出问题”
-STR_1511    :{SMALLFONT}“这路有点恶心啊！”
-STR_1512    :{SMALLFONT}“这里怎么这么挤啊！”
-STR_1513    :{SMALLFONT}“这里的损坏是非常糟糕的”
-STR_1514    :{SMALLFONT}“壮丽的景色！”
-STR_1515    :{SMALLFONT}“这个公园真的很干净”
-STR_1516    :{SMALLFONT}“跳跃喷泉太好了”
-STR_1517    :{SMALLFONT}“这里的音乐很好”
-STR_1518    :{SMALLFONT}“这个{STRINGID}的气球好便宜”
-STR_1519    :{SMALLFONT}“这个{STRINGID}的毛绒公仔好便宜”
-STR_1520    :{SMALLFONT}“这个{STRINGID}的乐园地图好便宜”
-STR_1521    :{SMALLFONT}“这个{STRINGID}的即时照片好便宜”
-STR_1522    :{SMALLFONT}“这个{STRINGID}的伞好便宜”
-STR_1523    :{SMALLFONT}“这个{STRINGID}的饮料好便宜”
-STR_1524    :{SMALLFONT}“这个{STRINGID}的汉堡好便宜”
-STR_1525    :{SMALLFONT}“这个{STRINGID}的薯条好便宜”
-STR_1526    :{SMALLFONT}“这个{STRINGID}的冰激好是便宜”
-STR_1527    :{SMALLFONT}“这个{STRINGID}的棉花糖好便宜”
+STR_1480    :“我负担不起{STRINGID}”
+STR_1481    :“这个月又要吃土了”
+STR_1482    :“我感到不舒服”
+STR_1483    :“香菇蓝瘦”
+STR_1484    :“我想试试比{STRINGID}更刺激的”
+STR_1485    :“对我来说，{STRINGID}看起来太过刺激了”
+STR_1486    :“等等,我还没试过{STRINGID}”
+STR_1487    :“看看{STRINGID}就让我感到不适”
+STR_1488    :“{STRINGID}太贵了吧，这个乐园真坑爹”
+STR_1489    :“我想回家”
+STR_1490    :“{STRINGID}真是超值””
+STR_1491    :“我已经有{STRINGID}了”
+STR_1492    :“我负担不起{STRINGID}”
+STR_1493    :“我不饿”
+STR_1494    :“我不渴”
+STR_1495    :“救命! 我溺水了!”
+STR_1496    :“我迷路了!”
+STR_1497    :“{STRINGID}棒棒哒”
+STR_1498    :“我等候在这{STRINGID}老久了，啥时才轮到我啊 ”
+STR_1499    :“我累了”
+STR_1500    :“我饿了”
+STR_1501    :“我渴了”
+STR_1502    :“我需要去厕所”
+STR_1503    :“我找不到 {STRINGID}”
+STR_1504    :“我才没有那么多钱去 {STRINGID}”
+STR_1505    :“我不想去 {STRINGID} 因为那里在下雨”
+STR_1506    :“这里是垃圾场吗？”
+STR_1507    :“哇塞！这个乐园的出口在哪？”
+STR_1508    :“我想下车 {STRINGID}”
+STR_1509    :“我想离开 {STRINGID}”
+STR_1510    :“我不想去{STRINGID}，感觉它随时都会出问题”
+STR_1511    :“这路有点恶心啊！”
+STR_1512    :“这里怎么这么挤啊！”
+STR_1513    :“这里的损坏是非常糟糕的”
+STR_1514    :“壮丽的景色！”
+STR_1515    :“这个公园真的很干净”
+STR_1516    :“跳跃喷泉太好了”
+STR_1517    :“这里的音乐很好”
+STR_1518    :“这个{STRINGID}的气球好便宜”
+STR_1519    :“这个{STRINGID}的毛绒公仔好便宜”
+STR_1520    :“这个{STRINGID}的乐园地图好便宜”
+STR_1521    :“这个{STRINGID}的即时照片好便宜”
+STR_1522    :“这个{STRINGID}的伞好便宜”
+STR_1523    :“这个{STRINGID}的饮料好便宜”
+STR_1524    :“这个{STRINGID}的汉堡好便宜”
+STR_1525    :“这个{STRINGID}的薯条好便宜”
+STR_1526    :“这个{STRINGID}的冰激好是便宜”
+STR_1527    :“这个{STRINGID}的棉花糖好便宜”
 STR_1528    :
 STR_1529    :
 STR_1530    :
-STR_1531    :{SMALLFONT}“这个{STRINGID}的披萨好便宜”
+STR_1531    :“这个{STRINGID}的披萨好便宜”
 STR_1532    :
-STR_1533    :{SMALLFONT}“这个{STRINGID}的爆米花好便宜”
-STR_1534    :{SMALLFONT}“这个{STRINGID}的热狗好便宜”
-STR_1535    :{SMALLFONT}“这个{STRINGID}的触手好便宜”
-STR_1536    :{SMALLFONT}“这个{STRINGID}的帽子好便宜”
-STR_1537    :{SMALLFONT}“这个{STRINGID}的太妃糖苹果好便宜”
-STR_1538    :{SMALLFONT}“这个{STRINGID}的T恤好便宜”
-STR_1539    :{SMALLFONT}“这个{STRINGID}的甜甜圈好便宜”
-STR_1540    :{SMALLFONT}“这个{STRINGID}的咖啡好便宜”
+STR_1533    :“这个{STRINGID}的爆米花好便宜”
+STR_1534    :“这个{STRINGID}的热狗好便宜”
+STR_1535    :“这个{STRINGID}的触手好便宜”
+STR_1536    :“这个{STRINGID}的帽子好便宜”
+STR_1537    :“这个{STRINGID}的太妃糖苹果好便宜”
+STR_1538    :“这个{STRINGID}的T恤好便宜”
+STR_1539    :“这个{STRINGID}的甜甜圈好便宜”
+STR_1540    :“这个{STRINGID}的咖啡好便宜”
 STR_1541    :
-STR_1542    :{SMALLFONT}“这个{STRINGID}的炸鸡好便宜”
-STR_1543    :{SMALLFONT}“这个{STRINGID}的柠檬水好便宜”
+STR_1542    :“这个{STRINGID}的炸鸡好便宜”
+STR_1543    :“这个{STRINGID}的柠檬水好便宜”
 STR_1544    :
 STR_1545    :
 STR_1546    :
 STR_1547    :
 STR_1548    :
 STR_1549    :
-STR_1550    :{SMALLFONT}“哇!”
-STR_1551    :{SMALLFONT}“我有种奇怪的感觉, 像是有人在监视我”
-STR_1552    :{SMALLFONT}“{STRINGID}的气球里充的是仙气吧，怎么这么贵”
-STR_1553    :{SMALLFONT}“我相信{STRINGID}的毛绒公仔里面塞的不是棉花，是钱”
-STR_1554    :{SMALLFONT}“{STRINGID}的游乐园地图是都精确，居然卖的这么贵”
-STR_1555    :{SMALLFONT}“都什么年代了，{STRINGID}的即时照片还这么贵”
-STR_1556    :{SMALLFONT}“我宁可淋雨，也不会买{STRINGID}的天价雨伞”
-STR_1557    :{SMALLFONT}“{STRINGID}的饮料，可真是滴水寸金”
-STR_1558    :{SMALLFONT}“{STRINGID}的汉堡比上海迪斯尼的包子还贵”
-STR_1559    :{SMALLFONT}“{STRINGID}的薯条使用什么土豆做的？怎么这么贵”
-STR_1560    :{SMALLFONT}“{STRINGID}的冰淇淋贵的有点离谱”
-STR_1561    :{SMALLFONT}“{STRINGID}的棉花糖是真滴贵”
+STR_1550    :“哇!”
+STR_1551    :“我有种奇怪的感觉, 像是有人在监视我”
+STR_1552    :“{STRINGID}的气球里充的是仙气吧，怎么这么贵”
+STR_1553    :“我相信{STRINGID}的毛绒公仔里面塞的不是棉花，是钱”
+STR_1554    :“{STRINGID}的游乐园地图是都精确，居然卖的这么贵”
+STR_1555    :“都什么年代了，{STRINGID}的即时照片还这么贵”
+STR_1556    :“我宁可淋雨，也不会买{STRINGID}的天价雨伞”
+STR_1557    :“{STRINGID}的饮料，可真是滴水寸金”
+STR_1558    :“{STRINGID}的汉堡比上海迪斯尼的包子还贵”
+STR_1559    :“{STRINGID}的薯条使用什么土豆做的？怎么这么贵”
+STR_1560    :“{STRINGID}的冰淇淋贵的有点离谱”
+STR_1561    :“{STRINGID}的棉花糖是真滴贵”
 STR_1562    :
 STR_1563    :
 STR_1564    :
-STR_1565    :{SMALLFONT}“{STRINGID}的披萨真的贵”
+STR_1565    :“{STRINGID}的披萨真的贵”
 STR_1566    :
-STR_1567    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份爆米花”
-STR_1568    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一个热狗”
-STR_1569    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份触手”
-STR_1570    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一个帽子”
-STR_1571    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一个太妃糖苹果”
-STR_1572    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一件T恤”
-STR_1573    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份甜甜圈”
-STR_1574    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一杯咖啡”
+STR_1567    :“我不会花那么多钱去{STRINGID}购买一份爆米花”
+STR_1568    :“我不会花那么多钱去{STRINGID}购买一个热狗”
+STR_1569    :“我不会花那么多钱去{STRINGID}购买一份触手”
+STR_1570    :“我不会花那么多钱去{STRINGID}购买一个帽子”
+STR_1571    :“我不会花那么多钱去{STRINGID}购买一个太妃糖苹果”
+STR_1572    :“我不会花那么多钱去{STRINGID}购买一件T恤”
+STR_1573    :“我不会花那么多钱去{STRINGID}购买一份甜甜圈”
+STR_1574    :“我不会花那么多钱去{STRINGID}购买一杯咖啡”
 STR_1575    :
-STR_1576    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份炸鸡”
-STR_1577    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一杯柠檬水”
+STR_1576    :“我不会花那么多钱去{STRINGID}购买一份炸鸡”
+STR_1577    :“我不会花那么多钱去{STRINGID}购买一杯柠檬水”
 STR_1578    :
 STR_1579    :
 STR_1580    :
 STR_1581    :
 STR_1582    :
 STR_1583    :
-STR_1584    :{SMALLFONT}“这张从{STRINGID}购买的即时照片真是超值”
-STR_1585    :{SMALLFONT}“这张从{STRINGID}购买的即时照片真是超值”
-STR_1586    :{SMALLFONT}“这张从{STRINGID}购买的即时照片真是超值”
-STR_1587    :{SMALLFONT}“这张从{STRINGID}购买的椒盐卷饼真是超值”
-STR_1588    :{SMALLFONT}“这杯从{STRINGID}购买的热巧克力真是超值”
-STR_1589    :{SMALLFONT}“这杯从{STRINGID}购买的冰红茶真是超值”
-STR_1590    :{SMALLFONT}“这个从{STRINGID}购买的漏斗蛋糕真是超值”
-STR_1591    :{SMALLFONT}“这副从{STRINGID}购买的太阳镜真是超值”
-STR_1592    :{SMALLFONT}“这碗从{STRINGID}购买的牛肉面真是超值”
-STR_1593    :{SMALLFONT}“这份从{STRINGID}购买的炒米粉真是超值”
-STR_1594    :{SMALLFONT}“这份从{STRINGID}购买的上汤云吞真是超值”
-STR_1595    :{SMALLFONT}“这份从{STRINGID}购买的肉丸汤{真是超值”
-STR_1596    :{SMALLFONT}“这杯从{STRINGID}购买的果汁真是超值”
-STR_1597    :{SMALLFONT}“这杯从{STRINGID}购买的豆浆真是超值”
-STR_1598    :{SMALLFONT}“这份从{STRINGID}购买的水正果真是超值”
-STR_1599    :{SMALLFONT}“这块从{STRINGID}购买的潜艇三明治真是超值”
-STR_1600    :{SMALLFONT}“这份从{STRINGID}购买的曲奇饼干真是超值”
+STR_1584    :“这张从{STRINGID}购买的即时照片真是超值”
+STR_1585    :“这张从{STRINGID}购买的即时照片真是超值”
+STR_1586    :“这张从{STRINGID}购买的即时照片真是超值”
+STR_1587    :“这张从{STRINGID}购买的椒盐卷饼真是超值”
+STR_1588    :“这杯从{STRINGID}购买的热巧克力真是超值”
+STR_1589    :“这杯从{STRINGID}购买的冰红茶真是超值”
+STR_1590    :“这个从{STRINGID}购买的漏斗蛋糕真是超值”
+STR_1591    :“这副从{STRINGID}购买的太阳镜真是超值”
+STR_1592    :“这碗从{STRINGID}购买的牛肉面真是超值”
+STR_1593    :“这份从{STRINGID}购买的炒米粉真是超值”
+STR_1594    :“这份从{STRINGID}购买的上汤云吞真是超值”
+STR_1595    :“这份从{STRINGID}购买的肉丸汤{真是超值”
+STR_1596    :“这杯从{STRINGID}购买的果汁真是超值”
+STR_1597    :“这杯从{STRINGID}购买的豆浆真是超值”
+STR_1598    :“这份从{STRINGID}购买的水正果真是超值”
+STR_1599    :“这块从{STRINGID}购买的潜艇三明治真是超值”
+STR_1600    :“这份从{STRINGID}购买的曲奇饼干真是超值”
 STR_1601    :
 STR_1602    :
 STR_1603    :
-STR_1604    :{SMALLFONT}“这根从{STRINGID}购买的烤香肠真是超值”
+STR_1604    :“这根从{STRINGID}购买的烤香肠真是超值”
 STR_1605    :
 STR_1606    :
 STR_1607    :
@@ -1002,27 +1002,27 @@ STR_1612    :
 STR_1613    :
 STR_1614    :
 STR_1615    :
-STR_1616    :{SMALLFONT}“我不会花那么多钱去购买一张在{STRINGID}的即时照片”
-STR_1617    :{SMALLFONT}“我不会花那么多钱去购买一张在{STRINGID}的即时照片”
-STR_1618    :{SMALLFONT}“我不会花那么多钱去购买一张在{STRINGID}的即时照片”
-STR_1619    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一张椒盐卷饼”
-STR_1620    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一杯热巧克力”
-STR_1621    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一杯冰红茶”
-STR_1622    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一个漏斗蛋糕”
-STR_1623    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一副太阳镜”
-STR_1624    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一碗牛肉面”
-STR_1625    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份炒米粉”
-STR_1626    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份上汤云吞”
-STR_1627    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份肉丸汤”
-STR_1628    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一杯果汁”
-STR_1629    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一杯豆浆”
-STR_1630    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份水正果”
-STR_1631    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一块潜艇三明治”
-STR_1632    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份曲奇饼干”
+STR_1616    :“我不会花那么多钱去购买一张在{STRINGID}的即时照片”
+STR_1617    :“我不会花那么多钱去购买一张在{STRINGID}的即时照片”
+STR_1618    :“我不会花那么多钱去购买一张在{STRINGID}的即时照片”
+STR_1619    :“我不会花那么多钱去{STRINGID}购买一张椒盐卷饼”
+STR_1620    :“我不会花那么多钱去{STRINGID}购买一杯热巧克力”
+STR_1621    :“我不会花那么多钱去{STRINGID}购买一杯冰红茶”
+STR_1622    :“我不会花那么多钱去{STRINGID}购买一个漏斗蛋糕”
+STR_1623    :“我不会花那么多钱去{STRINGID}购买一副太阳镜”
+STR_1624    :“我不会花那么多钱去{STRINGID}购买一碗牛肉面”
+STR_1625    :“我不会花那么多钱去{STRINGID}购买一份炒米粉”
+STR_1626    :“我不会花那么多钱去{STRINGID}购买一份上汤云吞”
+STR_1627    :“我不会花那么多钱去{STRINGID}购买一份肉丸汤”
+STR_1628    :“我不会花那么多钱去{STRINGID}购买一杯果汁”
+STR_1629    :“我不会花那么多钱去{STRINGID}购买一杯豆浆”
+STR_1630    :“我不会花那么多钱去{STRINGID}购买一份水正果”
+STR_1631    :“我不会花那么多钱去{STRINGID}购买一块潜艇三明治”
+STR_1632    :“我不会花那么多钱去{STRINGID}购买一份曲奇饼干”
 STR_1633    :
 STR_1634    :
 STR_1635    :
-STR_1636    :{SMALLFONT}“我不会花那么多钱去{STRINGID}购买一份烤香肠”
+STR_1636    :“我不会花那么多钱去{STRINGID}购买一份烤香肠”
 STR_1637    :
 STR_1638    :
 STR_1639    :
@@ -1034,11 +1034,11 @@ STR_1644    :
 STR_1645    :
 STR_1646    :
 STR_1647    :
-STR_1648    :{SMALLFONT}“救命! 放我下来!”
-STR_1649    :{SMALLFONT}“我的现金不够了!”
-STR_1650    :{SMALLFONT}“喔!一个新的设施正在建造”
+STR_1648    :“救命! 放我下来!”
+STR_1649    :“我的现金不够了!”
+STR_1650    :“喔!一个新的设施正在建造”
 # Two removed inside jokes about Intamin and Phoenix
-STR_1653    :{SMALLFONT}“…现在我们已经在{STRINGID}上!”
+STR_1653    :“…现在我们已经在{STRINGID}上!”
 STR_1654    :{WINDOW_COLOUR_2}最近的想法:
 STR_1655    :在地上建造道路
 STR_1656    :建造桥梁或隧道
@@ -1068,12 +1068,12 @@ STR_1679    :向上盘旋 (向左)
 STR_1680    :向上盘旋 (向右)
 STR_1681    :向下盘旋 (向左)
 STR_1682    :向下盘旋 (向右)
-STR_1683    :2 x 2地基
-STR_1684    :4 x 4地基
-STR_1685    :2 x 4地基
-STR_1686    :5 x 1地基
+STR_1683    :2 × 2地基
+STR_1684    :4 × 4地基
+STR_1685    :2 × 4地基
+STR_1686    :5 × 1地基
 STR_1687    :水溅
-STR_1688    :4 x 1地基
+STR_1688    :4 × 1地基
 STR_1689    :刹车装置
 STR_1690    :{WINDOW_COLOUR_2}{STRINGID}{NEWLINE}{BLACK}{STRINGID}
 STR_1691    :{WINDOW_COLOUR_2}  费用: {BLACK}{CURRENCY}
@@ -1189,8 +1189,8 @@ STR_1807    :控制设备故障
 STR_1808    :{WINDOW_COLOUR_2}上次故障原因: {BLACK}{STRINGID}
 STR_1809    :{WINDOW_COLOUR_2}本次故障原因: {OUTLINE}{RED}{STRINGID}
 STR_1810    :{WINDOW_COLOUR_2}搬运中:
-STR_1811    :Can't build this here…
-STR_1812    :{SMALLFONT}{BLACK}{STRINGID}
+STR_1811    :Can’t build this here…
+STR_1812    :{BLACK}{STRINGID}
 STR_1813    :其他物体
 STR_1814    :动作
 STR_1815    :想法
@@ -1200,7 +1200,7 @@ STR_1818    :{WINDOW_COLOUR_2}所有游客
 STR_1819    :{WINDOW_COLOUR_2}所有游客(汇总)
 STR_1820    :{WINDOW_COLOUR_2}{STRINGID}的游客
 STR_1821    :{WINDOW_COLOUR_2}在想{STRINGID}的游客
-STR_1822    :{WINDOW_COLOUR_2}在想{POP16}{STRINGID}的游客
+STR_1822    :{WINDOW_COLOUR_2}在想{POP16}{SMALLFONT}{STRINGID}{MEDIUMFONT}的游客
 STR_1823    :显示游客对此游乐设施/店铺的想法
 STR_1824    :显示在此游乐设施/店铺的游客
 STR_1825    :显示在此游乐设施/店铺排队等候的游客
@@ -1302,7 +1302,6 @@ STR_1921    :开始新游戏
 STR_1922    :从存档继续玩
 STR_1924    :退出游戏
 STR_1925    :不能放置人物于此…
-STR_1926    :{SMALLFONT}
 STR_1927    :{YELLOW}{STRINGID}发生故障了
 STR_1928    :{RED}{STRINGID}毁坏了!
 STR_1929    :{RED}{STRINGID}依然未修复好{NEWLINE}请检查机械师位置所在, 或考虑以更好的方法管理他们
@@ -1583,7 +1582,7 @@ STR_2218    :{RED}{STRINGID}, {STRINGID}的一部份，尚未返回到{STRINGID}
 STR_2219    :{RED}{COMMA16}人已丧生于{STRINGID}的意外中
 STR_2220    :{WINDOW_COLOUR_2}乐园评价: {BLACK}{COMMA16}
 STR_2221    :乐园评价: {COMMA16}
-STR_2222    :{SMALLFONT}{BLACK}{STRINGID}
+STR_2222    :{BLACK}{STRINGID}
 STR_2223    :{WINDOW_COLOUR_2}园内游客: {BLACK}{COMMA32}
 STR_2224    :{WINDOW_COLOUR_2}现金: {BLACK}{CURRENCY2DP}
 STR_2225    :{WINDOW_COLOUR_2}现金: {RED}{CURRENCY2DP}
@@ -1596,7 +1595,7 @@ STR_2231    :下落刹车设备
 STR_2232    :缆索坡道
 STR_2233    :游乐园信息
 STR_2234    :最近消息
-STR_2235    :{SMALLFONT}{STRINGID} {STRINGID}
+STR_2235    :{STRINGID} {STRINGID}
 STR_2236    :1月
 STR_2237    :2月
 STR_2238    :3月
@@ -1676,7 +1675,7 @@ STR_2312    :{WINDOW_COLOUR_2}刺激度: {BLACK}{COMMA2DP32} (大约)
 STR_2313    :{WINDOW_COLOUR_2}恶心度: {BLACK}{COMMA2DP32} (大约)
 STR_2314    :{WINDOW_COLOUR_2}轨道长度: {BLACK}{STRINGID}
 STR_2315    :{WINDOW_COLOUR_2}建造费用: {BLACK}约{CURRENCY}
-STR_2316    :{WINDOW_COLOUR_2}需要空间: {BLACK}{COMMA16} x {COMMA16}格
+STR_2316    :{WINDOW_COLOUR_2}需要空间: {BLACK}{COMMA16} × {COMMA16}格
 STR_2321    :{WINDOW_COLOUR_2}游乐设施/店铺数目: {BLACK}{COMMA16}
 STR_2322    :{WINDOW_COLOUR_2}员工数目: {BLACK}{COMMA16}
 STR_2323    :{WINDOW_COLOUR_2}乐园大小: {BLACK}{COMMA32}m²
@@ -1706,12 +1705,12 @@ STR_2347    :{RED}{STRINGID}已被溺死!
 STR_2348    :显示这位员工的统计数据
 STR_2349    :{WINDOW_COLOUR_2}工资: {BLACK}每个月{CURRENCY}
 STR_2350    :{WINDOW_COLOUR_2}雇用日期: {BLACK}{MONTHYEAR}
-STR_2351    :{WINDOW_COLOUR_2}除草次数: {BLACK}{COMMA16}
-STR_2352    :{WINDOW_COLOUR_2}灌溉次数: {BLACK}{COMMA16}
-STR_2353    :{WINDOW_COLOUR_2}扫地次数: {BLACK}{COMMA16}
-STR_2354    :{WINDOW_COLOUR_2}清空垃圾桶次数: {BLACK}{COMMA16}
-STR_2355    :{WINDOW_COLOUR_2}修理游乐设施次数: {BLACK}{COMMA16}
-STR_2356    :{WINDOW_COLOUR_2}检验游乐设施次数: {BLACK}{COMMA16}
+STR_2351    :{WINDOW_COLOUR_2}除草次数: {BLACK}{COMMA32}
+STR_2352    :{WINDOW_COLOUR_2}灌溉次数: {BLACK}{COMMA32}
+STR_2353    :{WINDOW_COLOUR_2}扫地次数: {BLACK}{COMMA32}
+STR_2354    :{WINDOW_COLOUR_2}清空垃圾桶次数: {BLACK}{COMMA32}
+STR_2355    :{WINDOW_COLOUR_2}修理游乐设施次数: {BLACK}{COMMA32}
+STR_2356    :{WINDOW_COLOUR_2}检验游乐设施次数: {BLACK}{COMMA32}
 STR_2358    :单位
 STR_2359    :真实数值
 STR_2360    :屏幕分辨率:
@@ -1741,7 +1740,7 @@ STR_2383    :水面
 STR_2384    :{WINDOW_COLOUR_2}你的目标：
 STR_2385    :{BLACK}无
 STR_2386    :{BLACK}在{POP16}{MONTHYEAR} 之前乐园内至少有 {PUSH16}{PUSH16}{COMMA16} 游客, 并且乐园评分不低于 600
-STR_2387    :{BLACK}在{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}之前乐园价值不低于{POP16}{POP16}{CURRENCY}
+STR_2387    :{BLACK}在{PUSH16}{MONTHYEAR}之前乐园价值不低于{CURRENCY}
 STR_2388    :{BLACK}尽情玩吧!
 STR_2389    :{BLACK}建造你的最佳{STRINGID}吧!
 STR_2390    :{BLACK}在你的乐园中运营10种类型的过山车, 并且每一个的兴奋度不低于 6.00
@@ -1800,37 +1799,37 @@ STR_2450    :{YELLOW}你针对乐园的推广计划现已结束
 STR_2451    :{YELLOW}你针对{STRINGID}的推广计划现已结束
 STR_2452    :{WINDOW_COLOUR_2}现金（减去贷款）:{BLACK} {CURRENCY2DP}
 STR_2453    :{WINDOW_COLOUR_2}现金（减去贷款）:{RED} {CURRENCY2DP}
-STR_2454    :{SMALLFONT}{BLACK}{SMALLFONT} {BLACK} {CURRENCY2DP} - 
-STR_2457    :{SMALLFONT} {BLACK}显示财政报表
-STR_2458    :{SMALLFONT} {BLACK}以图表显示过往到现在的净现金
-STR_2459    :{SMALLFONT} {BLACK}以图表显示过往到现在的乐园价格
-STR_2460    :{SMALLFONT} {BLACK}以图表显示过往到现在的每周营利
-STR_2461    :{SMALLFONT} {BLACK}显示营销计划详情
-STR_2462    :{SMALLFONT} {BLACK}显示乐园入口的视点
-STR_2463    :{SMALLFONT} {BLACK}以图表显示过往到现在的乐园评价
-STR_2464    :{SMALLFONT} {BLACK}以图表显示过往到现在的游客人员
-STR_2465    :{SMALLFONT} {BLACK}显示乐园门票价格以及其资讯
-STR_2466    :{SMALLFONT} {BLACK}显示乐园的统计资料
-STR_2467    :{SMALLFONT} {BLACK}显示是次游戏的目标
-STR_2468    :{SMALLFONT} {BLACK}显示这个乐园最近获得的奖项
-STR_2469    :{SMALLFONT} {BLACK}选择投放多少资金到研发当中
-STR_2470    :{SMALLFONT} {BLACK}研发新的运输类游游设施
-STR_2471    :{SMALLFONT} {BLACK}研发新的温和类游乐设施
-STR_2472    :{SMALLFONT} {BLACK}研发新的过山车
-STR_2473    :{SMALLFONT} {BLACK}研发新的刺激类游乐设施
-STR_2474    :{SMALLFONT} {BLACK}研发新的水文类游乐设施
-STR_2475    :{SMALLFONT} {BLACK}研发新的商店及摊贩
-STR_2476    :{SMALLFONT} {BLACK}研发新的景物及主题景物
-STR_2477    :{SMALLFONT} {BLACK}选择这个游乐设施的运作模式
-STR_2478    :{SMALLFONT} {BLACK}以图表显示速度与运作时间的关系
-STR_2479    :{SMALLFONT} {BLACK}以图表显示高度与运作时间的关系
-STR_2480    :{SMALLFONT} {BLACK}以图表显示垂直加速与运作时间的关系
+STR_2454    :{BLACK} {BLACK} {CURRENCY2DP} - 
+STR_2457    : {BLACK}显示财政报表
+STR_2458    : {BLACK}以图表显示过往到现在的净现金
+STR_2459    : {BLACK}以图表显示过往到现在的乐园价格
+STR_2460    : {BLACK}以图表显示过往到现在的每周营利
+STR_2461    : {BLACK}显示营销计划详情
+STR_2462    : {BLACK}显示乐园入口的视点
+STR_2463    : {BLACK}以图表显示过往到现在的乐园评价
+STR_2464    : {BLACK}以图表显示过往到现在的游客人员
+STR_2465    : {BLACK}显示乐园门票价格以及其资讯
+STR_2466    : {BLACK}显示乐园的统计资料
+STR_2467    : {BLACK}显示是次游戏的目标
+STR_2468    : {BLACK}显示这个乐园最近获得的奖项
+STR_2469    : {BLACK}选择投放多少资金到研发当中
+STR_2470    : {BLACK}研发新的运输类游游设施
+STR_2471    : {BLACK}研发新的温和类游乐设施
+STR_2472    : {BLACK}研发新的过山车
+STR_2473    : {BLACK}研发新的刺激类游乐设施
+STR_2474    : {BLACK}研发新的水文类游乐设施
+STR_2475    : {BLACK}研发新的商店及摊贩
+STR_2476    : {BLACK}研发新的景物及主题景物
+STR_2477    : {BLACK}选择这个游乐设施的运作模式
+STR_2478    : {BLACK}以图表显示速度与运作时间的关系
+STR_2479    : {BLACK}以图表显示高度与运作时间的关系
+STR_2480    : {BLACK}以图表显示垂直加速与运作时间的关系
 STR_2481    :以图表显示横向加速与运作时间的关系
 STR_2482    :营利: 每周{CURRENCY}, 乐园价值: {CURRENCY}
 STR_2483    :{WINDOW_COLOUR_2}每周营利: {BLACK}+{CURRENCY2DP}
 STR_2484    :{WINDOW_COLOUR_2}每周营利: {RED}{CURRENCY2DP}
-STR_2487    :显示游客的'真实'姓名
-STR_2488    :在游客'真实'姓名和游客编号之间切换
+STR_2487    :显示游客的‘真实’姓名
+STR_2488    :在游客‘真实’姓名和游客编号之间切换
 STR_2489    :快捷键…
 STR_2490    :键盘快捷键
 STR_2491    :重置快捷键
@@ -1844,15 +1843,15 @@ STR_2498    :放大视图范围
 STR_2499    :顺时针旋转视图范围
 STR_2500    :旋转要建造的对象
 STR_2501    :开启/关闭地底视图模式
-STR_2502    :开启/关闭'隐藏地表'选项
-STR_2503    :开启/关闭'隐藏垂直地面'选项
-STR_2504    :开启/关闭'半透明游乐设施'选项
-STR_2505    :开启/关闭'半透明景观'选项
-STR_2506    :开启/关闭'透明化支撑'选项
-STR_2507    :开启/关闭'透明化游客'选项
-STR_2508    :开启/关闭'在土地上标记高度'选项
-STR_2509    :开启/关闭'在设施轨道上标记高度'选项
-STR_2510    :开启/关闭'在道路上标记高度'选项
+STR_2502    :开启/关闭‘隐藏地表’选项
+STR_2503    :开启/关闭‘隐藏垂直地面’选项
+STR_2504    :开启/关闭‘半透明游乐设施’选项
+STR_2505    :开启/关闭‘半透明景观’选项
+STR_2506    :开启/关闭‘透明化支撑’选项
+STR_2507    :开启/关闭‘透明化游客’选项
+STR_2508    :开启/关闭‘在土地上标记高度’选项
+STR_2509    :开启/关闭‘在设施轨道上标记高度’选项
+STR_2510    :开启/关闭‘在道路上标记高度’选项
 STR_2511    :调整土地
 STR_2512    :调整水面
 STR_2513    :建造景观
@@ -1910,7 +1909,6 @@ STR_2636    :NumPad /
 STR_2669    :NumLock
 STR_2670    :Scroll
 STR_2680    :所有项目已研发完毕
-STR_2681    :{MEDIUMFONT}{BLACK}增加{CURRENCY}到你的账上
 STR_2684    :一大批游客到访
 STR_2685    :单形噪声参数
 STR_2686    :低值:
@@ -1960,7 +1958,7 @@ STR_2739    :无
 STR_2740    :过山车大亨1(RCT1)
 STR_2741    :过山车大亨2(RCT2)
 STR_2742    :找不到css50.dat
-STR_2743    :将过山车大亨1安装目录下的'data/css17.dat'拷贝到过山车大亨2安装目录并重命名为'data/css50.dat', 或确保杂项窗口中过山车大亨1的路径设置正确.
+STR_2743    :将过山车大亨1安装目录下的‘data/css17.dat’拷贝到过山车大亨2安装目录并重命名为‘data/css50.dat’, 或确保杂项窗口中过山车大亨1的路径设置正确.
 STR_2749    :我的新剧情
 # New strings used in the cheats window previously these were ???
 STR_2750    :移动全部物品到顶部
@@ -1997,7 +1995,7 @@ STR_2789    :{WINDOW_COLOUR_2}你未达成目标 !
 STR_2790    :请输入你要在剧情列表显示的名字
 STR_2791    :输入名字
 STR_2792    :请输入你要在剧情列表显示的名字:
-STR_2793    :{SMALLFONT}(由{STRINGID}达成)
+STR_2793    :(由{STRINGID}达成)
 STR_2794    :{WINDOW_COLOUR_2}完成者: {BLACK}{STRINGID}{NEWLINE}{WINDOW_COLOUR_2} 公司价值: {BLACK}{CURRENCY}
 STR_2795    :排序
 STR_2796    :将游乐设施按照不同类别排列
@@ -2035,23 +2033,23 @@ STR_2827    :{WINDOW_COLOUR_2}拥有最佳自行设计的游乐设施奖
 STR_2828    :{WINDOW_COLOUR_2}拥有最大胆色彩搭配奖
 STR_2829    :{WINDOW_COLOUR_2}拥有最令人迷失布局奖
 STR_2830    :{WINDOW_COLOUR_2}拥有最温和游乐设施奖
-STR_2831    :{TOPAZ}你的游乐园获得了'全国最肮脏乐园奖'!
-STR_2832    :{TOPAZ}你的游乐园获得了'全国最整洁乐园奖'!
-STR_2833    :{TOPAZ}你的游乐园获得了'拥有最棒过山车奖'!
-STR_2834    :{TOPAZ}你的游乐园获得了'全国最有价值乐园奖'!
-STR_2835    :{TOPAZ}你的游乐园获得了'全国最美乐园奖'!
-STR_2836    :{TOPAZ}你的游乐园获得了'全国最差价值乐园奖'!
-STR_2837    :{TOPAZ}你的游乐园获得了'全国最安全乐园奖'!
-STR_2838    :{TOPAZ}你的游乐园获得了'拥有最佳员工奖'!
-STR_2839    :{TOPAZ}你的游乐园获得了'拥有最佳食物奖'!
-STR_2840    :{TOPAZ}你的游乐园获得了'拥有最差食物奖'!
-STR_2841    :{TOPAZ}你的游乐园获得了'拥有最佳厕所奖'!
-STR_2842    :{TOPAZ}你的游乐园获得了'全国最让人失望乐园奖'!
-STR_2843    :{TOPAZ}你的游乐园获得了'拥有最佳水上游乐设施奖'!
-STR_2844    :{TOPAZ}你的游乐园获得了'拥有最佳自行设计的游乐设施奖'!
-STR_2845    :{TOPAZ}你的游乐园获得了'拥有最大胆色彩搭配奖'!
-STR_2846    :{TOPAZ}你的游乐园获得了'拥有最令人迷失布局奖'!
-STR_2847    :{TOPAZ}你的游乐园获得了'拥有最温和游乐设施奖'!
+STR_2831    :{TOPAZ}你的游乐园获得了‘全国最肮脏乐园奖’!
+STR_2832    :{TOPAZ}你的游乐园获得了‘全国最整洁乐园奖’!
+STR_2833    :{TOPAZ}你的游乐园获得了‘拥有最棒过山车奖’!
+STR_2834    :{TOPAZ}你的游乐园获得了‘全国最有价值乐园奖’!
+STR_2835    :{TOPAZ}你的游乐园获得了‘全国最美乐园奖’!
+STR_2836    :{TOPAZ}你的游乐园获得了‘全国最差价值乐园奖’!
+STR_2837    :{TOPAZ}你的游乐园获得了‘全国最安全乐园奖’!
+STR_2838    :{TOPAZ}你的游乐园获得了‘拥有最佳员工奖’!
+STR_2839    :{TOPAZ}你的游乐园获得了‘拥有最佳食物奖’!
+STR_2840    :{TOPAZ}你的游乐园获得了‘拥有最差食物奖’!
+STR_2841    :{TOPAZ}你的游乐园获得了‘拥有最佳厕所奖’!
+STR_2842    :{TOPAZ}你的游乐园获得了‘全国最让人失望乐园奖’!
+STR_2843    :{TOPAZ}你的游乐园获得了‘拥有最佳水上游乐设施奖’!
+STR_2844    :{TOPAZ}你的游乐园获得了‘拥有最佳自行设计的游乐设施奖’!
+STR_2845    :{TOPAZ}你的游乐园获得了‘拥有最大胆色彩搭配奖’!
+STR_2846    :{TOPAZ}你的游乐园获得了‘拥有最令人迷失布局奖’!
+STR_2847    :{TOPAZ}你的游乐园获得了‘拥有最温和游乐设施奖’!
 STR_2848    :{WINDOW_COLOUR_2}暂无获得任何奖项
 STR_2849    :新的剧情副本安装完毕
 STR_2850    :新的轨道设计安装完毕
@@ -2062,51 +2060,6 @@ STR_2854    :{RED}游客都不能走到去{STRINGID}的入口!{NEWLINE}请建造
 STR_2855    :{RED}{STRINGID}的出口并没有道路连接!{NEWLINE}请建造道路连接出口
 STR_2858    :不能开始实行营销计划…
 STR_2861    :{WINDOW_COLOUR_2}Licensed to Infogrames Interactive Inc.
-STR_2862    :音乐鸣谢列表…
-STR_2863    :音乐鸣谢列表
-STR_2864    :{WINDOW_COLOUR_2}March - Children of the Regiment:   (Fucik) 无版权
-STR_2865    :{WINDOW_COLOUR_2}Heyken's Serenade:   (J.Heyken) British Standard Music Coy; GEMA, BRITICO
-STR_2866    :{WINDOW_COLOUR_2}La Belle Espagnole:   (Robert Vollstedt) 版权控制
-STR_2867    :{WINDOW_COLOUR_2}Wedding Journey:   (Traditional)
-STR_2868    :{WINDOW_COLOUR_2}Tales from the Vienna Woods:   (Johann Strauss) 无版权
-STR_2869    :{WINDOW_COLOUR_2}Slavonic Dance:   (Traditional)
-STR_2870    :{WINDOW_COLOUR_2}Das Alpenhorn:   (Traditional)
-STR_2871    :{WINDOW_COLOUR_2}The Blond Sailor:   (Traditional)
-STR_2872    :{WINDOW_COLOUR_2}Overture - Poet and Peasant:   (Suppe) 无版权
-STR_2873    :{WINDOW_COLOUR_2}Waltz Medley:   (Johann Strauss) 无版权
-STR_2874    :{WINDOW_COLOUR_2}Bella Bella Bimba:   (Traditional)
-STR_2875    :{WINDOW_COLOUR_2}Original recordings (P) 1976 C.J.Mears Organization, used with consent
-STR_2876    :{WINDOW_COLOUR_2}RollerCoaster Tycoon 2 Title Music:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2877    :{WINDOW_COLOUR_2}Dodgems Beat:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2878    :{WINDOW_COLOUR_2}Mid Summer's Heat:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2879    :{WINDOW_COLOUR_2}Pharaoh's Tomb:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2880    :{WINDOW_COLOUR_2}Caesar's March:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2881    :{WINDOW_COLOUR_2}Drifting To Heaven:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2882    :{WINDOW_COLOUR_2}Invaders:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2883    :{WINDOW_COLOUR_2}Eternal Toybox:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2884    :{WINDOW_COLOUR_2}Jungle Juice:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2885    :{WINDOW_COLOUR_2}Ninja's Noodles:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2886    :{WINDOW_COLOUR_2}Voyage to Andromeda:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2887    :{WINDOW_COLOUR_2}Brimble's Beat:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2888    :{WINDOW_COLOUR_2}Atlantis:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2889    :{WINDOW_COLOUR_2}Wild West Kid:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2890    :{WINDOW_COLOUR_2}Vampire's Lair:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2891    :{WINDOW_COLOUR_2}Blockbuster:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2892    :{WINDOW_COLOUR_2}Airtime Rock:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2893    :{WINDOW_COLOUR_2}Searchlight Rag:   (Scott Joplin/Allister Brimble) 版权所有 © Chris Sawyer
-STR_2894    :{WINDOW_COLOUR_2}Flight of Fantasy:   (Steve Blenkinsopp) 版权所有 © Chris Sawyer
-STR_2895    :{WINDOW_COLOUR_2}Big Rock:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2896    :{WINDOW_COLOUR_2}Hypothermia:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2897    :{WINDOW_COLOUR_2}Last Sleigh Ride:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2898    :{WINDOW_COLOUR_2}Pipes of Glencairn:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2899    :{WINDOW_COLOUR_2}Traffic Jam:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2901    :{WINDOW_COLOUR_2}(Samples courtesy of Spectrasonics “Liquid Grooves”)
-STR_2902    :{WINDOW_COLOUR_2}Toccata:   (C.M.Widor, played by Peter James Adcock) recording © Chris Sawyer
-STR_2903    :{WINDOW_COLOUR_2}Space Rock:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2904    :{WINDOW_COLOUR_2}Manic Mechanic:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2905    :{WINDOW_COLOUR_2}Techno Torture:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2906    :{WINDOW_COLOUR_2}Sweat Dreams:   (Allister Brimble) 版权所有 © Chris Sawyer
-STR_2907    :{WINDOW_COLOUR_2}What shall we do with the Drunken Sailor:   (Anon/Allister Brimble) 版权所有 © Chris Sawyer
 STR_2971    :主要配色主题
 STR_2972    :额外配色主题1
 STR_2973    :额外配色主题2
@@ -2311,7 +2264,7 @@ STR_3208    :轨道设计管理工具
 STR_3209    :上一步:
 STR_3210    :下一步:
 STR_3211    :地图大小:
-STR_3212    :{POP16}{COMMA16} x {PUSH16}{COMMA16}
+STR_3212    :{POP16}{COMMA16} × {PUSH16}{COMMA16}
 STR_3213    :不能再缩小地图
 STR_3214    :不能再扩大地图
 STR_3215    :太接近地图的边缘
@@ -2506,7 +2459,7 @@ STR_5134    :选择较大一些的土地范围
 STR_5135    :购买土地权和建造权
 STR_5136    :土地权
 STR_5137    :解锁操作限制
-STR_5138    :{SMALLFONT}{WINDOW_COLOUR_2}{STRINGID}
+STR_5138    :{WINDOW_COLOUR_2}{STRINGID}
 STR_5139    :{WHITE}{STRINGID}
 STR_5140    :禁用制动器故障
 STR_5141    :禁用所有故障
@@ -2652,7 +2605,7 @@ STR_5297    :开启乐园
 STR_5298    :{RED}{STRINGID}
 STR_5299    :{LIGHTPINK}{STRINGID}
 STR_5300    :快速解雇员工
-STR_5301    :{MEDIUMFONT}{BLACK}清除你的贷款
+STR_5301    :清除你的贷款
 STR_5302    :清除贷款
 STR_5303    :允许在暂停模式下继续建造
 STR_5304    :主菜单动画:
@@ -2811,7 +2764,7 @@ STR_5481    :主题
 STR_5482    :{WINDOW_COLOUR_2}上次检查时间: {BLACK} 1分钟前
 STR_5483    :{BLACK}(还剩{COMMA16}周结束)
 STR_5484    :{BLACK}(还剩{COMMA16}周结束)
-STR_5485    :{SMALLFONT}{STRING}
+STR_5485    :{STRING}
 STR_5486    :{BLACK}{COMMA16}
 STR_5487    :显示最近消息
 STR_5489    :只显示追踪中的游客
@@ -2883,7 +2836,7 @@ STR_5556    :踢除玩家
 STR_5557    :多人游戏不同步时依然保持联机
 STR_5558    :此设定会于重启游戏后生效
 STR_5559    :检查时间间隔为10分钟
-STR_5560    :将所有游乐设施的检查时间间隔设定为'每10分钟'
+STR_5560    :将所有游乐设施的检查时间间隔设定为‘每10分钟’
 STR_5561    :加载语言失败
 STR_5562    :警告！
 STR_5563    :此功能暂未稳定地使用，请多加留意.
@@ -3017,8 +2970,6 @@ STR_5723    :大雨
 STR_5724    :大雷雨
 STR_5725    :{BLACK}强制设定天气为:
 STR_5726    :设定游乐园当前的天气
-STR_5727    :缩放质量
-STR_5731    :线性
 # tooltip for tab in options window
 STR_5734    :渲染
 STR_5735    :网络状态
@@ -3068,7 +3019,7 @@ STR_5778    :建成年份: {COMMA16} 年前
 STR_5779    :收入: {CURRENCY2DP} 每小时
 STR_5780    :运营成本: {CURRENCY2DP} 每小时
 STR_5781    :运营成本: 未知
-STR_5782    :你已经连接到服务器. 请按 '{STRING}' 开始聊天.
+STR_5782    :你已经连接到服务器. 请按 ‘{STRING}’ 开始聊天.
 STR_5783    :{WINDOW_COLOUR_2}剧情未解锁
 STR_5784    :{BLACK}完成稍早的剧情来解锁此剧情.
 STR_5785    :不能重命名组…
@@ -3104,7 +3055,6 @@ STR_5814    :{WINDOW_COLOUR_1}“{STRING}”
 #tooltips
 STR_5815    :游戏内显示FPS帧数
 STR_5816    :设置比例去缩放游戏.{NEWLINE}高分辨率时很有用
-STR_5817    :设置UI缩放类型.需要开启硬件渲染{NEWLINE}线性缩放是平滑但模糊的.平滑最近邻缩放是锐利的, 但会导致轻微的性能下降.
 STR_5819    :[需要开启硬件渲染]{NEWLINE}暂停游戏当游戏内{NEWLINE}Steam overlay打开时
 STR_5820    :全屏模式时若游戏失焦{NEWLINE}则最小化游戏
 STR_5822    :日夜循环.{NEWLINE}完成一个循环花费游戏内一个月时间
@@ -3117,11 +3067,11 @@ STR_5828    :修改距离, 速度等度量单位.
 STR_5829    :修改游戏使用的货币. 只是纯视觉效果并没有根据汇率换算
 STR_5830    :修改游戏使用的语言
 STR_5831    :修改温度显示的单位
-STR_5832    :高度用通用单位替换"距离和速度单位"中设置的单位
+STR_5832    :高度用通用单位替换“距离和速度单位”中设置的单位
 STR_5833    :修改日期格式
 STR_5834    :选择OpenRCT2使用的音频设备
 STR_5835    :游戏窗口失焦时静音
-STR_5836    :选择主菜单使用的音乐.{NEWLINE}选择过山车大亨1的主题音乐时需要手动将过山车大亨1游戏目录下的'data/css17.dat'拷贝并重命名为过山车大亨2游戏目录下的'data/css50.dat', 或者在杂项窗口中设定过山车大亨1的路径.
+STR_5836    :选择主菜单使用的音乐.{NEWLINE}选择过山车大亨1的主题音乐时需要手动将过山车大亨1游戏目录下的‘data/css17.dat’拷贝并重命名为过山车大亨2游戏目录下的‘data/css50.dat’, 或者在杂项窗口中设定过山车大亨1的路径.
 STR_5837    :创建并管理自定义游戏界面配色主题
 STR_5838    :在工具栏上为财务窗口显示一个单独的按钮
 STR_5839    :在工具栏上为研发窗口显示一个单独的按钮
@@ -3194,7 +3144,7 @@ STR_5908    :允许任意切换游乐设施类型
 STR_5909    :允许自由切换游乐设施类型. 可能导致游戏崩溃.
 STR_5910    :应用
 STR_5911    :半透明道路
-STR_5912    :开启/关闭'半透明道路'选项
+STR_5912    :开启/关闭‘半透明道路’选项
 STR_5913    :聊天
 STR_5914    :未知的游乐设施
 STR_5915    :玩家
@@ -3216,56 +3166,56 @@ STR_5930    :巨型景物详情
 STR_5931    :横幅详情
 STR_5932    :已毁坏元素详情
 STR_5933    :属性
-STR_5934    :{WINDOW_COLOUR_2}地型素材:{BLACK}{STRINGID}
-STR_5935    :{WINDOW_COLOUR_2}地型边缘:{BLACK}{STRINGID}
-STR_5936    :{WINDOW_COLOUR_2}土地拥有权:{BLACK}{STRINGID}
+STR_5934    :地型素材:{BLACK}{STRINGID}
+STR_5935    :地型边缘:{BLACK}{STRINGID}
+STR_5936    :土地拥有权:{BLACK}{STRINGID}
 STR_5937    :未拥有且不可购买
-STR_5938    :{WINDOW_COLOUR_2}水位:{BLACK}{COMMA16}
+STR_5938    :水位:{BLACK}{COMMA16}
 STR_5939    :移除乐园边界
 STR_5940    :还原乐园边界
-STR_5941    :{WINDOW_COLOUR_2}地面高度:
-STR_5942    :{WINDOW_COLOUR_2}道路名称:{BLACK}{STRINGID}
-STR_5943    :{WINDOW_COLOUR_2}附加物品:{BLACK}{STRINGID}
-STR_5944    :{WINDOW_COLOUR_2}附加物品:{BLACK}暂无
-STR_5945    :{WINDOW_COLOUR_2}已连接的边缘:
-STR_5946    :{WINDOW_COLOUR_2}游乐设施种类:{BLACK}{STRINGID}
-STR_5947    :{WINDOW_COLOUR_2}游乐设施ID:{BLACK}{COMMA16}
-STR_5948    :{WINDOW_COLOUR_2}游乐设施名称:{BLACK}{STRINGID}
-STR_5949    :{WINDOW_COLOUR_2}提升坡
-STR_5950    :{WINDOW_COLOUR_2}将改变应用于整个轨道组件中
-STR_5951    :{WINDOW_COLOUR_2}轨道组件ID:{BLACK}{COMMA16}
-STR_5952    :{WINDOW_COLOUR_2}编号:{BLACK}{COMMA16}
+STR_5941    :地面高度:
+STR_5942    :道路名称:{BLACK}{STRINGID}
+STR_5943    :附加物品:{BLACK}{STRINGID}
+STR_5944    :附加物品:{BLACK}暂无
+STR_5945    :已连接的边缘:
+STR_5946    :游乐设施种类:{BLACK}{STRINGID}
+STR_5947    :游乐设施ID:{BLACK}{COMMA16}
+STR_5948    :游乐设施名称:{BLACK}{STRINGID}
+STR_5949    :提升坡
+STR_5950    :将改变应用于整个轨道组件中
+STR_5951    :轨道组件ID:{BLACK}{COMMA16}
+STR_5952    :编号:{BLACK}{COMMA16}
 STR_5953    :以底部高度排序目前网格上的地图元素
-STR_5954    :{WINDOW_COLOUR_2}景物年龄:{BLACK}{COMMA16}
-STR_5955    :{WINDOW_COLOUR_2}四角放置:{BLACK}{STRINGID}
+STR_5954    :景物年龄:{BLACK}{COMMA16}
+STR_5955    :四角放置:{BLACK}{STRINGID}
 STR_5956    :西南
 STR_5957    :西北
 STR_5958    :东北
 STR_5959    :东南
-STR_5960    :{WINDOW_COLOUR_2}四角放置:
-STR_5961    :{WINDOW_COLOUR_2}入口编号:{BLACK}{COMMA16}
-STR_5962    :{WINDOW_COLOUR_2}碰撞检测:
-STR_5963    :{WINDOW_COLOUR_2}已升起的角:
-STR_5964    :{WINDOW_COLOUR_2}斜角
-STR_5965    :{WINDOW_COLOUR_2}入口类型:{BLACK}{STRINGID}
-STR_5966    :{WINDOW_COLOUR_2}游乐园入口部份:{BLACK}{STRINGID}
+STR_5960    :四角放置:
+STR_5961    :入口编号:{BLACK}{COMMA16}
+STR_5962    :碰撞检测:
+STR_5963    :已升起的角:
+STR_5964    :斜角
+STR_5965    :入口类型:{BLACK}{STRINGID}
+STR_5966    :游乐园入口部份:{BLACK}{STRINGID}
 STR_5967    :中间
 STR_5968    :左
 STR_5969    :右
-STR_5970    :{WINDOW_COLOUR_2}入口编号:{BLACK}{COMMA16}
-STR_5971    :{WINDOW_COLOUR_2}出口编号:{BLACK}{COMMA16}
-STR_5972    :{WINDOW_COLOUR_2}游乐设施编号:{BLACK}{COMMA16}
+STR_5970    :入口编号:{BLACK}{COMMA16}
+STR_5971    :出口编号:{BLACK}{COMMA16}
+STR_5972    :游乐设施编号:{BLACK}{COMMA16}
 STR_5973    :与下一地图元素并列
 STR_5974    :将此元素的基准和净高度与下一元素调整一致. 这可以让在网格上建造变得更加容易.
 STR_5975    :坡道:
 STR_5976    :平坦
 STR_5977    :右边向上
 STR_5978    :左边向上
-STR_5979    :{WINDOW_COLOUR_2}围栏类型:{BLACK}{COMMA16}
-STR_5980    :{WINDOW_COLOUR_2}横幅文字:{BLACK}{STRINGID}
-STR_5981    :{WINDOW_COLOUR_2}不是横幅
-STR_5982    :{WINDOW_COLOUR_2}巨型景物类型:{BLACK}{COMMA16}
-STR_5983    :{WINDOW_COLOUR_2}巨型景物组件编号:{BLACK}{COMMA16}
+STR_5979    :围栏类型:{BLACK}{COMMA16}
+STR_5980    :横幅文字:{BLACK}{STRINGID}
+STR_5981    :不是横幅
+STR_5982    :巨型景物类型:{BLACK}{COMMA16}
+STR_5983    :巨型景物组件编号:{BLACK}{COMMA16}
 STR_5984    :被挡住的道路:
 STR_5985    :新建文件夹
 STR_5986    :请输入新文件夹的名字
@@ -3316,7 +3266,7 @@ STR_6030    :景物选择器. 点击地图上任意景物来建造相同的景�
 STR_6031    :服务器描述:
 STR_6032    :服务器欢迎信息:
 STR_6033    :过山车大亨1安装路径:
-STR_6034    :{SMALLFONT}{BLACK}{STRING}
+STR_6034    :{BLACK}{STRING}
 STR_6035    :请选择你的过山车大亨1的目录
 STR_6036    :清除
 STR_6037    :请选择一个有效的过山车大亨1的目录
@@ -3352,34 +3302,34 @@ STR_6066    :在你的用户文件夹下用文件记录所有用户的操作.
 STR_6067    :服务器开启.
 STR_6068    :服务器关闭.
 STR_6069    :{STRING} 被{STRING}从服务器踢出.
-STR_6070    :{STRING} 被设置到组'{STRING}', 通过{STRING}设置.
-STR_6071    :{STRING} 创建新的玩家组'{STRING}'.
-STR_6072    :{STRING} 删除玩家组'{String}'.
-STR_6073    :{STRING} 编辑玩家组'{String}'的权限.
-STR_6074    :{STRING} 将玩家组名称从'{String}'改名为'{String}'.
-STR_6075    :{STRING} 设置默认玩家组为'{String}'.
-STR_6076    :{STRING} 使用/开启作弊'{STRING}'.
+STR_6070    :{STRING} 被设置到组‘{STRING}’, 通过{STRING}设置.
+STR_6071    :{STRING} 创建新的玩家组‘{STRING}’.
+STR_6072    :{STRING} 删除玩家组‘{STRING}’.
+STR_6073    :{STRING} 编辑玩家组‘{STRING}’的权限.
+STR_6074    :{STRING} 将玩家组名称从‘{STRING}’改名为‘{STRING}’.
+STR_6075    :{STRING} 设置默认玩家组为‘{STRING}’.
+STR_6076    :{STRING} 使用/开启作弊‘{STRING}’.
 STR_6077    :增加金钱
-STR_6078    :{STRING} 建造游乐设施'{STRING}'.
-STR_6079    :{STRING} 拆除游乐设施'{STRING}'.
-STR_6080    :{STRING} 改变游乐设施'{STRING}'的外观.
-STR_6081    :{STRING} 将游乐设施'{STRING}'的状态变为已关闭.
-STR_6082    :{STRING} 将游乐设施'{STRING}'的状态变为开放中.
-STR_6083    :{STRING} 将游乐设施'{STRING}'的状态变为测试中.
-STR_6084    :{STRING} 改变游乐设施'{STRING}'的车辆选项.
-STR_6085    :{STRING} 改变游乐设施'{STRING}'的设备选项.
-STR_6086    :{STRING} 将游乐设施'{STRING}'改名为'{STRING}'.
-STR_6087    :{STRING} 将游乐设施的价格从'{STRING}'调整到{STRING}
-STR_6088    :{STRING} 将游乐设施的第二价格从'{STRING}'调整到{STRING}
-STR_6089    :{STRING} 将游乐园名称从'{STRING}'改名为'{STRING}'.
+STR_6078    :{STRING} 建造游乐设施‘{STRING}’.
+STR_6079    :{STRING} 拆除游乐设施‘{STRING}’.
+STR_6080    :{STRING} 改变游乐设施‘{STRING}’的外观.
+STR_6081    :{STRING} 将游乐设施‘{STRING}’的状态变为已关闭.
+STR_6082    :{STRING} 将游乐设施‘{STRING}’的状态变为开放中.
+STR_6083    :{STRING} 将游乐设施‘{STRING}’的状态变为测试中.
+STR_6084    :{STRING} 改变游乐设施‘{STRING}’的车辆选项.
+STR_6085    :{STRING} 改变游乐设施‘{STRING}’的设备选项.
+STR_6086    :{STRING} 将游乐设施‘{STRING}’改名为‘{STRING}’.
+STR_6087    :{STRING} 将游乐设施的价格从‘{STRING}’调整到{STRING}
+STR_6088    :{STRING} 将游乐设施的第二价格从‘{STRING}’调整到{STRING}
+STR_6089    :{STRING} 将游乐园名称从‘{STRING}’改名为‘{STRING}’.
 STR_6090    :{STRING} 开放游乐园.
 STR_6091    :{STRING} 关闭游乐园.
 STR_6092    :{STRING} 将游乐园门票价格调整为{STRING}
 STR_6093    :{STRING} 放置新景观.
 STR_6094    :{STRING} 移除景观.
 STR_6095    :{STRING} 编辑景观.
-STR_6096    :{STRING} 将指示牌命名为'{STRING}'.
-STR_6097    :{STRING} 为游乐设施放置一条新轨道'{STRING}'.
+STR_6096    :{STRING} 将指示牌命名为‘{STRING}’.
+STR_6097    :{STRING} 为游乐设施放置一条新轨道‘{STRING}’.
 STR_6098    :{STRING} 移除游乐设施的一条轨道.
 STR_6099    :你已连接到服务器.
 STR_6100    :你已从服务器断开.
@@ -3433,7 +3383,6 @@ STR_6155    :KDialog和Zenity库均没有安装. 请至少安装其一, 或者�
 STR_6156    :名称已被使用
 STR_6157    :控制台
 STR_6158    :不能读取此文件…{NEWLINE}不兼容的RCT版本: {COMMA16}
-STR_6159    :平滑最近相邻
 STR_6160    :{WINDOW_COLOUR_2}可用车辆: {BLACK}{STRING}
 STR_6161    :网格显示切换
 STR_6162    :旋转野鼠
@@ -3461,7 +3410,7 @@ STR_6183    :跟随{MOVE_X}{87}没有选择sprite
 STR_6184    :跟随Sprite
 STR_6185    :选择Sprite
 STR_6186    :没有选择sprite
-STR_6187    :{MEDIUMFONT}{OUTLINE}{WINDOW_COLOUR_2}{STRING}
+STR_6187    :{OUTLINE}{WINDOW_COLOUR_2}{STRING}
 STR_6188    :呕吐物
 STR_6189    :样子
 STR_6190    :当主界面激活时你无法选择一个sprite.
@@ -3537,7 +3486,7 @@ STR_6273    :音乐
 STR_6274    :无法设置配色主题…
 STR_6275    :{WINDOW_COLOUR_2}车站类型:
 STR_6276    :{RED}{STRINGID} 有游客被困住了，这可能是因为无效的设施类型或者运行模式
-STR_6277    :{WINDOW_COLOUR_2}车站编号: {BLACK}{STRINGID}
+STR_6277    :车站编号: {BLACK}{STRINGID}
 STR_6278    :自动保存数量
 STR_6279    :应该保留的自动保存数量
 STR_6293    :B
@@ -3558,7 +3507,7 @@ STR_6303    :下载文件 ({COMMA16} / {COMMA16}): [{STRING}]
 STR_6304    :打开景物选择器
 STR_6305    :多线程
 STR_6306    :使用多个线程进行渲染的实验选项可能会导致游戏不稳定
-STR_6360    :{SMALLFONT}{BLACK}{COMMA32}
+STR_6360    :{BLACK}{COMMA32}
 
 #############
 # Scenarios #
@@ -3601,8 +3550,8 @@ STR_PARK    :Trinity Islands
 STR_DTLS    :几个邻近的岛屿组成了这个新乐园的基本地势
 
 <Katie's Dreamland>
-STR_SCNR    :Katie's Dreamland
-STR_PARK    :Katie's Dreamland
+STR_SCNR    :Katie’s Dreamland
+STR_PARK    :Katie’s Dreamland
 STR_DTLS    :一个只有几个游乐设施但有扩展空间的小型乐园-你的目标是让它的价值翻倍
 
 <Pokey Park>
@@ -3626,8 +3575,8 @@ STR_PARK    :Karts & Coasters
 STR_DTLS    :一个隐藏在森林的大型乐园，但当中只有小型赛车及木制过山车
 
 <Mel's World>
-STR_SCNR    :Mel's World
-STR_PARK    :Mel's World
+STR_SCNR    :Mel’s World
+STR_PARK    :Mel’s World
 STR_DTLS    :这个乐园已经有一些既优秀又现代的游乐设施，但它亦有很大的扩充空间
 
 <Mystic Mountain>
@@ -3648,7 +3597,7 @@ STR_DTLS    :A large park with well-designed but rather old rides - Replace the 
 <Paradise Pier>
 STR_SCNR    :Paradise Pier
 STR_PARK    :Paradise Pier
-STR_DTLS    :Convert this sleepy town's pier into a thriving attraction
+STR_DTLS    :Convert this sleepy town’s pier into a thriving attraction
 
 <Lightning Peaks>
 STR_SCNR    :Lightning Peaks
@@ -3663,7 +3612,7 @@ STR_DTLS    :A well-established park, which has a few problems
 <Rainbow Valley>
 STR_SCNR    :Rainbow Valley
 STR_PARK    :Rainbow Valley
-STR_DTLS    :Rainbow Valley's local authority won't allow any landscape changes or large tree removal, but you must develop the area into a large theme park
+STR_DTLS    :Rainbow Valley’s local authority won’t allow any landscape changes or large tree removal, but you must develop the area into a large theme park
 
 <Thunder Rock>
 STR_SCNR    :Thunder Rock
@@ -3764,7 +3713,7 @@ STR_DTLS    :The weather is so wet here that a giant pyramid has been built to a
 <Harmonic Hills>
 STR_SCNR    :Harmonic Hills
 STR_PARK    :Harmonic Hills
-STR_DTLS    :The local authority won't allow you to build above tree height in this park
+STR_DTLS    :The local authority won’t allow you to build above tree height in this park
 
 <Roman Village>
 STR_SCNR    :Roman Village
@@ -3864,8 +3813,8 @@ STR_PARK    :Paradise Pier 2
 STR_DTLS    :Paradise Pier has expanded its network of walkways over the sea, and your task is to expand the park to use the extra space
 
 <Dragon's Cove>
-STR_SCNR    :Dragon's Cove
-STR_PARK    :Dragon's Cove
+STR_SCNR    :Dragon’s Cove
+STR_PARK    :Dragon’s Cove
 STR_DTLS    :This sea-side cove is the setting for this coaster-building challenge
 
 <Good Knight Park>
@@ -3976,7 +3925,7 @@ STR_DTLS    :On a far-away planet this area of land needs turning into a theme p
 <Micro Park>
 STR_SCNR    :Micro Park
 STR_PARK    :Micro Park
-STR_DTLS    :Try to create the world's smallest profitable park
+STR_DTLS    :Try to create the world’s smallest profitable park
 
 ## Real Parks from RCT1
 # None of them had details
@@ -4287,11 +4236,11 @@ STR_PARK    :Metropolis
 STR_DTLS    :你拥有一个空的地段，靠近城镇的低矮的部分。把最贵的城市属性，建立一个主题公园的启发，摩天大楼高耸的建筑装饰艺术的年代。
 
 <Rock 'n' Roll - Flower Power>
-STR_SCNR    :Rock 'n' Roll - Flower Power
+STR_SCNR    :Rock ’n’ Roll - Flower Power
 STR_PARK    :Woodstock
 STR_DTLS    :一个大型的年度音乐节在你的土地上。打造一个主题公园，保持自由奔放的观众的娱乐。
 
 <Rock 'n' Roll - Rock 'n' Roll>
-STR_SCNR    :Rock 'n' Roll - Rock 'n' Roll
-STR_PARK    :Rock 'n' Roll Revival
+STR_SCNR    :Rock ’n’ Roll - Rock ’n’ Roll
+STR_PARK    :Rock ’n’ Roll Revival
 STR_DTLS    :这个老龄化的主题公园已经看到了更好的日子。帮助主人给它一个复古摇滚的改造，把这个地方变成一个成功的地点。

@@ -12,7 +12,7 @@
 #include "../OpenRCT2.h"
 #include "../core/Console.hpp"
 #include "../core/String.hpp"
-#include "../platform/Platform2.h"
+#include "../platform/Platform.h"
 
 #include <algorithm>
 #include <cstring>
@@ -38,10 +38,8 @@ bool CommandLineArgEnumerator::Backtrack()
         _index--;
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 bool CommandLineArgEnumerator::TryPop()
@@ -51,10 +49,8 @@ bool CommandLineArgEnumerator::TryPop()
         _index++;
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 bool CommandLineArgEnumerator::TryPopInteger(int32_t* result)
@@ -89,10 +85,8 @@ bool CommandLineArgEnumerator::TryPopString(const char** result)
         _index++;
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 #pragma endregion
@@ -317,11 +311,9 @@ namespace CommandLine
                     // Found matching command
                     return command;
                 }
-                else
-                {
-                    // Recurse for the sub command table
-                    return FindCommandFor(command->SubCommands, argEnumerator);
-                }
+
+                // Recurse for the sub command table
+                return FindCommandFor(command->SubCommands, argEnumerator);
             }
         }
 
@@ -364,10 +356,8 @@ namespace CommandLine
                 Console::Error::WriteLine("All options must be passed at the end of the command line.");
                 return false;
             }
-            else
-            {
-                continue;
-            }
+
+            continue;
         }
 
         return true;
@@ -424,12 +414,10 @@ namespace CommandLine
                 Console::Error::WriteLine("Option is a switch: %s", optionName);
                 return false;
             }
-            else
+
+            if (!ParseOptionValue(option, equalsCh + 1))
             {
-                if (!ParseOptionValue(option, equalsCh + 1))
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
@@ -498,7 +486,7 @@ namespace CommandLine
                 *(static_cast<float*>(option->OutAddress)) = static_cast<float>(atof(valueString));
                 return true;
             case CMDLINE_TYPE_STRING:
-                *(static_cast<utf8**>(option->OutAddress)) = String::Duplicate(valueString);
+                *(static_cast<u8string*>(option->OutAddress)) = u8string(valueString);
                 return true;
             default:
                 Console::Error::WriteLine("Unknown CMDLINE_TYPE for: %s", option->LongName);
@@ -563,8 +551,6 @@ int32_t cmdline_run(const char** argv, int32_t argc)
     {
         return CommandLine::HandleCommandDefault();
     }
-    else
-    {
-        return command->Func(&argEnumerator);
-    }
+
+    return command->Func(&argEnumerator);
 }

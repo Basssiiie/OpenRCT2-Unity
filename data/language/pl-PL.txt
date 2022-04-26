@@ -234,15 +234,15 @@ STR_0825    :Wybrana nazwa jest już w użyciu
 STR_0826    :Zdefiniowano za dużo nazw
 STR_0827    :Za mało pieniędzy - potrzeba {CURRENCY2DP}
 STR_0828    :Zamknij okno
-STR_0829    :Przeciągnij tą belkę, by przesunąć okno
+STR_0829    :Przeciągnij tę belkę, by przesunąć okno
 STR_0830    :Przybliż widok
 STR_0831    :Oddal widok
 STR_0832    :Obróć widok o 90°
 STR_0833    :Pauza
 STR_0834    :Menu zapisu i opcji
-STR_0839    :{UINT16} x {UINT16}
-STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} x {UINT16}
-STR_0847    :O 'OpenRCT2'
+STR_0839    :{UINT16} × {UINT16}
+STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} × {UINT16}
+STR_0847    :O „OpenRCT2”
 STR_0850    :{WINDOW_COLOUR_2}Copyright © 2002 Chris Sawyer, wszystkie prawa zastrzeżone
 STR_0851    :{WINDOW_COLOUR_2}Projekt i implementacja: Chris Sawyer
 STR_0852    :{WINDOW_COLOUR_2}Grafika: Simon Foster
@@ -276,7 +276,7 @@ STR_0887    :Wyjdź z edytora scenariuszy
 STR_0888    :Wyjdź z Projektanta Kolejek
 STR_0889    :Wyjdź z Menadżera Projektów Tras
 STR_0891    :Zrzut ekranu
-STR_0892    :Zrzut ekranu zapisany jako '{STRINGID}'
+STR_0892    :Zrzut ekranu zapisany jako „{STRINGID}”
 STR_0893    :Zrzut ekranu nieudany!
 STR_0894    :Obszar danych krajobrazu jest pełny !
 STR_0895    :Nie można wybudować częściowo nad i pod ziemią
@@ -313,8 +313,8 @@ STR_0925    :Spirala w górę
 STR_0926    :Nie można tego usunąć…
 STR_0927    :Nie można tego tutaj zbudować…
 STR_0928    :Łańcuch do wciągania pojazdów na zbocza
-STR_0929    :Zakręt typu 'S' (w lewo)
-STR_0930    :Zakręt typu 'S' (w prawo)
+STR_0929    :Zakręt typu „S” (w lewo)
+STR_0930    :Zakręt typu „S” (w prawo)
 STR_0931    :Pionowa pętla (w lewo)
 STR_0932    :Pionowa pętla (w prawo)
 STR_0933    :Najpierw podnieś/obniż teren
@@ -600,7 +600,7 @@ STR_1212    :{WINDOW_COLOUR_2}Maks. czas oczekiwania:
 STR_1213    :Wybierz minimalny czas oczekiwania na stacji przed wyruszeniem
 STR_1214    :Wybierz maksymalny czas oczekiwania na stacji przed wyruszeniem
 STR_1215    :{WINDOW_COLOUR_2}Synchronizuj z sąsiadującymi stacjami
-STR_1216    :Wybierz, czy kolejki mają synchronizować start z innymi stacjami (dla 'wyścigów')
+STR_1216    :Wybierz, czy kolejki mają synchronizować start z innymi stacjami (dla „wyścigów”)
 STR_1217    :{COMMA16} sekund
 STR_1218    :{BLACK}+
 STR_1219    :{BLACK}-
@@ -742,7 +742,7 @@ STR_1354    :{WINDOW_COLOUR_2}Wysokość najwyższego spadu: {BLACK}{LENGTH}
 STR_1355    :{WINDOW_COLOUR_2}Spadki: {BLACK}{COMMA16}
 STR_1356    :{WINDOW_COLOUR_2}Inwersja: {BLACK}{COMMA16}
 STR_1357    :{WINDOW_COLOUR_2}Dołki: {BLACK}{COMMA16}
-STR_1358    :{WINDOW_COLOUR_2}Całkowity czas 'w powietrzu': {BLACK}{COMMA2DP32}sek.
+STR_1358    :{WINDOW_COLOUR_2}Całkowity czas „w powietrzu”: {BLACK}{COMMA2DP32}sek.
 STR_1359    :{WINDOW_COLOUR_2}Czas w kolejce: {BLACK}{COMMA16} minut
 STR_1360    :{WINDOW_COLOUR_2}Czas w kolejce: {BLACK}{COMMA16} minut
 STR_1361    :Nie można zmienić prędkości…
@@ -798,14 +798,14 @@ STR_1410    :Wieża pionowa
 STR_1411    :{STRINGID} blokuje
 STR_1412    :{WINDOW_COLOUR_3}Zbieranie danych nie jest dostępne dla tego typu atrakcji
 STR_1413    :{WINDOW_COLOUR_3}Zbieranie danych rozpocznie się gdy następne {STRINGID} opuści {STRINGID}
-STR_1414    :{SMALLFONT}{BLACK}{DURATION}
+STR_1414    :{BLACK}{DURATION}
 STR_1415    :{WINDOW_COLOUR_2}Prędkość
 STR_1416    :{WINDOW_COLOUR_2}Wysokość
 STR_1417    :{WINDOW_COLOUR_2}Pionowe G
 STR_1418    :{WINDOW_COLOUR_2}Boczne G
-STR_1419    :{SMALLFONT}{BLACK}{VELOCITY}
-STR_1420    :{SMALLFONT}{BLACK}{LENGTH}
-STR_1421    :{SMALLFONT}{BLACK}{COMMA16}g
+STR_1419    :{BLACK}{VELOCITY}
+STR_1420    :{BLACK}{LENGTH}
+STR_1421    :{BLACK}{COMMA16}g
 STR_1422    :Dane zebrane z {POP16}{STRINGID}
 STR_1423    :Kolejka do atrakcji
 STR_1424    :Chodnik
@@ -844,8 +844,8 @@ STR_1456    :{WINDOW_COLOUR_2}Wydał: {BLACK}{CURRENCY2DP}
 STR_1457    :{WINDOW_COLOUR_2}Pieniędzy w kieszeni: {BLACK}{CURRENCY2DP}
 STR_1458    :{WINDOW_COLOUR_2}Czas w parku: {BLACK}{REALTIME}
 STR_1459    :Styl trasy
-STR_1460    :Otwarta trasa typu "U"
-STR_1461    :Zamknięta trasa typu "O"
+STR_1460    :Otwarta trasa typu „U”
+STR_1461    :Zamknięta trasa typu „O”
 STR_1462    :Too steep for lift hill
 STR_1463    :Goście
 STR_1464    :Spirala w górę (mała)
@@ -864,131 +864,131 @@ STR_1476    :{WINDOW_COLOUR_2}Ocena intensywności: {BLACK}Jeszcze nie dostępna
 STR_1477    :{WINDOW_COLOUR_2}Ocena intensywności: {OUTLINE}{RED}{COMMA2DP32}  ({STRINGID})
 STR_1478    :{WINDOW_COLOUR_2}Ocena mdłości: {BLACK}{COMMA2DP32}  ({STRINGID})
 STR_1479    :{WINDOW_COLOUR_2}Ocena mdłości: {BLACK}Jeszcze nie dostępna
-STR_1480    :{SMALLFONT}“Nie mogę sobie pozwolić na {STRINGID}”
-STR_1481    :{SMALLFONT}“Wydałem wszystkie swoje pieniądze”
-STR_1482    :{SMALLFONT}“Niedobrze mi”
-STR_1483    :{SMALLFONT}“Zaraz zwymiotuję”
-STR_1484    :{SMALLFONT}“Chcę pójść na coś bardziej intensywnego niż {STRINGID}”
-STR_1485    :{SMALLFONT}“{STRINGID} wygląda zbyt intensywne dla mnie”
-STR_1486    :{SMALLFONT}“Nie skończyłem {STRINGID} jeszcze”
-STR_1487    :{SMALLFONT}“Od samego patrzenia na {STRINGID} robi mi się niedobrze”
-STR_1488    :{SMALLFONT}“Nie zapłacę tyle za {STRINGID}”
-STR_1489    :{SMALLFONT}“Chcę już do domu”
-STR_1490    :{SMALLFONT}“{STRINGID} ma naprawdę dobrą cenę”
-STR_1491    :{SMALLFONT}“Mam już {STRINGID}”
-STR_1492    :{SMALLFONT}“Nie mogę sobie pozwolić na {STRINGID}”
-STR_1493    :{SMALLFONT}“Nie jestem głodny”
-STR_1494    :{SMALLFONT}“Nie jestem spragniony”
-STR_1495    :{SMALLFONT}“Pomocy! Tonę!”
-STR_1496    :{SMALLFONT}“Zgubiłem się!”
-STR_1497    :{SMALLFONT}“Na atrakcji {STRINGID} było świetnie”
-STR_1498    :{SMALLFONT}“Czekam już wieki w kolejce na {STRINGID}”
-STR_1499    :{SMALLFONT}“Jestem zmęczony”
-STR_1500    :{SMALLFONT}“Jestem głodny”
-STR_1501    :{SMALLFONT}“Jestem spragniony”
-STR_1502    :{SMALLFONT}“Muszę do toalety”
-STR_1503    :{SMALLFONT}“Nie mogę znaleźć {STRINGID}”
-STR_1504    :{SMALLFONT}“Nie zapłacę tyle za {STRINGID}”
-STR_1505    :{SMALLFONT}“Nie pójdę na {STRINGID} dopóki pada”
-STR_1506    :{SMALLFONT}“Ścieżki tutaj są okropne”
-STR_1507    :{SMALLFONT}“Nie mogę znaleźć wyjścia z parku”
-STR_1508    :{SMALLFONT}“Muszę odpocząć od {STRINGID}”
-STR_1509    :{SMALLFONT}“Chcę już wyjść z {STRINGID}”
-STR_1510    :{SMALLFONT}“Nie pójdę na {STRINGID} - nie wygląda za bezpiecznie”
-STR_1511    :{SMALLFONT}“Ta ścieżka jest obrzydliwa”
-STR_1512    :{SMALLFONT}“Tutaj jest zdecydowanie za tłoczno”
-STR_1513    :{SMALLFONT}“Wandalizm stanowi tutaj duży problem”
-STR_1514    :{SMALLFONT}“Świetna sceneria!”
-STR_1515    :{SMALLFONT}“Ten park jest naprawdę czysty”
-STR_1516    :{SMALLFONT}“Ta skaczą fontanna jest świetna”
-STR_1517    :{SMALLFONT}“Leci tutaj miła muzyka”
-STR_1518    :{SMALLFONT}“Ten balon z {STRINGID} był naprawdę opłacalny”
-STR_1519    :{SMALLFONT}“Ta przytulanka z {STRINGID} była naprawdę opłacalna”
-STR_1520    :{SMALLFONT}“Ta mapa parku z {STRINGID} była naprawdę opłacalna”
-STR_1521    :{SMALLFONT}“To zdjęcie z przejazdu na {STRINGID} było naprawdę opłacalne”
-STR_1522    :{SMALLFONT}“Ta parasolka z {STRINGID} była naprawdę opłacalna”
-STR_1523    :{SMALLFONT}“Ten napój z {STRINGID} był naprawdę opłacalny”
-STR_1524    :{SMALLFONT}“Ten burger z {STRINGID} był naprawdę opłacalny”
-STR_1525    :{SMALLFONT}“Te frytki z {STRINGID} były naprawdę opłacalne”
-STR_1526    :{SMALLFONT}“Te lody z {STRINGID} były naprawdę opłacalne”
-STR_1527    :{SMALLFONT}“Ta wata cukrowa {STRINGID} była naprawdę opłacalna”
+STR_1480    :“Nie mogę sobie pozwolić na {STRINGID}”
+STR_1481    :“Wydałem wszystkie swoje pieniądze”
+STR_1482    :“Niedobrze mi”
+STR_1483    :“Zaraz zwymiotuję”
+STR_1484    :“Chcę pójść na coś bardziej intensywnego niż {STRINGID}”
+STR_1485    :“{STRINGID} wygląda zbyt intensywne dla mnie”
+STR_1486    :“Nie skończyłem {STRINGID} jeszcze”
+STR_1487    :“Od samego patrzenia na {STRINGID} robi mi się niedobrze”
+STR_1488    :“Nie zapłacę tyle za {STRINGID}”
+STR_1489    :“Chcę już do domu”
+STR_1490    :“{STRINGID} ma naprawdę dobrą cenę”
+STR_1491    :“Mam już {STRINGID}”
+STR_1492    :“Nie mogę sobie pozwolić na {STRINGID}”
+STR_1493    :“Nie jestem głodny”
+STR_1494    :“Nie jestem spragniony”
+STR_1495    :“Pomocy! Tonę!”
+STR_1496    :“Zgubiłem się!”
+STR_1497    :“Na atrakcji {STRINGID} było świetnie”
+STR_1498    :“Czekam już wieki w kolejce na {STRINGID}”
+STR_1499    :“Jestem zmęczony”
+STR_1500    :“Jestem głodny”
+STR_1501    :“Jestem spragniony”
+STR_1502    :“Muszę do toalety”
+STR_1503    :“Nie mogę znaleźć {STRINGID}”
+STR_1504    :“Nie zapłacę tyle za {STRINGID}”
+STR_1505    :“Nie pójdę na {STRINGID} dopóki pada”
+STR_1506    :“Ścieżki tutaj są okropne”
+STR_1507    :“Nie mogę znaleźć wyjścia z parku”
+STR_1508    :“Muszę odpocząć od {STRINGID}”
+STR_1509    :“Chcę już wyjść z {STRINGID}”
+STR_1510    :“Nie pójdę na {STRINGID} - nie wygląda za bezpiecznie”
+STR_1511    :“Ta ścieżka jest obrzydliwa”
+STR_1512    :“Tutaj jest zdecydowanie za tłoczno”
+STR_1513    :“Wandalizm stanowi tutaj duży problem”
+STR_1514    :“Świetna sceneria!”
+STR_1515    :“Ten park jest naprawdę czysty”
+STR_1516    :“Ta skaczą fontanna jest świetna”
+STR_1517    :“Leci tutaj miła muzyka”
+STR_1518    :“Ten balon z {STRINGID} był naprawdę opłacalny”
+STR_1519    :“Ta przytulanka z {STRINGID} była naprawdę opłacalna”
+STR_1520    :“Ta mapa parku z {STRINGID} była naprawdę opłacalna”
+STR_1521    :“To zdjęcie z przejazdu na {STRINGID} było naprawdę opłacalne”
+STR_1522    :“Ta parasolka z {STRINGID} była naprawdę opłacalna”
+STR_1523    :“Ten napój z {STRINGID} był naprawdę opłacalny”
+STR_1524    :“Ten burger z {STRINGID} był naprawdę opłacalny”
+STR_1525    :“Te frytki z {STRINGID} były naprawdę opłacalne”
+STR_1526    :“Te lody z {STRINGID} były naprawdę opłacalne”
+STR_1527    :“Ta wata cukrowa {STRINGID} była naprawdę opłacalna”
 STR_1528    :
 STR_1529    :
 STR_1530    :
-STR_1531    :{SMALLFONT}“Ta pizza z {STRINGID} była naprawdę opłacalna”
+STR_1531    :“Ta pizza z {STRINGID} była naprawdę opłacalna”
 STR_1532    :
-STR_1533    :{SMALLFONT}“Ten popcorn z {STRINGID} był naprawdę opłacalny”
-STR_1534    :{SMALLFONT}“Ten hotdog z {STRINGID} był naprawdę opłacalny”
-STR_1535    :{SMALLFONT}“Ta ośmiorniczka z {STRINGID} była naprawdę opłacalna”
-STR_1536    :{SMALLFONT}“Ten kapelusz {STRINGID} był naprawdę opłacalny”
-STR_1537    :{SMALLFONT}“To kandyzowane jabłko z {STRINGID} było naprawdę opłacalne”
-STR_1538    :{SMALLFONT}“Ten t-shirt z {STRINGID} był naprawdę opłacalny”
-STR_1539    :{SMALLFONT}“Ten pączek z {STRINGID} był naprawdę opłacalny”
-STR_1540    :{SMALLFONT}“Ta kawa z {STRINGID} była naprawdę opłacalna”
+STR_1533    :“Ten popcorn z {STRINGID} był naprawdę opłacalny”
+STR_1534    :“Ten hotdog z {STRINGID} był naprawdę opłacalny”
+STR_1535    :“Ta ośmiorniczka z {STRINGID} była naprawdę opłacalna”
+STR_1536    :“Ten kapelusz {STRINGID} był naprawdę opłacalny”
+STR_1537    :“To kandyzowane jabłko z {STRINGID} było naprawdę opłacalne”
+STR_1538    :“Ten t-shirt z {STRINGID} był naprawdę opłacalny”
+STR_1539    :“Ten pączek z {STRINGID} był naprawdę opłacalny”
+STR_1540    :“Ta kawa z {STRINGID} była naprawdę opłacalna”
 STR_1541    :
-STR_1542    :{SMALLFONT}“Ten smażony kurczak z {STRINGID} był naprawdę opłacalny”
-STR_1543    :{SMALLFONT}“Ta lemoniada z {STRINGID} była naprawdę opłacalna”
+STR_1542    :“Ten smażony kurczak z {STRINGID} był naprawdę opłacalny”
+STR_1543    :“Ta lemoniada z {STRINGID} była naprawdę opłacalna”
 STR_1544    :
 STR_1545    :
 STR_1546    :
 STR_1547    :
 STR_1548    :
 STR_1549    :
-STR_1550    :{SMALLFONT}“Świetnie!”
-STR_1551    :{SMALLFONT}“Mam dziwne uczucie jakby mnie ktoś podglądał”
-STR_1552    :{SMALLFONT}“Nie zapłacę tyle za balona z {STRINGID}”
-STR_1553    :{SMALLFONT}“Nie zapłacę tyle za przytulankę z {STRINGID}”
-STR_1554    :{SMALLFONT}“Nie zapłacę tyle za mapę parku z {STRINGID}”
-STR_1555    :{SMALLFONT}“Nie zapłacę tyle za zdjęcie z przejażdżki z {STRINGID}”
-STR_1556    :{SMALLFONT}“Nie zapłacę tyle za parasol z {STRINGID}”
-STR_1557    :{SMALLFONT}“Nie zapłacę tyle za napój z {STRINGID}”
-STR_1558    :{SMALLFONT}“Nie zapłacę tyle za burgera z {STRINGID}”
-STR_1559    :{SMALLFONT}“Nie zapłacę tyle za frytki z {STRINGID}”
-STR_1560    :{SMALLFONT}“Nie zapłacę tyle za lody z {STRINGID}”
-STR_1561    :{SMALLFONT}“Nie zapłacę tyle za watę cukrową z {STRINGID}”
+STR_1550    :“Świetnie!”
+STR_1551    :“Mam dziwne uczucie jakby mnie ktoś podglądał”
+STR_1552    :“Nie zapłacę tyle za balona z {STRINGID}”
+STR_1553    :“Nie zapłacę tyle za przytulankę z {STRINGID}”
+STR_1554    :“Nie zapłacę tyle za mapę parku z {STRINGID}”
+STR_1555    :“Nie zapłacę tyle za zdjęcie z przejażdżki z {STRINGID}”
+STR_1556    :“Nie zapłacę tyle za parasol z {STRINGID}”
+STR_1557    :“Nie zapłacę tyle za napój z {STRINGID}”
+STR_1558    :“Nie zapłacę tyle za burgera z {STRINGID}”
+STR_1559    :“Nie zapłacę tyle za frytki z {STRINGID}”
+STR_1560    :“Nie zapłacę tyle za lody z {STRINGID}”
+STR_1561    :“Nie zapłacę tyle za watę cukrową z {STRINGID}”
 STR_1562    :
 STR_1563    :
 STR_1564    :
-STR_1565    :{SMALLFONT}“Nie zapłacę tyle za pizzę z {STRINGID}”
+STR_1565    :“Nie zapłacę tyle za pizzę z {STRINGID}”
 STR_1566    :
-STR_1567    :{SMALLFONT}“Nie zapłacę tyle za popcorn z {STRINGID}”
-STR_1568    :{SMALLFONT}“Nie zapłacę tyle za hotdoga z {STRINGID}”
-STR_1569    :{SMALLFONT}“Nie zapłacę tyle za ośmiorniczkę z {STRINGID}”
-STR_1570    :{SMALLFONT}“Nie zapłacę tyle za kapelusz z {STRINGID}”
-STR_1571    :{SMALLFONT}“Nie zapłacę tyle za kandyzowane jabłko z {STRINGID}”
-STR_1572    :{SMALLFONT}“Nie zapłacę tyle za koszulkę z {STRINGID}”
-STR_1573    :{SMALLFONT}“Nie zapłacę tyle za pączka z {STRINGID}”
-STR_1574    :{SMALLFONT}“Nie zapłacę tyle za kawę z {STRINGID}”
+STR_1567    :“Nie zapłacę tyle za popcorn z {STRINGID}”
+STR_1568    :“Nie zapłacę tyle za hotdoga z {STRINGID}”
+STR_1569    :“Nie zapłacę tyle za ośmiorniczkę z {STRINGID}”
+STR_1570    :“Nie zapłacę tyle za kapelusz z {STRINGID}”
+STR_1571    :“Nie zapłacę tyle za kandyzowane jabłko z {STRINGID}”
+STR_1572    :“Nie zapłacę tyle za koszulkę z {STRINGID}”
+STR_1573    :“Nie zapłacę tyle za pączka z {STRINGID}”
+STR_1574    :“Nie zapłacę tyle za kawę z {STRINGID}”
 STR_1575    :
-STR_1576    :{SMALLFONT}“Nie zapłacę tyle za kurczaka z {STRINGID}”
-STR_1577    :{SMALLFONT}“Nie zapłacę tyle za lemoniadę z {STRINGID}”
+STR_1576    :“Nie zapłacę tyle za kurczaka z {STRINGID}”
+STR_1577    :“Nie zapłacę tyle za lemoniadę z {STRINGID}”
 STR_1578    :
 STR_1579    :
 STR_1580    :
 STR_1581    :
 STR_1582    :
 STR_1583    :
-STR_1584    :{SMALLFONT}“To zdjęcie z przejażdżki na {STRINGID} było naprawdę opłacalne”
-STR_1585    :{SMALLFONT}“To zdjęcie z przejażdżki na {STRINGID} było naprawdę opłacalneENDQUOTES}
-STR_1586    :{SMALLFONT}“To zdjęcie z przejażdżki na {STRINGID} było naprawdę opłacalne”
-STR_1587    :{SMALLFONT}“Ten precel z {STRINGID} był naprawdę opłacalny”
-STR_1588    :{SMALLFONT}“Ta gorąca czekolada z {STRINGID} była naprawdę opłacalna”
-STR_1589    :{SMALLFONT}“Ta mrożona herbata z {STRINGID} była naprawdę opłacalna”
-STR_1590    :{SMALLFONT}“Ten precel z {STRINGID} był naprawdę opłacalny”
-STR_1591    :{SMALLFONT}“Te okulary przeciwsłoneczne z {STRINGID} były naprawdę opłacalne”
-STR_1592    :{SMALLFONT}“Ten makaron z wołowiną z {STRINGID} był naprawdę opłacalny”
-STR_1593    :{SMALLFONT}“Ten smażony makaron z {STRINGID} był naprawdę opłacalny”
-STR_1594    :{SMALLFONT}“Ta zupa wonton z {STRINGID} była naprawdę opłacalna”
-STR_1595    :{SMALLFONT}“Ta zupa z klopsikami z {STRINGID} była naprawdę opłacalna”
-STR_1596    :{SMALLFONT}“Ten sok owocowy z {STRINGID} był naprawdę opłacalny”
-STR_1597    :{SMALLFONT}“Te mleko sojowe z {STRINGID} było naprawdę opłacalne”
-STR_1598    :{SMALLFONT}“Ta sujongkwa z {STRINGID} była naprawdę opłacalna”
-STR_1599    :{SMALLFONT}“Ta kanapka z {STRINGID} była naprawdę opłacalna”
-STR_1600    :{SMALLFONT}“To ciasteczko z {STRINGID} było naprawdę opłacalne”
+STR_1584    :“To zdjęcie z przejażdżki na {STRINGID} było naprawdę opłacalne”
+STR_1585    :“To zdjęcie z przejażdżki na {STRINGID} było naprawdę opłacalneENDQUOTES}
+STR_1586    :“To zdjęcie z przejażdżki na {STRINGID} było naprawdę opłacalne”
+STR_1587    :“Ten precel z {STRINGID} był naprawdę opłacalny”
+STR_1588    :“Ta gorąca czekolada z {STRINGID} była naprawdę opłacalna”
+STR_1589    :“Ta mrożona herbata z {STRINGID} była naprawdę opłacalna”
+STR_1590    :“Ten precel z {STRINGID} był naprawdę opłacalny”
+STR_1591    :“Te okulary przeciwsłoneczne z {STRINGID} były naprawdę opłacalne”
+STR_1592    :“Ten makaron z wołowiną z {STRINGID} był naprawdę opłacalny”
+STR_1593    :“Ten smażony makaron z {STRINGID} był naprawdę opłacalny”
+STR_1594    :“Ta zupa wonton z {STRINGID} była naprawdę opłacalna”
+STR_1595    :“Ta zupa z klopsikami z {STRINGID} była naprawdę opłacalna”
+STR_1596    :“Ten sok owocowy z {STRINGID} był naprawdę opłacalny”
+STR_1597    :“Te mleko sojowe z {STRINGID} było naprawdę opłacalne”
+STR_1598    :“Ta sujongkwa z {STRINGID} była naprawdę opłacalna”
+STR_1599    :“Ta kanapka z {STRINGID} była naprawdę opłacalna”
+STR_1600    :“To ciasteczko z {STRINGID} było naprawdę opłacalne”
 STR_1601    :
 STR_1602    :
 STR_1603    :
-STR_1604    :{SMALLFONT}“Ta grillowana kiełbasa z {STRINGID} była naprawdę opłacalna”
+STR_1604    :“Ta grillowana kiełbasa z {STRINGID} była naprawdę opłacalna”
 STR_1605    :
 STR_1606    :
 STR_1607    :
@@ -1000,27 +1000,27 @@ STR_1612    :
 STR_1613    :
 STR_1614    :
 STR_1615    :
-STR_1616    :{SMALLFONT}“Nie zapłacę tyle za zdjęcie z przejażdżki na {STRINGID}”
-STR_1617    :{SMALLFONT}“Nie zapłacę tyle za zdjęcie z przejażdżki na {STRINGID}”
-STR_1618    :{SMALLFONT}“Nie zapłacę tyle za zdjęcie z przejażdżki na {STRINGID}”
-STR_1619    :{SMALLFONT}“Nie zapłacę tyle za precla z {STRINGID}”
-STR_1620    :{SMALLFONT}“Nie zapłacę tyle za gorącą czekoladę z {STRINGID}”
-STR_1621    :{SMALLFONT}“Nie zapłacę tyle za mrożoną herbatę z {STRINGID}”
-STR_1622    :{SMALLFONT}“Nie zapłacę tyle za chrusta z {STRINGID}”
-STR_1623    :{SMALLFONT}“Nie zapłacę tyle za okulary przeciwsłoneczne z {STRINGID}”
-STR_1624    :{SMALLFONT}“Nie zapłacę tyle za makaron z wołowiną z {STRINGID}”
-STR_1625    :{SMALLFONT}“Nie zapłacę tyle za smażony makaron ryżowy z {STRINGID}”
-STR_1626    :{SMALLFONT}“Nie zapłacę tyle za zupę wonton z {STRINGID}”
-STR_1627    :{SMALLFONT}“Nie zapłacę tyle za zupę z klopsikami z {STRINGID}”
-STR_1628    :{SMALLFONT}“Nie zapłacę tyle za sok owocowy z {STRINGID}”
-STR_1629    :{SMALLFONT}“Nie zapłacę tyle za mleko sojowe z {STRINGID}”
-STR_1630    :{SMALLFONT}“Nie zapłacę tyle za sujongkwa z {STRINGID}”
-STR_1631    :{SMALLFONT}“Nie zapłacę tyle za kanapkę z {STRINGID}”
-STR_1632    :{SMALLFONT}“Nie zapłacę tyle za ciasteczko z {STRINGID}”
+STR_1616    :“Nie zapłacę tyle za zdjęcie z przejażdżki na {STRINGID}”
+STR_1617    :“Nie zapłacę tyle za zdjęcie z przejażdżki na {STRINGID}”
+STR_1618    :“Nie zapłacę tyle za zdjęcie z przejażdżki na {STRINGID}”
+STR_1619    :“Nie zapłacę tyle za precla z {STRINGID}”
+STR_1620    :“Nie zapłacę tyle za gorącą czekoladę z {STRINGID}”
+STR_1621    :“Nie zapłacę tyle za mrożoną herbatę z {STRINGID}”
+STR_1622    :“Nie zapłacę tyle za chrusta z {STRINGID}”
+STR_1623    :“Nie zapłacę tyle za okulary przeciwsłoneczne z {STRINGID}”
+STR_1624    :“Nie zapłacę tyle za makaron z wołowiną z {STRINGID}”
+STR_1625    :“Nie zapłacę tyle za smażony makaron ryżowy z {STRINGID}”
+STR_1626    :“Nie zapłacę tyle za zupę wonton z {STRINGID}”
+STR_1627    :“Nie zapłacę tyle za zupę z klopsikami z {STRINGID}”
+STR_1628    :“Nie zapłacę tyle za sok owocowy z {STRINGID}”
+STR_1629    :“Nie zapłacę tyle za mleko sojowe z {STRINGID}”
+STR_1630    :“Nie zapłacę tyle za sujongkwa z {STRINGID}”
+STR_1631    :“Nie zapłacę tyle za kanapkę z {STRINGID}”
+STR_1632    :“Nie zapłacę tyle za ciasteczko z {STRINGID}”
 STR_1633    :
 STR_1634    :
 STR_1635    :
-STR_1636    :{SMALLFONT}“Nie zapłacę tyle za grillowaną kiełbasę z {RINGID}”
+STR_1636    :“Nie zapłacę tyle za grillowaną kiełbasę z {RINGID}”
 STR_1637    :
 STR_1638    :
 STR_1639    :
@@ -1032,10 +1032,10 @@ STR_1644    :
 STR_1645    :
 STR_1646    :
 STR_1647    :
-STR_1648    :{SMALLFONT}“Pomocy! Puść mnie!”
-STR_1649    :{SMALLFONT}“Kończą mi się pieniądze!”
-STR_1650    :{SMALLFONT}“Świetnie! Budują nową atrakcję!”
-STR_1653    :{SMALLFONT}“…i teraz jesteśmy na {STRINGID}!”
+STR_1648    :“Pomocy! Puść mnie!”
+STR_1649    :“Kończą mi się pieniądze!”
+STR_1650    :“Świetnie! Budują nową atrakcję!”
+STR_1653    :“…i teraz jesteśmy na {STRINGID}!”
 STR_1654    :{WINDOW_COLOUR_2}Ostatnie myśli:
 STR_1655    :Buduj ścieżki na ziemi
 STR_1656    :Buduj ścieżki w powietrzu lub pod ziemią
@@ -1065,12 +1065,12 @@ STR_1679    :Spirala w górę (lewo)
 STR_1680    :Spirala w dół (prawo)
 STR_1681    :Spirala w dół (lewo)
 STR_1682    :Spirala w dół (prawo)
-STR_1683    :Wymiary bazowe 2 x 2
-STR_1684    :Wymiary bazowe 4 x 4
-STR_1685    :Wymiary bazowe 2 x 4
-STR_1686    :Wymiary bazowe 5 x 1
+STR_1683    :Wymiary bazowe 2 × 2
+STR_1684    :Wymiary bazowe 4 × 4
+STR_1685    :Wymiary bazowe 2 × 4
+STR_1686    :Wymiary bazowe 5 × 1
 STR_1687    :Wzburzenie wody
-STR_1688    :Wymiary bazowe 4 x 1
+STR_1688    :Wymiary bazowe 4 × 1
 STR_1689    :Hamulce blokowe
 STR_1690    :{WINDOW_COLOUR_2}{STRINGID}{NEWLINE}{BLACK}{STRINGID}
 STR_1691    :{WINDOW_COLOUR_2}  Koszt: {BLACK}{CURRENCY}
@@ -1187,7 +1187,7 @@ STR_1808    :{WINDOW_COLOUR_2}Poprzednia awaria: {BLACK}{STRINGID}
 STR_1809    :{WINDOW_COLOUR_2}Aktualna awaria: {OUTLINE}{RED}{STRINGID}
 STR_1810    :{WINDOW_COLOUR_2}Nosi:
 STR_1811    :Nie można tego tutaj wybudować…
-STR_1812    :{SMALLFONT}{BLACK}{STRINGID}
+STR_1812    :{BLACK}{STRINGID}
 STR_1813    :Różne obiekty
 STR_1814    :Akcje
 STR_1815    :Myśli
@@ -1196,7 +1196,7 @@ STR_1817    :({COMMA32})
 STR_1818    :{WINDOW_COLOUR_2}Wszyscy goście
 STR_1819    :{WINDOW_COLOUR_2}Wszyscy goście (pogrupowani)
 STR_1820    :{WINDOW_COLOUR_2}Goście {STRINGID}
-STR_1821    :{WINDOW_COLOUR_2}Goście którzy myślą {STRINGID}
+STR_1821    :{WINDOW_COLOUR_2}Goście którzy myślą {SMALLFONT}{STRINGID}
 STR_1822    :{WINDOW_COLOUR_2}Goście myślący o {POP16}{STRINGID}
 STR_1823    :Pokaż gości myślących o tej atrakcji
 STR_1824    :Pokaż gości przebywających na tej atrakcji
@@ -1234,10 +1234,10 @@ STR_1855    :{WINDOW_COLOUR_2}Zbudowano: {BLACK}{COMMA16} lat temu
 STR_1856    :{WINDOW_COLOUR_2}Zysk na sztuce: {BLACK}{CURRENCY2DP}
 STR_1857    :{WINDOW_COLOUR_2}Strata na sztuce: {BLACK}{CURRENCY2DP}
 STR_1858    :{WINDOW_COLOUR_2}Koszt: {BLACK}{CURRENCY} miesięcznie
-STR_1859    :dozorcy
-STR_1860    :mechanicy
-STR_1861    :strażnicy
-STR_1862    :komicy
+STR_1859    :dozorców
+STR_1860    :mechaników
+STR_1861    :strażników
+STR_1862    :komików
 STR_1863    :dozorca
 STR_1864    :mechanik
 STR_1865    :strażnik
@@ -1297,7 +1297,6 @@ STR_1921    :Nowa gra
 STR_1922    :Kontynuuj zapisaną grę
 STR_1924    :Wyjdź
 STR_1925    :Nie można postawić tutaj osoby…
-STR_1926    :{SMALLFONT}
 STR_1927    :{YELLOW}{STRINGID} zepsuł(a) się
 STR_1928    :{RED}{STRINGID} miał(a) wypadek!
 STR_1929    :{RED}Atrakcja {STRINGID} wciąż nie został(a) naprawiony(a).{NEWLINE}Sprawdź gdzie znajdują się twoi mechanicy i rozważ lepszą organizację ich pracy
@@ -1578,7 +1577,7 @@ STR_2218    :{RED}{STRINGID} na {STRINGID} jeszcze nie powrócił do {STRINGID}!
 STR_2219    :{RED}{COMMA16} ludzi zginęło w wypadku na atrakcji {STRINGID}
 STR_2220    :{WINDOW_COLOUR_2}Ocena parku: {BLACK}{COMMA16}
 STR_2221    :Ocena Parku: {COMMA16}
-STR_2222    :{SMALLFONT}{BLACK}{STRINGID}
+STR_2222    :{BLACK}{STRINGID}
 STR_2223    :{WINDOW_COLOUR_2}Gości w parku: {BLACK}{COMMA32}
 STR_2224    :{WINDOW_COLOUR_2}Gotówka: {BLACK}{CURRENCY2DP}
 STR_2225    :{WINDOW_COLOUR_2}Gotówka: {RED}{CURRENCY2DP}
@@ -1591,7 +1590,7 @@ STR_2231    :Hamowanie podczas opadania
 STR_2232    :Wyciągarka linowa
 STR_2233    :Informacje o parku
 STR_2234    :Najnowsze wiadomości
-STR_2235    :{SMALLFONT}{STRINGID} {STRINGID}
+STR_2235    :{STRINGID} {STRINGID}
 STR_2236    :Styczeń
 STR_2237    :Luty
 STR_2238    :Marzec
@@ -1652,14 +1651,14 @@ STR_2293    :{BLACK} Brak
 STR_2294    :Zmień podstawowy styl gruntu
 STR_2295    :Zmień poziome krawędzie gruntu
 STR_2296    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na wejście do parku
-STR_2297    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} atrakcji
-STR_2298    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} atrakcjach
-STR_2299    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} posiłku
-STR_2300    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} posiłkach
-STR_2301    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} napoju
-STR_2302    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} napojach
-STR_2303    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} pamiątce
-STR_2304    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} pamiątkach
+STR_2297    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} atrakcję
+STR_2298    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} atrakcji
+STR_2299    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} posiłek
+STR_2300    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} posiłków
+STR_2301    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} napój
+STR_2302    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} napojów
+STR_2303    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} pamiatkę
+STR_2304    :{BLACK}{CURRENCY2DP}{WINDOW_COLOUR_2} wydane na {BLACK}{COMMA16} pamiątek
 STR_2305    :Plik z projektami tras
 STR_2306    :Zapisz projekt trasy
 STR_2307    :Wybierz projekt {STRINGID}
@@ -1668,10 +1667,10 @@ STR_2309    :Zainstaluj nowy projekt trasy
 STR_2310    :Stwórz własny projekt
 STR_2311    :{WINDOW_COLOUR_2}Emocje: {BLACK}{COMMA2DP32} (około)
 STR_2312    :{WINDOW_COLOUR_2}Intensywność: {BLACK}{COMMA2DP32} (około)
-STR_2313    :{WINDOW_COLOUR_2}Ocena nudności: {BLACK}{COMMA2DP32} (około)
+STR_2313    :{WINDOW_COLOUR_2}Ocena mdłości: {BLACK}{COMMA2DP32} (około)
 STR_2314    :{WINDOW_COLOUR_2}Długość trasy: {BLACK}{STRINGID}
 STR_2315    :{WINDOW_COLOUR_2}Koszt: {BLACK}około {CURRENCY}
-STR_2316    :{WINDOW_COLOUR_2}Zajmowany teren: {BLACK}{COMMA16} x {COMMA16} pól
+STR_2316    :{WINDOW_COLOUR_2}Zajmowany teren: {BLACK}{COMMA16} × {COMMA16} pól
 STR_2321    :{WINDOW_COLOUR_2}Liczba atrakcji: {BLACK}{COMMA16}
 STR_2322    :{WINDOW_COLOUR_2}Liczba pracowników: {BLACK}{COMMA16}
 STR_2323    :{WINDOW_COLOUR_2}Rozmiar parku: {BLACK}{COMMA32}m²
@@ -1701,12 +1700,12 @@ STR_2347    :{RED}{STRINGID} utonął!
 STR_2348    :Pokaż statystyki tego pracownika
 STR_2349    :{WINDOW_COLOUR_2}Pensja: {BLACK}{CURRENCY} miesięcznie
 STR_2350    :{WINDOW_COLOUR_2}Zatrudniony: {BLACK}{MONTHYEAR}
-STR_2351    :{WINDOW_COLOUR_2}Skoszone trawniki: {BLACK}{COMMA16}
-STR_2352    :{WINDOW_COLOUR_2}Podlane rośliny: {BLACK}{COMMA16}
-STR_2353    :{WINDOW_COLOUR_2}Sprzątnięte śmieci: {BLACK}{COMMA16}
-STR_2354    :{WINDOW_COLOUR_2}Opróżnione kosze: {BLACK}{COMMA16}
-STR_2355    :{WINDOW_COLOUR_2}Naprawione atrakcje: {BLACK}{COMMA16}
-STR_2356    :{WINDOW_COLOUR_2}Skontrolowane atrakcje: {BLACK}{COMMA16}
+STR_2351    :{WINDOW_COLOUR_2}Skoszone trawniki: {BLACK}{COMMA32}
+STR_2352    :{WINDOW_COLOUR_2}Podlane rośliny: {BLACK}{COMMA32}
+STR_2353    :{WINDOW_COLOUR_2}Sprzątnięte śmieci: {BLACK}{COMMA32}
+STR_2354    :{WINDOW_COLOUR_2}Opróżnione kosze: {BLACK}{COMMA32}
+STR_2355    :{WINDOW_COLOUR_2}Naprawione atrakcje: {BLACK}{COMMA32}
+STR_2356    :{WINDOW_COLOUR_2}Skontrolowane atrakcje: {BLACK}{COMMA32}
 STR_2358    :Jednostki
 STR_2359    :Prawdziwe wartości
 STR_2360    :Rozdzielczość:
@@ -1735,8 +1734,8 @@ STR_2382    :Teren
 STR_2383    :Woda
 STR_2384    :{WINDOW_COLOUR_2}Twój cel:
 STR_2385    :{BLACK}Brak
-STR_2386    :{BLACK}Miej przynajmniej {COMMA16} gości w parku na koniec roku  {MONTHYEAR} przy atrakcyjności parku wynoszącej przynajmniej 600
-STR_2387    :{BLACK}Uzyskaj wartość parku nie mniejszą niż {POP16}{POP16}{CURRENCY} na koniec {PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
+STR_2386    :{BLACK}Miej przynajmniej {COMMA16} gości w parku na koniec roku {MONTHYEAR} przy ocenie parku wynoszącej przynajmniej 600
+STR_2387    :{BLACK}Uzyskaj wartość parku nie mniejszą niż {POP16}{POP16}{CURRENCY} na koniec {PUSH16}{PUSH16}{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
 STR_2388    :{BLACK}Baw się dobrze!
 STR_2389    :{BLACK}Wybuduj tę atrakcję ({STRINGID}) najlepiej jak potrafisz!
 STR_2390    :{BLACK}Zbuduj w parku 10 różnych działających kolejek górskich, każda o współczynniku emocji wynoszącym przynajmniej 6.00
@@ -1795,14 +1794,14 @@ STR_2450    :{YELLOW}Twoja kampania reklamująca park dobiegła końca
 STR_2451    :{YELLOW}Twoja kampania reklamująca {STRINGID} dobiegła końca
 STR_2452    :{WINDOW_COLOUR_2}Gotówka (minus pożyczka): {BLACK}{CURRENCY2DP}
 STR_2453    :{WINDOW_COLOUR_2}Gotówka (minus pożyczka): {RED}{CURRENCY2DP}
-STR_2454    :{SMALLFONT}{BLACK}{CURRENCY2DP} -
+STR_2454    :{BLACK}{CURRENCY2DP} -
 STR_2457    :Pokaż rachunki
 STR_2458    :Pokaż wykres zmian gotówki w czasie pomniejszonej o wysokość pożyczki
 STR_2459    :Pokaż wykres zmian wartości parku w czasie
 STR_2460    :Pokaż wykres tygodniowego zysku
 STR_2461    :Pokaż kampanie reklamowe
 STR_2462    :Pokaż widok na wejście do parku
-STR_2463    :Pokaż wykres zmian atrakcyjności parku w czasie
+STR_2463    :Pokaż wykres zmian oceny parku w czasie
 STR_2464    :Pokaż wykres zmian liczby gości w czasie
 STR_2465    :Pokaż cenę wstępu do parku i informacje o parku
 STR_2466    :Wyświetl statystyki parku
@@ -1824,7 +1823,7 @@ STR_2481    :Pokaż wykres przyspieszenia poprzecznego względem czasu
 STR_2482    :Zysk: {CURRENCY} na tydzień,  Wartość parku: {CURRENCY}
 STR_2483    :{WINDOW_COLOUR_2}Tygodniowy zysk: {BLACK}+{CURRENCY2DP}
 STR_2484    :{WINDOW_COLOUR_2}Tygodniowy zysk: {RED}{CURRENCY2DP}
-STR_2487    :Pokazuj "prawdziwe" imiona gości
+STR_2487    :Pokazuj „prawdziwe” imiona gości
 STR_2488    :Przełącza między pokazywaniem imion gości a numerami
 STR_2489    :Skróty klawiszowe…
 STR_2490    :Przypisanie klawiszy
@@ -1905,7 +1904,6 @@ STR_2636    :NumPad /
 STR_2669    :NumLock
 STR_2670    :Scroll
 STR_2680    :Wszystkie badania zakończone
-STR_2681    :{MEDIUMFONT}{BLACK}Zwiększa twoją gotówkę o {CURRENCY}
 STR_2684    :Przybywające duże grupy gości
 STR_2685    :Parametr hałasu Simplex
 STR_2686    :Najniższy:
@@ -1955,7 +1953,7 @@ STR_2739    :Brak
 STR_2740    :RollerCoaster Tycoon 1
 STR_2741    :RollerCoaster Tycoon 2
 STR_2742    :Nie znaleziono css50.dat
-STR_2743    :Przekopiuj data\css17.dat z folderu RCT1 do data\css50.dat folderu instalacji RCT2.
+STR_2743    :Przekopiuj data/css17.dat z folderu RCT1 do data/css50.dat folderu instalacji RCT2.
 STR_2749    :Mój nowy scenariusz
 # Nowe treści używane  w oknie cheatów
 STR_2750    :Przenieś wszystkie do góry
@@ -1992,7 +1990,7 @@ STR_2789    :{WINDOW_COLOUR_2}Porażka! Cel nie został osiągnięty!
 STR_2790    :Podaj imię do listy scenariuszy
 STR_2791    :Podaj imię
 STR_2792    :Podaj swoje imię do listy scenariuszy:
-STR_2793    :{SMALLFONT}(Ukończone przez {STRINGID})
+STR_2793    :(Ukończone przez {STRINGID})
 STR_2794    :{WINDOW_COLOUR_2}Ukończony przez: {BLACK}{STRINGID}{NEWLINE}{WINDOW_COLOUR_2} z wartością spółki wynoszącą: {BLACK}{CURRENCY}
 STR_2795    :Sortuj
 STR_2796    :Sortuj listę atrakcji według wyświetlonych informacji
@@ -2057,51 +2055,6 @@ STR_2854    :{RED}Goście nie mogą dotrzeć do wejścia do atrakcji {STRINGID}!
 STR_2855    :Przy wyjściu z atrakcji {RED}{STRINGID} nie ma żadnej dróżki!{NEWLINE}Zbuduj ścieżkę prowadzącą do wyjścia
 STR_2858    :Nie można rozpocząć kampanii reklamowej…
 STR_2861    :{WINDOW_COLOUR_2}Licencja przyznana Infogrames Interactive Inc.
-STR_2862    :Muzyka…
-STR_2863    :Muzyka
-STR_2864    :{WINDOW_COLOUR_2}March - Children of the Regiment:   (Fucik) non copyright
-STR_2865    :{WINDOW_COLOUR_2}Heyken's Serenade:   (J.Heyken) British Standard Music Coy; GEMA, BRITICO
-STR_2866    :{WINDOW_COLOUR_2}In Continental Mood:   (Composer unknown) Copyright Control
-STR_2867    :{WINDOW_COLOUR_2}Wedding Journey:   (Traditional)
-STR_2868    :{WINDOW_COLOUR_2}Tales from the Vienna Woods:   (Johann Strauss) non copyright
-STR_2869    :{WINDOW_COLOUR_2}Slavonic Dance:   (Traditional)
-STR_2870    :{WINDOW_COLOUR_2}Das Alpenhorn:   (Traditional)
-STR_2871    :{WINDOW_COLOUR_2}The Blond Sailor:   (Traditional)
-STR_2872    :{WINDOW_COLOUR_2}Overture - Poet and Peasant:   (Suppe) non copyright
-STR_2873    :{WINDOW_COLOUR_2}Waltz Medley:   (Johann Strauss) non copyright
-STR_2874    :{WINDOW_COLOUR_2}Bella Bella Bimba:   (Traditional)
-STR_2875    :{WINDOW_COLOUR_2}Original recordings (P) 1976 C.J.Mears Organization, used with consent
-STR_2876    :{WINDOW_COLOUR_2}RollerCoaster Tycoon 2 Title Music:   (Allister Brimble) copyright © Chris Sawyer
-STR_2877    :{WINDOW_COLOUR_2}Dodgems Beat:   (Allister Brimble) copyright © Chris Sawyer
-STR_2878    :{WINDOW_COLOUR_2}Mid Summer's Heat:   (Allister Brimble) copyright © Chris Sawyer
-STR_2879    :{WINDOW_COLOUR_2}Pharaoh's Tomb:   (Allister Brimble) copyright © Chris Sawyer
-STR_2880    :{WINDOW_COLOUR_2}Caesar's March:   (Allister Brimble) copyright © Chris Sawyer
-STR_2881    :{WINDOW_COLOUR_2}Drifting To Heaven:   (Allister Brimble) copyright © Chris Sawyer
-STR_2882    :{WINDOW_COLOUR_2}Invaders:   (Allister Brimble) copyright © Chris Sawyer
-STR_2883    :{WINDOW_COLOUR_2}Eternal Toybox:   (Allister Brimble) copyright © Chris Sawyer
-STR_2884    :{WINDOW_COLOUR_2}Jungle Juice:   (Allister Brimble) copyright © Chris Sawyer
-STR_2885    :{WINDOW_COLOUR_2}Ninja's Noodles:   (Allister Brimble) copyright © Chris Sawyer
-STR_2886    :{WINDOW_COLOUR_2}Voyage to Andromeda:   (Allister Brimble) copyright © Chris Sawyer
-STR_2887    :{WINDOW_COLOUR_2}Brimble's Beat:   (Allister Brimble) copyright © Chris Sawyer
-STR_2888    :{WINDOW_COLOUR_2}Atlantis:   (Allister Brimble) copyright © Chris Sawyer
-STR_2889    :{WINDOW_COLOUR_2}Wild West Kid:   (Allister Brimble) copyright © Chris Sawyer
-STR_2890    :{WINDOW_COLOUR_2}Vampire's Lair:   (Allister Brimble) copyright © Chris Sawyer
-STR_2891    :{WINDOW_COLOUR_2}Blockbuster:   (Allister Brimble) copyright © Chris Sawyer
-STR_2892    :{WINDOW_COLOUR_2}Airtime Rock:   (Allister Brimble) copyright © Chris Sawyer
-STR_2893    :{WINDOW_COLOUR_2}Searchlight Rag:   (Scott Joplin/Allister Brimble) copyright © Chris Sawyer
-STR_2894    :{WINDOW_COLOUR_2}Flight of Fantasy:   (Steve Blenkinsopp) copyright © Chris Sawyer
-STR_2895    :{WINDOW_COLOUR_2}Big Rock:   (Allister Brimble) copyright © Chris Sawyer
-STR_2896    :{WINDOW_COLOUR_2}Hypothermia:   (Allister Brimble) copyright © Chris Sawyer
-STR_2897    :{WINDOW_COLOUR_2}Last Sleigh Ride:   (Allister Brimble) copyright © Chris Sawyer
-STR_2898    :{WINDOW_COLOUR_2}Pipes of Glencairn:   (Allister Brimble) copyright © Chris Sawyer
-STR_2899    :{WINDOW_COLOUR_2}Traffic Jam:   (Allister Brimble) copyright © Chris Sawyer
-STR_2901    :{WINDOW_COLOUR_2}(Samples courtesy of Spectrasonics ”Liquid Grooves”)
-STR_2902    :{WINDOW_COLOUR_2}Toccata:   (C.M.Widor, played by Peter James Adcock) recording © Chris Sawyer
-STR_2903    :{WINDOW_COLOUR_2}Space Rock:   (Allister Brimble) copyright © Chris Sawyer
-STR_2904    :{WINDOW_COLOUR_2}Manic Mechanic:   (Allister Brimble) copyright © Chris Sawyer
-STR_2905    :{WINDOW_COLOUR_2}Techno Torture:   (Allister Brimble) copyright © Chris Sawyer
-STR_2906    :{WINDOW_COLOUR_2}Sweat Dreams:   (Allister Brimble) copyright © Chris Sawyer
-STR_2907    :{WINDOW_COLOUR_2}What shall we do with the Drunken Sailor:   (Anon/Allister Brimble) copyright © Chris Sawyer
 STR_2971    :Podstawowy schemat koloru
 STR_2972    :Alternatywny schemat kolorów nr 1
 STR_2973    :Alternatywny schemat kolorów nr 2
@@ -2118,7 +2071,7 @@ STR_2983    :Wprowadź nową treść baneru:
 STR_2984    :Nie można wprowadzić nowej treści baneru…
 STR_2985    :Baner
 STR_2986    :Zmień treść baneru
-STR_2987    :Ustaw ten baner jako{NEWLINE}'zakaz wstępu' dla gości
+STR_2987    :Ustaw ten baner jako{NEWLINE}„zakaz wstępu” dla gości
 STR_2988    :Usuń ten baner
 STR_2989    :Wybierz główny kolor
 STR_2990    :Wybierz kolor treści
@@ -2200,10 +2153,10 @@ STR_3069    :Część górna
 STR_3070    :Spadek do poziomu
 STR_3071    :{WINDOW_COLOUR_2}Taka sama cena w całym parku
 STR_3072    :Czy wybrana cena ma obowiązywać w całym parku
-STR_3073    :{RED}UWAGA: Atrakcyjność twojego parku spadła poniżej 700!{NEWLINE}Jeśli w ciągu 4 tygodni nie sprawisz, że atrakcyjność parku wzrośnie, zostanie on zamknięty
-STR_3074    :{RED}UWAGA: Atrakcyjność twojego parku wciąż jest niższa od 700!{NEWLINE}Pozostały ci 3 tygodnie na jej zwiększenie
-STR_3075    :{RED}UWAGA: Atrakcyjność twojego parku wciąż jest niższa od 700!{NEWLINE}Pozostały ci już tylko 2 tygodnie na jej zwiększenie albo park zostanie zamknięty
-STR_3076    :{RED}OSTATNIE OSTRZEŻENIE: Atrakcyjność twojego parku wciąż jest niższa od 700!{NEWLINE}Już za 7 dni twój park zostanie zamknięty, jeśli nie rozwiążesz tego problemu
+STR_3073    :{RED}UWAGA: Ocena Twojego parku spadła poniżej 700!{NEWLINE}Jeśli w ciągu 4 tygodni nie sprawisz, że ocena parku wzrośnie, zostanie on zamknięty
+STR_3074    :{RED}UWAGA: Ocena Twojego parku wciąż jest niższa od 700!{NEWLINE}Pozostały ci 3 tygodnie na jej zwiększenie
+STR_3075    :{RED}UWAGA: Ocena Twojego parku wciąż jest niższa od 700!{NEWLINE}Pozostały ci już tylko 2 tygodnie na jej zwiększenie albo park zostanie zamknięty
+STR_3076    :{RED}OSTATNIE OSTRZEŻENIE: Ocena Twojego parku wciąż jest niższa od 700!{NEWLINE}Już za 7 dni twój park zostanie zamknięty, jeśli nie rozwiążesz tego problemu
 STR_3077    :{RED}INFORMACJA: Twój park został zamknięty!
 STR_3090    :Wybierz styl wejścia i stacji
 STR_3091    :Nie można usunąć tego segmentu!
@@ -2241,7 +2194,7 @@ STR_3123    :{WINDOW_COLOUR_2}Ulubiona atrakcja: {BLACK}{COMMA16} gości
 STR_3124    :Zepsute: {STRINGID}
 STR_3125    :{WINDOW_COLOUR_2}Emocje: {BLACK}+{COMMA16}%
 STR_3126    :{WINDOW_COLOUR_2}Intensywność: {BLACK}+{COMMA16}%
-STR_3127    :{WINDOW_COLOUR_2}Tolerancja nudności: {BLACK}+{COMMA16}%
+STR_3127    :{WINDOW_COLOUR_2}Tolerancja mdłości: {BLACK}+{COMMA16}%
 STR_3128    :Zapisz Projekt Trasy
 STR_3129    :Zapisz Projekt Trasy ze Scenerią
 STR_3130    :Zapisz
@@ -2249,7 +2202,7 @@ STR_3131    :Anuluj
 STR_3132    :{BLACK}Wybierz elementy scenerii które chcesz zapisać z projektem trasy…
 STR_3133    :Nie można tego zbudować na zboczu
 STR_3134    :{RED}(Projekt zawiera niedostępne elementy scenerii)
-STR_3135    :{RED}(Projekt wagoników niedostępny - może mieć to wpływ na atrakcyjność atrakcji)
+STR_3135    :{RED}(Projekt wagoników niedostępny - może mieć to wpływ na atrakcyjność przejażdki)
 STR_3136    :Uwaga: Ten projekt trasy będzie wybudowany z alternatywnymi wagonami, dlatego może nie działać zgodnie z oczekiwaniami
 STR_3137    :Wybierz najbliższą scenerie
 STR_3138    :Zresetuj wybór
@@ -2273,7 +2226,6 @@ STR_3174    :Ten obiekt jest wymagany przez inny użyty
 STR_3175    :Ten obiekt jest zawsze wymagany
 STR_3176    :Nie można wybrać tego obiektu
 STR_3177    :Nie można odznaczyć tego obiektu
-STR_3178    :Przynajmniej jeden obiekt ścieżki musi zostać wybrany
 STR_3179    :Przynajmniej jedna atrakcja musi zostać wybrana
 STR_3180    :Nieprawidłowy wybór obiektu
 STR_3181    :Wybór obiektu - {STRINGID}
@@ -2284,7 +2236,7 @@ STR_3185    :Drobna scenografia
 STR_3186    :Duża scenografia
 STR_3187    :Ściany/Ogrodzenia
 STR_3188    :Znaki drogowe
-STR_3189    :Ścieżki
+STR_3189    :Klasyczne ścieżki
 STR_3190    :Dodatki drogowe
 STR_3191    :Grupa scenerii
 STR_3192    :Wejście do parku
@@ -2306,7 +2258,7 @@ STR_3208    :Menedżer tworzenia tras
 STR_3209    :Powrót do poprzedniego kroku:
 STR_3210    :Do następnego kroku:
 STR_3211    :Rozmiar mapy:
-STR_3212    :{POP16}{COMMA16} x {PUSH16}{COMMA16}
+STR_3212    :{POP16}{COMMA16} × {PUSH16}{COMMA16}
 STR_3213    :Nie można bardziej zmniejszyć mapy
 STR_3214    :Nie można bardziej zwiększyć mapy
 STR_3215    :Za blisko do krawędzi mapy
@@ -2369,7 +2321,7 @@ STR_3271    :Zakaz wysokich konstrukcji
 STR_3272    :Zabroń wysokich konstrukcji
 STR_3273    :Ocena parku trudna do zwiększenia i utrzymania
 STR_3274    :Ocena parku staje się prawdziwym wyzwaniem
-STR_3275    :Utrudniona atrakcyjność parku
+STR_3275    :Utrudniona ocena parku
 STR_3276    :Trudniej jest przyciągnąć gości do parku
 STR_3277    :{WINDOW_COLOUR_2}Koszt zakupu ziemi:
 STR_3278    :{WINDOW_COLOUR_2}Koszt zakupu planów budowy:
@@ -2453,7 +2405,7 @@ STR_3359    :{BLACK}Brak projektów trasy tego typu
 STR_3360    :Ostrzeżenie!
 STR_3361    :Za dużo projektów tras tego typu - Część nie będzie wyświetlona.
 STR_3364    :Zaawansowane
-STR_3365    :Allow selection of individual items of scenery in addition to scenery groups
+STR_3365    :Zezwól na wybór indwyidualnych elementów scenerii jako dodatek do grup
 STR_3366    :{BLACK}= Atrakcja
 STR_3367    :{BLACK}= Budka z jedzeniem
 STR_3368    :{BLACK}= Budka z napojami
@@ -2499,7 +2451,7 @@ STR_5134    :Ustaw większy obszar praw do ziemi
 STR_5135    :Zakup ziemi i praw do budowy
 STR_5136    :Prawa do ziemi
 STR_5137    :Znieś limity operacyjne
-STR_5138    :{SMALLFONT}{WINDOW_COLOUR_2}{STRINGID}
+STR_5138    :{WINDOW_COLOUR_2}{STRINGID}
 STR_5139    :{WHITE}{STRINGID}
 STR_5140    :Wyłącz awarie hamulców
 STR_5141    :Wyłącz wszystkie awarie
@@ -2519,7 +2471,7 @@ STR_5154    :Grafika sprzętowa
 STR_5155    :Zezwalaj na testowanie nieskończonych tras
 STR_5156    :Pozwala przetestować większość typów przejażdżek, nawet jeśli tor nie jest ukończony, nie ma zastosowania do sekcji blokowych
 STR_5158    :Wyjdź do menu
-STR_5159    :Opuść OpenRCT2
+STR_5159    :Wyłącz OpenRCT2
 STR_5160    :{POP16}{MONTH} {PUSH16}{PUSH16}{STRINGID}, Rok {POP16}{COMMA16}
 STR_5161    :Format daty:
 STR_5162    :dzień/miesiąc/rok
@@ -2563,7 +2515,7 @@ STR_5212    :Opcje scenariusza
 STR_5213    :Opcje celów
 STR_5214    :Generowanie mapy
 STR_5215    :Menedżer projektów tras
-STR_5216    :Track Design Manager List
+STR_5216    :Lista menedżerów projektów tras
 STR_5217    :Kody
 STR_5218    :Motywy
 STR_5219    :Opcje
@@ -2607,7 +2559,7 @@ STR_5256    :Stwórz nowy motyw aby wprowadzić zmiany do
 STR_5257    :Stwórz nowy motyw na podstawie bieżącego
 STR_5258    :Usuń bieżący motyw
 STR_5259    :Zmień nazwę bieżącego motywu
-STR_5260    :Duży zrzut ekranu
+STR_5260    :Ogromny zrzut ekranu
 STR_5261    :Filtr
 STR_5262    :Zakręcone Światy
 STR_5263    :Zakręcone Czasy
@@ -2645,7 +2597,7 @@ STR_5297    :Otwórz park
 STR_5298    :{RED}{STRINGID}
 STR_5299    :{LIGHTPINK}{STRINGID}
 STR_5300    :Szybkie zwolnienie pracownika
-STR_5301    :{MEDIUMFONT}{BLACK}Usuń swoją pożyczkę
+STR_5301    :Usuń swoją pożyczkę
 STR_5302    :Usuń pożyczkę
 STR_5303    :Zezwól na budowę podczas pauzy
 STR_5304    :Sekwencja tytułowa:
@@ -2678,8 +2630,8 @@ STR_5352    :{BLACK}Szczęście:
 STR_5353    :{BLACK}Energia:
 STR_5354    :{BLACK}Głód:
 STR_5355    :{BLACK}Pragnienie:
-STR_5356    :{BLACK}Nudności:
-STR_5357    :{BLACK}Tolerancja nudności:
+STR_5356    :{BLACK}Mdłości:
+STR_5357    :{BLACK}Tolerancja mdłości:
 STR_5358    :{BLACK}Pęcherz:
 STR_5359    :Usuń gości
 STR_5360    :Usuwa wszystkich gości z mapy
@@ -2804,7 +2756,7 @@ STR_5481    :Motywy
 STR_5482    :{WINDOW_COLOUR_2}Termin ostatniej inspekcji:
 STR_5483    :{BLACK}(pozostało {COMMA16} tygodni)
 STR_5484    :{BLACK}(pozostał {COMMA16} tydzień)
-STR_5485    :{SMALLFONT}{STRING}
+STR_5485    :{STRING}
 STR_5486    :{BLACK}{COMMA16}
 STR_5487    :Pokaż ostatnie wiadomości
 STR_5489    :Pokaż tylko śledzonych gości
@@ -2813,8 +2765,8 @@ STR_5491    :Lista odkryć
 STR_5492    :Opcje scenariusza
 STR_5493    :Wyślij wiadomość
 STR_5495    :Lista graczy
-STR_5496    :Gracz:
-STR_5497    :Ping:
+STR_5496    :Gracz
+STR_5497    :Ping
 STR_5498    :Lista serwerów
 STR_5499    :Nazwa gracza:
 STR_5500    :Dodaj serwer
@@ -2841,27 +2793,27 @@ STR_5521    :Jasna purpura
 STR_5522    :Ciemny niebieski
 STR_5523    :Niebieski
 STR_5524    :Jasny niebieski
-STR_5525    :Dark water
-STR_5526    :Light water
-STR_5527    :Saturated green
+STR_5525    :Ciemna woda
+STR_5526    :Jasna woda
+STR_5527    :Nasycona zieleń
 STR_5528    :Ciemny zielony
-STR_5529    :Moss green
-STR_5530    :Bright green
+STR_5529    :Zielony mszysty
+STR_5530    :Jasny zielony
 STR_5531    :Oliwkowy zielony
-STR_5532    :Dark olive green
+STR_5532    :Ciemnooliwkowy
 STR_5533    :Jasny żółty
 STR_5534    :Żółty
-STR_5535    :Dark yellow
+STR_5535    :Ciemny żółty
 STR_5536    :Pomarańczowy
 STR_5537    :Ciemny pomarańczowy
 STR_5538    :Brązowy
-STR_5539    :Saturated brown
+STR_5539    :Nasycony brąz
 STR_5540    :Ciemny brązowy
 STR_5541    :Łososiowy
-STR_5542    :Bordeaux red
-STR_5543    :Saturated red
+STR_5542    :Bordowy
+STR_5543    :Nasycony czerwony
 STR_5544    :Jasny czerwony
-STR_5545    :Dark pink
+STR_5545    :Ciemny różowy
 STR_5546    :Jasny różowy
 STR_5547    :Różowy
 STR_5548    :Pokaż wszystkie tryby
@@ -2876,12 +2828,10 @@ STR_5556    :Wyrzuć gracza
 STR_5557    :Nie rozłączaj po desynchronizacji (tryb wieloosobowy)
 STR_5558    :Wymagany restart dla tej zmiany
 STR_5559    :10 min. inspekcje
-STR_5560    :Ustaw częstotliwość inspekcji na 'Co 10 minut' na wszystkich atrakcjach
+STR_5560    :Ustaw częstotliwość inspekcji na „Co 10 minut” na wszystkich atrakcjach
 STR_5561    :Nie udało się załadować języka
 STR_5562    :UWAGA!
 STR_5563    :Ta funkcja jest obecnie niestabilna, zachowaj szczególną ostrożność.
-STR_5564    :Dodaj uszkodzone elementy
-STR_5565    :Wstaw uszkodzony element w górnej części dachówki. Spowoduje to ukrycie elementów znajdujących się nad uszkodzony elementem. 
 STR_5566    :Hasło:
 STR_5567    :Rozgłoś
 STR_5568    :Wymagane hasło
@@ -2961,7 +2911,7 @@ STR_5642    :Grupa:
 STR_5643    :Dodaj grupę
 STR_5644    :Usuń grupę
 STR_5645    :Czat
-STR_5646    :Terraform
+STR_5646    :Terraformuj
 STR_5647    :Przełącz pauzę
 STR_5648    :Ustal poziom wody
 STR_5649    :Stwórz przejażdżkę
@@ -2973,11 +2923,11 @@ STR_5654    :Ścieżka
 STR_5655    :Gość
 STR_5656    :Pracownik
 STR_5657    :Właściwości parku
-STR_5658    :Park Funding
+STR_5658    :Finansowanie parku
 STR_5659    :Wyrzuć gracza
 STR_5660    :Modyfikuj grupy
 STR_5661    :Zmień grupę gracza
-STR_5662    :N/A
+STR_5662    :ND.
 STR_5663    :Wyczyść krajobraz
 STR_5664    :Kody
 STR_5665    :Przełącz grupę scenariuszy
@@ -3009,8 +2959,6 @@ STR_5723    :Duży deszcz
 STR_5724    :Burza
 STR_5725    :{BLACK}Zmień pogodę na:
 STR_5726    :Ustawia aktualną pogodę w parku
-STR_5727    :Jakość skalowania
-STR_5731    :Liniowa
 # Podpowiedź w oknie opcji
 STR_5734    :Renderowanie
 STR_5735    :Status sieci
@@ -3037,7 +2985,7 @@ STR_5755    :Niewłaściwa wersja gry
 STR_5756    :Błędne hasło
 STR_5757    :Serwer osiągnął maksymalną liczbę graczy
 STR_5758    :{OUTLINE}{GREEN}{STRING} dołączył do gry
-STR_5759    :Pobieranie mapy … ({INT32} / {INT32})
+STR_5759    :Pobieranie mapy … ({INT32} / {INT32}) KiB
 STR_5760    :Dolar hongkoński (HK$)
 STR_5761    :Dolar tajwański (NT$)
 STR_5762    :Juan chiński (CN¥)
@@ -3060,7 +3008,7 @@ STR_5778    :Wybudowano: {COMMA16} lat temu
 STR_5779    :Przychód: {CURRENCY2DP} na godzinę
 STR_5780    :Koszty eksploatacji: {CURRENCY2DP} na godzinę
 STR_5781    :Koszty eksploatacji: nieznane
-STR_5782    :Połączono. Naciśnij '{STRING}' aby pisać na chacie.
+STR_5782    :Połączono. Naciśnij „{STRING}” aby pisać na chacie.
 STR_5783    :{WINDOW_COLOUR_2}Scenariusz zablokowany
 STR_5784    :{BLACK}Aby odblokować ten scenariusz ukończ poprzedni.
 STR_5785    :Nie można zmienić nazwy grupy…
@@ -3069,7 +3017,7 @@ STR_5787    :{COMMA32} graczy online
 STR_5788    :Domyślny okres inspekcji:
 STR_5789    :Wyłącz efekty świetlne
 STR_5790    :Mieszany styl płatności RCT1{NEWLINE}(np. jednoczesna odpłatność za wejście i atrakcję)
-STR_5791    :Ustaw niezawodność wszystkich atrakcji na 100%{NEWLINE}i zresetuj datę budowy na "w tym roku"
+STR_5791    :Ustaw niezawodność wszystkich atrakcji na 100%{NEWLINE}i zresetuj datę budowy na „w tym roku”
 STR_5792    :Naprawia wszystkie uszkodzone atrakcje
 STR_5793    :Usuwa historię katastrof,{NEWLINE}dzięki czemu goście nie będą narzekać że jest niebezpieczne
 STR_5794    :Niektóre scenariusze blokują edycję{NEWLINE}istniejących juz w parku atrakcji.{NEWLINE}Ta opcja obchodzi te restrykcje
@@ -3097,7 +3045,6 @@ STR_5814    :{WINDOW_COLOUR_1}“{STRING}”
 #Wskazówki
 STR_5815    :Pokaż licznik FPS w grze
 STR_5816    :Ustawia stosunek skalowania grafiki.{NEWLINE}Przydatne szczególnie przy grze{NEWLINE}w wysokiej rozdzielczości
-STR_5817    :[Wymaga sterownika sprzętowego]{NEWLINE}Ustaw tryb skalowania UI
 STR_5819    :[Wymaga sterownika sprzętowego]{NEWLINE}Zatrzymaj grę jeśli nakładka Steam{NEWLINE} jest otwarta
 STR_5820    :Zmniejsz okienko gry w przypadku{NEWLINE}utraty ostrości w trybie pełnoekranowym
 STR_5822    :Cykl dnia i nocy.{NEWLINE}Pełny cykl zajmuje miesiąc wewnątrz gry.
@@ -3110,11 +3057,11 @@ STR_5828    :Zmień użyty format jednostki użyty do czasu, prędkość itp.
 STR_5829    :Zmień rodzaj użytej waluty. Jedynie w celach wizualnych, nie ma zastosowania żaden przelicznik
 STR_5830    :Zmień używany język
 STR_5831    :Zmień użyty format{NEWLINE}wyświetlanej temperatury
-STR_5832    :Pokaż wysokość jako ogólną jednostkę w miejscu formatu jednostki ustawionej w zakładce "Odległość i Prędkość"
+STR_5832    :Pokaż wysokość jako ogólną jednostkę w miejscu formatu jednostki ustawionej w zakładce „Odległość i Prędkość”
 STR_5833    :Zmień używany format daty
 STR_5834    :Wybierz urządzenie dźwiękowe dla OpenRCT2
 STR_5835    :Wycisz grę przy utracie ostrości okna
-STR_5836    :Wybierz muzykę do ekranu tytułowego.{NEWLINE}Wybranie motywu z RCT1 wymaga skopiowania 'data/css17.dat' z katalogu gry RCT1 do 'data/css50.dat' w twoim katalogu RCT2, lub ustawienia ścieżki do RCT1 w zakładce pozostałych ustawień
+STR_5836    :Wybierz muzykę do ekranu tytułowego.{NEWLINE}Wybranie motywu z RCT1 wymaga skopiowania „data/css17.dat” z katalogu gry RCT1 do „data/css50.dat” w twoim katalogu RCT2, lub ustawienia ścieżki do RCT1 w zakładce pozostałych ustawień
 STR_5837    :Stwórz i zarządzaj własnymi motywami UI
 STR_5838    :Pokaż osobny przycisk dla okienka Finansów w pasku narzędzi
 STR_5839    :Pokaż osobny przycisk dla okienka Badań i Rozwoju w pasku narzędzi
@@ -3186,7 +3133,7 @@ STR_5907    :Jeśli włączone, powiększanie skoncentruje się wokół kursowa,
 STR_5908    :Pozwól zmienić na dowolny typ pojazdu
 STR_5909    :Pozwala dowolnie zmienić ty pojazdu. Może powodować wypadki.
 STR_5910    :Zastosuj
-STR_5911    :Ścieżki widokowe
+STR_5911    :Przezroczyste ścieżki widokowe
 STR_5912    :Przełącznik ścieżek widokowych
 STR_5913    :Czat
 STR_5914    :Nieznana atrakcja
@@ -3209,56 +3156,56 @@ STR_5930    :Szczegóły dużej scenerii
 STR_5931    :Szczegóły banneru
 STR_5932    :Szczegóły uszkodzonych elementów
 STR_5933    :Właściwości
-STR_5934    :{WINDOW_COLOUR_2}Tekstura terenu: {BLACK}{STRINGID}
-STR_5935    :{WINDOW_COLOUR_2}Krawędź terenu: {BLACK}{STRINGID}
-STR_5936    :{WINDOW_COLOUR_2}Własność terenu: {BLACK}{STRINGID}
+STR_5934    :Tekstura terenu: {BLACK}{STRINGID}
+STR_5935    :Krawędź terenu: {BLACK}{STRINGID}
+STR_5936    :Własność terenu: {BLACK}{STRINGID}
 STR_5937    :Nie zakupione i nie na sprzedaż
-STR_5938    :{WINDOW_COLOUR_2}Poziom wody: {BLACK}{COMMA16}
+STR_5938    :Poziom wody: {BLACK}{COMMA16}
 STR_5939    :Usuń ogrodzenie parku
 STR_5940    :Przywróć ogrodzenie parku
-STR_5941    :{WINDOW_COLOUR_2}Bazowa wysokość:
-STR_5942    :{WINDOW_COLOUR_2}Adres ścieżki: {BLACK}{STRINGID}
-STR_5943    :{WINDOW_COLOUR_2}Dodatki: {BLACK}{STRINGID}
-STR_5944    :{WINDOW_COLOUR_2}Dodatki: {BLACK}Brak
-STR_5945    :{WINDOW_COLOUR_2}Połączone krawędzie:
-STR_5946    :{WINDOW_COLOUR_2}Typ przejażdżki: {BLACK}{STRINGID}
-STR_5947    :{WINDOW_COLOUR_2}ID przejażdżki: {BLACK}{COMMA16}
-STR_5948    :{WINDOW_COLOUR_2}Nazwa przejażdżki: {BLACK}{STRINGID}
-STR_5949    :{WINDOW_COLOUR_2}Wyciągarka
-STR_5950    :{WINDOW_COLOUR_2}Zastosuj zmiany dla całego elementu trasy
-STR_5951    :{WINDOW_COLOUR_2}ID elementu trasy: {BLACK}{COMMA16}
-STR_5952    :{WINDOW_COLOUR_2}Numer sekwencji: {BLACK}{COMMA16}
+STR_5941    :Bazowa wysokość:
+STR_5942    :Adres ścieżki: {BLACK}{STRINGID}
+STR_5943    :Dodatki: {BLACK}{STRINGID}
+STR_5944    :Dodatki: {BLACK}Brak
+STR_5945    :Połączone krawędzie:
+STR_5946    :Typ przejażdżki: {BLACK}{STRINGID}
+STR_5947    :ID przejażdżki: {BLACK}{COMMA16}
+STR_5948    :Nazwa przejażdżki: {BLACK}{STRINGID}
+STR_5949    :Wyciągarka
+STR_5950    :Zastosuj zmiany dla całego elementu trasy
+STR_5951    :ID elementu trasy: {BLACK}{COMMA16}
+STR_5952    :Numer sekwencji: {BLACK}{COMMA16}
 STR_5953    :Posortuj elementy mapy na podstawie ich wysokości.
-STR_5954    :{WINDOW_COLOUR_2}Wiek scenografii: {BLACK}{COMMA16}
-STR_5955    :{WINDOW_COLOUR_2}Umiejscowienie ćwiartki: {BLACK}{STRINGID}
+STR_5954    :Wiek scenografii: {BLACK}{COMMA16}
+STR_5955    :Umiejscowienie ćwiartki: {BLACK}{STRINGID}
 STR_5956    :Południowy-zachód
 STR_5957    :Północny-zachód
 STR_5958    :Północny-wschód
 STR_5959    :Południowy-wschód
-STR_5960    :{WINDOW_COLOUR_2}Umiejscowienie ćwiartki:
-STR_5961    :{WINDOW_COLOUR_2}Indeks wejścia: {BLACK}{COMMA16}
-STR_5962    :{WINDOW_COLOUR_2}Wykrycie kolizji:
-STR_5963    :{WINDOW_COLOUR_2}Raised Corners:
-STR_5964    :{WINDOW_COLOUR_2}Przekątna
-STR_5965    :{WINDOW_COLOUR_2}Typ wejścia: {BLACK}{STRINGID}
-STR_5966    :{WINDOW_COLOUR_2}Typ wejścia do parku: {BLACK}{STRINGID}
+STR_5960    :Umiejscowienie ćwiartki:
+STR_5961    :Indeks wejścia: {BLACK}{COMMA16}
+STR_5962    :Wykrycie kolizji:
+STR_5963    :Podniesione narożniki:
+STR_5964    :Przekątna
+STR_5965    :Typ wejścia: {BLACK}{STRINGID}
+STR_5966    :Typ wejścia do parku: {BLACK}{STRINGID}
 STR_5967    :Pośrodku
 STR_5968    :Lewo
 STR_5969    :Prawo
-STR_5970    :{WINDOW_COLOUR_2}ID Wejścia: {BLACK}{COMMA16}
-STR_5971    :{WINDOW_COLOUR_2}ID wyjścia: {BLACK}{COMMA16}
-STR_5972    :{WINDOW_COLOUR_2}ID Tras: {BLACK}{COMMA16}
+STR_5970    :ID Wejścia: {BLACK}{COMMA16}
+STR_5971    :ID wyjścia: {BLACK}{COMMA16}
+STR_5972    :ID Tras: {BLACK}{COMMA16}
 STR_5973    :Zaczep z następnym
 STR_5974    :Zmienia wysokość podstawy i prześwitu tak, aby znajdowały się one na tym samym poziomie co następny element na bieżącej platformie. Ułatwia to budowę na tej samej platformie.
 STR_5975    :Nachylenie:
 STR_5976    :Płaszczyzna
 STR_5977    :Prawą stroną do góry
 STR_5978    :Lewą stroną do góry
-STR_5979    :{WINDOW_COLOUR_2}Typ muru: {BLACK}{COMMA16}
-STR_5980    :{WINDOW_COLOUR_2}Tekst baneru: {BLACK}{STRINGID}
-STR_5981    :{WINDOW_COLOUR_2}To nie jest baner
-STR_5982    :{WINDOW_COLOUR_2}Rodzaj dużej scenerii: {BLACK}{COMMA16}
-STR_5983    :{WINDOW_COLOUR_2}ID elementu dużej scenerii: {BLACK}{COMMA16}
+STR_5979    :Typ muru: {BLACK}{COMMA16}
+STR_5980    :Tekst baneru: {BLACK}{STRINGID}
+STR_5981    :To nie jest baner
+STR_5982    :Rodzaj dużej scenerii: {BLACK}{COMMA16}
+STR_5983    :ID elementu dużej scenerii: {BLACK}{COMMA16}
 STR_5984    :Zablokowane ścieżki:
 STR_5985    :Nowy katalog
 STR_5986    :Wprowadź nazwę nowego katalogu.
@@ -3293,23 +3240,23 @@ STR_6014    :Goście będą płacić za bilety wstępu na atrakcje i usługi.{NE
 STR_6015    :Nachylony
 STR_6016    :Edytuj kafel
 STR_6017    :Proszę zwolnić
-STR_6018    :Konstrukcja przejażdżki - Obróć w lewo
-STR_6019    :Konstrukcja przejażdżki - Obróć w prawo
-STR_6020    :Konstrukcja przejażdżki - Użyj domyślnej trasy
-STR_6021    :Konstrukcja przejażdżki - Nachylenie w dół
-STR_6022    :Konstrukcja przejażdżki - Nachylenie w górę
-STR_6023    :Konstrukcja przejażdżki - Przełącznik wyciągarki
-STR_6024    :Konstrukcja przejażdżki - Nachylenie w lewo
-STR_6025    :Konstrukcja przejażdżki - Nachylenie w prawo
-STR_6026    :Konstrukcja przejażdżki - Poprzednia element
-STR_6027    :Konstrukcja przejażdżki - Następny element
-STR_6028    :Konstrukcja przejażdżki - Wybuduj bieżący
-STR_6029    :Konstrukcja przejażdżki - Zniszcz bieżący
+STR_6018    :Konstrukcja - Obróć w lewo
+STR_6019    :Konstrukcja - Obróć w prawo
+STR_6020    :Konstrukcja - Użyj domyślnej trasy
+STR_6021    :Konstrukcja - Nachylenie w dół
+STR_6022    :Konstrukcja - Nachylenie w górę
+STR_6023    :Konstrukcja - Przełącznik wyciągarki
+STR_6024    :Konstrukcja - Nachylenie w lewo
+STR_6025    :Konstrukcja - Nachylenie w prawo
+STR_6026    :Konstrukcja - Poprzedni element
+STR_6027    :Konstrukcja - Następny element
+STR_6028    :Konstrukcja - Wybuduj bieżący
+STR_6029    :Konstrukcja - Zniszcz bieżący
 STR_6030    :Przechwytywacz scenerii. Wybierz dowolny element scenerii na mapie aby wybrać taki sam dla konstrukcji.
 STR_6031    :Opis serwera:
 STR_6032    :Wiadomość powitalna:
 STR_6033    :Ścieżka do katalogu RCT1:
-STR_6034    :{SMALLFONT}{BLACK}{STRING}
+STR_6034    :{BLACK}{STRING}
 STR_6035    :Proszę wybrać katalog z RCT1
 STR_6036    :Wyczyść
 STR_6037    :Proszę wybrać prawidłowy katalog RCT1
@@ -3336,7 +3283,7 @@ STR_6057    :Wyświetl osobny przycisk opcji Wyciszenia na pasku narzędzi
 STR_6058    :Wycisz
 STR_6059    :»
 STR_6060    :Pokazuj zakupy gości jako animacje
-STR_6061    :Pokaż animację płatności{NEWLINE}gdy klienci dokonują zakupu.
+STR_6061    :Pokaż animację falujących pieniędzy{NEWLINE}gdy klienci dokonują zakupu.
 STR_6062    :{OUTLINE}{GREEN}+ {CURRENCY2DP}
 STR_6063    :{OUTLINE}{RED}- {CURRENCY2DP}
 STR_6064    :Zakup cały teren
@@ -3345,34 +3292,34 @@ STR_6066    :Loguje wszystkie akcje użytkowników do plików w katalogu domowym
 STR_6067    :Serwer uruchomiony.
 STR_6068    :Serwer wyłączony.
 STR_6069    :{STRING} został wyrzucony z serwera przez {STRING}.
-STR_6070    :{STRING} został przypisany do grupy '{STRING}' przez {STRING}.
-STR_6071    :{STRING} stworzył nową grupę graczy '{STRING}'.
-STR_6072    :{STRING} usunął grupę graczy '{String}'.
-STR_6073    :{STRING} zmienił uprawnienia dla grupy graczy '{String}'.
-STR_6074    :{STRING} zmienił nazwę grupy graczy z '{String}' na '{String}'.
-STR_6075    :{STRING} zmienił domyślna grupę graczy na '{String}'.
-STR_6076    :{STRING} pokaż/schowaj kody '{STRING}'.
-STR_6077    :Dodaj pieniądze 
-STR_6078    :{STRING} stworzył atrakcję '{STRING}'.
-STR_6079    :{STRING} zniszczył atrakcję '{STRING}'.
-STR_6080    :{STRING} zmienił wygląd atrakcji '{STRING}'.
-STR_6081    :{STRING} zmienił status atrakcji '{STRING}' na zamkniętą.
-STR_6082    :{STRING} zmienił status atrakcji '{STRING}' na otwartą.
-STR_6083    :{STRING} zmienił status atrakcji '{STRING}' na testowaną.
-STR_6084    :{STRING} zmienił ustawienia pojazdów na atrakcji '{STRING}'.
-STR_6085    :{STRING} zmienił ustawienia jazdy na atrakcji '{STRING}'.
-STR_6086    :{STRING} zmienił nazwę atrakcji '{STRING}' na '{STRING}'.
-STR_6087    :{STRING} zmienił cenę za atrakcję '{STRING}' na {STRING}
-STR_6088    :{STRING} zmienił drugą cenę atrakcji '{STRING}' na {STRING}
-STR_6089    :{STRING} zmienił nazwę parku '{STRING}' na '{STRING}'.
+STR_6070    :{STRING} został przypisany do grupy „{STRING}” przez {STRING}.
+STR_6071    :{STRING} stworzył nową grupę graczy „{STRING}”.
+STR_6072    :{STRING} usunął grupę graczy „{STRING}”.
+STR_6073    :{STRING} zmienił uprawnienia dla grupy graczy „{STRING}”.
+STR_6074    :{STRING} zmienił nazwę grupy graczy z „{STRING}” na „{STRING}”.
+STR_6075    :{STRING} zmienił domyślna grupę graczy na „{STRING}”.
+STR_6076    :{STRING} pokaż/schowaj kody „{STRING}”.
+STR_6077    :Dodaj pieniądze
+STR_6078    :{STRING} stworzył atrakcję „{STRING}”.
+STR_6079    :{STRING} zniszczył atrakcję „{STRING}”.
+STR_6080    :{STRING} zmienił wygląd atrakcji „{STRING}”.
+STR_6081    :{STRING} zmienił status atrakcji „{STRING}” na zamkniętą.
+STR_6082    :{STRING} zmienił status atrakcji „{STRING}” na otwartą.
+STR_6083    :{STRING} zmienił status atrakcji „{STRING}” na testowaną.
+STR_6084    :{STRING} zmienił ustawienia pojazdów na atrakcji „{STRING}”.
+STR_6085    :{STRING} zmienił ustawienia jazdy na atrakcji „{STRING}”.
+STR_6086    :{STRING} zmienił nazwę atrakcji „{STRING}” na „{STRING}”.
+STR_6087    :{STRING} zmienił cenę za atrakcję „{STRING}” na {STRING}
+STR_6088    :{STRING} zmienił drugą cenę atrakcji „{STRING}” na {STRING}
+STR_6089    :{STRING} zmienił nazwę parku „{STRING}” na „{STRING}”.
 STR_6090    :{STRING} otworzył park.
 STR_6091    :{STRING} zamknął park.
 STR_6092    :{STRING} zmienił cenę wstępu do parku na {STRING}
 STR_6093    :{STRING} umieścił nową dekorację.
 STR_6094    :{STRING} usunął dekorację.
 STR_6095    :{STRING} edytował dekorację.
-STR_6096    :{STRING} ustawił nazwę znaku na '{STRING}'.
-STR_6097    :{STRING} dodał odcinek trasy '{STRING}'.
+STR_6096    :{STRING} ustawił nazwę znaku na „{STRING”.
+STR_6097    :{STRING} dodał odcinek trasy „{STRING}”.
 STR_6098    :{STRING} usunął odcinek trasy.
 STR_6099    :Połączyłeś się z serwerem.
 STR_6100    :Rozłączyłeś się z serwerem.
@@ -3406,7 +3353,7 @@ STR_6135    :Klient wysłał nieprawidłowe żądanie
 STR_6136    :Serwer wysłał nieprawidłowe żądanie
 STR_6137    :OpenRCT2, darmowy i open source klon gry Roller Coaster Tycoon 2.
 STR_6138    :OpenRCT2 to wynik pracy wielu autorów, pełną listę można znaleźć w “contributors.md”. Po więcej informacji odwiedź: http://github.com/OpenRCT2/OpenRCT2
-STR_6139    :All product and company names belong to their respective holders. Use of them does not imply any affiliation with or endorsement by them.
+STR_6139    :Wszystkie nazwy produktów i firm należą do ich właścicieli. Użycie ich nie oznacza powiązania z nimi ani ich poparcia.
 STR_6140    :Lista zmian…
 STR_6141    :Dolny pasek narzędziowy z RCT1
 STR_6142    :{WINDOW_COLOUR_2}Nazwa toru: {BLACK}{STRING}
@@ -3426,18 +3373,17 @@ STR_6155    :KDialog ani Zenity nie jest zainstalowane. Zainstaluj, lub skonfigu
 STR_6156    :Nazwa jest zastrzeżona
 STR_6157    :Konsola
 STR_6158    :Nie udało załadować się tego pliku…{NEWLINE}Niekompatybilna werjsa RCTC: {COMMA16}
-STR_6159    :Smooth Nearest Neighbour
 STR_6160    :{WINDOW_COLOUR_2}Dostępne pojazdy: {BLACK}{STRING}
-STR_6161    :Gridlines display toggle
+STR_6161    :Przełącz widok siatki
 STR_6162    :Spinning Wild Mouse
 STR_6163    :Pojazdy wyglądające jak myszki, szybko jeżdżą po ciasnych zakrętach i krótkich zjazdach, dodatkowo łagodnie się kręcą przez co dezorientują gości
 STR_6164    :{WHITE}❌
-STR_6165    :Use vertical sync
-STR_6166    :Synchronises each frame displayed to the monitor's refresh rate, preventing screen tearing.
+STR_6165    :Użyj synchronizacji pionowej
+STR_6166    :Synchronizuje każdą wyświetlaną klatkę z częstotliwością odświeżania monitora, zapobiegając rozrywaniu ekranu.
 STR_6167    :Zaawansowane
-STR_6168    :Title Sequence
-STR_6169    :Scenario selection
-STR_6170    :Interface Tweaks
+STR_6168    :Sekwencja tytułowa
+STR_6169    :Wybór scenariusza
+STR_6170    :Zmiany w interfejsie
 STR_6171    :Szukaj
 STR_6172    :Szukaj
 STR_6173    :Wpisz nazwę której szukasz:
@@ -3449,15 +3395,15 @@ STR_6178    :Załaduj{MOVE_X}{87}{RED}Brakuje scenariusza
 STR_6179    :Wybierz
 STR_6180    :Nie wybrano scenariusza
 STR_6181    :{RED}Brakuje scenariusza
-STR_6182    :Follow{MOVE_X}{87}{STRING}
-STR_6183    :Follow{MOVE_X}{87}No sprite selected
-STR_6184    :Follow Sprite
-STR_6185    :Select Sprite
-STR_6186    :No sprite selected
-STR_6187    :{MEDIUMFONT}{OUTLINE}{WINDOW_COLOUR_2}{STRING}
+STR_6182    :Śledź{MOVE_X}{87}{STRING}
+STR_6183    :Śledź{MOVE_X}{87}Brak wybranego sprite’a
+STR_6184    :Śledź sprite’a
+STR_6185    :Wybierz sprite’a
+STR_6186    :Brak wybranego sprite’ad
+STR_6187    :{OUTLINE}{WINDOW_COLOUR_2}{STRING}
 STR_6188    :Wymiociny
 STR_6189    :Kaczka
-STR_6190    :You cannot select a sprite while the main title screen is active.
+STR_6190    :Nie możesz wybrać sprite’a, gdy aktywny jest główny ekran tytułowy.
 STR_6191    :Powierzchnia
 STR_6192    :Ściana
 STR_6193    :{COMMA16} gość
@@ -3473,11 +3419,11 @@ STR_6202    :Styl wirtualnego podłoża:
 STR_6203    :Gdy włączone, wirtualne podłoże będzie prezentowane przy wciśniętym Ctrl lub Shift, aby łatwiej było ustawić w pionowe elementy.
 STR_6215    :Konstrukcja
 STR_6216    :Operacja
-STR_6217    :Ride / track availability
-STR_6218    :OpenRCT2 Official
+STR_6217    :Dostępność atrakcji / ścieżki
+STR_6218    :Officjane OpenRCT2
 STR_6219    :Podświetl problemy na ścieżkach
-STR_6220    :Make Usable
-STR_6221    :This will set the ride's known entrance or exit location to the currently selected tile. Only one entrance and exit location can be made usable per stations.
+STR_6220    :Przłącz na dostępne
+STR_6221    :Spowoduje to ustawienie znanego wejścia lub wyjścia z przejazdu na aktualnie wybrany kafelek. Na jednej stacji można wykorzystać tylko jedno miejsce wejścia i wyjścia.
 STR_6222    :Nie można tutaj postawić wejścia dla gości…
 STR_6223    :Musi być poza granicami parku!
 STR_6224    :{STRING} ustawiono wejście dla gości.
@@ -3489,14 +3435,14 @@ STR_6229    :{WINDOW_COLOUR_2}{STRINGID}: {STRINGID}
 STR_6230    :{BLACK}{STRINGID}:
 STR_6231    :{WINDOW_COLOUR_2}{STRINGID}: {MOVE_X}{185}{STRINGID}
 STR_6232    :Zamarznięty
-STR_6233    :Cut-away view
+STR_6233    :Widok z przekroju
 STR_6234    :Podświetl problemy na ścieżkach
 STR_6235    :Informacje o serwerze
 STR_6236    :Gracze
 STR_6237    :Grupy
 STR_6238    :Opcje multiplayer
-STR_6239    :Vertical Clipping
-STR_6240    :Horizontal Clipping
+STR_6239    :Przycinanie pionowe
+STR_6240    :Przycinanie poziome
 STR_6241    :Zaznacz obszar
 STR_6242    :Wyczyść zaznaczony obszar
 STR_6243    :Odnawia atrakcję,{NEWLINE}będzie jak nowa
@@ -3518,8 +3464,8 @@ STR_6261    :Pokaż szerokie ścieżki
 STR_6262    :Głośność podstawowa
 STR_6263    :Włącz/wyłącz wszystkie dźwięki
 STR_6264    :Zawsze używaj przeglądarki systemowej
-STR_6265    :When enabled, your operating system's file browser will be used instead of OpenRCT2's.
-STR_6266    :Otwórz folder z spersonalizowaną zawartością
+STR_6265    :Po włączeniu tej opcji, przeglądarka plików Twojego systemu operacyjnego będzie używana zamiast przeglądarki OpenRCT2.
+STR_6266    :Otwórz folder ze spersonalizowaną zawartością
 STR_6267    :Otwórz inspektor kafelek
 STR_6268    :Tick do przodu
 STR_6269    :Nieprawidłowy indentyfikator klimatu
@@ -3530,7 +3476,7 @@ STR_6273    :Muzyka
 STR_6274    :Nie można ustawić schematu koloru…
 STR_6275    :{WINDOW_COLOUR_2}Styl stacji:
 STR_6276    :Na {RED}{STRINGID} utykają goście, prawdopodobnie z powodu nieprawidłowego typu atrakcji albo trybu operowania.
-STR_6277    :{WINDOW_COLOUR_2}Numer stacji: {BLACK}{STRINGID}
+STR_6277    :Numer stacji: {BLACK}{STRINGID}
 STR_6278    :Liczba autozapisów
 STR_6279    :Liczba autozapisów powinna zostać zachowana
 STR_6280    :Czat
@@ -3548,7 +3494,7 @@ STR_6300    :Pobierz wszystkie braujące obiekty jeśli są dostępne online.
 STR_6301    :Skopiuj nazwę wybranego obiektu do schowka.
 STR_6302    :Skopiuj całą listęp brakujących obiektów do schowka.
 STR_6303    :Pobieranie obiektu ({COMMA16} / {COMMA16}): [{STRING}]
-STR_6304    :Otwórz przeglądarkęscenerii
+STR_6304    :Otwórz przeglądarkę scenerii
 STR_6305    :Wielowątkowość
 STR_6306    :Eksperymentalna opcja używania wielowątkowości do renderowania, może być niestabilna.
 STR_6307    :Paleta kolorów: {BLACK}{STRINGID}
@@ -3563,23 +3509,22 @@ STR_6315    :{WINDOW_COLOUR_2}Cel wykrywania ścieżki: {BLACK}{INT32}, {INT32},
 STR_6316    :{WINDOW_COLOUR_2}Historia wykrywania ścieżki:
 STR_6317    :{BLACK}{INT32}, {INT32}, {INT32} folder {INT32}
 STR_6318    :Desynchronizacja sieci.{NEWLINE}Plik z logami: {STRING}
-STR_6319    :{WINDOW_COLOUR_2}Hamulec blokowy zamknięty
-STR_6320    :{WINDOW_COLOUR_2}Niezniszczalne
-STR_6321    :{WINDOW_COLOUR_2}Dodatek jest uszkodzony
-STR_6322    :{WINDOW_COLOUR_2}Identyfikator sprite'a: {BLACK}{INT32}
+STR_6319    :Hamulec blokowy zamknięty
+STR_6320    :Niezniszczalne
+STR_6321    :Dodatek jest uszkodzony
+STR_6322    :{WINDOW_COLOUR_2}Identyfikator sprite’a: {BLACK}{INT32}
 STR_6323    :Symulowanie
 STR_6324    :Symuluj
 STR_6325    :Symuluj atrakcję
 STR_6326    :Nie można symulować {POP16}{POP16}{POP16}{STRINGID}…
-STR_6327    :Transparent background for giant screenshots
-STR_6328    :With this option enabled, giant screenshots will have a transparent background instead of the default black colour.
+STR_6327    :Przezroczyste tło dla ogromnych zrzutów z ekranu
+STR_6328    :Ogromy zrzut z ekranu będzie miał przezroczyste tło zamiast domyślnego czarnego.
 STR_6329    :{STRING}{STRINGID}
 STR_6330    :Pobieranie [{STRING}] z {STRING} ({COMMA16} / {COMMA16})
 STR_6331    :Stwórz kaczki
 STR_6332    :Usuń kaczki
 STR_6333    :Zwiększ współczynnik skali
 STR_6334    :Zmniejsz współczynnik skali
-STR_6335    :Inspector kafelek: Wstaw uszkodzony element
 STR_6336    :Inspector kafelek: Skopiuj element
 STR_6337    :Inspector kafelek: Wklej element
 STR_6338    :Inspector kafelek: Usuń element
@@ -3604,18 +3549,18 @@ STR_6356    :Przyzywa kaczki jeśli park zawiera wodę
 STR_6357    :Usuwa wszystkie kaczki z mapu
 STR_6358    :Strona {UINT16}
 STR_6359    :{POP16}{POP16}Strona {UINT16}
-STR_6360    :{SMALLFONT}{BLACK}{COMMA32}
+STR_6360    :{BLACK}{COMMA32}
 STR_6361    :Włącz efekty świetlne atrakcji (eksperymentalne)
 STR_6362    :Jeśłi włączone, pojazdy będą oświetlone w nocy.
 STR_6363    :Tekst skopiowany do schowka
 STR_6364    :{RED}{COMMA16} osoba zmarła w wypadku na {STRINGID}
 STR_6365    :Ofiary atrakcji
 STR_6366    :Zablokowane pojazdy
-STR_6367    :{WINDOW_COLOUR_2}Klatka animacji:
+STR_6367    :Klatka animacji:
 STR_6368    :Z powodów kompatybilności nie zaleca się uruchamiania OpenRCT2 na Wine. OpenRCT2 działa poprawnie na macOS, Linux, FreeBSD i OpenBSD.
 STR_6369    :Zezwól na budowanie torów na dowolnych wysokościach
 STR_6370    :Zezwala na ustawianie fragmentów torów na dowolnych interwałach wysokościowych
-STR_6371    :Wskazana ścieżka zawiera instalację RollerCoaster Tycoon 1, ale brakuje pliku “csg1i.dat”. Ten plik musi zostać skopiowany z płyty RollerCoaster Tycoon 1 do folderu “Data” w RollerCoaster Tycoon 1 zainstalowanym na dysku twardym.
+STR_6371    :Wskazana ścieżka zawiera instalację RollerCoaster Tycoon 1, ale brakuje pliku “csg1i.dat”. Ten plik musi zostać skopiowany z płyty Loopy Landscapes lub RCT Deluxe do folderu “Data” w RollerCoaster Tycoon 1 zainstalowanym na dysku twardym.
 STR_6372    :Wskazana ścieżka zawiera instalację RollerCoaster Tycoon 1, ale ta wersja jest nieodpowiednia. OpenRCT2 wymaga instalacji Loopy Landscapes lub RCT Deluxe w celku korzystania z zasobów RollerCoaster Tycoon 1.
 STR_6373    :Pokaż/schowaj sprawdzenia prześwitu
 STR_6374    :P
@@ -3654,6 +3599,89 @@ STR_6406    :Instalator GOG RollerCoaster Tycoon 2
 STR_6407    :To może potrwać kilka minut.
 STR_6408    :Wskaż proszę “innoextract” w celu wypakowania instalatora GOG, następnie zrestartuj OpenRCT2.
 STR_6409    :Wskazany plik nie jest offlinowym intalatorem GOG dla RollerCoaster Tycoon 2. Możliwe, że pobrany został GOG Galaxy downloader, albo wskazany błędny plik.
+STR_6410    :Przybliż/oddal
+STR_6411    :Pokaż przyciski do przybliżania i oddalania w pasku narzędzi
+STR_6412    :NumPad Enter
+STR_6413    :Shift
+STR_6414    :L Shift
+STR_6415    :P Shift
+STR_6416    :Ctrl
+STR_6417    :L Ctrl
+STR_6418    :P Ctrl
+STR_6419    :Alt
+STR_6420    :L Alt
+STR_6421    :P Alt
+STR_6422    :Cmd
+STR_6423    :L Cmd
+STR_6424    :P Cmd
+STR_6425    :Joy Lewo
+STR_6426    :Joy Prawo
+STR_6427    :Joy Góra
+STR_6428    :Joy Dół
+STR_6429    :Joy {INT32}
+STR_6430    :LPM
+STR_6431    :PPM
+STR_6432    :Mysz {INT32}
+STR_6433    :Usuń
+STR_6434    :Usuń wszystkie przypisania do tego skrótu.
+STR_6435    :{WINDOW_COLOUR_2}Zatrzymani wandale: {BLACK}{COMMA32}
+STR_6436    :Przełącz niewidzialność
+STR_6437    :Widzialny
+STR_6438    :W
+STR_6439    :Inspector kafelek: Przełącz niewidzialność
+STR_6440    :Przezroczysta woda
+STR_6441    :Przynajmniej jedna powierzchnia ścieżki musi zostać wybrana.
+STR_6442    :Przynajmniej jedna powierzchnia kolejki musi zostać wybrana.
+STR_6443    :Przynajmniej jedna balustrada musi zostać wybrana.
+STR_6444    :Powierzchnie ścieżek
+STR_6445    :Balustrady ścieżek
+STR_6446    :{WINDOW_COLOUR_2}Nazwa powierzchni: {BLACK}{STRINGID}
+STR_6447    :{WINDOW_COLOUR_2}Nazwa balustrady: {BLACK}{STRINGID}
+STR_6448    :Niewspierany format obiektu
+STR_6449    :{WINDOW_COLOUR_2}Ścieżki dźwiękowe:
+STR_6450    :{BLACK}“{STRING}”
+STR_6451    :{BLACK}“{STRING}” - {STRING}
+STR_6452    :{WINDOW_COLOUR_2}Sprzedaje: {BLACK}{STRING}
+STR_6453    :Skopiuj informacje o wersji
+STR_6454    :Nie można zmienić nazwy baneru…
+STR_6455    :Nie można zmienić nazwy znaku…
+STR_6456    :Ogromny zrzut z ekranu
+STR_6457    :Zgłoś błąd na GitHubie
+STR_6458    :Śledź na ekranie głównym
+STR_6460    :K
+STR_6461    :Kierunek
+STR_6462    :Ekscytacja
+STR_6463    :Ekscytacja: {COMMA2DP32}
+STR_6464    :Intensywność
+STR_6465    :Intensywność: {COMMA2DP32}
+STR_6466    :Mdłości
+STR_6467    :Mdłości: {COMMA2DP32}
+STR_6468    :Jeszcze nieznane
+STR_6469    :Zmniejsz obszar patrolu
+STR_6470    :Zwiększ obszar patrolu
+STR_6471    :Przezroczysta rośliność
+STR_6472    :Przezroczyste pojazdy
+STR_6473    :Przezroczyste podpory
+STR_6474    :Ukryj gości
+STR_6475    :Ukryj pracowników
+STR_6476    :Niewidzialne rośliny
+STR_6477    :Niewidzialna sceneria
+STR_6478    :Niewidzialne ścieżki
+STR_6479    :Niewidzialne przejażdżki
+STR_6480    :Niewidzialne pojazdy
+STR_6481    :Opcje przezroczystości
+STR_6482    :Opcje przezroczystości
+STR_6483    :Otwórz opcje przezroczystości
+STR_6484    :Przełącznik przezroczystości roślin
+STR_6485    :Przełącznik przezroczystości pojazdów
+STR_6486    :Przełącznik przezroczystości gości
+STR_6487    :Przełącznik przezroczystości pracowników
+STR_6488    :{RED}Goście skarżą się na dłogość kolejek w Twoim parku.{NEWLINE}Rozważ skrócenie problematycznych kolejek lub zwiększenie przepustowości przejażdżek.
+STR_6489    :Błąd: Niekompatybilna wersja parku
+STR_6490    :Ostrzeżenie: Częściowo kompatybilna wersja parku
+STR_6491    :Ten park został zapisany w późniejszej wersji OpenRCT2. Park jest v{INT32} i wymaga co najmniej v{INT32}.
+STR_6492    :Ten park został zapisany w starej wersji OpenRCT2 i nie można go otworzyć za pomocą tej wersji programu OpenRCT2. Park ma jest w v{INT32}.
+STR_6493    :Ten park został zapisany w późniejszej wersji OpenRCT2, niektóre dane mogą zostać utracone. Park jest w v{INT32} i wymaga co najmniej v{INT32}.
 
 
 #############
@@ -3697,8 +3725,8 @@ STR_PARK    :Trinity Islands
 STR_DTLS    :Kilka wysp stanowi podstawę dla nowego parku
 
 <Katie's Dreamland>
-STR_SCNR    :Katie's Dreamland
-STR_PARK    :Katie's Dreamland
+STR_SCNR    :Katie’s Dreamland
+STR_PARK    :Katie’s Dreamland
 STR_DTLS    :Mały park z kilkoma atrakcjami oraz przestrzenią do rozwoju - podwój jego wartość
 
 <Pokey Park>
@@ -3722,8 +3750,8 @@ STR_PARK    :Karts & Coasters
 STR_DTLS    :Wielki park w środku lasu, jedynie z gokartami i drewnianymi kolejkami
 
 <Mel's World>
-STR_SCNR    :Mel's World
-STR_PARK    :Mel's World
+STR_SCNR    :Mel’s World
+STR_PARK    :Mel’s World
 STR_DTLS    :Park posiada już kilka ciekawych nowoczesnych kolejek, ale nadal pozostało trochę przestrzeni do rozbudowy
 
 <Mystic Mountain>
@@ -3960,8 +3988,8 @@ STR_PARK    :Paradise Pier 2
 STR_DTLS    :Paradise Pier rozwinął skrzydła budując molo nad morzem, Twoim zadaniem jest zabudowa dodatkowego miejsca
 
 <Dragon's Cove>
-STR_SCNR    :Dragon's Cove
-STR_PARK    :Dragon's Cove
+STR_SCNR    :Dragon’s Cove
+STR_PARK    :Dragon’s Cove
 STR_DTLS    :W scenariuszu znajduje się nadmorska zatoka
 
 <Good Knight Park>
@@ -4356,7 +4384,7 @@ STR_DTLS    :Pewien stary lunapark popadł w ruinę. Otrzymujesz fundusze z Unii
 <N. America - Extreme Hawaiian Island>
 STR_SCNR    :Ameryka Płn. - Ekstremalne Hawaje
 STR_PARK    :Wacky Waikiki
-STR_DTLS    :Mieszkańcy Hawajów znudzili się surfowaniem i szukają bardziej intensywnych przeżyć. Budując swój lunapark, musisz o tym pamiętać, aby utrzymać wysoką atrakcyjność dla turystów.
+STR_DTLS    :Mieszkańcy Hawajów znudzili się surfowaniem i szukają bardziej intensywnych przeżyć. Budując swój lunapark, musisz o tym pamiętać, aby utrzymać wysoką ocenę dla turystów.
 
 <North America - Grand Canyon>
 STR_SCNR    :Ameryka Płn. - Wielki Kanion
@@ -4447,13 +4475,13 @@ STR_PARK    :Metropolis
 STR_DTLS    :Jesteś właścicielem pustej parceli w pobliżu dzielnicy o niskiej zabudowie. Aby wycisnąć jak największy zysk ze swej nieruchomości, wybuduj lunapark, którego motywem wiodącym będą drapacze chmur w stylu art deco, charakterystycznym dla lat dwudziestych.
 
 <Rock 'n' Roll - Flower Power>
-STR_SCNR    :Rock 'n' Roll - Flower Power
+STR_SCNR    :Rock ’n’ Roll - Flower Power
 STR_PARK    :Woodstock
 STR_DTLS    :Na twoim terenie odbywa się wielki doroczny festiwal muzyczny. Wybuduj lunapark w stylu hipisowskim, by wolnomyślicielska publiczność mogła się w nim zabawić.
 
 <Rock 'n' Roll - Rock 'n' Roll>
-STR_SCNR    :Rock 'n' Roll - Rock 'n' Roll
-STR_PARK    :Rock 'n' Roll Revival
+STR_SCNR    :Rock ’n’ Roll - Rock ’n’ Roll
+STR_PARK    :Rock ’n’ Roll Revival
 STR_DTLS    :Ten starzejący się lunapark ma najlepsze dni za sobą. Pomóż właścicielom nadać mu stylowy, rockandrollowy wygląd i przekształć to miejsce w dochodowe przedsięwzięcie.
 
 ###############################################################################

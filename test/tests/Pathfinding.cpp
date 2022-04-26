@@ -1,7 +1,7 @@
 #include "TestData.h"
 #include "openrct2/core/StringReader.h"
+#include "openrct2/entity/Guest.h"
 #include "openrct2/peep/GuestPathfinding.h"
-#include "openrct2/peep/Peep.h"
 #include "openrct2/ride/Station.h"
 #include "openrct2/scenario/Scenario.h"
 
@@ -10,7 +10,7 @@
 #include <openrct2/Game.h>
 #include <openrct2/OpenRCT2.h>
 #include <openrct2/ParkImporter.h>
-#include <openrct2/platform/platform.h>
+#include <openrct2/platform/Platform.h>
 #include <openrct2/world/Footpath.h>
 #include <openrct2/world/Map.h>
 
@@ -26,7 +26,7 @@ class PathfindingTestBase : public testing::Test
 public:
     static void SetUpTestCase()
     {
-        core_init();
+        Platform::CoreInit();
 
         gOpenRCT2Headless = true;
         gOpenRCT2NoGraphics = true;
@@ -64,12 +64,12 @@ protected:
         return nullptr;
     }
 
-    static bool FindPath(TileCoordsXYZ* pos, const TileCoordsXYZ& goal, int expectedSteps, int targetRideID)
+    static bool FindPath(TileCoordsXYZ* pos, const TileCoordsXYZ& goal, int expectedSteps, RideId targetRideID)
     {
         // Our start position is in tile coordinates, but we need to give the peep spawn
         // position in actual world coords (32 units per tile X/Y, 8 per Z level).
-        // Add 16 so the peep spawns in the center of the tile.
-        Peep* peep = Peep::Generate(pos->ToCoordsXYZ().ToTileCentre());
+        // Add 16 so the peep spawns in the centre of the tile.
+        auto* peep = Guest::Generate(pos->ToCoordsXYZ().ToTileCentre());
 
         // Peeps that are outside of the park use specialized pathfinding which we don't want to
         // use here
@@ -109,7 +109,7 @@ protected:
             peep->PerformNextAction(pathingResult);
             ++step;
 
-            *pos = TileCoordsXYZ(CoordsXYZ(peep->x, peep->y, peep->z));
+            *pos = TileCoordsXYZ(peep->GetLocation());
 
             EXPECT_PRED_FORMAT1(AssertIsNotForbiddenPosition, *pos);
 
@@ -198,7 +198,7 @@ TEST_P(SimplePathfindingTest, CanFindPathFromStartToGoal)
     auto ride = FindRideByName(scenario.name);
     ASSERT_NE(ride, nullptr);
 
-    auto entrancePos = ride_get_entrance_location(ride, 0);
+    auto entrancePos = ride->GetStation().Entrance;
     TileCoordsXYZ goal = TileCoordsXYZ(
         entrancePos.x - TileDirectionDelta[entrancePos.direction].x,
         entrancePos.y - TileDirectionDelta[entrancePos.direction].y, entrancePos.z);
@@ -236,7 +236,7 @@ TEST_P(ImpossiblePathfindingTest, CannotFindPathFromStartToGoal)
     auto ride = FindRideByName(scenario.name);
     ASSERT_NE(ride, nullptr);
 
-    auto entrancePos = ride_get_entrance_location(ride, 0);
+    auto entrancePos = ride->GetStation().Entrance;
     TileCoordsXYZ goal = TileCoordsXYZ(
         entrancePos.x + TileDirectionDelta[entrancePos.direction].x,
         entrancePos.y + TileDirectionDelta[entrancePos.direction].y, entrancePos.z);

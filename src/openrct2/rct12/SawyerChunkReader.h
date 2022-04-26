@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2020 OpenRCT2 developers
+ * Copyright (c) 2014-2021 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -36,7 +36,8 @@ namespace OpenRCT2
 
 /**
  * Reads sawyer encoding chunks from a data stream. This can be used to read
- * SC6, SV6 and RCT2 objects.
+ * SC6, SV6 and RCT2 objects. persistentChunks is a hint to the reader that the chunk will be preserved,
+ * and thus the chunk memory should be shrunk.
  */
 class SawyerChunkReader final
 {
@@ -55,12 +56,12 @@ public:
     /**
      * Reads the next chunk from the stream.
      */
-    std::shared_ptr<SawyerChunk> ReadChunk();
+    [[nodiscard]] std::shared_ptr<SawyerChunk> ReadChunk();
 
     /**
      * As above but for chunks without a header
      */
-    std::shared_ptr<SawyerChunk> ReadChunkTrack();
+    [[nodiscard]] std::shared_ptr<SawyerChunk> ReadChunkTrack();
 
     /**
      * Reads the next chunk from the stream and copies it directly to the
@@ -84,6 +85,11 @@ public:
         return result;
     }
 
+    /**
+     * Frees the chunk data, to be used when destructing SawyerChunks
+     */
+    static void FreeChunk(void* data);
+
 private:
     static size_t DecodeChunk(void* dst, size_t dstCapacity, const void* src, const sawyercoding_chunk_header& header);
     static size_t DecodeChunkRLERepeat(void* dst, size_t dstCapacity, const void* src, size_t srcLength);
@@ -92,6 +98,5 @@ private:
     static size_t DecodeChunkRotate(void* dst, size_t dstCapacity, const void* src, size_t srcLength);
 
     static void* AllocateLargeTempBuffer();
-    static void* FinaliseLargeTempBuffer(void* buffer, size_t len);
     static void FreeLargeTempBuffer(void* buffer);
 };

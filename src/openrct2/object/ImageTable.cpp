@@ -89,16 +89,26 @@ std::vector<std::unique_ptr<ImageTable::RequiredImage>> ImageTable::ParseImages(
     }
     else if (String::StartsWith(s, "$CSG"))
     {
-        if (is_csg_loaded())
+        auto range = ParseRange(s.substr(4));
+        if (!range.empty())
         {
-            auto range = ParseRange(s.substr(4));
-            if (!range.empty())
+            if (is_csg_loaded())
             {
                 for (auto i : range)
                 {
                     result.push_back(std::make_unique<RequiredImage>(
                         static_cast<uint32_t>(SPR_CSG_BEGIN + i),
                         [](uint32_t idx) -> const rct_g1_element* { return gfx_get_g1_element(idx); }));
+                }
+            }
+            else
+            {
+                std::string id(context->GetObjectIdentifier());
+                log_warning("CSG not loaded inserting placeholder images for %s", id.c_str());
+                result.resize(range.size());
+                for (auto& res : result)
+                {
+                    res = std::make_unique<RequiredImage>();
                 }
             }
         }
@@ -127,15 +137,31 @@ std::vector<std::unique_ptr<ImageTable::RequiredImage>> ImageTable::ParseImages(
             result = LoadObjectImages(context, name, range);
         }
     }
+    else if (String::StartsWith(s, "$LGX:"))
+    {
+        auto name = s.substr(5);
+        auto rangeStart = name.find('[');
+        if (rangeStart != std::string::npos)
+        {
+            auto rangeString = name.substr(rangeStart);
+            auto range = ParseRange(name.substr(rangeStart));
+            name = name.substr(0, rangeStart);
+            result = LoadImageArchiveImages(context, name, range);
+        }
+        else
+        {
+            result = LoadImageArchiveImages(context, name);
+        }
+    }
     else
     {
         try
         {
             auto imageData = context->GetData(s);
-            auto image = Imaging::ReadFromBuffer(imageData, IMAGE_FORMAT::PNG_32);
+            auto image = Imaging::ReadFromBuffer(imageData);
 
             ImageImporter importer;
-            auto importResult = importer.Import(image, 0, 0, ImageImporter::IMPORT_FLAGS::RLE);
+            auto importResult = importer.Import(image, 0, 0, ImageImporter::Palette::OpenRCT2, ImageImporter::ImportFlags::RLE);
 
             result.push_back(std::make_unique<RequiredImage>(importResult.Element));
         }
@@ -149,32 +175,56 @@ std::vector<std::unique_ptr<ImageTable::RequiredImage>> ImageTable::ParseImages(
     return result;
 }
 
-std::vector<std::unique_ptr<ImageTable::RequiredImage>> ImageTable::ParseImages(IReadObjectContext* context, json_t& el)
+std::vector<std::unique_ptr<ImageTable::RequiredImage>> ImageTable::ParseImages(
+    IReadObjectContext* context, std::vector<std::pair<std::string, Image>>& imageSources, json_t& el)
 {
     Guard::Assert(el.is_object(), "ImageTable::ParseImages expects parameter el to be object");
 
     auto path = Json::GetString(el["path"]);
     auto x = Json::GetNumber<int16_t>(el["x"]);
     auto y = Json::GetNumber<int16_t>(el["y"]);
+    auto srcX = Json::GetNumber<int16_t>(el["srcX"]);
+    auto srcY = Json::GetNumber<int16_t>(el["srcY"]);
+    auto srcWidth = Json::GetNumber<int16_t>(el["srcWidth"]);
+    auto srcHeight = Json::GetNumber<int16_t>(el["srcHeight"]);
     auto raw = Json::GetString(el["format"]) == "raw";
+    auto keepPalette = Json::GetString(el["palette"]) == "keep";
+    auto zoomOffset = Json::GetNumber<int32_t>(el["zoom"]);
 
     std::vector<std::unique_ptr<RequiredImage>> result;
     try
     {
-        auto flags = ImageImporter::IMPORT_FLAGS::NONE;
+        auto flags = ImageImporter::ImportFlags::None;
+        auto palette = ImageImporter::Palette::OpenRCT2;
         if (!raw)
         {
-            flags = static_cast<ImageImporter::IMPORT_FLAGS>(flags | ImageImporter::IMPORT_FLAGS::RLE);
+            flags = static_cast<ImageImporter::ImportFlags>(flags | ImageImporter::ImportFlags::RLE);
         }
-        auto imageData = context->GetData(path);
-        auto image = Imaging::ReadFromBuffer(imageData, IMAGE_FORMAT::PNG_32);
+        if (keepPalette)
+        {
+            palette = ImageImporter::Palette::KeepIndices;
+        }
+
+        auto itSource = std::find_if(
+            imageSources.begin(), imageSources.end(),
+            [&path](const std::pair<std::string, Image>& item) { return item.first == path; });
+        if (itSource == imageSources.end())
+        {
+            throw std::runtime_error("Unable to find image in image source list.");
+        }
+        auto& image = itSource->second;
+
+        if (srcWidth == 0)
+            srcWidth = image.Width;
+
+        if (srcHeight == 0)
+            srcHeight = image.Height;
 
         ImageImporter importer;
-        auto importResult = importer.Import(image, 0, 0, flags);
-        auto g1Element = importResult.Element;
-        g1Element.x_offset = x;
-        g1Element.y_offset = y;
-        result.push_back(std::make_unique<RequiredImage>(g1Element));
+        auto importResult = importer.Import(image, srcX, srcY, srcWidth, srcHeight, x, y, palette, flags);
+        auto g1element = importResult.Element;
+        g1element.zoomed_offset = zoomOffset;
+        result.push_back(std::make_unique<RequiredImage>(g1element));
     }
     catch (const std::exception& e)
     {
@@ -185,12 +235,68 @@ std::vector<std::unique_ptr<ImageTable::RequiredImage>> ImageTable::ParseImages(
     return result;
 }
 
+std::vector<std::unique_ptr<ImageTable::RequiredImage>> ImageTable::LoadImageArchiveImages(
+    IReadObjectContext* context, const std::string& path, const std::vector<int32_t>& range)
+{
+    std::vector<std::unique_ptr<RequiredImage>> result;
+    auto gxRaw = context->GetData(path);
+    std::optional<rct_gx> gxData = GfxLoadGx(gxRaw);
+    if (gxData.has_value())
+    {
+        // Fix entry data offsets
+        for (uint32_t i = 0; i < gxData->header.num_entries; i++)
+        {
+            gxData->elements[i].offset += reinterpret_cast<uintptr_t>(gxData->data.get());
+        }
+
+        if (range.size() > 0)
+        {
+            size_t placeHoldersAdded = 0;
+            for (auto i : range)
+            {
+                if (i >= 0 && (i < static_cast<int32_t>(gxData->header.num_entries)))
+                {
+                    result.push_back(std::make_unique<RequiredImage>(gxData->elements[i]));
+                }
+                else
+                {
+                    result.push_back(std::make_unique<RequiredImage>());
+                    placeHoldersAdded++;
+                }
+            }
+
+            // Log place holder information
+            if (placeHoldersAdded > 0)
+            {
+                std::string msg = "Adding " + std::to_string(placeHoldersAdded) + " placeholders";
+                context->LogWarning(ObjectError::InvalidProperty, msg.c_str());
+            }
+        }
+        else
+        {
+            for (int i = 0; i < static_cast<int32_t>(gxData->header.num_entries); i++)
+                result.push_back(std::make_unique<RequiredImage>(gxData->elements[i]));
+        }
+    }
+    else
+    {
+        auto msg = String::StdFormat("Unable to load rct_gx '%s'", path.c_str());
+        context->LogWarning(ObjectError::BadImageTable, msg.c_str());
+        for (size_t i = 0; i < range.size(); i++)
+        {
+            result.push_back(std::make_unique<RequiredImage>());
+        }
+    }
+    return result;
+}
+
 std::vector<std::unique_ptr<ImageTable::RequiredImage>> ImageTable::LoadObjectImages(
     IReadObjectContext* context, const std::string& name, const std::vector<int32_t>& range)
 {
     std::vector<std::unique_ptr<RequiredImage>> result;
     auto objectPath = FindLegacyObject(name);
-    auto obj = ObjectFactory::CreateObjectFromLegacyFile(context->GetObjectRepository(), objectPath.c_str());
+    auto obj = ObjectFactory::CreateObjectFromLegacyFile(
+        context->GetObjectRepository(), objectPath.c_str(), !gOpenRCT2NoGraphics);
     if (obj != nullptr)
     {
         auto& imgTable = static_cast<const Object*>(obj.get())->GetImageTable();
@@ -270,15 +376,32 @@ std::string ImageTable::FindLegacyObject(const std::string& name)
     const auto env = GetContext()->GetPlatformEnvironment();
     auto objectsPath = env->GetDirectoryPath(DIRBASE::RCT2, DIRID::OBJECT);
     auto objectPath = Path::Combine(objectsPath, name);
+    if (File::Exists(objectPath))
+    {
+        return objectPath;
+    }
+
+    std::string altName = name;
+    auto rangeStart = name.find(".DAT");
+    if (rangeStart != std::string::npos)
+    {
+        altName.replace(rangeStart, 4, ".POB");
+    }
+    objectPath = Path::Combine(objectsPath, altName);
+    if (File::Exists(objectPath))
+    {
+        return objectPath;
+    }
+
     if (!File::Exists(objectPath))
     {
         // Search recursively for any file with the target name (case insensitive)
-        auto filter = Path::Combine(objectsPath, "*.dat");
-        auto scanner = std::unique_ptr<IFileScanner>(Path::ScanDirectory(filter, true));
+        auto filter = Path::Combine(objectsPath, u8"*.dat;*.pob");
+        auto scanner = Path::ScanDirectory(filter, true);
         while (scanner->Next())
         {
             auto currentName = Path::GetFileName(scanner->GetPathRelative());
-            if (String::Equals(currentName, name, true))
+            if (String::Equals(currentName, name, true) || String::Equals(currentName, altName, true))
             {
                 objectPath = scanner->GetPath();
                 break;
@@ -315,7 +438,7 @@ void ImageTable::Read(IReadObjectContext* context, OpenRCT2::IStream* stream)
         uint64_t remainingBytes = stream->GetLength() - stream->GetPosition() - headerTableSize;
         if (remainingBytes > imageDataSize)
         {
-            context->LogWarning(ObjectError::BadImageTable, "Image table size longer than expected.");
+            context->LogVerbose(ObjectError::BadImageTable, "Image table size longer than expected.");
             imageDataSize = static_cast<uint32_t>(remainingBytes);
         }
 
@@ -368,15 +491,49 @@ void ImageTable::Read(IReadObjectContext* context, OpenRCT2::IStream* stream)
     }
 }
 
-void ImageTable::ReadJson(IReadObjectContext* context, json_t& root)
+std::vector<std::pair<std::string, Image>> ImageTable::GetImageSources(IReadObjectContext* context, json_t& jsonImages)
+{
+    std::vector<std::pair<std::string, Image>> result;
+    for (auto& jsonImage : jsonImages)
+    {
+        if (jsonImage.is_object())
+        {
+            auto path = Json::GetString(jsonImage["path"]);
+            auto keepPalette = Json::GetString(jsonImage["palette"]) == "keep";
+            auto itSource = std::find_if(result.begin(), result.end(), [&path](const std::pair<std::string, Image>& item) {
+                return item.first == path;
+            });
+            if (itSource == result.end())
+            {
+                auto imageData = context->GetData(path);
+                auto imageFormat = keepPalette ? IMAGE_FORMAT::PNG : IMAGE_FORMAT::PNG_32;
+                auto image = Imaging::ReadFromBuffer(imageData, imageFormat);
+                auto pair = std::make_pair<std::string, Image>(std::move(path), std::move(image));
+                result.push_back(std::move(pair));
+            }
+        }
+    }
+    return result;
+}
+
+bool ImageTable::ReadJson(IReadObjectContext* context, json_t& root)
 {
     Guard::Assert(root.is_object(), "ImageTable::ReadJson expects parameter root to be object");
+
+    bool usesFallbackSprites = false;
 
     if (context->ShouldLoadImages())
     {
         // First gather all the required images from inspecting the JSON
         std::vector<std::unique_ptr<RequiredImage>> allImages;
         auto jsonImages = root["images"];
+        if (!is_csg_loaded() && root.contains("noCsgImages"))
+        {
+            jsonImages = root["noCsgImages"];
+            usesFallbackSprites = true;
+        }
+
+        auto imageSources = GetImageSources(context, jsonImages);
 
         for (auto& jsonImage : jsonImages)
         {
@@ -389,7 +546,7 @@ void ImageTable::ReadJson(IReadObjectContext* context, json_t& root)
             }
             else if (jsonImage.is_object())
             {
-                auto images = ParseImages(context, jsonImage);
+                auto images = ParseImages(context, imageSources, jsonImage);
                 allImages.insert(
                     allImages.end(), std::make_move_iterator(images.begin()), std::make_move_iterator(images.end()));
             }
@@ -430,6 +587,8 @@ void ImageTable::ReadJson(IReadObjectContext* context, json_t& root)
             }
         }
     }
+
+    return usesFallbackSprites;
 }
 
 void ImageTable::AddImage(const rct_g1_element* g1)

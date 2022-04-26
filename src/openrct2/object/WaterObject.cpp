@@ -12,12 +12,17 @@
 #include "WaterObject.h"
 
 #include "../OpenRCT2.h"
+#include "../common.h"
 #include "../core/IStream.hpp"
 #include "../core/Json.hpp"
+#include "../drawing/Image.h"
+#include "../localisation/Formatter.h"
 #include "../localisation/Language.h"
 #include "../localisation/StringIds.h"
 #include "../world/Location.hpp"
 
+#include <array>
+#include <cstring>
 #include <memory>
 
 void WaterObject::ReadLegacy(IReadObjectContext* context, OpenRCT2::IStream* stream)
@@ -46,6 +51,7 @@ void WaterObject::Unload()
     language_free_object_string(_legacyType.string_idx);
 
     _legacyType.string_idx = 0;
+    _legacyType.image_id = 0;
 }
 
 void WaterObject::DrawPreview(rct_drawpixelinfo* dpi, int32_t width, int32_t height) const

@@ -11,9 +11,10 @@
 
 #include "../common.h"
 #include "../core/Guard.hpp"
+#include "../core/Path.hpp"
 #include "../interface/Window.h"
 #include "../localisation/Localisation.h"
-#include "../platform/platform.h"
+#include "../platform/Platform.h"
 #include "../title/TitleScreen.h"
 #include "zlib.h"
 
@@ -48,118 +49,6 @@ int32_t mph_to_dmps(int32_t mph)
 {
     // 1 mph = 4.4704 decimeters/s
     return (mph * 73243) >> 14;
-}
-
-bool filename_valid_characters(const utf8* filename)
-{
-    for (int32_t i = 0; filename[i] != '\0'; i++)
-    {
-        if (filename[i] == '\\' || filename[i] == '/' || filename[i] == ':' || filename[i] == '?' || filename[i] == '*'
-            || filename[i] == '<' || filename[i] == '>' || filename[i] == '|')
-            return false;
-    }
-    return true;
-}
-
-utf8* path_get_directory(const utf8* path)
-{
-    // Find the last slash or backslash in the path
-    char* filename = const_cast<char*>(strrchr(path, *PATH_SEPARATOR));
-    char* filename_posix = const_cast<char*>(strrchr(path, '/'));
-    filename = filename < filename_posix ? filename_posix : filename;
-
-    // If the path is invalid (e.g. just a file name), return NULL
-    if (filename == nullptr)
-    {
-        return nullptr;
-    }
-
-    char* directory = _strdup(path);
-    safe_strtrunc(directory, strlen(path) - strlen(filename) + 2);
-
-    return directory;
-}
-
-const char* path_get_filename(const utf8* path)
-{
-    // Find last slash or backslash in the path
-    char* filename = const_cast<char*>(strrchr(path, *PATH_SEPARATOR));
-    char* filename_posix = const_cast<char*>(strchr(path, '/'));
-    filename = filename < filename_posix ? filename_posix : filename;
-
-    // Checks if the path is valid (e.g. not just a file name)
-    if (filename == nullptr)
-    {
-        // Return the input string to keep things working
-        return path;
-    }
-
-    // Increase pointer by one, to get rid of the slashes
-    filename++;
-
-    return filename;
-}
-
-// Returns the extension (dot inclusive) from the given path, or the end of the
-// string when no extension was found.
-const char* path_get_extension(const utf8* path)
-{
-    // Get the filename from the path
-    const char* filename = path_get_filename(path);
-
-    // Try to find the most-right dot in the filename
-    char* extension = const_cast<char*>(strrchr(filename, '.'));
-
-    // When no dot was found, return a pointer to the null-terminator
-    if (extension == nullptr)
-        extension = const_cast<char*>(strrchr(filename, '\0'));
-
-    return extension;
-}
-
-void path_set_extension(utf8* path, const utf8* newExtension, size_t size)
-{
-    // Remove existing extension (check first if there is one)
-    if (path_get_extension(path) < strrchr(path, '\0'))
-        path_remove_extension(path);
-    // Append new extension
-    path_append_extension(path, newExtension, size);
-}
-
-void path_append_extension(utf8* path, const utf8* newExtension, size_t size)
-{
-    // Skip to the dot if the extension starts with a pattern (starts with "*.")
-    if (newExtension[0] == '*')
-        newExtension++;
-
-    // Append a dot to the filename if the new extension doesn't start with it
-    if (newExtension[0] != '.')
-        safe_strcat(path, ".", size);
-
-    // Append the extension to the path
-    safe_strcat(path, newExtension, size);
-}
-
-void path_remove_extension(utf8* path)
-{
-    // Find last dot in filename, and replace it with a null-terminator
-    char* lastDot = const_cast<char*>(strrchr(path_get_filename(path), '.'));
-    if (lastDot != nullptr)
-        *lastDot = '\0';
-    else
-        log_warning("No extension found. (path = %s)", path);
-}
-
-void path_end_with_separator(utf8* path, size_t size)
-{
-    size_t length = strnlen(path, size);
-    if (length >= size - 1)
-        return;
-
-    if ((length == 0) || ((path[length - 1] != *PATH_SEPARATOR) && path[length - 1] != '/'))
-    {
-        safe_strcat(path, PATH_SEPARATOR, size);
-    }
 }
 
 int32_t bitscanforward(int32_t source)
@@ -332,7 +221,7 @@ int32_t strcicmp(char const* a, char const* b)
 {
     for (;; a++, b++)
     {
-        int32_t d = tolower(*a) - tolower(*b);
+        int32_t d = tolower(static_cast<unsigned char>(*a)) - tolower(static_cast<unsigned char>(*b));
         if (d != 0 || !*a)
             return d;
     }
@@ -351,17 +240,15 @@ int32_t strlogicalcmp(const char* s1, const char* s2)
     {
         if (*s2 == '\0')
             return *s1 != '\0';
-        else if (*s1 == '\0')
+        if (*s1 == '\0')
             return -1;
-        else if (!(isdigit(*s1) && isdigit(*s2)))
+        if (!(isdigit(static_cast<unsigned char>(*s1)) && isdigit(static_cast<unsigned char>(*s2))))
         {
             if (toupper(*s1) != toupper(*s2))
                 return toupper(*s1) - toupper(*s2);
-            else
-            {
-                ++s1;
-                ++s2;
-            }
+
+            ++s1;
+            ++s2;
         }
         else
         {
@@ -370,8 +257,9 @@ int32_t strlogicalcmp(const char* s1, const char* s2)
             unsigned long n2 = strtoul(s2, &lim2, 10);
             if (n1 > n2)
                 return 1;
-            else if (n1 < n2)
+            if (n1 < n2)
                 return -1;
+
             s1 = lim1;
             s2 = lim2;
         }
@@ -388,8 +276,7 @@ utf8* safe_strtrunc(utf8* text, size_t size)
     const char* sourceLimit = text + size - 1;
     char* ch = text;
     char* last = text;
-    uint32_t codepoint;
-    while ((codepoint = utf8_get_next(ch, const_cast<const utf8**>(&ch))) != 0)
+    while (utf8_get_next(ch, const_cast<const utf8**>(&ch)) != 0)
     {
         if (ch <= sourceLimit)
         {
@@ -458,10 +345,8 @@ char* safe_strcat(char* destination, const char* source, size_t size)
         {
             break;
         }
-        else
-        {
-            destination++;
-        }
+
+        destination++;
     }
 
     bool terminated = false;
@@ -486,16 +371,6 @@ char* safe_strcat(char* destination, const char* source, size_t size)
     }
 
     return result;
-}
-
-char* safe_strcat_path(char* destination, const char* source, size_t size)
-{
-    path_end_with_separator(destination, size);
-    if (source[0] == *PATH_SEPARATOR)
-    {
-        source = source + 1;
-    }
-    return safe_strcat(destination, source, size);
 }
 
 #if defined(_WIN32)
@@ -537,12 +412,6 @@ char* strcasestr(const char* haystack, const char* needle)
 }
 #endif
 
-bool utf8_is_bom(const char* str)
-{
-    return str[0] == static_cast<char>(static_cast<uint8_t>(0xEF)) && str[1] == static_cast<char>(static_cast<uint8_t>(0xBB))
-        && str[2] == static_cast<char>(static_cast<uint8_t>(0xBF));
-}
-
 bool str_is_null_or_empty(const char* str)
 {
     return str == nullptr || str[0] == 0;
@@ -555,88 +424,6 @@ uint32_t util_rand()
 }
 
 constexpr size_t CHUNK = 128 * 1024;
-constexpr int32_t MAX_ZLIB_REALLOC = 4 * 1024 * 1024;
-
-/**
- * @brief Inflates zlib-compressed data
- * @param data Data to be decompressed
- * @param data_in_size Size of data to be decompressed
- * @param data_out_size Pointer to a variable where output size will be written. If not 0, it will be used to set initial output
- * buffer size.
- * @return Returns a pointer to memory holding decompressed data or NULL on failure.
- * @note It is caller's responsibility to free() the returned pointer once done with it.
- */
-uint8_t* util_zlib_inflate(uint8_t* data, size_t data_in_size, size_t* data_out_size)
-{
-    int32_t ret = Z_OK;
-    uLongf out_size = static_cast<uLong>(*data_out_size);
-    if (out_size == 0)
-    {
-        // Try to guesstimate the size needed for output data by applying the
-        // same ratio it would take to compress data_in_size.
-        out_size = static_cast<uLong>(data_in_size) * static_cast<uLong>(data_in_size)
-            / compressBound(static_cast<uLong>(data_in_size));
-        out_size = std::min(static_cast<uLongf>(MAX_ZLIB_REALLOC), out_size);
-    }
-    uLongf buffer_size = out_size;
-    uint8_t* buffer = static_cast<uint8_t*>(malloc(buffer_size));
-    do
-    {
-        if (ret == Z_BUF_ERROR)
-        {
-            buffer_size *= 2;
-            out_size = buffer_size;
-            buffer = static_cast<uint8_t*>(realloc(buffer, buffer_size));
-        }
-        else if (ret == Z_STREAM_ERROR)
-        {
-            log_error("Your build is shipped with broken zlib. Please use the official build.");
-            free(buffer);
-            return nullptr;
-        }
-        else if (ret < 0)
-        {
-            log_error("Error uncompressing data.");
-            free(buffer);
-            return nullptr;
-        }
-        ret = uncompress(buffer, &out_size, data, static_cast<uLong>(data_in_size));
-    } while (ret != Z_OK);
-    buffer = static_cast<uint8_t*>(realloc(buffer, out_size));
-    *data_out_size = out_size;
-    return buffer;
-}
-
-/**
- * @brief Deflates input using zlib
- * @param data Data to be compressed
- * @param data_in_size Size of data to be compressed
- * @return Returns an optional std::vector of bytes, which is equal to std::nullopt when deflate has failed
- */
-std::optional<std::vector<uint8_t>> util_zlib_deflate(const uint8_t* data, size_t data_in_size)
-{
-    int32_t ret = Z_OK;
-    uLongf out_size = 0;
-    uLong buffer_size = compressBound(static_cast<uLong>(data_in_size));
-    std::vector<uint8_t> buffer(buffer_size);
-    do
-    {
-        if (ret == Z_BUF_ERROR)
-        {
-            buffer_size *= 2;
-            out_size = buffer_size;
-            buffer.resize(buffer_size);
-        }
-        else if (ret == Z_STREAM_ERROR)
-        {
-            log_error("Your build is shipped with broken zlib. Please use the official build.");
-            return std::nullopt;
-        }
-        ret = compress(buffer.data(), &out_size, data, static_cast<uLong>(data_in_size));
-    } while (ret != Z_OK);
-    buffer.resize(out_size);
-    return buffer;
-}
 
 // Compress the source to gzip-compatible stream, write to dest.
 // Mainly used for compressing the crashdumps
@@ -696,6 +483,102 @@ bool util_gzip_compress(FILE* source, FILE* dest)
     return true;
 }
 
+std::vector<uint8_t> Gzip(const void* data, const size_t dataLen)
+{
+    assert(data != nullptr);
+
+    std::vector<uint8_t> output;
+    z_stream strm{};
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+
+    {
+        const auto ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 | 16, 8, Z_DEFAULT_STRATEGY);
+        if (ret != Z_OK)
+        {
+            throw std::runtime_error("deflateInit2 failed with error " + std::to_string(ret));
+        }
+    }
+
+    int flush = 0;
+    const auto* src = static_cast<const Bytef*>(data);
+    size_t srcRemaining = dataLen;
+    do
+    {
+        const auto nextBlockSize = std::min(srcRemaining, CHUNK);
+        srcRemaining -= nextBlockSize;
+
+        flush = srcRemaining == 0 ? Z_FINISH : Z_NO_FLUSH;
+        strm.avail_in = static_cast<uInt>(nextBlockSize);
+        strm.next_in = const_cast<Bytef*>(src);
+        do
+        {
+            output.resize(output.size() + nextBlockSize);
+            strm.avail_out = static_cast<uInt>(nextBlockSize);
+            strm.next_out = &output[output.size() - nextBlockSize];
+            const auto ret = deflate(&strm, flush);
+            if (ret == Z_STREAM_ERROR)
+            {
+                throw std::runtime_error("deflate failed with error " + std::to_string(ret));
+            }
+            output.resize(output.size() - strm.avail_out);
+        } while (strm.avail_out == 0);
+
+        src += nextBlockSize;
+    } while (flush != Z_FINISH);
+    deflateEnd(&strm);
+    return output;
+}
+
+std::vector<uint8_t> Ungzip(const void* data, const size_t dataLen)
+{
+    assert(data != nullptr);
+
+    std::vector<uint8_t> output;
+    z_stream strm{};
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+
+    {
+        const auto ret = inflateInit2(&strm, 15 | 16);
+        if (ret != Z_OK)
+        {
+            throw std::runtime_error("inflateInit2 failed with error " + std::to_string(ret));
+        }
+    }
+
+    int flush = 0;
+    const auto* src = static_cast<const Bytef*>(data);
+    size_t srcRemaining = dataLen;
+    do
+    {
+        const auto nextBlockSize = std::min(srcRemaining, CHUNK);
+        srcRemaining -= nextBlockSize;
+
+        flush = srcRemaining == 0 ? Z_FINISH : Z_NO_FLUSH;
+        strm.avail_in = static_cast<uInt>(nextBlockSize);
+        strm.next_in = const_cast<Bytef*>(src);
+        do
+        {
+            output.resize(output.size() + nextBlockSize);
+            strm.avail_out = static_cast<uInt>(nextBlockSize);
+            strm.next_out = &output[output.size() - nextBlockSize];
+            const auto ret = inflate(&strm, flush);
+            if (ret == Z_STREAM_ERROR)
+            {
+                throw std::runtime_error("deflate failed with error " + std::to_string(ret));
+            }
+            output.resize(output.size() - strm.avail_out);
+        } while (strm.avail_out == 0);
+
+        src += nextBlockSize;
+    } while (flush != Z_FINISH);
+    inflateEnd(&strm);
+    return output;
+}
+
 // Type-independent code left as macro to reduce duplicate code.
 #define add_clamp_body(value, value_to_add, min_cap, max_cap)                                                                  \
     if ((value_to_add > 0) && (value > (max_cap - (value_to_add))))                                                            \
@@ -729,12 +612,34 @@ int32_t add_clamp_int32_t(int32_t value, int32_t value_to_add)
     return value;
 }
 
+int64_t add_clamp_int64_t(int64_t value, int64_t value_to_add)
+{
+    add_clamp_body(value, value_to_add, INT64_MIN, INT64_MAX);
+    return value;
+}
+
+money16 add_clamp_money16(money16 value, money16 value_to_add)
+{
+    // This function is intended only for clarity, as money16
+    // is technically the same as int16_t
+    assert_struct_size(money16, sizeof(int16_t));
+    return add_clamp_int16_t(value, value_to_add);
+}
+
 money32 add_clamp_money32(money32 value, money32 value_to_add)
 {
     // This function is intended only for clarity, as money32
     // is technically the same as int32_t
     assert_struct_size(money32, sizeof(int32_t));
     return add_clamp_int32_t(value, value_to_add);
+}
+
+money64 add_clamp_money64(money64 value, money64 value_to_add)
+{
+    // This function is intended only for clarity, as money64
+    // is technically the same as int64_t
+    assert_struct_size(money64, sizeof(int64_t));
+    return add_clamp_int64_t(value, value_to_add);
 }
 
 #undef add_clamp_body

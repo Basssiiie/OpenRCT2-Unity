@@ -11,25 +11,30 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(FootpathPlaceFromTrackAction, GameCommand::PlacePathFromTrack, GameActions::Result)
+class FootpathPlaceFromTrackAction final : public GameActionBase<GameCommand::PlacePathFromTrack>
 {
 private:
     CoordsXYZ _loc;
     uint8_t _slope{};
     ObjectEntryIndex _type{};
+    ObjectEntryIndex _railingsType{};
     uint8_t _edges{};
+    PathConstructFlags _constructFlags{};
 
 public:
     FootpathPlaceFromTrackAction() = default;
-    FootpathPlaceFromTrackAction(const CoordsXYZ& loc, uint8_t slope, ObjectEntryIndex type, uint8_t edges);
+    FootpathPlaceFromTrackAction(
+        const CoordsXYZ& loc, uint8_t slope, ObjectEntryIndex type, ObjectEntryIndex railingsType, uint8_t edges,
+        PathConstructFlags constructFlags = 0);
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr ElementInsertQuery(GameActions::Result::Ptr res) const;
-    GameActions::Result::Ptr ElementInsertExecute(GameActions::Result::Ptr res) const;
+    GameActions::Result ElementInsertQuery(GameActions::Result res) const;
+    GameActions::Result ElementInsertExecute(GameActions::Result res) const;
+    bool IsSameAsEntranceElement(const EntranceElement& entranceElement) const;
 };

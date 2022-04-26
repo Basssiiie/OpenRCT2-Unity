@@ -18,6 +18,7 @@
 
 #    include <deque>
 #    include <memory>
+#    include <string_view>
 #    include <vector>
 
 class NetworkPlayer;
@@ -35,10 +36,9 @@ public:
     NetworkKey Key;
     std::vector<uint8_t> Challenge;
     std::vector<const ObjectRepositoryItem*> RequestedObjects;
-    bool IsDisconnected = false;
+    bool ShouldDisconnect = false;
 
-    NetworkConnection();
-    ~NetworkConnection();
+    NetworkConnection() noexcept;
 
     NetworkReadPacket ReadPacket();
     void QueuePacket(NetworkPacket&& packet, bool front = false);
@@ -48,18 +48,23 @@ public:
         return QueuePacket(std::move(copy), front);
     }
 
-    void SendQueuedPackets();
-    void ResetLastPacketTime();
-    bool ReceivedPacketRecently();
+    // This will not immediately disconnect the client. The disconnect
+    // will happen post-tick.
+    void Disconnect() noexcept;
 
-    const utf8* GetLastDisconnectReason() const;
-    void SetLastDisconnectReason(const utf8* src);
+    bool IsValid() const;
+    void SendQueuedPackets();
+    void ResetLastPacketTime() noexcept;
+    bool ReceivedPacketRecently() const noexcept;
+
+    const utf8* GetLastDisconnectReason() const noexcept;
+    void SetLastDisconnectReason(std::string_view src);
     void SetLastDisconnectReason(const rct_string_id string_id, void* args = nullptr);
 
 private:
     std::deque<NetworkPacket> _outboundPackets;
     uint32_t _lastPacketTime = 0;
-    utf8* _lastDisconnectReason = nullptr;
+    std::string _lastDisconnectReason;
 
     void RecordPacketStats(const NetworkPacket& packet, bool sending);
     bool SendPacket(NetworkPacket& packet);

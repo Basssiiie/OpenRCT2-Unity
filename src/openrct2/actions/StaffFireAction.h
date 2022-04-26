@@ -11,18 +11,20 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(StaffFireAction, GameCommand::FireStaffMember, GameActions::Result)
+class StaffFireAction final : public GameActionBase<GameCommand::FireStaffMember>
 {
 private:
-    uint16_t _spriteId{ SPRITE_INDEX_NULL };
+    EntityId _spriteId{ EntityId::GetNull() };
 
 public:
     StaffFireAction() = default;
-    StaffFireAction(uint16_t spriteId);
+    StaffFireAction(EntityId spriteId);
+
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

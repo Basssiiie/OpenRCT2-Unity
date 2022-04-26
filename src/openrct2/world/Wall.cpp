@@ -65,7 +65,7 @@ void wall_remove_intersecting_walls(const CoordsXYRangedZ& wallPos, Direction di
         return;
     do
     {
-        if (tileElement->GetType() != TILE_ELEMENT_TYPE_WALL)
+        if (tileElement->GetType() != TileElementType::Wall)
             continue;
 
         if (tileElement->GetClearanceZ() <= wallPos.baseZ || tileElement->GetBaseZ() >= wallPos.clearanceZ)
@@ -138,7 +138,7 @@ uint16_t WallElement::GetEntryIndex() const
     return entryIndex;
 }
 
-rct_scenery_entry* WallElement::GetEntry() const
+WallSceneryEntry* WallElement::GetEntry() const
 {
     return get_wall_entry(entryIndex);
 }

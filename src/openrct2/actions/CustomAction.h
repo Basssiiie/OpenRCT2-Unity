@@ -13,7 +13,7 @@
 
 #    include "GameAction.h"
 
-DEFINE_GAME_ACTION(CustomAction, GameCommand::Custom, GameActions::Result)
+class CustomAction final : public GameActionBase<GameCommand::Custom>
 {
 private:
     std::string _id;
@@ -28,9 +28,9 @@ public:
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };
 
 #endif

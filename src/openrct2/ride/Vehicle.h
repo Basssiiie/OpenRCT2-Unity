@@ -7,14 +7,14 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef _VEHICLE_H_
-#define _VEHICLE_H_
+#pragma once
 
+#include "../Identifiers.h"
 #include "../audio/audio.h"
 #include "../common.h"
+#include "../entity/EntityBase.h"
 #include "../ride/RideTypes.h"
 #include "../world/Location.hpp"
-#include "../world/SpriteBase.h"
 #include "Station.h"
 #include "VehicleColour.h"
 #include "VehicleEntry.h"
@@ -28,6 +28,9 @@ using track_type_t = uint16_t;
 
 struct Ride;
 struct rct_ride_entry;
+struct rct_ride_entry_vehicle;
+class DataSerialiser;
+struct paint_session;
 
 struct GForces
 {
@@ -38,12 +41,12 @@ struct GForces
 // Size: 0x09
 struct rct_vehicle_info
 {
-    int16_t x;                   // 0x00
-    int16_t y;                   // 0x02
-    int16_t z;                   // 0x04
-    uint8_t direction;           // 0x06
-    uint8_t vehicle_sprite_type; // 0x07
-    uint8_t bank_rotation;       // 0x08
+    int16_t x;             // 0x00
+    int16_t y;             // 0x02
+    int16_t z;             // 0x04
+    uint8_t direction;     // 0x06
+    uint8_t Pitch;         // 0x07
+    uint8_t bank_rotation; // 0x08
 };
 
 struct SoundIdVolume;
@@ -51,15 +54,19 @@ struct SoundIdVolume;
 constexpr const uint16_t VehicleTrackDirectionMask = 0b0000000000000011;
 constexpr const uint16_t VehicleTrackTypeMask = 0b1111111111111100;
 
-struct Vehicle : SpriteBase
+enum class MiniGolfAnimation : uint8_t;
+
+struct Vehicle : EntityBase
 {
+    static constexpr auto cEntityType = EntityType::Vehicle;
+
     enum class Type : uint8_t
     {
         Head,
         Tail,
     };
 
-    enum class Status
+    enum class Status : uint8_t
     {
         MovingToEndOfStation,
         WaitingForPassengers,
@@ -95,12 +102,12 @@ struct Vehicle : SpriteBase
     };
 
     Type SubType;
-    uint8_t vehicle_sprite_type;
+    uint8_t Pitch;
     uint8_t bank_rotation;
     int32_t remaining_distance;
     int32_t velocity;
     int32_t acceleration;
-    ride_id_t ride;
+    RideId ride;
     uint8_t vehicle_type;
     rct_vehicle_colour colours;
     union
@@ -114,13 +121,13 @@ struct Vehicle : SpriteBase
     };
     uint16_t TrackTypeAndDirection;
     CoordsXYZ TrackLocation;
-    uint16_t next_vehicle_on_train;
+    EntityId next_vehicle_on_train;
 
     // The previous vehicle on the same train or the last vehicle on the previous or only train.
-    uint16_t prev_vehicle_on_ride;
+    EntityId prev_vehicle_on_ride;
 
     // The next vehicle on the same train or the first vehicle on the next or only train
-    uint16_t next_vehicle_on_ride;
+    EntityId next_vehicle_on_ride;
 
     uint16_t var_44;
     uint16_t mass;
@@ -144,7 +151,7 @@ struct Vehicle : SpriteBase
     };
     Status status;
     uint8_t sub_state;
-    uint16_t peep[32];
+    EntityId peep[32];
     uint8_t peep_tshirt_colours[32];
     uint8_t num_seats;
     uint8_t num_peeps;
@@ -167,41 +174,40 @@ struct Vehicle : SpriteBase
         uint16_t var_C0;
         int16_t crash_y;
         uint16_t time_waiting;
-        uint16_t cable_lift_target;
+        EntityId cable_lift_target;
     };
     uint8_t speed;
     uint8_t powered_acceleration;
     union
     {
-        uint8_t dodgems_collision_direction;
-        uint8_t var_C4;
+        uint8_t DodgemsCollisionDirection;
+        uint8_t CollisionDetectionTimer;
     };
     uint8_t animation_frame;
     uint8_t pad_C6[0x2];
-    uint16_t var_C8;
-    uint16_t var_CA;
+    uint32_t animationState;
     OpenRCT2::Audio::SoundId scream_sound_id;
     VehicleTrackSubposition TrackSubposition;
     union
     {
-        uint8_t var_CE;
-        uint8_t num_laps;
+        uint8_t NumLaps;
+        uint8_t NumSwings;
+        uint8_t NumLaunches;
+        uint8_t NumRotations;
+        uint8_t TimeActive;
     };
-    union
-    {
-        uint8_t var_CF;
-        uint8_t brake_speed;
-    };
+    uint8_t brake_speed;
     uint16_t lost_time_out;
     int8_t vertical_drop_countdown;
     uint8_t var_D3;
-    uint8_t mini_golf_current_animation;
+    MiniGolfAnimation mini_golf_current_animation;
     uint8_t mini_golf_flags;
     ObjectEntryIndex ride_subtype;
     uint8_t colours_extended;
     uint8_t seat_rotation;
     uint8_t target_seat_rotation;
     CoordsXY BoatLocation;
+    bool IsCrashedVehicle;
 
     constexpr bool IsHead() const
     {
@@ -214,7 +220,7 @@ struct Vehicle : SpriteBase
     void SetState(Vehicle::Status vehicleStatus, uint8_t subState = 0);
     bool IsGhost() const;
     void UpdateSoundParams(std::vector<OpenRCT2::Audio::VehicleSoundParams>& vehicleSoundParamsList) const;
-    bool DodgemsCarWouldCollideAt(const CoordsXY& coords, uint16_t* spriteId) const;
+    std::optional<EntityId> DodgemsCarWouldCollideAt(const CoordsXY& coords) const;
     int32_t UpdateTrackMotion(int32_t* outStation);
     int32_t CableLiftUpdateTrackMotion();
     GForces GetGForces() const;
@@ -263,6 +269,8 @@ struct Vehicle : SpriteBase
         update_flags |= flag;
     }
     void ApplyMass(int16_t appliedMass);
+    void Serialise(DataSerialiser& stream);
+    void Paint(paint_session& session, int32_t imageDirection) const;
 
 private:
     bool SoundCanPlay() const;
@@ -303,6 +311,8 @@ private:
     void UpdateDepartingBoatHire();
     void UpdateTravellingBoatHireSetup();
     void UpdateBoatLocation();
+    void UpdateArrivingPassThroughStation(
+        const Ride& curRide, const rct_ride_entry_vehicle& vehicleEntry, bool stationBrakesWork);
     void UpdateArriving();
     void UpdateUnloadingPassengers();
     void UpdateWaitingForCableLift();
@@ -316,6 +326,7 @@ private:
     void UpdateCrashSetup();
     void UpdateCollisionSetup();
     int32_t UpdateMotionDodgems();
+    void UpdateAnimationAnimalFlying();
     void UpdateAdditionalAnimation();
     void CheckIfMissing();
     bool CurrentTowerElementIsTop();
@@ -349,17 +360,20 @@ private:
     void KillAllPassengersInTrain();
     void KillPassengers(Ride* curRide);
     void TrainReadyToDepart(uint8_t num_peeps_on_train, uint8_t num_used_seats);
+    int32_t UpdateTrackMotionMiniGolfCalculateAcceleration(const rct_ride_entry_vehicle& vehicleEntry);
     int32_t UpdateTrackMotionMiniGolf(int32_t* outStation);
     void UpdateTrackMotionMiniGolfVehicle(Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry);
     bool UpdateTrackMotionForwardsGetNewTrack(uint16_t trackType, Ride* curRide, rct_ride_entry* rideEntry);
     bool UpdateTrackMotionBackwardsGetNewTrack(uint16_t trackType, Ride* curRide, uint16_t* progress);
-    bool UpdateMotionCollisionDetection(const CoordsXYZ& loc, uint16_t* otherVehicleIndex);
+    bool UpdateMotionCollisionDetection(const CoordsXYZ& loc, EntityId* otherVehicleIndex);
     void UpdateGoKartAttemptSwitchLanes();
     void UpdateSceneryDoor() const;
     void UpdateSceneryDoorBackwards() const;
     void UpdateLandscapeDoor() const;
     void UpdateLandscapeDoorBackwards() const;
+    int32_t CalculateRiderBraking() const;
 };
+static_assert(sizeof(Vehicle) <= 512);
 
 struct train_ref
 {
@@ -367,50 +381,38 @@ struct train_ref
     Vehicle* tail;
 };
 
-enum : uint32_t
+namespace MiniGolfFlag
 {
-    VEHICLE_ENTRY_FLAG_POWERED_RIDE_UNRESTRICTED_GRAVITY = 1
-        << 0, // Set on powered vehicles that do not slow down when going down a hill
-    VEHICLE_ENTRY_FLAG_NO_UPSTOP_WHEELS = 1 << 1,
-    VEHICLE_ENTRY_FLAG_NO_UPSTOP_BOBSLEIGH = 1 << 2,
-    VEHICLE_ENTRY_FLAG_MINI_GOLF = 1 << 3,
-    VEHICLE_ENTRY_FLAG_4 = 1 << 4,
-    VEHICLE_ENTRY_FLAG_5 = 1 << 5,
-    VEHICLE_ENTRY_FLAG_HAS_INVERTED_SPRITE_SET = 1 << 6, // Set on vehicles that support running inverted for extended periods
-                                                         // of time, i.e. the Flying, Lay-down and Multi-dimension RCs.
-    VEHICLE_ENTRY_FLAG_DODGEM_INUSE_LIGHTS = 1
-        << 7, // When set the vehicle has an additional frame for when in use. Used only by dodgems.
-    VEHICLE_ENTRY_FLAG_ALLOW_DOORS_DEPRECATED = 1 << 8, // Not used any more - every vehicle will now work with doors
-    VEHICLE_ENTRY_FLAG_ENABLE_ADDITIONAL_COLOUR_2 = 1 << 9,
-    VEHICLE_ENTRY_FLAG_10 = 1 << 10,
-    VEHICLE_ENTRY_FLAG_11 = 1 << 11,
-    VEHICLE_ENTRY_FLAG_OVERRIDE_NUM_VERTICAL_FRAMES = 1
-        << 12, // Setting this will cause the game to set vehicleEntry->num_vertical_frames to
-               // vehicleEntry->num_vertical_frames_override, rather than determining it itself.
-    VEHICLE_ENTRY_FLAG_13 = 1 << 13,
-    VEHICLE_ENTRY_FLAG_SPINNING_ADDITIONAL_FRAMES = 1
-        << 14, // 16x additional frames for vehicle. A spinning item with additional frames must always face forward to
-               // load/unload. Spinning without can load/unload at 4 rotations.
-    VEHICLE_ENTRY_FLAG_LIFT = 1 << 15,
-    VEHICLE_ENTRY_FLAG_ENABLE_ADDITIONAL_COLOUR_1 = 1 << 16,
-    VEHICLE_ENTRY_FLAG_SWINGING = 1 << 17,
-    VEHICLE_ENTRY_FLAG_SPINNING = 1 << 18,
-    VEHICLE_ENTRY_FLAG_POWERED = 1 << 19,
-    VEHICLE_ENTRY_FLAG_RIDERS_SCREAM = 1 << 20,
-    VEHICLE_ENTRY_FLAG_21 = 1 << 21, // Swinging coaster??
-    VEHICLE_ENTRY_FLAG_BOAT_HIRE_COLLISION_DETECTION = 1 << 22,
-    VEHICLE_ENTRY_FLAG_VEHICLE_ANIMATION = 1 << 23, // Set on animated vehicles like the Multi-dimension coaster trains,
-                                                    // Miniature Railway locomotives and Helicycles.
-    VEHICLE_ENTRY_FLAG_RIDER_ANIMATION = 1 << 24,   // Set when the animation updates rider sprite positions
-    VEHICLE_ENTRY_FLAG_25 = 1 << 25,
-    VEHICLE_ENTRY_FLAG_LOADING_WAYPOINTS = 1
-        << 26, // Peep loading positions have x and y coordinates. Normal rides just have offsets
-    VEHICLE_ENTRY_FLAG_SLIDE_SWING = 1
-        << 27, // Set on dingy slides. They have there own swing value calculations and have a different amount of images.
-    VEHICLE_ENTRY_FLAG_CHAIRLIFT = 1 << 28,
-    VEHICLE_ENTRY_FLAG_WATER_RIDE = 1 << 29, // Set on rides where water would provide continuous propulsion
-    VEHICLE_ENTRY_FLAG_GO_KART = 1 << 30,
-    VEHICLE_ENTRY_FLAG_DODGEM_CAR_PLACEMENT = 1u << 31,
+    constexpr uint8_t Flag0 = (1 << 0);
+    constexpr uint8_t Flag1 = (1 << 1);
+    constexpr uint8_t Flag2 = (1 << 2);
+    constexpr uint8_t Flag3 = (1 << 3);
+    constexpr uint8_t Flag4 = (1 << 4);
+    constexpr uint8_t Flag5 = (1 << 5); // transitioning between hole
+} // namespace MiniGolfFlag
+
+enum class MiniGolfState : int16_t
+{
+    Unk0,
+    Unk1, // Unused
+    Unk2,
+    Unk3,
+    Unk4,
+    Unk5,
+    Unk6,
+};
+
+enum class MiniGolfAnimation : uint8_t
+{
+    Walk,
+    PlaceBallDown,
+    SwingLeft,
+    PickupBall,
+    Jump,
+    PlaceBallUp,
+    PuttLeft,
+    Swing,
+    Putt,
 };
 
 enum
@@ -424,7 +426,8 @@ enum
     VEHICLE_ENTRY_ANIMATION_OBSERVATION_TOWER,
     VEHICLE_ENTRY_ANIMATION_HELICARS,
     VEHICLE_ENTRY_ANIMATION_MONORAIL_CYCLES,
-    VEHICLE_ENTRY_ANIMATION_MULTI_DIM_COASTER
+    VEHICLE_ENTRY_ANIMATION_MULTI_DIM_COASTER,
+    VEHICLE_ENTRY_ANIMATION_ANIMAL_FLYING // OpenRCT2-specific feature
 };
 
 enum : uint32_t
@@ -446,26 +449,6 @@ enum : uint32_t
     VEHICLE_UPDATE_FLAG_ROTATION_OFF_WILD_MOUSE = (1 << 13), // After passing a rotation toggle track piece this will enable
     VEHICLE_UPDATE_FLAG_SINGLE_CAR_POSITION = (1 << 14), // OpenRCT2 Flag: Used to override UpdateMotion to move the position of
                                                          // an individual car on a train
-};
-
-enum : uint32_t
-{
-    VEHICLE_SPRITE_FLAG_FLAT = (1 << 0),
-    VEHICLE_SPRITE_FLAG_GENTLE_SLOPES = (1 << 1),
-    VEHICLE_SPRITE_FLAG_STEEP_SLOPES = (1 << 2),
-    VEHICLE_SPRITE_FLAG_VERTICAL_SLOPES = (1 << 3),
-    VEHICLE_SPRITE_FLAG_DIAGONAL_SLOPES = (1 << 4),
-    VEHICLE_SPRITE_FLAG_FLAT_BANKED = (1 << 5),
-    VEHICLE_SPRITE_FLAG_INLINE_TWISTS = (1 << 6),
-    VEHICLE_SPRITE_FLAG_FLAT_TO_GENTLE_SLOPE_BANKED_TRANSITIONS = (1 << 7),
-    VEHICLE_SPRITE_FLAG_DIAGONAL_GENTLE_SLOPE_BANKED_TRANSITIONS = (1 << 8),
-    VEHICLE_SPRITE_FLAG_GENTLE_SLOPE_BANKED_TRANSITIONS = (1 << 9),
-    VEHICLE_SPRITE_FLAG_GENTLE_SLOPE_BANKED_TURNS = (1 << 10),
-    VEHICLE_SPRITE_FLAG_FLAT_TO_GENTLE_SLOPE_WHILE_BANKED_TRANSITIONS = (1 << 11),
-    VEHICLE_SPRITE_FLAG_CORKSCREWS = (1 << 12),
-    VEHICLE_SPRITE_FLAG_RESTRAINT_ANIMATION = (1 << 13),
-    VEHICLE_SPRITE_FLAG_CURVED_LIFT_HILL = (1 << 14),
-    VEHICLE_SPRITE_FLAG_15 = (1 << 15),
 };
 
 enum
@@ -526,7 +509,7 @@ enum
 enum
 {
     SOUND_RANGE_SCREAMS_0 = 0,
-    SOUND_RANGE_SCREAMS_1 = 1,
+    SOUND_RANGE_SCREAMS_1_WOODEN_COASTERS = 1,
     SOUND_RANGE_SCREAMS_2 = 2,
     SOUND_RANGE_WHISTLE = 3,
     SOUND_RANGE_BELL = 4,
@@ -536,7 +519,7 @@ enum
 #define VEHICLE_SEAT_PAIR_FLAG 0x80
 #define VEHICLE_SEAT_NUM_MASK 0x7F
 
-Vehicle* try_get_vehicle(uint16_t spriteIndex);
+Vehicle* try_get_vehicle(EntityId spriteIndex);
 void vehicle_update_all();
 void vehicle_sounds_update();
 
@@ -548,6 +531,4 @@ extern int32_t _vehicleVelocityF64E0C;
 extern int32_t _vehicleUnkF64E10;
 extern uint8_t _vehicleF64E2C;
 extern Vehicle* _vehicleFrontVehicle;
-extern CoordsXYZ unk_F64E20;
-
-#endif
+extern CoordsXYZ _vehicleCurPosition;

@@ -10,6 +10,7 @@
 #include "Entrance.h"
 
 #include "../Cheats.h"
+#include "../Context.h"
 #include "../Game.h"
 #include "../OpenRCT2.h"
 #include "../actions/ParkEntranceRemoveAction.h"
@@ -18,13 +19,16 @@
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
 #include "../network/network.h"
+#include "../object/FootpathObject.h"
+#include "../object/FootpathSurfaceObject.h"
+#include "../object/ObjectManager.h"
+#include "../ride/RideConstruction.h"
 #include "../ride/Station.h"
 #include "../ride/Track.h"
 #include "Footpath.h"
 #include "Map.h"
 #include "MapAnimation.h"
 #include "Park.h"
-#include "Sprite.h"
 
 #include <algorithm>
 
@@ -36,14 +40,14 @@ CoordsXYZD gRideEntranceExitGhostPosition;
 StationIndex gRideEntranceExitGhostStationIndex;
 
 static money32 RideEntranceExitPlaceGhost(
-    ride_id_t rideIndex, const CoordsXY& entranceExitCoords, Direction direction, uint8_t placeType, StationIndex stationNum)
+    RideId rideIndex, const CoordsXY& entranceExitCoords, Direction direction, uint8_t placeType, StationIndex stationNum)
 {
     auto rideEntranceExitPlaceAction = RideEntranceExitPlaceAction(
         entranceExitCoords, direction, rideIndex, stationNum, placeType == ENTRANCE_TYPE_RIDE_EXIT);
     rideEntranceExitPlaceAction.SetFlags(GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED | GAME_COMMAND_FLAG_GHOST);
     auto res = GameActions::Execute(&rideEntranceExitPlaceAction);
 
-    return res->Error == GameActions::Status::Ok ? res->Cost : MONEY32_UNDEFINED;
+    return res.Error == GameActions::Status::Ok ? res.Cost : MONEY32_UNDEFINED;
 }
 
 /**
@@ -133,14 +137,14 @@ void maze_entrance_hedge_replacement(const CoordsXYE& entrance)
     int32_t direction = entrance.element->GetDirection();
     auto hedgePos = entrance + CoordsDirectionDelta[direction];
     int32_t z = entrance.element->GetBaseZ();
-    ride_id_t rideIndex = entrance.element->AsEntrance()->GetRideIndex();
+    RideId rideIndex = entrance.element->AsEntrance()->GetRideIndex();
 
     auto tileElement = map_get_first_element_at(hedgePos);
     if (tileElement == nullptr)
         return;
     do
     {
-        if (tileElement->GetType() != TILE_ELEMENT_TYPE_TRACK)
+        if (tileElement->GetType() != TileElementType::Track)
             continue;
         if (tileElement->AsTrack()->GetRideIndex() != rideIndex)
             continue;
@@ -170,14 +174,14 @@ void maze_entrance_hedge_removal(const CoordsXYE& entrance)
     int32_t direction = entrance.element->GetDirection();
     auto hedgePos = entrance + CoordsDirectionDelta[direction];
     int32_t z = entrance.element->GetBaseZ();
-    ride_id_t rideIndex = entrance.element->AsEntrance()->GetRideIndex();
+    RideId rideIndex = entrance.element->AsEntrance()->GetRideIndex();
 
     auto tileElement = map_get_first_element_at(hedgePos);
     if (tileElement == nullptr)
         return;
     do
     {
-        if (tileElement->GetType() != TILE_ELEMENT_TYPE_TRACK)
+        if (tileElement->GetType() != TileElementType::Track)
             continue;
         if (tileElement->AsTrack()->GetRideIndex() != rideIndex)
             continue;
@@ -214,14 +218,31 @@ void fix_park_entrance_locations(void)
         gParkEntrances.end());
 }
 
-uint8_t EntranceElement::GetStationIndex() const
+void UpdateParkEntranceLocations()
 {
-    return StationIndex;
+    gParkEntrances.clear();
+    tile_element_iterator it;
+    tile_element_iterator_begin(&it);
+    while (tile_element_iterator_next(&it))
+    {
+        auto entranceElement = it.element->AsEntrance();
+        if (entranceElement != nullptr && entranceElement->GetEntranceType() == ENTRANCE_TYPE_PARK_ENTRANCE
+            && entranceElement->GetSequenceIndex() == 0 && !entranceElement->IsGhost())
+        {
+            auto entrance = TileCoordsXYZD(it.x, it.y, it.element->base_height, it.element->GetDirection()).ToCoordsXYZD();
+            gParkEntrances.push_back(entrance);
+        }
+    }
 }
 
-void EntranceElement::SetStationIndex(uint8_t newStationIndex)
+StationIndex EntranceElement::GetStationIndex() const
 {
-    StationIndex = newStationIndex;
+    return stationIndex;
+}
+
+void EntranceElement::SetStationIndex(StationIndex newStationIndex)
+{
+    stationIndex = newStationIndex;
 }
 
 uint8_t EntranceElement::GetEntranceType() const
@@ -234,12 +255,12 @@ void EntranceElement::SetEntranceType(uint8_t newType)
     entranceType = newType;
 }
 
-ride_id_t EntranceElement::GetRideIndex() const
+RideId EntranceElement::GetRideIndex() const
 {
     return rideIndex;
 }
 
-void EntranceElement::SetRideIndex(ride_id_t newRideIndex)
+void EntranceElement::SetRideIndex(RideId newRideIndex)
 {
     rideIndex = newRideIndex;
 }
@@ -255,12 +276,65 @@ void EntranceElement::SetSequenceIndex(uint8_t newSequenceIndex)
     SequenceIndex |= (newSequenceIndex & 0xF);
 }
 
-PathSurfaceIndex EntranceElement::GetPathType() const
+bool EntranceElement::HasLegacyPathEntry() const
 {
+    return (flags2 & ENTRANCE_ELEMENT_FLAGS2_LEGACY_PATH_ENTRY) != 0;
+}
+
+ObjectEntryIndex EntranceElement::GetLegacyPathEntryIndex() const
+{
+    if (HasLegacyPathEntry())
+        return PathType;
+
+    return OBJECT_ENTRY_INDEX_NULL;
+}
+
+const FootpathObject* EntranceElement::GetLegacyPathEntry() const
+{
+    auto& objMgr = OpenRCT2::GetContext()->GetObjectManager();
+    return static_cast<FootpathObject*>(objMgr.GetLoadedObject(ObjectType::Paths, GetLegacyPathEntryIndex()));
+}
+
+void EntranceElement::SetLegacyPathEntryIndex(ObjectEntryIndex newPathType)
+{
+    PathType = newPathType;
+    flags2 |= ENTRANCE_ELEMENT_FLAGS2_LEGACY_PATH_ENTRY;
+}
+
+ObjectEntryIndex EntranceElement::GetSurfaceEntryIndex() const
+{
+    if (HasLegacyPathEntry())
+        return OBJECT_ENTRY_INDEX_NULL;
+
     return PathType;
 }
 
-void EntranceElement::SetPathType(PathSurfaceIndex newPathType)
+const FootpathSurfaceObject* EntranceElement::GetSurfaceEntry() const
 {
-    PathType = newPathType;
+    auto& objMgr = OpenRCT2::GetContext()->GetObjectManager();
+    return static_cast<FootpathSurfaceObject*>(objMgr.GetLoadedObject(ObjectType::FootpathSurface, GetSurfaceEntryIndex()));
+}
+
+void EntranceElement::SetSurfaceEntryIndex(ObjectEntryIndex newIndex)
+{
+    PathType = newIndex;
+    flags2 &= ~ENTRANCE_ELEMENT_FLAGS2_LEGACY_PATH_ENTRY;
+}
+
+const PathSurfaceDescriptor* EntranceElement::GetPathSurfaceDescriptor() const
+{
+    if (HasLegacyPathEntry())
+    {
+        const auto* legacyPathEntry = GetLegacyPathEntry();
+        if (legacyPathEntry == nullptr)
+            return nullptr;
+
+        return &legacyPathEntry->GetPathSurfaceDescriptor();
+    }
+
+    const auto* surfaceEntry = GetSurfaceEntry();
+    if (surfaceEntry == nullptr)
+        return nullptr;
+
+    return &surfaceEntry->GetDescriptor();
 }

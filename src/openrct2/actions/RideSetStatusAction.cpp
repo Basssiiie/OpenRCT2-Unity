@@ -13,6 +13,7 @@
 #include "../common.h"
 #include "../core/MemoryStream.h"
 #include "../interface/Window.h"
+#include "../localisation/Formatter.h"
 #include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
@@ -20,7 +21,6 @@
 #include "../ui/UiContext.h"
 #include "../ui/WindowManager.h"
 #include "../world/Park.h"
-#include "../world/Sprite.h"
 
 static rct_string_id _StatusErrorTitles[] = {
     STR_CANT_CLOSE,
@@ -29,7 +29,7 @@ static rct_string_id _StatusErrorTitles[] = {
     STR_CANT_SIMULATE,
 };
 
-RideSetStatusAction::RideSetStatusAction(ride_id_t rideIndex, uint8_t status)
+RideSetStatusAction::RideSetStatusAction(RideId rideIndex, RideStatus status)
     : _rideIndex(rideIndex)
     , _status(status)
 {
@@ -53,178 +53,179 @@ void RideSetStatusAction::Serialise(DataSerialiser& stream)
     stream << DS_TAG(_rideIndex) << DS_TAG(_status);
 }
 
-GameActions::Result::Ptr RideSetStatusAction::Query() const
+GameActions::Result RideSetStatusAction::Query() const
 {
-    GameActions::Result::Ptr res = std::make_unique<GameActions::Result>();
+    GameActions::Result res = GameActions::Result();
 
     auto ride = get_ride(_rideIndex);
     if (ride == nullptr)
     {
-        log_warning("Invalid game command for ride %u", uint32_t(_rideIndex));
-        res->Error = GameActions::Status::InvalidParameters;
-        res->ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
-        res->ErrorMessage = STR_NONE;
+        log_warning("Invalid game command for ride %u", _rideIndex.ToUnderlying());
+        res.Error = GameActions::Status::InvalidParameters;
+        res.ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
+        res.ErrorMessage = STR_NONE;
         return res;
     }
 
-    if (_status >= RIDE_STATUS_COUNT)
+    if (_status >= RideStatus::Count)
     {
-        log_warning("Invalid ride status %u for ride %u", uint32_t(_status), uint32_t(_rideIndex));
-        res->Error = GameActions::Status::InvalidParameters;
-        res->ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
-        res->ErrorMessage = STR_NONE;
+        log_warning("Invalid ride status %u for ride %u", EnumValue(_status), _rideIndex.ToUnderlying());
+        res.Error = GameActions::Status::InvalidParameters;
+        res.ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
+        res.ErrorMessage = STR_NONE;
         return res;
     }
 
-    res->ErrorTitle = _StatusErrorTitles[_status];
+    res.ErrorTitle = _StatusErrorTitles[EnumValue(_status)];
 
-    Formatter ft(res->ErrorMessageArgs.data());
+    Formatter ft(res.ErrorMessageArgs.data());
     ft.Increment(6);
     ride->FormatNameTo(ft);
     if (_status != ride->status)
     {
-        if (_status == RIDE_STATUS_SIMULATING && (ride->lifecycle_flags & RIDE_LIFECYCLE_BROKEN_DOWN))
+        if (_status == RideStatus::Simulating && (ride->lifecycle_flags & RIDE_LIFECYCLE_BROKEN_DOWN))
         {
             // Simulating will force clear the track, so make sure player can't cheat around a break down
-            res->Error = GameActions::Status::Disallowed;
-            res->ErrorMessage = STR_HAS_BROKEN_DOWN_AND_REQUIRES_FIXING;
+            res.Error = GameActions::Status::Disallowed;
+            res.ErrorMessage = STR_HAS_BROKEN_DOWN_AND_REQUIRES_FIXING;
             return res;
         }
-        else if (_status == RIDE_STATUS_TESTING || _status == RIDE_STATUS_SIMULATING)
+
+        if (_status == RideStatus::Testing || _status == RideStatus::Simulating)
         {
             if (!ride->Test(_status, false))
             {
-                res->Error = GameActions::Status::Unknown;
-                res->ErrorMessage = gGameCommandErrorText;
+                res.Error = GameActions::Status::Unknown;
+                res.ErrorMessage = gGameCommandErrorText;
                 return res;
             }
         }
-        else if (_status == RIDE_STATUS_OPEN)
+        else if (_status == RideStatus::Open)
         {
             if (!ride->Open(false))
             {
-                res->Error = GameActions::Status::Unknown;
-                res->ErrorMessage = gGameCommandErrorText;
+                res.Error = GameActions::Status::Unknown;
+                res.ErrorMessage = gGameCommandErrorText;
                 return res;
             }
         }
     }
-    return std::make_unique<GameActions::Result>();
+    return GameActions::Result();
 }
 
-GameActions::Result::Ptr RideSetStatusAction::Execute() const
+GameActions::Result RideSetStatusAction::Execute() const
 {
-    GameActions::Result::Ptr res = std::make_unique<GameActions::Result>();
-    res->Expenditure = ExpenditureType::RideRunningCosts;
+    GameActions::Result res = GameActions::Result();
+    res.Expenditure = ExpenditureType::RideRunningCosts;
 
     auto ride = get_ride(_rideIndex);
     if (ride == nullptr)
     {
-        log_warning("Invalid game command for ride %u", uint32_t(_rideIndex));
-        res->Error = GameActions::Status::InvalidParameters;
-        res->ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
-        res->ErrorMessage = STR_NONE;
+        log_warning("Invalid game command for ride %u", _rideIndex.ToUnderlying());
+        res.Error = GameActions::Status::InvalidParameters;
+        res.ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
+        res.ErrorMessage = STR_NONE;
         return res;
     }
 
-    res->ErrorTitle = _StatusErrorTitles[_status];
+    res.ErrorTitle = _StatusErrorTitles[static_cast<uint8_t>(_status)];
 
-    Formatter ft(res->ErrorMessageArgs.data());
+    Formatter ft(res.ErrorMessageArgs.data());
     ft.Increment(6);
     ride->FormatNameTo(ft);
-    if (!ride->overall_view.isNull())
+    if (!ride->overall_view.IsNull())
     {
         auto location = ride->overall_view.ToTileCentre();
-        res->Position = { location, tile_element_height(location) };
+        res.Position = { location, tile_element_height(location) };
     }
 
     switch (_status)
     {
-        case RIDE_STATUS_CLOSED:
-            if (ride->status == _status || ride->status == RIDE_STATUS_SIMULATING)
+        case RideStatus::Closed:
+            if (ride->status == _status || ride->status == RideStatus::Simulating)
             {
                 if (!(ride->lifecycle_flags & RIDE_LIFECYCLE_BROKEN_DOWN))
                 {
                     ride->lifecycle_flags &= ~RIDE_LIFECYCLE_CRASHED;
                     ride_clear_for_construction(ride);
-                    ride_remove_peeps(ride);
+                    ride->RemovePeeps();
                 }
             }
 
-            ride->status = RIDE_STATUS_CLOSED;
+            ride->status = RideStatus::Closed;
             ride->lifecycle_flags &= ~RIDE_LIFECYCLE_PASS_STATION_NO_STOPPING;
-            ride->race_winner = SPRITE_INDEX_NULL;
+            ride->race_winner = EntityId::GetNull();
             ride->window_invalidate_flags |= RIDE_INVALIDATE_RIDE_MAIN | RIDE_INVALIDATE_RIDE_LIST;
-            window_invalidate_by_number(WC_RIDE, _rideIndex);
+            window_invalidate_by_number(WC_RIDE, _rideIndex.ToUnderlying());
             break;
-        case RIDE_STATUS_SIMULATING:
+        case RideStatus::Simulating:
         {
             ride->lifecycle_flags &= ~RIDE_LIFECYCLE_CRASHED;
             ride_clear_for_construction(ride);
-            ride_remove_peeps(ride);
+            ride->RemovePeeps();
 
             if (!ride->Test(_status, true))
             {
-                res->Error = GameActions::Status::Unknown;
-                res->ErrorMessage = gGameCommandErrorText;
+                res.Error = GameActions::Status::Unknown;
+                res.ErrorMessage = gGameCommandErrorText;
                 return res;
             }
 
             ride->status = _status;
             ride->lifecycle_flags &= ~RIDE_LIFECYCLE_PASS_STATION_NO_STOPPING;
-            ride->race_winner = SPRITE_INDEX_NULL;
+            ride->race_winner = EntityId::GetNull();
             ride->current_issues = 0;
             ride->last_issue_time = 0;
             ride->GetMeasurement();
             ride->window_invalidate_flags |= RIDE_INVALIDATE_RIDE_MAIN | RIDE_INVALIDATE_RIDE_LIST;
-            window_invalidate_by_number(WC_RIDE, _rideIndex);
+            window_invalidate_by_number(WC_RIDE, _rideIndex.ToUnderlying());
             break;
         }
-        case RIDE_STATUS_TESTING:
-        case RIDE_STATUS_OPEN:
+        case RideStatus::Testing:
+        case RideStatus::Open:
         {
             if (ride->status == _status)
             {
                 return res;
             }
 
-            if (ride->status == RIDE_STATUS_SIMULATING)
+            if (ride->status == RideStatus::Simulating)
             {
                 ride_clear_for_construction(ride);
-                ride_remove_peeps(ride);
+                ride->RemovePeeps();
             }
 
             // Fix #3183: Make sure we close the construction window so the ride finishes any editing code before opening
             //            otherwise vehicles get added to the ride incorrectly (such as to a ghost station)
-            rct_window* constructionWindow = window_find_by_number(WC_RIDE_CONSTRUCTION, _rideIndex);
+            rct_window* constructionWindow = window_find_by_number(WC_RIDE_CONSTRUCTION, _rideIndex.ToUnderlying());
             if (constructionWindow != nullptr)
             {
                 window_close(constructionWindow);
             }
 
-            if (_status == RIDE_STATUS_TESTING)
+            if (_status == RideStatus::Testing)
             {
                 if (!ride->Test(_status, true))
                 {
-                    res->Error = GameActions::Status::Unknown;
-                    res->ErrorMessage = gGameCommandErrorText;
+                    res.Error = GameActions::Status::Unknown;
+                    res.ErrorMessage = gGameCommandErrorText;
                     return res;
                 }
             }
             else if (!ride->Open(true))
             {
-                res->Error = GameActions::Status::Unknown;
-                res->ErrorMessage = gGameCommandErrorText;
+                res.Error = GameActions::Status::Unknown;
+                res.ErrorMessage = gGameCommandErrorText;
                 return res;
             }
 
-            ride->race_winner = SPRITE_INDEX_NULL;
+            ride->race_winner = EntityId::GetNull();
             ride->status = _status;
             ride->current_issues = 0;
             ride->last_issue_time = 0;
             ride->GetMeasurement();
             ride->window_invalidate_flags |= RIDE_INVALIDATE_RIDE_MAIN | RIDE_INVALIDATE_RIDE_LIST;
-            window_invalidate_by_number(WC_RIDE, _rideIndex);
+            window_invalidate_by_number(WC_RIDE, _rideIndex.ToUnderlying());
             break;
         }
         default:

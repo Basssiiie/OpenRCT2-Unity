@@ -7,17 +7,19 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
+#include "Drawing.h"
+
 #include "../Context.h"
 #include "../OpenRCT2.h"
 #include "../PlatformEnvironment.h"
 #include "../config/Config.h"
 #include "../core/FileStream.h"
+#include "../core/MemoryStream.h"
 #include "../core/Path.hpp"
-#include "../platform/platform.h"
+#include "../platform/Platform.h"
 #include "../sprites.h"
 #include "../ui/UiContext.h"
 #include "../util/Util.h"
-#include "Drawing.h"
 #include "ScrollingText.h"
 
 #include <algorithm>
@@ -56,15 +58,15 @@ sprite_peep_pickup_starts[15] =
 
 static inline uint32_t rctc_to_rct2_index(uint32_t image)
 {
-    if      (                  image <  1542) return image;
-    else if (image >=  1574 && image <  4983) return image - 32;
-    else if (image >=  4986 && image < 17189) return image - 35;
-    else if (image >= 17191 && image < 18121) return image - 37;
-    else if (image >= 18123 && image < 23800) return image - 39;
-    else if (image >= 23804 && image < 24670) return image - 43;
-    else if (image >= 24674 && image < 28244) return image - 47;
-    else if (image >= 28246                 ) return image - 49;
-    else throw std::runtime_error("Invalid RCTC g1.dat file");
+    if (                  image <  1542) return image;
+    if (image >=  1574 && image <  4983) return image - 32;
+    if (image >=  4986 && image < 17189) return image - 35;
+    if (image >= 17191 && image < 18121) return image - 37;
+    if (image >= 18123 && image < 23800) return image - 39;
+    if (image >= 23804 && image < 24670) return image - 43;
+    if (image >= 24674 && image < 28244) return image - 47;
+    if (image >= 28246                 ) return image - 49;
+    throw std::runtime_error("Invalid RCTC g1.dat file");
 }
 // clang-format on
 
@@ -197,7 +199,7 @@ bool gfx_load_g1(const IPlatformEnvironment& env)
     log_verbose("gfx_load_g1(...)");
     try
     {
-        auto path = Path::Combine(env.GetDirectoryPath(DIRBASE::RCT2, DIRID::DATA), "g1.dat");
+        auto path = Path::Combine(env.GetDirectoryPath(DIRBASE::RCT2, DIRID::DATA), u8"g1.dat");
         auto fs = FileStream(path, FILE_MODE_OPEN);
         _g1.header = fs.ReadValue<rct_g1_header>();
 
@@ -264,10 +266,10 @@ bool gfx_load_g2()
 {
     log_verbose("gfx_load_g2()");
 
-    char path[MAX_PATH];
+    auto env = GetContext()->GetPlatformEnvironment();
 
-    platform_get_openrct2_data_path(path, sizeof(path));
-    safe_strcat_path(path, "g2.dat", MAX_PATH);
+    std::string path = Path::Combine(env->GetDirectoryPath(DIRBASE::OPENRCT2), u8"g2.dat");
+
     try
     {
         auto fs = FileStream(path, FILE_MODE_OPEN);
@@ -306,7 +308,7 @@ bool gfx_load_csg()
 {
     log_verbose("gfx_load_csg()");
 
-    if (str_is_null_or_empty(gConfigGeneral.rct1_path))
+    if (gConfigGeneral.rct1_path.empty())
     {
         log_verbose("  unable to load CSG, RCT1 path not set");
         return false;
@@ -360,6 +362,31 @@ bool gfx_load_csg()
     }
 }
 
+std::optional<rct_gx> GfxLoadGx(const std::vector<uint8_t>& buffer)
+{
+    try
+    {
+        OpenRCT2::MemoryStream istream(buffer.data(), buffer.size());
+        rct_gx gx;
+
+        gx.header = istream.ReadValue<rct_g1_header>();
+
+        // Read element headers
+        gx.elements.resize(gx.header.num_entries);
+        read_and_convert_gxdat(&istream, gx.header.num_entries, false, gx.elements.data());
+
+        // Read element data
+        gx.data = istream.ReadArray<uint8_t>(gx.header.total_size);
+
+        return std::make_optional(std::move(gx));
+    }
+    catch (const std::exception&)
+    {
+        log_verbose("Unable to load rct_gx graphics");
+    }
+    return std::nullopt;
+}
+
 static std::optional<PaletteMap> FASTCALL gfx_draw_sprite_get_palette(ImageId imageId)
 {
     if (!imageId.HasSecondary())
@@ -371,36 +398,34 @@ static std::optional<PaletteMap> FASTCALL gfx_draw_sprite_get_palette(ImageId im
         }
         return GetPaletteMapForColour(paletteId);
     }
-    else
+
+    auto paletteMap = PaletteMap(gPeepPalette);
+    if (imageId.HasTertiary())
     {
-        auto paletteMap = PaletteMap(gPeepPalette);
-        if (imageId.HasTertiary())
-        {
-            paletteMap = PaletteMap(gOtherPalette);
-            auto tertiaryPaletteMap = GetPaletteMapForColour(imageId.GetTertiary());
-            if (tertiaryPaletteMap)
-            {
-                paletteMap.Copy(
-                    PALETTE_OFFSET_REMAP_TERTIARY, *tertiaryPaletteMap, PALETTE_OFFSET_REMAP_PRIMARY, PALETTE_LENGTH_REMAP);
-            }
-        }
-
-        auto primaryPaletteMap = GetPaletteMapForColour(imageId.GetPrimary());
-        if (primaryPaletteMap)
+        paletteMap = PaletteMap(gOtherPalette);
+        auto tertiaryPaletteMap = GetPaletteMapForColour(imageId.GetTertiary());
+        if (tertiaryPaletteMap.has_value())
         {
             paletteMap.Copy(
-                PALETTE_OFFSET_REMAP_PRIMARY, *primaryPaletteMap, PALETTE_OFFSET_REMAP_PRIMARY, PALETTE_LENGTH_REMAP);
+                PALETTE_OFFSET_REMAP_TERTIARY, tertiaryPaletteMap.value(), PALETTE_OFFSET_REMAP_PRIMARY, PALETTE_LENGTH_REMAP);
         }
-
-        auto secondaryPaletteMap = GetPaletteMapForColour(imageId.GetSecondary());
-        if (secondaryPaletteMap)
-        {
-            paletteMap.Copy(
-                PALETTE_OFFSET_REMAP_SECONDARY, *secondaryPaletteMap, PALETTE_OFFSET_REMAP_PRIMARY, PALETTE_LENGTH_REMAP);
-        }
-
-        return paletteMap;
     }
+
+    auto primaryPaletteMap = GetPaletteMapForColour(imageId.GetPrimary());
+    if (primaryPaletteMap.has_value())
+    {
+        paletteMap.Copy(
+            PALETTE_OFFSET_REMAP_PRIMARY, primaryPaletteMap.value(), PALETTE_OFFSET_REMAP_PRIMARY, PALETTE_LENGTH_REMAP);
+    }
+
+    auto secondaryPaletteMap = GetPaletteMapForColour(imageId.GetSecondary());
+    if (secondaryPaletteMap.has_value())
+    {
+        paletteMap.Copy(
+            PALETTE_OFFSET_REMAP_SECONDARY, secondaryPaletteMap.value(), PALETTE_OFFSET_REMAP_PRIMARY, PALETTE_LENGTH_REMAP);
+    }
+
+    return paletteMap;
 }
 
 void FASTCALL gfx_draw_sprite_software(rct_drawpixelinfo* dpi, ImageId imageId, const ScreenCoordsXY& spriteCoords)
@@ -437,7 +462,7 @@ void FASTCALL gfx_draw_sprite_palette_set_software(
         return;
     }
 
-    if (dpi->zoom_level > 0 && (g1->flags & G1_FLAG_HAS_ZOOM_SPRITE))
+    if (dpi->zoom_level > ZoomLevel{ 0 } && (g1->flags & G1_FLAG_HAS_ZOOM_SPRITE))
     {
         rct_drawpixelinfo zoomed_dpi = *dpi;
         zoomed_dpi.bits = dpi->bits;
@@ -454,16 +479,16 @@ void FASTCALL gfx_draw_sprite_palette_set_software(
         return;
     }
 
-    if (dpi->zoom_level > 0 && (g1->flags & G1_FLAG_NO_ZOOM_DRAW))
+    if (dpi->zoom_level > ZoomLevel{ 0 } && (g1->flags & G1_FLAG_NO_ZOOM_DRAW))
     {
         return;
     }
 
     // Its used super often so we will define it to a separate variable.
-    auto zoom_level = dpi->zoom_level;
-    int32_t zoom_mask = zoom_level > 0 ? 0xFFFFFFFF * zoom_level : 0xFFFFFFFF;
+    const auto zoom_level = dpi->zoom_level;
+    const int32_t zoom_mask = zoom_level > ZoomLevel{ 0 } ? zoom_level.ApplyTo(0xFFFFFFFF) : 0xFFFFFFFF;
 
-    if (zoom_level > 0 && g1->flags & G1_FLAG_RLE_COMPRESSION)
+    if (zoom_level > ZoomLevel{ 0 } && g1->flags & G1_FLAG_RLE_COMPRESSION)
     {
         x -= ~zoom_mask;
         y -= ~zoom_mask;
@@ -505,7 +530,7 @@ void FASTCALL gfx_draw_sprite_palette_set_software(
     }
     else
     {
-        if ((g1->flags & G1_FLAG_RLE_COMPRESSION) && zoom_level > 0)
+        if ((g1->flags & G1_FLAG_RLE_COMPRESSION) && zoom_level > ZoomLevel{ 0 })
         {
             source_start_y -= dest_start_y & ~zoom_mask;
             height += dest_start_y & ~zoom_mask;
@@ -524,7 +549,7 @@ void FASTCALL gfx_draw_sprite_palette_set_software(
     if (height <= 0)
         return;
 
-    dest_start_y = dest_start_y / zoom_level;
+    dest_start_y = zoom_level.ApplyInversedTo(dest_start_y);
 
     // This will be the width of the drawn image
     int32_t width = g1->width;
@@ -551,7 +576,7 @@ void FASTCALL gfx_draw_sprite_palette_set_software(
     }
     else
     {
-        if ((g1->flags & G1_FLAG_RLE_COMPRESSION) && zoom_level > 0)
+        if ((g1->flags & G1_FLAG_RLE_COMPRESSION) && zoom_level > ZoomLevel{ 0 })
         {
             source_start_x -= dest_start_x & ~zoom_mask;
         }
@@ -569,25 +594,25 @@ void FASTCALL gfx_draw_sprite_palette_set_software(
             return;
     }
 
-    dest_start_x = dest_start_x / zoom_level;
+    dest_start_x = zoom_level.ApplyInversedTo(dest_start_x);
 
     uint8_t* dest_pointer = dpi->bits;
     // Move the pointer to the start point of the destination
-    dest_pointer += ((dpi->width / zoom_level) + dpi->pitch) * dest_start_y + dest_start_x;
+    dest_pointer += (zoom_level.ApplyInversedTo(dpi->width) + dpi->pitch) * dest_start_y + dest_start_x;
 
-    DrawSpriteArgs args(dpi, imageId, paletteMap, *g1, source_start_x, source_start_y, width, height, dest_pointer);
-    gfx_sprite_to_buffer(args);
+    DrawSpriteArgs args(imageId, paletteMap, *g1, source_start_x, source_start_y, width, height, dest_pointer);
+    gfx_sprite_to_buffer(*dpi, args);
 }
 
-void FASTCALL gfx_sprite_to_buffer(DrawSpriteArgs& args)
+void FASTCALL gfx_sprite_to_buffer(rct_drawpixelinfo& dpi, const DrawSpriteArgs& args)
 {
     if (args.SourceImage.flags & G1_FLAG_RLE_COMPRESSION)
     {
-        gfx_rle_sprite_to_buffer(args);
+        gfx_rle_sprite_to_buffer(dpi, args);
     }
     else if (!(args.SourceImage.flags & G1_FLAG_1))
     {
-        gfx_bmp_sprite_to_buffer(args);
+        gfx_bmp_sprite_to_buffer(dpi, args);
     }
 }
 
@@ -598,11 +623,11 @@ void FASTCALL gfx_sprite_to_buffer(DrawSpriteArgs& args)
  *  rct2: 0x00681DE2
  */
 void FASTCALL gfx_draw_sprite_raw_masked_software(
-    rct_drawpixelinfo* dpi, const ScreenCoordsXY& scrCoords, int32_t maskImage, int32_t colourImage)
+    rct_drawpixelinfo* dpi, const ScreenCoordsXY& scrCoords, ImageId maskImage, ImageId colourImage)
 {
     int32_t left, top, right, bottom, width, height;
-    auto imgMask = gfx_get_g1_element(maskImage & 0x7FFFF);
-    auto imgColour = gfx_get_g1_element(colourImage & 0x7FFFF);
+    auto imgMask = gfx_get_g1_element(maskImage);
+    auto imgColour = gfx_get_g1_element(colourImage);
     if (imgMask == nullptr || imgColour == nullptr)
     {
         return;
@@ -611,11 +636,11 @@ void FASTCALL gfx_draw_sprite_raw_masked_software(
     // Only BMP format is supported for masking
     if (!(imgMask->flags & G1_FLAG_BMP) || !(imgColour->flags & G1_FLAG_BMP))
     {
-        gfx_draw_sprite_software(dpi, ImageId::FromUInt32(colourImage), scrCoords);
+        gfx_draw_sprite_software(dpi, colourImage, scrCoords);
         return;
     }
 
-    if (dpi->zoom_level != 0)
+    if (dpi->zoom_level != ZoomLevel{ 0 })
     {
         // TODO: Implement other zoom levels (probably not used though)
         assert(false);
@@ -656,20 +681,22 @@ const rct_g1_element* gfx_get_g1_element(ImageId imageId)
     return gfx_get_g1_element(imageId.GetIndex());
 }
 
-const rct_g1_element* gfx_get_g1_element(int32_t image_id)
+const rct_g1_element* gfx_get_g1_element(ImageIndex image_id)
 {
     openrct2_assert(!gOpenRCT2NoGraphics, "gfx_get_g1_element called on headless instance");
 
     auto offset = static_cast<size_t>(image_id);
-    if (offset == 0x7FFFF)
+    if (offset == 0x7FFFF || offset == ImageIndexUndefined)
     {
         return nullptr;
     }
-    else if (offset == SPR_TEMP)
+
+    if (offset == SPR_TEMP)
     {
         return &_g1Temp;
     }
-    else if (offset < SPR_RCTC_G1_END)
+
+    if (offset < SPR_RCTC_G1_END)
     {
         if (offset < _g1.elements.size())
         {
@@ -683,10 +710,8 @@ const rct_g1_element* gfx_get_g1_element(int32_t image_id)
         {
             return &_g2.elements[idx];
         }
-        else
-        {
-            log_warning("Invalid entry in g2.dat requested, idx = %u. You may have to update your g2.dat.", idx);
-        }
+
+        log_warning("Invalid entry in g2.dat requested, idx = %u. You may have to update your g2.dat.", idx);
     }
     else if (offset < SPR_CSG_END)
     {
@@ -697,10 +722,8 @@ const rct_g1_element* gfx_get_g1_element(int32_t image_id)
             {
                 return &_csg.elements[idx];
             }
-            else
-            {
-                log_warning("Invalid entry in csg.dat requested, idx = %u.", idx);
-            }
+
+            log_warning("Invalid entry in csg.dat requested, idx = %u.", idx);
         }
     }
     else if (offset < SPR_SCROLLING_TEXT_END)
@@ -722,7 +745,7 @@ const rct_g1_element* gfx_get_g1_element(int32_t image_id)
     return nullptr;
 }
 
-void gfx_set_g1_element(int32_t imageId, const rct_g1_element* g1)
+void gfx_set_g1_element(ImageIndex imageId, const rct_g1_element* g1)
 {
     bool isTemp = imageId == SPR_TEMP;
     bool isValid = (imageId >= SPR_IMAGE_LIST_BEGIN && imageId < SPR_IMAGE_LIST_END)
@@ -744,7 +767,7 @@ void gfx_set_g1_element(int32_t imageId, const rct_g1_element* g1)
         {
             if (imageId < SPR_RCTC_G1_END)
             {
-                if (imageId < static_cast<int32_t>(_g1.elements.size()))
+                if (imageId < static_cast<ImageIndex>(_g1.elements.size()))
                 {
                     _g1.elements[imageId] = *g1;
                 }
@@ -794,31 +817,28 @@ size_t g1_calculate_data_size(const rct_g1_element* g1)
     {
         return g1->width * 3;
     }
-    else if (g1->flags & G1_FLAG_RLE_COMPRESSION)
+
+    if (g1->flags & G1_FLAG_RLE_COMPRESSION)
     {
         if (g1->offset == nullptr)
         {
             return 0;
         }
-        else
+
+        auto idx = (g1->height - 1) * 2;
+        uint16_t offset = g1->offset[idx] | (g1->offset[idx + 1] << 8);
+        uint8_t* ptr = g1->offset + offset;
+        bool endOfLine = false;
+        do
         {
-            auto idx = (g1->height - 1) * 2;
-            uint16_t offset = g1->offset[idx] | (g1->offset[idx + 1] << 8);
-            uint8_t* ptr = g1->offset + offset;
-            bool endOfLine = false;
-            do
-            {
-                uint8_t chunk0 = *ptr++;
-                ptr++; // offset
-                uint8_t chunkSize = chunk0 & 0x7F;
-                ptr += chunkSize;
-                endOfLine = (chunk0 & 0x80) != 0;
-            } while (!endOfLine);
-            return ptr - g1->offset;
-        }
+            uint8_t chunk0 = *ptr++;
+            ptr++; // offset
+            uint8_t chunkSize = chunk0 & 0x7F;
+            ptr += chunkSize;
+            endOfLine = (chunk0 & 0x80) != 0;
+        } while (!endOfLine);
+        return ptr - g1->offset;
     }
-    else
-    {
-        return g1->width * g1->height;
-    }
+
+    return g1->width * g1->height;
 }

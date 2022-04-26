@@ -11,7 +11,7 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(TrackSetBrakeSpeedAction, GameCommand::SetBrakesSpeed, GameActions::Result)
+class TrackSetBrakeSpeedAction final : public GameActionBase<GameCommand::SetBrakesSpeed>
 {
 private:
     CoordsXYZ _loc;
@@ -22,14 +22,14 @@ public:
     TrackSetBrakeSpeedAction() = default;
     TrackSetBrakeSpeedAction(const CoordsXYZ& loc, track_type_t trackType, uint8_t brakeSpeed);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override final;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr QueryExecute(bool isExecuting) const;
+    GameActions::Result QueryExecute(bool isExecuting) const;
 };

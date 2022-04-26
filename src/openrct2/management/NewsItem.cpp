@@ -13,16 +13,20 @@
 #include "../Input.h"
 #include "../OpenRCT2.h"
 #include "../audio/audio.h"
+#include "../entity/EntityRegistry.h"
+#include "../entity/Peep.h"
 #include "../interface/Window.h"
 #include "../interface/Window_internal.h"
 #include "../localisation/Date.h"
+#include "../localisation/Formatter.h"
 #include "../localisation/Localisation.h"
 #include "../management/Research.h"
+#include "../profiling/Profiling.h"
 #include "../ride/Ride.h"
+#include "../ride/Vehicle.h"
 #include "../util/Util.h"
 #include "../windows/Intent.h"
 #include "../world/Location.hpp"
-#include "../world/Sprite.h"
 
 News::ItemQueues gNewsItems;
 
@@ -60,8 +64,8 @@ const News::Item& News::ItemQueues::operator[](size_t index) const
 {
     if (index < Recent.capacity())
         return Recent[index];
-    else
-        return Archived[index - Recent.capacity()];
+
+    return Archived[index - Recent.capacity()];
 }
 
 News::Item* News::ItemQueues::At(int32_t index)
@@ -75,10 +79,8 @@ const News::Item* News::ItemQueues::At(int32_t index) const
     {
         return &(*this)[index];
     }
-    else
-    {
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
 bool News::IsQueueEmpty()
@@ -152,6 +154,8 @@ bool News::ItemQueues::CurrentShouldBeArchived() const
  */
 void News::UpdateCurrentItem()
 {
+    PROFILED_FUNCTION();
+
     // Check if there is a current news item
     if (gNewsItems.IsEmpty())
         return;
@@ -209,8 +213,8 @@ std::optional<CoordsXYZ> News::GetSubjectLocation(News::ItemType type, int32_t s
     {
         case News::ItemType::Ride:
         {
-            Ride* ride = get_ride(subject);
-            if (ride == nullptr || ride->overall_view.isNull())
+            Ride* ride = get_ride(RideId::FromUnderlying(subject));
+            if (ride == nullptr || ride->overall_view.IsNull())
             {
                 break;
             }
@@ -220,11 +224,11 @@ std::optional<CoordsXYZ> News::GetSubjectLocation(News::ItemType type, int32_t s
         }
         case News::ItemType::PeepOnRide:
         {
-            auto peep = TryGetEntity<Peep>(subject);
+            auto peep = TryGetEntity<Peep>(EntityId::FromUnderlying(subject));
             if (peep == nullptr)
                 break;
 
-            subjectLoc = CoordsXYZ{ peep->x, peep->y, peep->z };
+            subjectLoc = peep->GetLocation();
             if (subjectLoc->x != LOCATION_NULL)
                 break;
 
@@ -251,16 +255,16 @@ std::optional<CoordsXYZ> News::GetSubjectLocation(News::ItemType type, int32_t s
             }
             if (sprite != nullptr)
             {
-                subjectLoc = CoordsXYZ{ sprite->x, sprite->y, sprite->z };
+                subjectLoc = sprite->GetLocation();
             }
             break;
         }
         case News::ItemType::Peep:
         {
-            auto peep = TryGetEntity<Peep>(subject);
+            auto peep = TryGetEntity<Peep>(EntityId::FromUnderlying(subject));
             if (peep != nullptr)
             {
-                subjectLoc = CoordsXYZ{ peep->x, peep->y, peep->z };
+                subjectLoc = peep->GetLocation();
             }
             break;
         }
@@ -269,7 +273,7 @@ std::optional<CoordsXYZ> News::GetSubjectLocation(News::ItemType type, int32_t s
             auto subjectUnsigned = static_cast<uint32_t>(subject);
             auto subjectXY = CoordsXY{ static_cast<int16_t>(subjectUnsigned & 0xFFFF),
                                        static_cast<int16_t>(subjectUnsigned >> 16) };
-            if (!subjectXY.isNull())
+            if (!subjectXY.IsNull())
             {
                 subjectLoc = CoordsXYZ{ subjectXY, tile_element_height(subjectXY) };
             }
@@ -308,6 +312,12 @@ News::Item* News::AddItemToQueue(News::ItemType type, rct_string_id string_id, u
     // overflows possible?
     format_string(buffer, 256, string_id, formatter.Data());
     return News::AddItemToQueue(type, buffer, assoc);
+}
+
+// TODO: Use variant for assoc, requires strong type for each possible input.
+News::Item* News::AddItemToQueue(ItemType type, rct_string_id string_id, EntityId assoc, const Formatter& formatter)
+{
+    return AddItemToQueue(type, string_id, assoc.ToUnderlying(), formatter);
 }
 
 News::Item* News::AddItemToQueue(News::ItemType type, const utf8* text, uint32_t assoc)
@@ -363,7 +373,7 @@ void News::OpenSubject(News::ItemType type, int32_t subject)
         case News::ItemType::PeepOnRide:
         case News::ItemType::Peep:
         {
-            auto peep = TryGetEntity<Peep>(subject);
+            auto peep = TryGetEntity<Peep>(EntityId::FromUnderlying(subject));
             if (peep != nullptr)
             {
                 auto intent = Intent(WC_PEEP);
@@ -387,26 +397,9 @@ void News::OpenSubject(News::ItemType type, int32_t subject)
                 break;
             }
 
-            // Check if window is already open
-            auto window = window_bring_to_front_by_class(WC_SCENERY);
-            if (window == nullptr)
-            {
-                window = window_find_by_class(WC_TOP_TOOLBAR);
-                if (window != nullptr)
-                {
-                    window->Invalidate();
-                    if (!tool_set(window, WC_TOP_TOOLBAR__WIDX_SCENERY, Tool::Arrow))
-                    {
-                        input_set_flag(INPUT_FLAG_6, true);
-                        context_open_window(WC_SCENERY);
-                    }
-                }
-            }
-
-            // Switch to new scenery tab
-            window = window_find_by_class(WC_SCENERY);
-            if (window != nullptr)
-                window_event_mouse_down_call(window, WC_SCENERY__WIDX_SCENERY_TAB_1 + subject);
+            auto intent = Intent(INTENT_ACTION_NEW_SCENERY);
+            intent.putExtra(INTENT_EXTRA_SCENERY_GROUP_ENTRY_INDEX, item.entryIndex);
+            context_open_intent(&intent);
             break;
         }
         case News::ItemType::Peeps:

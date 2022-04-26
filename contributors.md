@@ -7,7 +7,6 @@ Includes all git commit authors. Aliases are GitHub user names.
 * Michael Steenbeek (Gymnasiast) - translation management
 * Michał Janiszewski (janisozaur)
 * Hielke Morsink (Broxzier)
-* Matthias Moninger (ZehMatt)
 * Tulio Paschoalin Leao (tupaschoal)
 
 ## Former development team members
@@ -16,6 +15,7 @@ Includes all git commit authors. Aliases are GitHub user names.
 * (zsilencer)
 * Richard Jenkins (rwjuk)
 * Aaron van Geffen (AaronVanGeffen)
+* Matthias Moninger (ZehMatt)
 
 ## Long term contributors
 The following people are not part of the development team, but have been contributing for a long time.
@@ -62,7 +62,7 @@ The following people are not part of the development team, but have been contrib
 * Robert Jordan (trigger-death) - UI theming, title sequence editor, misc.
 * Aaron van Geffen (AaronVanGeffen) - scenario select screen, font detection, misc.
 * Michał Janiszewski (janisozaur) - Linux port, crash handling, security, misc.
-* Kelson Blakewood (spacek531) - title sequences for release versions 0.0.4 through 0.1.2, title sequences using milliseconds
+* Kelson Blakewood (spacek531) - title sequences, title sequence features, vehicle features
 * Hugo Wallenburg (Goddesen) - Misc.
 * Edward Calver (X7123M3-256) - New Hybrid Coaster track, extended sprite toolchain, more vehicle cheats, misc.
 * Matte Andersson (Nubbie) - Misc, UX
@@ -91,8 +91,12 @@ The following people are not part of the development team, but have been contrib
 * Jim Verheijde (Jimver) - Make handymen less likely to get stuck in queue lines, misc.
 * Helio Batimarqui (batimarqui) - Misc.
 * Keith Stellyes (keithstellyes) - Misc.
+* Bas Cantrijn (Basssiiie) - Various plugin additions, misc.
+* Adrian Zdanowicz (CookiePLMonster) - Misc.
+* Andrew Pratt (andrewpratt64) - Added api hook for vehicle crashes, api function to get entities on a tile
 
 ## Bug fixes
+* (KirilAngelov)
 * (halfbro)
 * (Myrtle)
 * (nean)
@@ -164,6 +168,25 @@ The following people are not part of the development team, but have been contrib
 * (evilclownattack)
 * Adam Bloom (adam-bloom)
 * Geoff B. (geoff-B)
+* Ryan D. (rctdude2)
+* (zrowny)
+* Emre Aydin (aemreaydin)
+* Daniel Karandikar (DKarandikar)
+* Struan Clark (xtruan)
+* Kane Shaw (seifer7)
+* Saad Rehman (SaadRehmanCS)
+* (ocalhoun6)
+* Sean Payne (seanmajorpayne)
+* Soham Roy (sohamroy19)
+* Gaven Rendell (Rendello)
+* Christian Haase (chrhaase)
+* Cory Sanin (CorySanin)
+* Vinícius Hashimoto (vkhashimoto)
+* Gal B. (GalBr)
+* Rik Smeets (rik-smeets)
+* Charles Machalow (csm10495)
+* Alexander Czarnecki (alcz/zuczek4793)
+* Lawrence De Mol (lawrencedemol)
 
 ## Toolchain
 * (Balletie) - macOS
@@ -174,6 +197,7 @@ The following people are not part of the development team, but have been contrib
 * Michał Janiszewski (janisozaur) - Linux, Travis CI
 * Lewis Fox (LRFLEW) - macOS
 * Andrew Rimpici (Andy608) - macOS
+* Adam Bloom (adam-bloom) - macOS, CI
 
 ## Documentation
 * (honzi)
@@ -199,7 +223,7 @@ The following people are not part of the development team, but have been contrib
 * Danish - Lars P. Sørensen (LPSGizmo)
 * Dutch - Michael Steenbeek (Gymnasiast), Yannic Geurts (xzbobzx), (mrtnptrs), Thomas den Hollander (ThomasdenH), (hostbrute),  Marijn van der Werf (marijnvdwerf), Tom Kroes (ThePsionic); reviewing and discussion: Aaron van Geffen (AaronVanGeffen), (Balletie) and Sijmen Schoon (SijmenSchoon).
 * Finnish - (DJHasis), (Zode), (TheWing)
-* French - (fbourigault), Joël Troch (JoelTroch), Michael Steenbeek (Gymnasiast), Romain Vigier (rvgr),  (AziasYur), Hugo Courtial (s0r00t), David Delobel (incyclum), Nicolas Hawrysh (xp4xbox)
+* French - (fbourigault), Joël Troch (JoelTroch), Michael Steenbeek (Gymnasiast), Romain Vigier (rmnvgr), (AziasYur), Hugo Courtial (s0r00t), David Delobel (incyclum), Nicolas Hawrysh (xp4xbox)
 * German - (danidoedel), (atmaxinger), (Yepoleb), Daniel Kessel (dkessel), Leon (AllGoodNamesAreTaken), (raidcookie)
 * Italian - Luca Andrea Rossi (LucaRed), Precious Ugo Abara (48cfu)
 * Japanese - Aaron van Geffen (AaronVanGeffen), Haruna Chinzei, Nick Hall (nickhall), (jhako), Harry Lam (daihakken)

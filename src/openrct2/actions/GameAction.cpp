@@ -14,9 +14,12 @@
 #include "../core/Guard.hpp"
 #include "../core/Memory.hpp"
 #include "../core/MemoryStream.h"
+#include "../entity/MoneyEffect.h"
+#include "../localisation/Formatter.h"
 #include "../localisation/Localisation.h"
 #include "../network/network.h"
-#include "../platform/platform.h"
+#include "../platform/Platform.h"
+#include "../profiling/Profiling.h"
 #include "../scenario/Scenario.h"
 #include "../scripting/Duktape.hpp"
 #include "../scripting/HookEngine.h"
@@ -25,7 +28,6 @@
 #include "../ui/WindowManager.h"
 #include "../world/Park.h"
 #include "../world/Scenery.h"
-#include "../world/Sprite.h"
 
 #include <algorithm>
 #include <iterator>
@@ -34,55 +36,6 @@ using namespace OpenRCT2;
 
 namespace GameActions
 {
-    Result::Result(GameActions::Status error, rct_string_id message)
-    {
-        Error = error;
-        ErrorMessage = message;
-    }
-
-    Result::Result(GameActions::Status error, rct_string_id title, rct_string_id message)
-    {
-        Error = error;
-        ErrorTitle = title;
-        ErrorMessage = message;
-    }
-
-    Result::Result(GameActions::Status error, rct_string_id title, rct_string_id message, uint8_t* args)
-    {
-        Error = error;
-        ErrorTitle = title;
-        ErrorMessage = message;
-        std::copy_n(args, ErrorMessageArgs.size(), ErrorMessageArgs.begin());
-    }
-
-    std::string GameActions::Result::GetErrorTitle() const
-    {
-        std::string title;
-        if (auto error = ErrorTitle.AsString())
-        {
-            title = *error;
-        }
-        else
-        {
-            title = format_string(ErrorTitle.GetStringId(), ErrorMessageArgs.data());
-        }
-        return title;
-    }
-
-    std::string GameActions::Result::GetErrorMessage() const
-    {
-        std::string message;
-        if (auto error = ErrorMessage.AsString())
-        {
-            message = *error;
-        }
-        else
-        {
-            message = format_string(ErrorMessage.GetStringId(), ErrorMessageArgs.data());
-        }
-        return message;
-    }
-
     struct QueuedGameAction
     {
         uint32_t tick;
@@ -109,30 +62,9 @@ namespace GameActions
         }
     };
 
-    static GameActionFactory _actions[EnumValue(GameCommand::Count)];
     static std::multiset<QueuedGameAction> _actionQueue;
     static uint32_t _nextUniqueId = 0;
     static bool _suspended = false;
-
-    GameActionFactory Register(GameCommand id, GameActionFactory factory)
-    {
-        const auto idx = static_cast<size_t>(id);
-
-        Guard::Assert(idx < std::size(_actions));
-        Guard::ArgumentNotNull(factory);
-
-        _actions[idx] = factory;
-        return factory;
-    }
-
-    bool IsValidId(uint32_t id)
-    {
-        if (id < std::size(_actions))
-        {
-            return _actions[id] != nullptr;
-        }
-        return false;
-    }
 
     void SuspendQueue()
     {
@@ -212,8 +144,8 @@ namespace GameActions
 
             Guard::Assert(action != nullptr);
 
-            GameActions::Result::Ptr result = Execute(action);
-            if (result->Error == GameActions::Status::Ok && network_get_mode() == NETWORK_MODE_SERVER)
+            GameActions::Result result = Execute(action);
+            if (result.Error == GameActions::Status::Ok && network_get_mode() == NETWORK_MODE_SERVER)
             {
                 // Relay this action to all other clients.
                 network_send_game_action(action);
@@ -226,38 +158,6 @@ namespace GameActions
     void ClearQueue()
     {
         _actionQueue.clear();
-    }
-
-    void Initialize()
-    {
-        static bool initialized = false;
-        if (initialized)
-            return;
-
-        Register();
-
-        initialized = true;
-    }
-
-    std::unique_ptr<GameAction> Create(GameCommand id)
-    {
-        Initialize();
-
-        const auto idx = static_cast<size_t>(id);
-
-        GameAction* result = nullptr;
-        if (idx < std::size(_actions))
-        {
-            GameActionFactory factory = _actions[idx];
-            if (factory != nullptr)
-            {
-                result = factory();
-            }
-        }
-#ifdef _DEBUG
-        Guard::ArgumentNotNull(result, "Attempting to create unregistered gameaction: %u", id);
-#endif
-        return std::unique_ptr<GameAction>(result);
     }
 
     GameAction::Ptr Clone(const GameAction* action)
@@ -290,43 +190,43 @@ namespace GameActions
         return false;
     }
 
-    static GameActions::Result::Ptr QueryInternal(const GameAction* action, bool topLevel)
+    static GameActions::Result QueryInternal(const GameAction* action, bool topLevel)
     {
         Guard::ArgumentNotNull(action);
 
         uint16_t actionFlags = action->GetActionFlags();
         if (topLevel && !CheckActionInPausedMode(actionFlags))
         {
-            GameActions::Result::Ptr result = std::make_unique<GameActions::Result>();
+            GameActions::Result result = GameActions::Result();
 
-            result->Error = GameActions::Status::GamePaused;
-            result->ErrorTitle = STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE;
-            result->ErrorMessage = STR_CONSTRUCTION_NOT_POSSIBLE_WHILE_GAME_IS_PAUSED;
+            result.Error = GameActions::Status::GamePaused;
+            result.ErrorTitle = STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE;
+            result.ErrorMessage = STR_CONSTRUCTION_NOT_POSSIBLE_WHILE_GAME_IS_PAUSED;
 
             return result;
         }
 
         auto result = action->Query();
 
-        if (result->Error == GameActions::Status::Ok)
+        if (result.Error == GameActions::Status::Ok)
         {
-            if (!finance_check_affordability(result->Cost, action->GetFlags()))
+            if (!finance_check_affordability(result.Cost, action->GetFlags()))
             {
-                result->Error = GameActions::Status::InsufficientFunds;
-                result->ErrorTitle = STR_CANT_DO_THIS;
-                result->ErrorMessage = STR_NOT_ENOUGH_CASH_REQUIRES;
-                Formatter(result->ErrorMessageArgs.data()).Add<uint32_t>(result->Cost);
+                result.Error = GameActions::Status::InsufficientFunds;
+                result.ErrorTitle = STR_CANT_DO_THIS;
+                result.ErrorMessage = STR_NOT_ENOUGH_CASH_REQUIRES;
+                Formatter(result.ErrorMessageArgs.data()).Add<uint32_t>(result.Cost);
             }
         }
         return result;
     }
 
-    GameActions::Result::Ptr Query(const GameAction* action)
+    GameActions::Result Query(const GameAction* action)
     {
         return QueryInternal(action, true);
     }
 
-    GameActions::Result::Ptr QueryNested(const GameAction* action)
+    GameActions::Result QueryNested(const GameAction* action)
     {
         return QueryInternal(action, false);
     }
@@ -335,7 +235,7 @@ namespace GameActions
     {
         if (network_get_mode() == NETWORK_MODE_CLIENT)
             return "cl";
-        else if (network_get_mode() == NETWORK_MODE_SERVER)
+        if (network_get_mode() == NETWORK_MODE_SERVER)
             return "sv";
         return "sp";
     }
@@ -362,15 +262,15 @@ namespace GameActions
         action->Serialise(ds);
     }
 
-    static void LogActionFinish(ActionLogContext_t& ctx, const GameAction* action, const GameActions::Result::Ptr& result)
+    static void LogActionFinish(ActionLogContext_t& ctx, const GameAction* action, const GameActions::Result& result)
     {
         MemoryStream& output = ctx.output;
 
         char temp[128] = {};
 
-        if (result->Error != GameActions::Status::Ok)
+        if (result.Error != GameActions::Status::Ok)
         {
-            snprintf(temp, sizeof(temp), ") Failed, %u", static_cast<uint32_t>(result->Error));
+            snprintf(temp, sizeof(temp), ") Failed, %u", static_cast<uint32_t>(result.Error));
         }
         else
         {
@@ -385,7 +285,7 @@ namespace GameActions
         network_append_server_log(text);
     }
 
-    static GameActions::Result::Ptr ExecuteInternal(const GameAction* action, bool topLevel)
+    static GameActions::Result ExecuteInternal(const GameAction* action, bool topLevel)
     {
         Guard::ArgumentNotNull(action);
 
@@ -399,19 +299,18 @@ namespace GameActions
             if ((flags & GAME_COMMAND_FLAG_REPLAY) == 0)
             {
                 // TODO: Introduce proper error.
-                GameActions::Result::Ptr result = std::make_unique<GameActions::Result>();
-
-                result->Error = GameActions::Status::GamePaused;
-                result->ErrorTitle = STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE;
-                result->ErrorMessage = STR_CONSTRUCTION_NOT_POSSIBLE_WHILE_GAME_IS_PAUSED;
+                auto result = GameActions::Result();
+                result.Error = GameActions::Status::GamePaused;
+                result.ErrorTitle = STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE;
+                result.ErrorMessage = STR_CONSTRUCTION_NOT_POSSIBLE_WHILE_GAME_IS_PAUSED;
 
                 return result;
             }
         }
 
-        GameActions::Result::Ptr result = QueryInternal(action, topLevel);
+        GameActions::Result result = QueryInternal(action, topLevel);
 #ifdef ENABLE_SCRIPTING
-        if (result->Error == GameActions::Status::Ok
+        if (result.Error == GameActions::Status::Ok
             && ((network_get_mode() == NETWORK_MODE_NONE) || (flags & GAME_COMMAND_FLAG_NETWORKED)))
         {
             auto& scriptEngine = GetContext()->GetScriptEngine();
@@ -419,7 +318,7 @@ namespace GameActions
             // Script hooks may now have changed the game action result...
         }
 #endif
-        if (result->Error == GameActions::Status::Ok)
+        if (result.Error == GameActions::Status::Ok)
         {
             if (topLevel)
             {
@@ -455,7 +354,7 @@ namespace GameActions
             // Execute the action, changing the game state
             result = action->Execute();
 #ifdef ENABLE_SCRIPTING
-            if (result->Error == GameActions::Status::Ok)
+            if (result.Error == GameActions::Status::Ok)
             {
                 auto& scriptEngine = GetContext()->GetScriptEngine();
                 scriptEngine.RunGameActionHooks(*action, result, true);
@@ -470,13 +369,13 @@ namespace GameActions
                 return result;
 
             // Update money balance
-            if (result->Error == GameActions::Status::Ok && finance_check_money_required(flags) && result->Cost != 0)
+            if (result.Error == GameActions::Status::Ok && finance_check_money_required(flags) && result.Cost != 0)
             {
-                finance_payment(result->Cost, result->Expenditure);
-                MoneyEffect::Create(result->Cost, result->Position);
+                finance_payment(result.Cost, result.Expenditure);
+                MoneyEffect::Create(result.Cost, result.Position);
             }
 
-            if (!(actionFlags & GameActions::Flags::ClientOnly) && result->Error == GameActions::Status::Ok)
+            if (!(actionFlags & GameActions::Flags::ClientOnly) && result.Error == GameActions::Status::Ok)
             {
                 if (network_get_mode() != NETWORK_MODE_NONE)
                 {
@@ -487,14 +386,14 @@ namespace GameActions
                         playerIndex != -1, "Unable to find player %u for game action %u", playerId, action->GetType());
 
                     network_set_player_last_action(playerIndex, action->GetType());
-                    if (result->Cost != 0)
+                    if (result.Cost != 0)
                     {
-                        network_add_player_money_spent(playerIndex, result->Cost);
+                        network_add_player_money_spent(playerIndex, result.Cost);
                     }
 
-                    if (!result->Position.isNull())
+                    if (!result.Position.IsNull())
                     {
-                        network_set_player_last_action_coord(playerIndex, result->Position);
+                        network_set_player_last_action_coord(playerIndex, result.Position);
                     }
                 }
                 else
@@ -502,7 +401,7 @@ namespace GameActions
                     bool commandExecutes = (flags & GAME_COMMAND_FLAG_GHOST) == 0 && (flags & GAME_COMMAND_FLAG_NO_SPEND) == 0;
 
                     bool recordAction = false;
-                    if (replayManager)
+                    if (replayManager != nullptr)
                     {
                         if (replayManager->IsRecording() && commandExecutes)
                             recordAction = true;
@@ -519,7 +418,7 @@ namespace GameActions
             // Allow autosave to commence
             if (gLastAutoSaveUpdate == AUTOSAVE_PAUSE)
             {
-                gLastAutoSaveUpdate = platform_get_ticks();
+                gLastAutoSaveUpdate = Platform::GetTicks();
             }
         }
 
@@ -527,7 +426,7 @@ namespace GameActions
         auto cb = action->GetCallback();
         if (cb != nullptr)
         {
-            cb(action, result.get());
+            cb(action, &result);
         }
 
         // Only show errors when its not a ghost and not a preview and also top level action.
@@ -545,25 +444,30 @@ namespace GameActions
             }
         }
 
-        if (result->Error != GameActions::Status::Ok && shouldShowError)
+        if (result.Error != GameActions::Status::Ok && shouldShowError)
         {
             auto windowManager = GetContext()->GetUiContext()->GetWindowManager();
-            windowManager->ShowError(result->GetErrorTitle(), result->GetErrorMessage());
+            windowManager->ShowError(result.GetErrorTitle(), result.GetErrorMessage());
         }
 
         return result;
     }
 
-    GameActions::Result::Ptr Execute(const GameAction* action)
+    GameActions::Result Execute(const GameAction* action)
     {
         return ExecuteInternal(action, true);
     }
 
-    GameActions::Result::Ptr ExecuteNested(const GameAction* action)
+    GameActions::Result ExecuteNested(const GameAction* action)
     {
         return ExecuteInternal(action, false);
     }
 } // namespace GameActions
+
+const char* GameAction::GetName() const
+{
+    return GameActions::GetName(_type);
+}
 
 bool GameAction::LocationValid(const CoordsXY& coords) const
 {

@@ -27,19 +27,21 @@
 #    include "../Context.h"
 #    include "../Game.h"
 #    include "../OpenRCT2.h"
+#    include "../PlatformEnvironment.h"
 #    include "../Version.h"
 #    include "../config/Config.h"
 #    include "../core/Console.hpp"
 #    include "../core/Guard.hpp"
+#    include "../core/Path.hpp"
 #    include "../core/String.hpp"
 #    include "../interface/Screenshot.h"
 #    include "../localisation/Language.h"
 #    include "../object/ObjectManager.h"
-#    include "../rct2/S6Exporter.h"
+#    include "../park/ParkFile.h"
 #    include "../scenario/Scenario.h"
 #    include "../util/SawyerCoding.h"
 #    include "../util/Util.h"
-#    include "platform.h"
+#    include "Platform.h"
 
 #    define WSZ(x) L"" x
 
@@ -51,6 +53,10 @@ const wchar_t* _wszCommitSha1Short = WSZ("");
 
 // OPENRCT2_ARCHITECTURE is required to be defined in version.h
 const wchar_t* _wszArchitecture = WSZ(OPENRCT2_ARCHITECTURE);
+
+#    define BACKTRACE_TOKEN L"4347a8e1f5ba17ca0fc1018b770643b3a816c7e6e1a378193b119fd2d7dde7d7"
+
+using namespace OpenRCT2;
 
 // Note: uploading gzipped crash dumps manually requires specifying
 // 'Content-Encoding: gzip' header in HTTP request, but we cannot do that,
@@ -64,9 +70,10 @@ static bool UploadMinidump(const std::map<std::wstring, std::wstring>& files, in
         wprintf(L"files[%s] = %s\n", file.first.c_str(), file.second.c_str());
     }
     std::wstring url(L"https://openrct2.sp.backtrace.io:6098/"
-                     L"post?format=minidump&token=98675313b384d2fb1d3d3ce8ad9cab3ed61b9e08186ae47b0e3342adc3ff0714");
+                     L"post?format=minidump&token=" BACKTRACE_TOKEN);
     std::map<std::wstring, std::wstring> parameters;
     parameters[L"product_name"] = L"openrct2";
+    parameters[L"version"] = String::ToWideChar(gVersionInfoFull);
     // In case of releases this can be empty
     if (wcslen(_wszCommitSha1Short) > 0)
     {
@@ -78,9 +85,9 @@ static bool UploadMinidump(const std::map<std::wstring, std::wstring>& files, in
     }
 
     auto assertMsg = Guard::GetLastAssertMessage();
-    if (assertMsg)
+    if (assertMsg.has_value())
     {
-        parameters[L"assert_failure"] = String::ToWideChar(*assertMsg);
+        parameters[L"assert_failure"] = String::ToWideChar(assertMsg.value());
     }
 
     int timeout = 10000;
@@ -112,13 +119,11 @@ static bool OnCrash(
     wchar_t dumpFilePath[MAX_PATH];
     wchar_t saveFilePath[MAX_PATH];
     wchar_t configFilePath[MAX_PATH];
-    wchar_t saveFilePathGZIP[MAX_PATH];
     wchar_t recordFilePathNew[MAX_PATH];
     swprintf_s(dumpFilePath, std::size(dumpFilePath), L"%s\\%s.dmp", dumpPath, miniDumpId);
-    swprintf_s(saveFilePath, std::size(saveFilePath), L"%s\\%s.sv6", dumpPath, miniDumpId);
+    swprintf_s(saveFilePath, std::size(saveFilePath), L"%s\\%s.park", dumpPath, miniDumpId);
     swprintf_s(configFilePath, std::size(configFilePath), L"%s\\%s.ini", dumpPath, miniDumpId);
-    swprintf_s(saveFilePathGZIP, std::size(saveFilePathGZIP), L"%s\\%s.sv6.gz", dumpPath, miniDumpId);
-    swprintf_s(recordFilePathNew, std::size(recordFilePathNew), L"%s\\%s.sv6r", dumpPath, miniDumpId);
+    swprintf_s(recordFilePathNew, std::size(recordFilePathNew), L"%s\\%s.parkrep", dumpPath, miniDumpId);
 
     wchar_t dumpFilePathNew[MAX_PATH];
     swprintf_s(
@@ -170,21 +175,15 @@ static bool OnCrash(
     auto saveFilePathUTF8 = String::ToUtf8(saveFilePath);
     try
     {
-        auto exporter = std::make_unique<S6Exporter>();
-
-        // Make sure the save is using the current viewport settings.
-        viewport_set_saved_view();
-
-        // Disable RLE encoding for better compression.
-        gUseRLE = false;
+        PrepareMapForSave();
 
         // Export all loaded objects to avoid having custom objects missing in the reports.
+        auto exporter = std::make_unique<ParkFileExporter>();
         auto ctx = OpenRCT2::GetContext();
         auto& objManager = ctx->GetObjectManager();
         exporter->ExportObjectsList = objManager.GetPackableObjects();
 
-        exporter->Export();
-        exporter->SaveGame(saveFilePathUTF8.c_str());
+        exporter->Export(saveFilePathUTF8.c_str());
         savedGameDumped = true;
     }
     catch (const std::exception&)
@@ -194,23 +193,11 @@ static bool OnCrash(
     // Compress the save
     if (savedGameDumped)
     {
-        FILE* input = _wfopen(saveFilePath, L"rb");
-        FILE* dest = _wfopen(saveFilePathGZIP, L"wb");
-
-        if (util_gzip_compress(input, dest))
-        {
-            uploadFiles[L"attachment_park.sv6.gz"] = saveFilePathGZIP;
-        }
-        else
-        {
-            uploadFiles[L"attachment_park.sv6"] = saveFilePath;
-        }
-        fclose(input);
-        fclose(dest);
+        uploadFiles[L"attachment_park.park"] = saveFilePath;
     }
 
     auto configFilePathUTF8 = String::ToUtf8(configFilePath);
-    if (config_save(configFilePathUTF8.c_str()))
+    if (config_save(configFilePathUTF8))
     {
         uploadFiles[L"attachment_config.ini"] = configFilePath;
     }
@@ -224,11 +211,11 @@ static bool OnCrash(
 
     if (with_record)
     {
-        auto sv6rPathW = String::ToWideChar(gSilentRecordingName);
-        bool record_copied = CopyFileW(sv6rPathW.c_str(), recordFilePathNew, true);
+        auto parkReplayPathW = String::ToWideChar(gSilentRecordingName);
+        bool record_copied = CopyFileW(parkReplayPathW.c_str(), recordFilePathNew, true);
         if (record_copied)
         {
-            uploadFiles[L"attachment_replay.sv6r"] = recordFilePathNew;
+            uploadFiles[L"attachment_replay.parkrep"] = recordFilePathNew;
         }
         else
         {
@@ -292,7 +279,6 @@ static bool OnCrash(
         if (savedGameDumped)
         {
             files[numFiles++] = ILCreateFromPathW(saveFilePath);
-            files[numFiles++] = ILCreateFromPathW(saveFilePathGZIP);
         }
         if (with_record)
         {
@@ -316,9 +302,10 @@ static bool OnCrash(
 
 static std::wstring GetDumpDirectory()
 {
-    char userDirectory[MAX_PATH];
-    platform_get_user_directory(userDirectory, nullptr, sizeof(userDirectory));
-    auto result = String::ToWideChar(userDirectory);
+    auto env = GetContext()->GetPlatformEnvironment();
+    auto crashPath = env->GetDirectoryPath(DIRBASE::USER, DIRID::CRASH);
+
+    auto result = String::ToWideChar(crashPath);
     return result;
 }
 

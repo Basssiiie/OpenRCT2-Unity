@@ -13,21 +13,16 @@
 
 #    include "../core/String.hpp"
 #    include "../localisation/Localisation.h"
-#    include "../platform/platform.h"
+#    include "../platform/Platform.h"
 #    include "Socket.h"
 #    include "network.h"
 
 constexpr size_t NETWORK_DISCONNECT_REASON_BUFFER_SIZE = 256;
 constexpr size_t NetworkBufferSize = 1024 * 64; // 64 KiB, maximum packet size.
 
-NetworkConnection::NetworkConnection()
+NetworkConnection::NetworkConnection() noexcept
 {
     ResetLastPacketTime();
-}
-
-NetworkConnection::~NetworkConnection()
-{
-    delete[] _lastDisconnectReason;
 }
 
 NetworkReadPacket NetworkConnection::ReadPacket()
@@ -61,13 +56,14 @@ NetworkReadPacket NetworkConnection::ReadPacket()
 
         // NOTE: For compatibility reasons for the master server we need to remove sizeof(Header.Id) from the size.
         // Previously the Id field was not part of the header rather part of the body.
-        header.Size -= sizeof(header.Id);
+        header.Size -= std::min<uint16_t>(header.Size, sizeof(header.Id));
 
         // Fall-through: Read rest of packet.
     }
 
     // Read packet body.
     {
+        // NOTE: BytesTransfered includes the header length, this will not underflow.
         const size_t missingLength = header.Size - (InboundPacket.BytesTransferred - sizeof(header));
 
         uint8_t buffer[NetworkBufferSize];
@@ -87,7 +83,7 @@ NetworkReadPacket NetworkConnection::ReadPacket()
         if (InboundPacket.Data.size() == header.Size)
         {
             // Received complete packet.
-            _lastPacketTime = platform_get_ticks();
+            _lastPacketTime = Platform::GetTicks();
 
             RecordPacketStats(InboundPacket, false);
 
@@ -155,6 +151,16 @@ void NetworkConnection::QueuePacket(NetworkPacket&& packet, bool front)
     }
 }
 
+void NetworkConnection::Disconnect() noexcept
+{
+    ShouldDisconnect = true;
+}
+
+bool NetworkConnection::IsValid() const
+{
+    return !ShouldDisconnect && Socket->GetStatus() == SocketStatus::Connected;
+}
+
 void NetworkConnection::SendQueuedPackets()
 {
     while (!_outboundPackets.empty() && SendPacket(_outboundPackets.front()))
@@ -163,15 +169,15 @@ void NetworkConnection::SendQueuedPackets()
     }
 }
 
-void NetworkConnection::ResetLastPacketTime()
+void NetworkConnection::ResetLastPacketTime() noexcept
 {
-    _lastPacketTime = platform_get_ticks();
+    _lastPacketTime = Platform::GetTicks();
 }
 
-bool NetworkConnection::ReceivedPacketRecently()
+bool NetworkConnection::ReceivedPacketRecently() const noexcept
 {
 #    ifndef DEBUG
-    if (platform_get_ticks() > _lastPacketTime + 7000)
+    if (Platform::GetTicks() > _lastPacketTime + 7000)
     {
         return false;
     }
@@ -179,25 +185,14 @@ bool NetworkConnection::ReceivedPacketRecently()
     return true;
 }
 
-const utf8* NetworkConnection::GetLastDisconnectReason() const
+const utf8* NetworkConnection::GetLastDisconnectReason() const noexcept
 {
-    return this->_lastDisconnectReason;
+    return this->_lastDisconnectReason.c_str();
 }
 
-void NetworkConnection::SetLastDisconnectReason(const utf8* src)
+void NetworkConnection::SetLastDisconnectReason(std::string_view src)
 {
-    if (src == nullptr)
-    {
-        delete[] _lastDisconnectReason;
-        _lastDisconnectReason = nullptr;
-        return;
-    }
-
-    if (_lastDisconnectReason == nullptr)
-    {
-        _lastDisconnectReason = new utf8[NETWORK_DISCONNECT_REASON_BUFFER_SIZE];
-    }
-    String::Set(_lastDisconnectReason, NETWORK_DISCONNECT_REASON_BUFFER_SIZE, src);
+    _lastDisconnectReason = src;
 }
 
 void NetworkConnection::SetLastDisconnectReason(const rct_string_id string_id, void* args)

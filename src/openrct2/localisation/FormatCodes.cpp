@@ -9,18 +9,18 @@
 
 #include "FormatCodes.h"
 
+#include "../core/EnumMap.hpp"
+
 #include <mutex>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 // clang-format off
-static const std::unordered_map<std::string_view, FormatToken> FormatTokenMap = {
+static const EnumMap<FormatToken> FormatTokenMap = {
     { "MOVE_X",               FormatToken::Move,                },
     { "NEWLINE",              FormatToken::Newline,             },
     { "NEWLINE_SMALLER",      FormatToken::NewlineSmall,        },
     { "TINYFONT",             FormatToken::FontTiny,            },
-    { "BIGFONT",              FormatToken::FontBig,             },
     { "MEDIUMFONT",           FormatToken::FontMedium,          },
     { "SMALLFONT",            FormatToken::FontSmall,           },
     { "OUTLINE",              FormatToken::OutlineEnable,       },
@@ -96,17 +96,12 @@ std::string_view FormatTokenToString(FormatToken token, bool withBraces)
     {
         return GetFormatTokenStringWithBraces(token);
     }
-    else
-    {
-        for (const auto& t : FormatTokenMap)
-        {
-            if (t.second == token)
-            {
-                return t.first;
-            }
-        }
-        return {};
-    }
+
+    auto it = FormatTokenMap.find(token);
+    if (it != FormatTokenMap.end())
+        return it->first;
+
+    return {};
 }
 
 bool FormatTokenTakesArgument(FormatToken token)

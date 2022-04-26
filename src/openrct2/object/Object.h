@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2020 OpenRCT2 developers
+ * Copyright (c) 2014-2021 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,10 +11,12 @@
 
 #include "../common.h"
 #include "../core/JsonFwd.hpp"
+#include "../core/String.hpp"
 #include "../util/Util.h"
 #include "ImageTable.h"
 #include "StringTable.h"
 
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -22,6 +24,7 @@
 
 using ObjectEntryIndex = uint16_t;
 constexpr const ObjectEntryIndex OBJECT_ENTRY_INDEX_NULL = std::numeric_limits<ObjectEntryIndex>::max();
+struct ObjectRepositoryItem;
 
 // First 0xF of rct_object_entry->flags
 enum class ObjectType : uint8_t
@@ -41,6 +44,8 @@ enum class ObjectType : uint8_t
     TerrainEdge,
     Station,
     Music,
+    FootpathSurface,
+    FootpathRailings,
 
     Count,
     None = 255
@@ -48,18 +53,15 @@ enum class ObjectType : uint8_t
 
 ObjectType& operator++(ObjectType& d, int);
 
-enum OBJECT_SELECTION_FLAGS
+namespace ObjectSelectionFlags
 {
-    OBJECT_SELECTION_FLAG_SELECTED = (1 << 0),
-    OBJECT_SELECTION_FLAG_2 = (1 << 1),
-    OBJECT_SELECTION_FLAG_IN_USE = (1 << 2),
-    // OBJECT_SELECTION_FLAG_REQUIRED = (1 << 3),               // Unused feature
-    OBJECT_SELECTION_FLAG_ALWAYS_REQUIRED = (1 << 4),
-    OBJECT_SELECTION_FLAG_6 = (1 << 5),
-    OBJECT_SELECTION_FLAG_7 = (1 << 6),
-    OBJECT_SELECTION_FLAG_8 = (1 << 7),
-    OBJECT_SELECTION_FLAG_ALL = 0xFF,
-};
+    constexpr uint8_t Selected = (1 << 0);
+    constexpr uint8_t InUse = (1 << 2);
+    // constexpr uint8_t Required = (1 << 3);               // Unused feature
+    constexpr uint8_t AlwaysRequired = (1 << 4);
+    constexpr uint8_t Flag6 = (1 << 5);
+    constexpr uint8_t AllFlags = 0xFF;
+}; // namespace ObjectSelectionFlags
 
 #define OBJECT_SELECTION_NOT_SELECTED_OR_REQUIRED 0
 
@@ -115,12 +117,14 @@ struct rct_object_entry
         flags |= (static_cast<uint8_t>(newType) & 0x0F);
     }
 
-    std::optional<uint8_t> GetSceneryType() const;
-
     ObjectSourceGame GetSourceGame() const
     {
         return static_cast<ObjectSourceGame>((flags & 0xF0) >> 4);
     }
+
+    bool IsEmpty() const;
+    bool operator==(const rct_object_entry& rhs) const;
+    bool operator!=(const rct_object_entry& rhs) const;
 };
 assert_struct_size(rct_object_entry, 0x10);
 
@@ -158,28 +162,27 @@ enum class ObjectGeneration : uint8_t
 
 struct ObjectEntryDescriptor
 {
-    ObjectGeneration Generation;
-    std::string Identifier; // For JSON objects
-    rct_object_entry Entry; // For DAT objects
+    ObjectGeneration Generation = ObjectGeneration::JSON;
 
-    ObjectEntryDescriptor()
-        : Generation(ObjectGeneration::JSON)
-        , Identifier()
-        , Entry()
-    {
-    }
+    // DAT
+    rct_object_entry Entry{};
 
-    explicit ObjectEntryDescriptor(const rct_object_entry& newEntry)
-    {
-        Generation = ObjectGeneration::DAT;
-        Entry = newEntry;
-    }
+    // JSON
+    ObjectType Type{};
+    std::string Identifier;
+    std::string Version;
 
-    explicit ObjectEntryDescriptor(std::string_view newIdentifier)
-    {
-        Generation = ObjectGeneration::JSON;
-        Identifier = std::string(newIdentifier);
-    }
+    ObjectEntryDescriptor() = default;
+    explicit ObjectEntryDescriptor(const rct_object_entry& newEntry);
+    explicit ObjectEntryDescriptor(std::string_view newIdentifier);
+    explicit ObjectEntryDescriptor(ObjectType type, std::string_view newIdentifier);
+    explicit ObjectEntryDescriptor(const ObjectRepositoryItem& ori);
+    bool HasValue() const;
+    ObjectType GetType() const;
+    std::string_view GetName() const;
+
+    bool operator==(const ObjectEntryDescriptor& rhs) const;
+    bool operator!=(const ObjectEntryDescriptor& rhs) const;
 };
 
 struct IObjectRepository;
@@ -219,9 +222,9 @@ public:
     {
     }
 
-    bool IsAvailable() const;
-    size_t GetSize() const;
-    std::unique_ptr<OpenRCT2::IStream> GetStream() const;
+    [[nodiscard]] bool IsAvailable() const;
+    [[nodiscard]] uint64_t GetSize() const;
+    [[nodiscard]] std::unique_ptr<OpenRCT2::IStream> GetStream() const;
 };
 
 struct IReadObjectContext
@@ -234,6 +237,7 @@ struct IReadObjectContext
     virtual std::vector<uint8_t> GetData(std::string_view path) abstract;
     virtual ObjectAsset GetAsset(std::string_view path) abstract;
 
+    virtual void LogVerbose(ObjectError code, const utf8* text) abstract;
     virtual void LogWarning(ObjectError code, const utf8* text) abstract;
     virtual void LogError(ObjectError code, const utf8* text) abstract;
 };
@@ -247,12 +251,13 @@ class Object
 {
 private:
     std::string _identifier;
-    rct_object_entry _objectEntry{};
+    ObjectEntryDescriptor _descriptor{};
     StringTable _stringTable;
     ImageTable _imageTable;
     std::vector<ObjectSourceGame> _sourceGames;
     std::vector<std::string> _authors;
-    bool _isJsonObject{};
+    ObjectGeneration _generation{};
+    bool _usesFallbackImages{};
 
 protected:
     StringTable& GetStringTable()
@@ -283,7 +288,6 @@ protected:
     std::string GetString(int32_t language, ObjectStringID index) const;
 
 public:
-    explicit Object(const rct_object_entry& entry);
     virtual ~Object() = default;
 
     std::string_view GetIdentifier() const
@@ -297,22 +301,43 @@ public:
 
     void MarkAsJsonObject()
     {
-        _isJsonObject = true;
+        _generation = ObjectGeneration::JSON;
     }
 
-    bool IsJsonObject() const
+    ObjectGeneration GetGeneration() const
     {
-        return _isJsonObject;
+        return _generation;
     };
+
+    ObjectType GetObjectType() const
+    {
+        return _descriptor.GetType();
+    }
+
+    ObjectEntryDescriptor GetDescriptor() const
+    {
+        return _descriptor;
+    }
+    void SetDescriptor(const ObjectEntryDescriptor& value)
+    {
+        _descriptor = value;
+    }
+
+    constexpr bool UsesFallbackImages() const
+    {
+        return _usesFallbackImages;
+    }
 
     // Legacy data structures
     std::string_view GetLegacyIdentifier() const
     {
-        return _objectEntry.GetName();
+        return _descriptor.GetName();
     }
-    const rct_object_entry* GetObjectEntry() const
+
+    // TODO remove this, we should no longer assume objects have a legacy object entry
+    const rct_object_entry& GetObjectEntry() const
     {
-        return &_objectEntry;
+        return _descriptor.Entry;
     }
     virtual void* GetLegacyData();
 
@@ -330,10 +355,6 @@ public:
     {
     }
 
-    virtual ObjectType GetObjectType() const final
-    {
-        return _objectEntry.GetType();
-    }
     virtual std::string GetName() const;
     virtual std::string GetName(int32_t language) const;
 
@@ -367,10 +388,7 @@ public:
 extern int32_t object_entry_group_counts[];
 extern int32_t object_entry_group_encoding[];
 
-bool object_entry_is_empty(const rct_object_entry* entry);
-bool object_entry_compare(const rct_object_entry* a, const rct_object_entry* b);
 int32_t object_calculate_checksum(const rct_object_entry* entry, const void* data, size_t dataLength);
-bool find_object_in_entry_group(const rct_object_entry* entry, ObjectType* entry_type, ObjectEntryIndex* entryIndex);
 void object_create_identifier_name(char* string_buffer, size_t size, const rct_object_entry* object);
 
 const rct_object_entry* object_list_find(rct_object_entry* entry);

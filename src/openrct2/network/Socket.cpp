@@ -78,7 +78,7 @@ private:
     bool _isInitialised{};
 
 public:
-    bool IsInitialised() const
+    bool IsInitialised() const noexcept
     {
         return _isInitialised;
     }
@@ -99,7 +99,7 @@ public:
         return true;
     }
 
-    ~WSA()
+    ~WSA() noexcept
     {
         if (_isInitialised)
         {
@@ -138,9 +138,7 @@ private:
     socklen_t _addressLen{};
 
 public:
-    NetworkEndpoint()
-    {
-    }
+    NetworkEndpoint() noexcept = default;
 
     NetworkEndpoint(const sockaddr* address, socklen_t addressLen)
     {
@@ -148,12 +146,12 @@ public:
         _addressLen = addressLen;
     }
 
-    const sockaddr& GetAddress() const
+    constexpr const sockaddr& GetAddress() const noexcept
     {
         return _address;
     }
 
-    socklen_t GetAddressLen() const
+    constexpr socklen_t GetAddressLen() const noexcept
     {
         return _addressLen;
     }
@@ -164,10 +162,8 @@ public:
         {
             return reinterpret_cast<const sockaddr_in*>(&_address)->sin_port;
         }
-        else
-        {
-            return reinterpret_cast<const sockaddr_in6*>(&_address)->sin6_port;
-        }
+
+        return reinterpret_cast<const sockaddr_in6*>(&_address)->sin6_port;
     }
 
     std::string GetHostname() const override
@@ -233,17 +229,16 @@ private:
             log_error("Resolution error message: %s.", gai_strerror(errorcode));
             return false;
         }
+
         if (result == nullptr)
         {
             return false;
         }
-        else
-        {
-            std::memcpy(ss, result->ai_addr, result->ai_addrlen);
-            *ss_len = static_cast<socklen_t>(result->ai_addrlen);
-            freeaddrinfo(result);
-            return true;
-        }
+
+        std::memcpy(ss, result->ai_addr, result->ai_addrlen);
+        *ss_len = static_cast<socklen_t>(result->ai_addrlen);
+        freeaddrinfo(result);
+        return true;
     }
 };
 
@@ -260,7 +255,7 @@ private:
     std::string _error;
 
 public:
-    TcpSocket() = default;
+    TcpSocket() noexcept = default;
 
     ~TcpSocket() override
     {
@@ -541,6 +536,7 @@ public:
         {
             shutdown(_socket, SHUT_RDWR);
         }
+        _status = SocketStatus::Closed;
     }
 
     size_t SendData(const void* buffer, size_t size) override
@@ -578,7 +574,8 @@ public:
             *sizeReceived = 0;
             return NetworkReadPacket::Disconnected;
         }
-        else if (readBytes == SOCKET_ERROR)
+
+        if (readBytes == SOCKET_ERROR)
         {
             *sizeReceived = 0;
 #    ifndef _WIN32
@@ -597,16 +594,12 @@ public:
             {
                 return NetworkReadPacket::Disconnected;
             }
-            else
-            {
-                return NetworkReadPacket::NoData;
-            }
+
+            return NetworkReadPacket::NoData;
         }
-        else
-        {
-            *sizeReceived = readBytes;
-            return NetworkReadPacket::Success;
-        }
+
+        *sizeReceived = readBytes;
+        return NetworkReadPacket::Success;
     }
 
     void Close() override
@@ -629,12 +622,12 @@ public:
     }
 
 private:
-    explicit TcpSocket(SOCKET socket, const std::string& hostName, const std::string& ipAddress)
+    explicit TcpSocket(SOCKET socket, std::string hostName, std::string ipAddress) noexcept
+        : _status(SocketStatus::Connected)
+        , _socket(socket)
+        , _ipAddress(std::move(ipAddress))
+        , _hostName(std::move(hostName))
     {
-        _socket = socket;
-        _hostName = hostName;
-        _ipAddress = ipAddress;
-        _status = SocketStatus::Connected;
     }
 
     void CloseSocket()
@@ -647,10 +640,10 @@ private:
         _status = SocketStatus::Closed;
     }
 
-    std::string GetIpAddressFromSocket(const sockaddr_in* addr)
+    std::string GetIpAddressFromSocket(const sockaddr_in* addr) const
     {
         std::string result;
-#    if defined(__MINGW32__)
+#    if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
         if (addr->sin_family == AF_INET)
         {
             result = inet_ntoa(addr->sin_addr);
@@ -686,7 +679,7 @@ private:
     std::string _error;
 
 public:
-    UdpSocket() = default;
+    UdpSocket() noexcept = default;
 
     ~UdpSocket() override
     {
@@ -809,15 +802,13 @@ public:
             *sizeReceived = 0;
             return NetworkReadPacket::NoData;
         }
-        else
+
+        *sizeReceived = readBytes;
+        if (sender != nullptr)
         {
-            *sizeReceived = readBytes;
-            if (sender != nullptr)
-            {
-                *sender = std::make_unique<NetworkEndpoint>(reinterpret_cast<sockaddr*>(&senderAddr), senderAddrLen);
-            }
-            return NetworkReadPacket::Success;
+            *sender = std::make_unique<NetworkEndpoint>(reinterpret_cast<sockaddr*>(&senderAddr), senderAddrLen);
         }
+        return NetworkReadPacket::Success;
     }
 
     void Close() override
@@ -831,14 +822,7 @@ public:
     }
 
 private:
-    explicit UdpSocket(SOCKET socket, const std::string& hostName)
-    {
-        _socket = socket;
-        _hostName = hostName;
-        _status = SocketStatus::Connected;
-    }
-
-    SOCKET CreateSocket()
+    SOCKET CreateSocket() const
     {
         auto sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if (sock == INVALID_SOCKET)

@@ -9,6 +9,7 @@
 
 #include "../../common.h"
 #include "../../interface/Viewport.h"
+#include "../../object/StationObject.h"
 #include "../../paint/Paint.h"
 #include "../../paint/Supports.h"
 #include "../../world/Map.h"
@@ -166,7 +167,7 @@ static constexpr const uint32_t monorail_track_pieces_flat_quarter_turn_5_tiles[
         SPR_MONORAIL_QUARTER_TURN_5_TILES_SE_NE_PART_2,
         SPR_MONORAIL_QUARTER_TURN_5_TILES_SE_NE_PART_3,
         SPR_MONORAIL_QUARTER_TURN_5_TILES_SE_NE_PART_4,
-    }
+    },
 };
 
 static constexpr const uint32_t monorail_track_pieces_25_deg_up[4] = {
@@ -190,41 +191,57 @@ static constexpr const uint32_t monorail_track_pieces_25_deg_up_to_flat[4] = {
     SPR_MONORAIL_25_DEG_UP_TO_FLAT_SE_NW,
 };
 
-static constexpr const uint32_t monorail_track_pieces_s_bend_left[2][4] = { {
-                                                                                SPR_MONORAIL_S_BEND_LEFT_SW_NE_PART_0,
-                                                                                SPR_MONORAIL_S_BEND_LEFT_SW_NE_PART_1,
-                                                                                SPR_MONORAIL_S_BEND_LEFT_SW_NE_PART_2,
-                                                                                SPR_MONORAIL_S_BEND_LEFT_SW_NE_PART_3,
-                                                                            },
-                                                                            {
-                                                                                SPR_MONORAIL_S_BEND_LEFT_SE_NW_PART_3,
-                                                                                SPR_MONORAIL_S_BEND_LEFT_SE_NW_PART_2,
-                                                                                SPR_MONORAIL_S_BEND_LEFT_SE_NW_PART_1,
-                                                                                SPR_MONORAIL_S_BEND_LEFT_SE_NW_PART_0,
-                                                                            } };
+static constexpr const uint32_t monorail_track_pieces_s_bend_left[2][4] = {
+    {
+        SPR_MONORAIL_S_BEND_LEFT_SW_NE_PART_0,
+        SPR_MONORAIL_S_BEND_LEFT_SW_NE_PART_1,
+        SPR_MONORAIL_S_BEND_LEFT_SW_NE_PART_2,
+        SPR_MONORAIL_S_BEND_LEFT_SW_NE_PART_3,
+    },
+    {
+        SPR_MONORAIL_S_BEND_LEFT_SE_NW_PART_3,
+        SPR_MONORAIL_S_BEND_LEFT_SE_NW_PART_2,
+        SPR_MONORAIL_S_BEND_LEFT_SE_NW_PART_1,
+        SPR_MONORAIL_S_BEND_LEFT_SE_NW_PART_0,
+    },
+};
 
-static constexpr const uint32_t monorail_track_pieces_s_bend_right[2][4] = { {
-                                                                                 SPR_MONORAIL_S_BEND_RIGHT_SW_NE_PART_0,
-                                                                                 SPR_MONORAIL_S_BEND_RIGHT_SW_NE_PART_1,
-                                                                                 SPR_MONORAIL_S_BEND_RIGHT_SW_NE_PART_2,
-                                                                                 SPR_MONORAIL_S_BEND_RIGHT_SW_NE_PART_3,
-                                                                             },
-                                                                             {
-                                                                                 SPR_MONORAIL_S_BEND_RIGHT_SE_NW_PART_3,
-                                                                                 SPR_MONORAIL_S_BEND_RIGHT_SE_NW_PART_2,
-                                                                                 SPR_MONORAIL_S_BEND_RIGHT_SE_NW_PART_1,
-                                                                                 SPR_MONORAIL_S_BEND_RIGHT_SE_NW_PART_0,
-                                                                             } };
+static constexpr const uint32_t monorail_track_pieces_s_bend_right[2][4] = {
+    {
+        SPR_MONORAIL_S_BEND_RIGHT_SW_NE_PART_0,
+        SPR_MONORAIL_S_BEND_RIGHT_SW_NE_PART_1,
+        SPR_MONORAIL_S_BEND_RIGHT_SW_NE_PART_2,
+        SPR_MONORAIL_S_BEND_RIGHT_SW_NE_PART_3,
+    },
+    {
+        SPR_MONORAIL_S_BEND_RIGHT_SE_NW_PART_3,
+        SPR_MONORAIL_S_BEND_RIGHT_SE_NW_PART_2,
+        SPR_MONORAIL_S_BEND_RIGHT_SE_NW_PART_1,
+        SPR_MONORAIL_S_BEND_RIGHT_SE_NW_PART_0,
+    },
+};
 
 static constexpr const uint32_t monorail_track_pieces_flat_quarter_turn_3_tiles[4][3] = {
-    { SPR_MONORAIL_QUARTER_TURN_3_TILES_SW_SE_PART_0, SPR_MONORAIL_QUARTER_TURN_3_TILES_SW_SE_PART_1,
-      SPR_MONORAIL_QUARTER_TURN_3_TILES_SW_SE_PART_2 },
-    { SPR_MONORAIL_QUARTER_TURN_3_TILES_NW_SW_PART_0, SPR_MONORAIL_QUARTER_TURN_3_TILES_NW_SW_PART_1,
-      SPR_MONORAIL_QUARTER_TURN_3_TILES_NW_SW_PART_2 },
-    { SPR_MONORAIL_QUARTER_TURN_3_TILES_NE_NW_PART_0, SPR_MONORAIL_QUARTER_TURN_3_TILES_NE_NW_PART_1,
-      SPR_MONORAIL_QUARTER_TURN_3_TILES_NE_NW_PART_2 },
-    { SPR_MONORAIL_QUARTER_TURN_3_TILES_SE_NE_PART_0, SPR_MONORAIL_QUARTER_TURN_3_TILES_SE_NE_PART_1,
-      SPR_MONORAIL_QUARTER_TURN_3_TILES_SE_NE_PART_2 }
+    {
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_SW_SE_PART_0,
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_SW_SE_PART_1,
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_SW_SE_PART_2,
+    },
+    {
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_NW_SW_PART_0,
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_NW_SW_PART_1,
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_NW_SW_PART_2,
+    },
+    {
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_NE_NW_PART_0,
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_NE_NW_PART_1,
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_NE_NW_PART_2,
+    },
+    {
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_SE_NE_PART_0,
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_SE_NE_PART_1,
+        SPR_MONORAIL_QUARTER_TURN_3_TILES_SE_NE_PART_2,
+    },
 };
 
 static constexpr const uint32_t ghost_train_track_pieces_right_eight_to_diag[4][4] = {
@@ -419,18 +436,18 @@ static constexpr const uint32_t monorail_track_pieces_diag_25_deg_up[4] = {
 
 /** rct2: 0x008AE1AC */
 static void paint_monorail_track_flat(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    uint32_t imageId = monorail_track_pieces_flat[direction] | session->TrackColours[SCHEME_TRACK];
+    uint32_t imageId = monorail_track_pieces_flat[direction] | session.TrackColours[SCHEME_TRACK];
 
     if (direction == 0 || direction == 2)
     {
-        PaintAddImageAsParent(session, imageId, 0, 6, 32, 20, 3, height);
+        PaintAddImageAsParent(session, imageId, { 0, 6, height }, { 32, 20, 3 });
     }
     else
     {
-        PaintAddImageAsParent(session, imageId, 6, 0, 20, 32, 3, height);
+        PaintAddImageAsParent(session, imageId, { 6, 0, height }, { 20, 32, 3 });
     }
 
     if (direction == 0 || direction == 2)
@@ -442,9 +459,9 @@ static void paint_monorail_track_flat(
         paint_util_push_tunnel_right(session, height, TUNNEL_SQUARE_FLAT);
     }
 
-    if (track_paint_util_should_paint_supports(session->MapPosition))
+    if (track_paint_util_should_paint_supports(session.MapPosition))
     {
-        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     paint_util_set_segment_support_height(
@@ -454,30 +471,36 @@ static void paint_monorail_track_flat(
 
 /** rct2: 0x008AE25C, 0x008AE26C, 0x008AE27C */
 static void paint_monorail_station(
-    paint_session* session, ride_id_t rideIndex, [[maybe_unused]] uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, [[maybe_unused]] uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     uint32_t imageId;
+    const StationObject* stationObject = nullptr;
 
+    stationObject = ride.GetStationObject();
+
+    if (stationObject == nullptr || !(stationObject->Flags & STATION_OBJECT_FLAGS::NO_PLATFORMS))
+    {
+        if (direction == 0 || direction == 2)
+        {
+            imageId = SPR_STATION_BASE_B_SW_NE | session.TrackColours[SCHEME_MISC];
+            PaintAddImageAsParent(session, imageId, { 0, 0, height - 2 }, { 32, 28, 2 }, { 0, 2, height });
+        }
+        else if (direction == 1 || direction == 3)
+        {
+            imageId = SPR_STATION_BASE_B_NW_SE | session.TrackColours[SCHEME_MISC];
+            PaintAddImageAsParent(session, imageId, { 0, 0, height - 2 }, { 28, 32, 2 }, { 2, 0, height });
+        }
+    }
+
+    imageId = monorail_track_pieces_flat[direction] | session.TrackColours[SCHEME_TRACK];
     if (direction == 0 || direction == 2)
     {
-        imageId = SPR_STATION_BASE_B_SW_NE | session->TrackColours[SCHEME_MISC];
-        PaintAddImageAsParent(session, imageId, 0, 0, 32, 28, 2, height - 2, 0, 2, height);
-    }
-    else if (direction == 1 || direction == 3)
-    {
-        imageId = SPR_STATION_BASE_B_NW_SE | session->TrackColours[SCHEME_MISC];
-        PaintAddImageAsParent(session, imageId, 0, 0, 28, 32, 2, height - 2, 2, 0, height);
-    }
-
-    imageId = monorail_track_pieces_flat[direction] | session->TrackColours[SCHEME_TRACK];
-    if (direction == 0 || direction == 2)
-    {
-        PaintAddImageAsChild(session, imageId, 0, 6, 32, 20, 2, height, 0, 0, height);
+        PaintAddImageAsChild(session, imageId, { 0, 6, height }, { 32, 20, 2 }, { 0, 0, height });
     }
     else
     {
-        PaintAddImageAsChild(session, imageId, 6, 0, 20, 32, 2, height, 0, 0, height);
+        PaintAddImageAsChild(session, imageId, { 6, 0, height }, { 20, 32, 2 }, { 0, 0, height });
     }
 
     if (direction == 0 || direction == 2)
@@ -491,16 +514,16 @@ static void paint_monorail_station(
 
     if (direction == 0 || direction == 2)
     {
-        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 5, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
-        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 8, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 5, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
+        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 8, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
     }
     else
     {
-        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 6, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
-        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 7, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 6, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
+        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 7, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
     }
 
-    track_paint_util_draw_station(session, rideIndex, direction, height, tileElement);
+    track_paint_util_draw_station(session, ride, direction, height, trackElement);
 
     paint_util_set_segment_support_height(session, SEGMENTS_ALL, 0xFFFF, 0);
     paint_util_set_general_support_height(session, height + 32, 0x20);
@@ -508,18 +531,18 @@ static void paint_monorail_station(
 
 /** rct2: 0x008AE1BC */
 static void paint_monorail_track_25_deg_up(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    uint32_t imageId = monorail_track_pieces_25_deg_up[direction] | session->TrackColours[SCHEME_TRACK];
+    uint32_t imageId = monorail_track_pieces_25_deg_up[direction] | session.TrackColours[SCHEME_TRACK];
 
     if (direction == 0 || direction == 2)
     {
-        PaintAddImageAsParent(session, imageId, 0, 6, 32, 20, 3, height);
+        PaintAddImageAsParent(session, imageId, { 0, 6, height }, { 32, 20, 3 });
     }
     else
     {
-        PaintAddImageAsParent(session, imageId, 6, 0, 20, 32, 3, height);
+        PaintAddImageAsParent(session, imageId, { 6, 0, height }, { 20, 32, 3 });
     }
 
     switch (direction)
@@ -538,9 +561,9 @@ static void paint_monorail_track_25_deg_up(
             break;
     }
 
-    if (track_paint_util_should_paint_supports(session->MapPosition))
+    if (track_paint_util_should_paint_supports(session.MapPosition))
     {
-        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 8, height, session->TrackColours[SCHEME_SUPPORTS]);
+        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 8, height, session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     paint_util_set_segment_support_height(
@@ -550,18 +573,18 @@ static void paint_monorail_track_25_deg_up(
 
 /** rct2: 0x008AE1CC */
 static void paint_monorail_track_flat_to_25_deg_up(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    uint32_t imageId = monorail_track_pieces_flat_to_25_deg_up[direction] | session->TrackColours[SCHEME_TRACK];
+    uint32_t imageId = monorail_track_pieces_flat_to_25_deg_up[direction] | session.TrackColours[SCHEME_TRACK];
 
     if (direction == 0 || direction == 2)
     {
-        PaintAddImageAsParent(session, imageId, 0, 6, 32, 20, 3, height);
+        PaintAddImageAsParent(session, imageId, { 0, 6, height }, { 32, 20, 3 });
     }
     else
     {
-        PaintAddImageAsParent(session, imageId, 6, 0, 20, 32, 3, height);
+        PaintAddImageAsParent(session, imageId, { 6, 0, height }, { 20, 32, 3 });
     }
 
     switch (direction)
@@ -580,9 +603,9 @@ static void paint_monorail_track_flat_to_25_deg_up(
             break;
     }
 
-    if (track_paint_util_should_paint_supports(session->MapPosition))
+    if (track_paint_util_should_paint_supports(session.MapPosition))
     {
-        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 3, height, session->TrackColours[SCHEME_SUPPORTS]);
+        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 3, height, session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     paint_util_set_segment_support_height(
@@ -592,18 +615,18 @@ static void paint_monorail_track_flat_to_25_deg_up(
 
 /** rct2: 0x008AE1DC */
 static void paint_monorail_track_25_deg_up_to_flat(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    uint32_t imageId = monorail_track_pieces_25_deg_up_to_flat[direction] | session->TrackColours[SCHEME_TRACK];
+    uint32_t imageId = monorail_track_pieces_25_deg_up_to_flat[direction] | session.TrackColours[SCHEME_TRACK];
 
     if (direction == 0 || direction == 2)
     {
-        PaintAddImageAsParent(session, imageId, 0, 6, 32, 20, 3, height);
+        PaintAddImageAsParent(session, imageId, { 0, 6, height }, { 32, 20, 3 });
     }
     else
     {
-        PaintAddImageAsParent(session, imageId, 6, 0, 20, 32, 3, height);
+        PaintAddImageAsParent(session, imageId, { 6, 0, height }, { 20, 32, 3 });
     }
 
     switch (direction)
@@ -622,9 +645,9 @@ static void paint_monorail_track_25_deg_up_to_flat(
             break;
     }
 
-    if (track_paint_util_should_paint_supports(session->MapPosition))
+    if (track_paint_util_should_paint_supports(session.MapPosition))
     {
-        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 6, height, session->TrackColours[SCHEME_SUPPORTS]);
+        metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 6, height, session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     paint_util_set_segment_support_height(
@@ -634,35 +657,35 @@ static void paint_monorail_track_25_deg_up_to_flat(
 
 /** rct2: 0x008AE1EC */
 static void paint_monorail_track_25_deg_down(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    paint_monorail_track_25_deg_up(session, rideIndex, trackSequence, (direction + 2) % 4, height, tileElement);
+    paint_monorail_track_25_deg_up(session, ride, trackSequence, (direction + 2) % 4, height, trackElement);
 }
 
 /** rct2: 0x008AE1FC */
 static void paint_monorail_track_flat_to_25_deg_down(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    paint_monorail_track_25_deg_up_to_flat(session, rideIndex, trackSequence, (direction + 2) % 4, height, tileElement);
+    paint_monorail_track_25_deg_up_to_flat(session, ride, trackSequence, (direction + 2) % 4, height, trackElement);
 }
 
 /** rct2: 0x008AE20C */
 static void paint_monorail_track_25_deg_down_to_flat(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    paint_monorail_track_flat_to_25_deg_up(session, rideIndex, trackSequence, (direction + 2) % 4, height, tileElement);
+    paint_monorail_track_flat_to_25_deg_up(session, ride, trackSequence, (direction + 2) % 4, height, trackElement);
 }
 
 /** rct2: 0x008AE22C */
 static void paint_monorail_track_right_quarter_turn_5_tiles(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     track_paint_util_right_quarter_turn_5_tiles_paint(
-        session, 3, height, direction, trackSequence, session->TrackColours[SCHEME_TRACK],
+        session, 3, height, direction, trackSequence, session.TrackColours[SCHEME_TRACK],
         monorail_track_pieces_flat_quarter_turn_5_tiles, defaultRightQuarterTurn5TilesOffsets,
         defaultRightQuarterTurn5TilesBoundLengths, nullptr);
 
@@ -670,7 +693,7 @@ static void paint_monorail_track_right_quarter_turn_5_tiles(
     {
         case 0:
         case 6:
-            metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+            metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             break;
     }
 
@@ -721,50 +744,47 @@ static void paint_monorail_track_right_quarter_turn_5_tiles(
 
 /** rct2: 0x008AE21C */
 static void paint_monorail_track_left_quarter_turn_5_tiles(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     trackSequence = mapLeftQuarterTurn5TilesToRightQuarterTurn5Tiles[trackSequence];
-    paint_monorail_track_right_quarter_turn_5_tiles(
-        session, rideIndex, trackSequence, (direction + 1) % 4, height, tileElement);
+    paint_monorail_track_right_quarter_turn_5_tiles(session, ride, trackSequence, (direction + 1) % 4, height, trackElement);
 }
 
 /** rct2: 0x */
 static void paint_monorail_track_s_bend_left(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (direction == 2 || direction == 3)
     {
         trackSequence = 3 - trackSequence;
     }
 
-    const CoordsXY offsetList[] = {
+    static constexpr CoordsXY offsetList[] = {
         { 0, 6 },
         { 0, 0 },
         { 0, 6 },
         { 0, 6 },
     };
 
-    const CoordsXY boundsList[] = {
+    static constexpr CoordsXY boundsList[] = {
         { 32, 20 },
         { 32, 26 },
         { 32, 26 },
         { 32, 20 },
     };
 
-    uint32_t imageId = monorail_track_pieces_s_bend_left[direction & 1][trackSequence] | session->TrackColours[SCHEME_TRACK];
+    uint32_t imageId = monorail_track_pieces_s_bend_left[direction & 1][trackSequence] | session.TrackColours[SCHEME_TRACK];
     CoordsXY offset = offsetList[trackSequence];
     CoordsXY bounds = boundsList[trackSequence];
     if (direction == 0 || direction == 2)
     {
-        PaintAddImageAsParent(
-            session, imageId, static_cast<int8_t>(offset.x), static_cast<int8_t>(offset.y), bounds.x, bounds.y, 3, height);
+        PaintAddImageAsParent(session, imageId, { offset.x, offset.y, height }, { bounds.x, bounds.y, 3 });
     }
     else
     {
-        PaintAddImageAsParent(
-            session, imageId, static_cast<int8_t>(offset.y), static_cast<int8_t>(offset.x), bounds.y, bounds.x, 3, height);
+        PaintAddImageAsParent(session, imageId, { offset.y, offset.x, height }, { bounds.y, bounds.x, 3 });
     }
 
     if (direction == 0 || direction == 2)
@@ -778,15 +798,15 @@ static void paint_monorail_track_s_bend_left(
         {
             case 0:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
             case 1:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 5, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 5, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
             case 3:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
         }
     }
@@ -801,15 +821,15 @@ static void paint_monorail_track_s_bend_left(
         {
             case 0:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
             case 1:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 6, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 6, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
             case 3:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
         }
     }
@@ -837,40 +857,38 @@ static void paint_monorail_track_s_bend_left(
 
 /** rct2: 0x008AE24C */
 static void paint_monorail_track_s_bend_right(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (direction == 2 || direction == 3)
     {
         trackSequence = 3 - trackSequence;
     }
 
-    const CoordsXY offsetList[] = {
+    static constexpr CoordsXY offsetList[] = {
         { 0, 6 },
         { 0, 6 },
         { 0, 0 },
         { 0, 6 },
     };
 
-    const CoordsXY boundsList[] = {
+    static constexpr CoordsXY boundsList[] = {
         { 32, 20 },
         { 32, 26 },
         { 32, 26 },
         { 32, 20 },
     };
 
-    uint32_t imageId = monorail_track_pieces_s_bend_right[direction & 1][trackSequence] | session->TrackColours[SCHEME_TRACK];
+    uint32_t imageId = monorail_track_pieces_s_bend_right[direction & 1][trackSequence] | session.TrackColours[SCHEME_TRACK];
     CoordsXY offset = offsetList[trackSequence];
     CoordsXY bounds = boundsList[trackSequence];
     if (direction == 0 || direction == 2)
     {
-        PaintAddImageAsParent(
-            session, imageId, static_cast<int8_t>(offset.x), static_cast<int8_t>(offset.y), bounds.x, bounds.y, 3, height);
+        PaintAddImageAsParent(session, imageId, { offset.x, offset.y, height }, { bounds.x, bounds.y, 3 });
     }
     else
     {
-        PaintAddImageAsParent(
-            session, imageId, static_cast<int8_t>(offset.y), static_cast<int8_t>(offset.x), bounds.y, bounds.x, 3, height);
+        PaintAddImageAsParent(session, imageId, { offset.y, offset.x, height }, { bounds.y, bounds.x, 3 });
     }
 
     if (direction == 0 || direction == 2)
@@ -884,15 +902,15 @@ static void paint_monorail_track_s_bend_right(
         {
             case 0:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
             case 1:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 8, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 8, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
             case 3:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
         }
     }
@@ -907,15 +925,15 @@ static void paint_monorail_track_s_bend_right(
         {
             case 0:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
             case 1:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 7, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 7, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
             case 3:
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
                 break;
         }
     }
@@ -943,11 +961,11 @@ static void paint_monorail_track_s_bend_right(
 
 /** rct2: 0x008AE29C */
 static void paint_monorail_track_right_quarter_turn_3_tiles(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     track_paint_util_right_quarter_turn_3_tiles_paint(
-        session, 3, height, direction, trackSequence, session->TrackColours[SCHEME_TRACK],
+        session, 3, height, direction, trackSequence, session.TrackColours[SCHEME_TRACK],
         monorail_track_pieces_flat_quarter_turn_3_tiles, defaultRightQuarterTurn3TilesOffsets,
         defaultRightQuarterTurn3TilesBoundLengths, nullptr);
     track_paint_util_right_quarter_turn_3_tiles_tunnel(session, height, direction, trackSequence, TUNNEL_SQUARE_FLAT);
@@ -956,7 +974,7 @@ static void paint_monorail_track_right_quarter_turn_3_tiles(
     {
         case 0:
         case 3:
-            metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+            metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             break;
     }
 
@@ -980,48 +998,49 @@ static void paint_monorail_track_right_quarter_turn_3_tiles(
 
 /** rct2: 0x008AE28C */
 static void paint_monorail_track_left_quarter_turn_3_tiles(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     trackSequence = mapLeftQuarterTurn3TilesToRightQuarterTurn3Tiles[trackSequence];
-    paint_monorail_track_right_quarter_turn_3_tiles(
-        session, rideIndex, trackSequence, (direction + 1) % 4, height, tileElement);
+    paint_monorail_track_right_quarter_turn_3_tiles(session, ride, trackSequence, (direction + 1) % 4, height, trackElement);
 }
 
-static constexpr const int8_t paint_monorail_eighth_to_diag_index[] = { 0, 1, 2, -1, 3 };
+static constexpr const int8_t paint_monorail_eighth_to_diag_index[] = {
+    0, 1, 2, -1, 3,
+};
 
 /** rct2: 0x008AE31C */
 static void paint_monorail_track_left_eighth_to_diag(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     int8_t index = paint_monorail_eighth_to_diag_index[trackSequence];
     if (index >= 0)
     {
-        uint32_t imageId = ghost_train_track_pieces_left_eight_to_diag[direction][index] | session->TrackColours[SCHEME_TRACK];
+        uint32_t imageId = ghost_train_track_pieces_left_eight_to_diag[direction][index] | session.TrackColours[SCHEME_TRACK];
         const CoordsXY offset = ghost_train_track_pieces_left_eight_to_diag_offset[direction][index];
         const CoordsXY bounds = ghost_train_track_pieces_left_eight_to_diag_bounds[direction][index];
-        PaintAddImageAsParent(session, imageId, 0, 0, bounds.x, bounds.y, 2, height, offset.x, offset.y, height);
+        PaintAddImageAsParent(session, imageId, { 0, 0, height }, { bounds.x, bounds.y, 2 }, { offset.x, offset.y, height });
     }
 
     switch (trackSequence)
     {
         case 0:
-            metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+            metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             break;
         case 4:
             if (direction == 0)
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 3, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 3, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             if (direction == 1)
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 1, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 1, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             if (direction == 2)
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 0, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 0, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             if (direction == 3)
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 2, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 2, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             break;
     }
 
@@ -1060,36 +1079,36 @@ static void paint_monorail_track_left_eighth_to_diag(
 
 /** rct2: 0x008AE32C */
 static void paint_monorail_track_right_eighth_to_diag(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     int8_t index = paint_monorail_eighth_to_diag_index[trackSequence];
     if (index >= 0)
     {
-        uint32_t imageId = ghost_train_track_pieces_right_eight_to_diag[direction][index] | session->TrackColours[SCHEME_TRACK];
+        uint32_t imageId = ghost_train_track_pieces_right_eight_to_diag[direction][index] | session.TrackColours[SCHEME_TRACK];
         const CoordsXY offset = ghost_train_track_pieces_right_eight_to_diag_offset[direction][index];
         const CoordsXY bounds = ghost_train_track_pieces_right_eight_to_diag_bounds[direction][index];
-        PaintAddImageAsParent(session, imageId, 0, 0, bounds.x, bounds.y, 2, height, offset.x, offset.y, height);
+        PaintAddImageAsParent(session, imageId, { 0, 0, height }, { bounds.x, bounds.y, 2 }, { offset.x, offset.y, height });
     }
 
     switch (trackSequence)
     {
         case 0:
-            metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+            metal_a_supports_paint_setup(session, METAL_SUPPORTS_BOXED, 4, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             break;
         case 4:
             if (direction == 0)
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 1, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 1, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             if (direction == 1)
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 0, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 0, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             if (direction == 2)
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 2, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 2, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             if (direction == 3)
                 metal_a_supports_paint_setup(
-                    session, METAL_SUPPORTS_BOXED, 3, 0, height, session->TrackColours[SCHEME_SUPPORTS]);
+                    session, METAL_SUPPORTS_BOXED, 3, 0, height, session.TrackColours[SCHEME_SUPPORTS]);
             break;
     }
 
@@ -1128,22 +1147,22 @@ static void paint_monorail_track_right_eighth_to_diag(
 
 /** rct2: 0x008AE33C */
 static void paint_monorail_track_left_eighth_to_orthogonal(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    const uint8_t map[] = { 4, 2, 3, 1, 0 };
+    static constexpr uint8_t map[] = { 4, 2, 3, 1, 0 };
     trackSequence = map[trackSequence];
-    paint_monorail_track_right_eighth_to_diag(session, rideIndex, trackSequence, (direction + 2) % 4, height, tileElement);
+    paint_monorail_track_right_eighth_to_diag(session, ride, trackSequence, (direction + 2) % 4, height, trackElement);
 }
 
 /** rct2: 0x008AE34C */
 static void paint_monorail_track_right_eighth_to_orthogonal(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
-    const uint8_t map[] = { 4, 2, 3, 1, 0 };
+    static constexpr uint8_t map[] = { 4, 2, 3, 1, 0 };
     trackSequence = map[trackSequence];
-    paint_monorail_track_left_eighth_to_diag(session, rideIndex, trackSequence, (direction + 3) % 4, height, tileElement);
+    paint_monorail_track_left_eighth_to_diag(session, ride, trackSequence, (direction + 3) % 4, height, trackElement);
 }
 
 static constexpr const bool monorail_diag_image_segment[][4] = {
@@ -1153,29 +1172,36 @@ static constexpr const bool monorail_diag_image_segment[][4] = {
     { true, false, false, false },
 };
 
-static constexpr const uint8_t monorail_diag_support_segment[] = { 1, 0, 2, 3 };
+static constexpr const uint8_t monorail_diag_support_segment[] = {
+    1,
+    0,
+    2,
+    3,
+};
 
-static constexpr const int32_t monorail_diag_blocked_segments[] = { SEGMENT_C4 | SEGMENT_CC | SEGMENT_D4 | SEGMENT_BC,
-                                                                    SEGMENT_C4 | SEGMENT_CC | SEGMENT_C8 | SEGMENT_B4,
-                                                                    SEGMENT_D0 | SEGMENT_C4 | SEGMENT_C0 | SEGMENT_D4,
-                                                                    SEGMENT_D0 | SEGMENT_C4 | SEGMENT_B8 | SEGMENT_C8 };
+static constexpr const int32_t monorail_diag_blocked_segments[] = {
+    SEGMENT_C4 | SEGMENT_CC | SEGMENT_D4 | SEGMENT_BC,
+    SEGMENT_C4 | SEGMENT_CC | SEGMENT_C8 | SEGMENT_B4,
+    SEGMENT_D0 | SEGMENT_C4 | SEGMENT_C0 | SEGMENT_D4,
+    SEGMENT_D0 | SEGMENT_C4 | SEGMENT_B8 | SEGMENT_C8,
+};
 
 /** rct2: 0x008AE2AC */
 static void paint_monorail_track_diag_flat(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (monorail_diag_image_segment[direction][trackSequence])
     {
-        uint32_t imageId = monorail_track_pieces_diag_flat[direction] | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, -16, -16, 32, 32, 2, height, -16, -16, height);
+        uint32_t imageId = monorail_track_pieces_diag_flat[direction] | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { -16, -16, height }, { 32, 32, 2 }, { -16, -16, height });
     }
 
     if (trackSequence == 3)
     {
         metal_a_supports_paint_setup(
             session, METAL_SUPPORTS_BOXED, monorail_diag_support_segment[direction], 0, height,
-            session->TrackColours[SCHEME_SUPPORTS]);
+            session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     int32_t blockedSegments = monorail_diag_blocked_segments[trackSequence];
@@ -1185,20 +1211,20 @@ static void paint_monorail_track_diag_flat(
 
 /** rct2: 0x008AE2DC */
 static void paint_monorail_track_diag_25_deg_up(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (monorail_diag_image_segment[direction][trackSequence])
     {
-        uint32_t imageId = monorail_track_pieces_diag_25_deg_up[direction] | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, -16, -16, 32, 32, 2, height, -16, -16, height);
+        uint32_t imageId = monorail_track_pieces_diag_25_deg_up[direction] | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { -16, -16, height }, { 32, 32, 2 }, { -16, -16, height });
     }
 
     if (trackSequence == 3)
     {
         metal_b_supports_paint_setup(
             session, METAL_SUPPORTS_BOXED, monorail_diag_support_segment[direction], 8, height,
-            session->TrackColours[SCHEME_SUPPORTS]);
+            session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     int32_t blockedSegments = monorail_diag_blocked_segments[trackSequence];
@@ -1208,20 +1234,20 @@ static void paint_monorail_track_diag_25_deg_up(
 
 /** rct2: 0x008AE2BC */
 static void paint_monorail_track_diag_flat_to_25_deg_up(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (monorail_diag_image_segment[direction][trackSequence])
     {
-        uint32_t imageId = monorail_track_pieces_diag_flat_to_25_deg_up[direction] | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, -16, -16, 32, 32, 2, height, -16, -16, height);
+        uint32_t imageId = monorail_track_pieces_diag_flat_to_25_deg_up[direction] | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { -16, -16, height }, { 32, 32, 2 }, { -16, -16, height });
     }
 
     if (trackSequence == 3)
     {
         metal_b_supports_paint_setup(
             session, METAL_SUPPORTS_BOXED, monorail_diag_support_segment[direction], 0, height,
-            session->TrackColours[SCHEME_SUPPORTS]);
+            session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     int32_t blockedSegments = monorail_diag_blocked_segments[trackSequence];
@@ -1231,20 +1257,20 @@ static void paint_monorail_track_diag_flat_to_25_deg_up(
 
 /** rct2: 0x008AE2CC */
 static void paint_monorail_track_diag_25_deg_up_to_flat(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (monorail_diag_image_segment[direction][trackSequence])
     {
-        uint32_t imageId = monorail_track_pieces_diag_25_deg_up_to_flat[direction] | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, -16, -16, 32, 32, 2, height, -16, -16, height);
+        uint32_t imageId = monorail_track_pieces_diag_25_deg_up_to_flat[direction] | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { -16, -16, height }, { 32, 32, 2 }, { -16, -16, height });
     }
 
     if (trackSequence == 3)
     {
         metal_b_supports_paint_setup(
             session, METAL_SUPPORTS_BOXED, monorail_diag_support_segment[direction], 4, height,
-            session->TrackColours[SCHEME_SUPPORTS]);
+            session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     int32_t blockedSegments = monorail_diag_blocked_segments[trackSequence];
@@ -1254,20 +1280,20 @@ static void paint_monorail_track_diag_25_deg_up_to_flat(
 
 /** rct2: 0x008AE30C */
 static void paint_monorail_track_diag_25_deg_down(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (monorail_diag_image_segment[direction][trackSequence])
     {
-        uint32_t imageId = monorail_track_pieces_diag_25_deg_up[(direction + 2) % 4] | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, -16, -16, 32, 32, 2, height, -16, -16, height);
+        uint32_t imageId = monorail_track_pieces_diag_25_deg_up[(direction + 2) % 4] | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { -16, -16, height }, { 32, 32, 2 }, { -16, -16, height });
     }
 
     if (trackSequence == 3)
     {
         metal_b_supports_paint_setup(
             session, METAL_SUPPORTS_BOXED, monorail_diag_support_segment[direction], 8, height,
-            session->TrackColours[SCHEME_SUPPORTS]);
+            session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     int32_t blockedSegments = monorail_diag_blocked_segments[trackSequence];
@@ -1277,21 +1303,21 @@ static void paint_monorail_track_diag_25_deg_down(
 
 /** rct2: 0x008AE2EC */
 static void paint_monorail_track_diag_flat_to_25_deg_down(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (monorail_diag_image_segment[direction][trackSequence])
     {
         uint32_t imageId = monorail_track_pieces_diag_25_deg_up_to_flat[(direction + 2) % 4]
-            | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, -16, -16, 32, 32, 2, height, -16, -16, height);
+            | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { -16, -16, height }, { 32, 32, 2 }, { -16, -16, height });
     }
 
     if (trackSequence == 3)
     {
         metal_b_supports_paint_setup(
             session, METAL_SUPPORTS_BOXED, monorail_diag_support_segment[direction], 4, height,
-            session->TrackColours[SCHEME_SUPPORTS]);
+            session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     int32_t blockedSegments = monorail_diag_blocked_segments[trackSequence];
@@ -1301,21 +1327,21 @@ static void paint_monorail_track_diag_flat_to_25_deg_down(
 
 /** rct2: 0x008AE2FC */
 static void paint_monorail_track_diag_25_deg_down_to_flat(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (monorail_diag_image_segment[direction][trackSequence])
     {
         uint32_t imageId = monorail_track_pieces_diag_flat_to_25_deg_up[(direction + 2) % 4]
-            | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, -16, -16, 32, 32, 2, height, -16, -16, height);
+            | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { -16, -16, height }, { 32, 32, 2 }, { -16, -16, height });
     }
 
     if (trackSequence == 3)
     {
         metal_b_supports_paint_setup(
             session, METAL_SUPPORTS_BOXED, monorail_diag_support_segment[direction], 0, height,
-            session->TrackColours[SCHEME_SUPPORTS]);
+            session.TrackColours[SCHEME_SUPPORTS]);
     }
 
     int32_t blockedSegments = monorail_diag_blocked_segments[trackSequence];

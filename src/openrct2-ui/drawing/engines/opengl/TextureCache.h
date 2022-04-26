@@ -17,6 +17,8 @@
 #include <array>
 #include <mutex>
 #include <openrct2/common.h>
+#include <openrct2/drawing/Drawing.h>
+#include <openrct2/sprites.h>
 #ifndef __MACOSX__
 #    include <shared_mutex>
 #endif
@@ -29,7 +31,7 @@ enum class FilterPaletteID : int32_t;
 
 struct GlyphId
 {
-    uint32_t Image;
+    ImageIndex Image;
     uint64_t Palette;
 
     struct Hash
@@ -71,7 +73,7 @@ struct AtlasTextureInfo : public BasicTextureInfo
 {
     GLuint slot;
     ivec4 bounds;
-    uint32_t image;
+    ImageIndex image;
 };
 
 // Represents a texture atlas that images of a given maximum size can be allocated from
@@ -91,9 +93,9 @@ private:
 
 public:
     Atlas(GLuint index, int32_t imageSize)
+        : _index(index)
+        , _imageSize(imageSize)
     {
-        _index = index;
-        _imageSize = imageSize;
     }
 
     void Initialise(int32_t atlasWidth, int32_t atlasHeight)
@@ -101,8 +103,8 @@ public:
         _atlasWidth = atlasWidth;
         _atlasHeight = atlasHeight;
 
-        _cols = _atlasWidth / _imageSize;
-        _rows = _atlasHeight / _imageSize;
+        _cols = std::max(1, _atlasWidth / _imageSize);
+        _rows = std::max(1, _atlasHeight / _imageSize);
 
         _freeSlots.resize(_cols * _rows);
         for (size_t i = 0; i < _freeSlots.size(); i++)
@@ -201,7 +203,7 @@ private:
     std::vector<Atlas> _atlases;
     std::unordered_map<GlyphId, AtlasTextureInfo, GlyphId::Hash, GlyphId::Equal> _glyphTextureMap;
     std::vector<AtlasTextureInfo> _textureCache;
-    std::array<uint32_t, 0x7FFFF> _indexMap;
+    std::array<uint32_t, SPR_IMAGE_LIST_END> _indexMap;
 
     GLuint _paletteTexture = 0;
 
@@ -218,9 +220,10 @@ private:
 public:
     TextureCache();
     ~TextureCache();
-    void InvalidateImage(uint32_t image);
-    BasicTextureInfo GetOrLoadImageTexture(uint32_t image);
-    BasicTextureInfo GetOrLoadGlyphTexture(uint32_t image, const PaletteMap& paletteMap);
+    void InvalidateImage(ImageIndex image);
+    BasicTextureInfo GetOrLoadImageTexture(ImageId imageId);
+    BasicTextureInfo GetOrLoadGlyphTexture(ImageId imageId, const PaletteMap& paletteMap);
+    BasicTextureInfo GetOrLoadBitmapTexture(ImageIndex image, const void* pixels, size_t width, size_t height);
 
     GLuint GetAtlasesTexture();
     GLuint GetPaletteTexture();
@@ -230,11 +233,12 @@ private:
     void CreateTextures();
     void GeneratePaletteTexture();
     void EnlargeAtlasesTexture(GLuint newEntries);
-    AtlasTextureInfo LoadImageTexture(uint32_t image);
-    AtlasTextureInfo LoadGlyphTexture(uint32_t image, const PaletteMap& paletteMap);
+    AtlasTextureInfo LoadImageTexture(ImageId image);
+    AtlasTextureInfo LoadGlyphTexture(ImageId image, const PaletteMap& paletteMap);
     AtlasTextureInfo AllocateImage(int32_t imageWidth, int32_t imageHeight);
-    static rct_drawpixelinfo GetImageAsDPI(uint32_t image, uint32_t tertiaryColour);
-    static rct_drawpixelinfo GetGlyphAsDPI(uint32_t image, const PaletteMap& paletteMap);
+    AtlasTextureInfo LoadBitmapTexture(ImageIndex image, const void* pixels, size_t width, size_t height);
+    static rct_drawpixelinfo GetImageAsDPI(ImageId imageId);
+    static rct_drawpixelinfo GetGlyphAsDPI(ImageId imageId, const PaletteMap& paletteMap);
     void FreeTextures();
 
     static rct_drawpixelinfo CreateDPI(int32_t width, int32_t height);

@@ -26,6 +26,11 @@ colour_t LargeSceneryElement::GetSecondaryColour() const
     return Colour[1];
 }
 
+colour_t LargeSceneryElement::GetTertiaryColour() const
+{
+    return Colour[2];
+}
+
 void LargeSceneryElement::SetPrimaryColour(colour_t newColour)
 {
     assert(newColour <= 31);
@@ -36,6 +41,12 @@ void LargeSceneryElement::SetSecondaryColour(colour_t newColour)
 {
     assert(newColour <= 31);
     Colour[1] = newColour;
+}
+
+void LargeSceneryElement::SetTertiaryColour(colour_t newColour)
+{
+    assert(newColour <= 31);
+    Colour[2] = newColour;
 }
 
 Banner* LargeSceneryElement::GetBanner() const
@@ -75,7 +86,7 @@ ObjectEntryIndex LargeSceneryElement::GetEntryIndex() const
     return EntryIndex;
 }
 
-rct_scenery_entry* LargeSceneryElement::GetEntry() const
+LargeSceneryEntry* LargeSceneryElement::GetEntry() const
 {
     return get_large_scenery_entry(GetEntryIndex());
 }
@@ -100,14 +111,14 @@ void LargeSceneryElement::SetSequenceIndex(uint8_t sequence)
     SequenceIndex = sequence;
 }
 
-rct_scenery_entry* get_large_scenery_entry(ObjectEntryIndex entryIndex)
+LargeSceneryEntry* get_large_scenery_entry(ObjectEntryIndex entryIndex)
 {
-    rct_scenery_entry* result = nullptr;
+    LargeSceneryEntry* result = nullptr;
     auto& objMgr = OpenRCT2::GetContext()->GetObjectManager();
     auto obj = objMgr.GetLoadedObject(ObjectType::LargeScenery, entryIndex);
     if (obj != nullptr)
     {
-        result = static_cast<rct_scenery_entry*>(obj->GetLegacyData());
+        result = static_cast<LargeSceneryEntry*>(obj->GetLegacyData());
     }
     return result;
 }

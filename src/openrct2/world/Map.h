@@ -7,8 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef _MAP_H_
-#define _MAP_H_
+#pragma once
 
 #include "../common.h"
 #include "Location.hpp"
@@ -20,23 +19,23 @@
 #define MINIMUM_LAND_HEIGHT 2
 #define MAXIMUM_LAND_HEIGHT 142
 #define MINIMUM_WATER_HEIGHT 2
-#define MAXIMUM_WATER_HEIGHT 58
+#define MAXIMUM_WATER_HEIGHT 142
 
 #define MINIMUM_MAP_SIZE_TECHNICAL 15
-#define MAXIMUM_MAP_SIZE_TECHNICAL 256
+#define MAXIMUM_MAP_SIZE_TECHNICAL 1001
 #define MINIMUM_MAP_SIZE_PRACTICAL (MINIMUM_MAP_SIZE_TECHNICAL - 2)
 #define MAXIMUM_MAP_SIZE_PRACTICAL (MAXIMUM_MAP_SIZE_TECHNICAL - 2)
 constexpr const int32_t MAXIMUM_MAP_SIZE_BIG = COORDS_XY_STEP * MAXIMUM_MAP_SIZE_TECHNICAL;
 constexpr const int32_t MAXIMUM_TILE_START_XY = MAXIMUM_MAP_SIZE_BIG - COORDS_XY_STEP;
 constexpr const int32_t LAND_HEIGHT_STEP = 2 * COORDS_Z_STEP;
 constexpr const int32_t MINIMUM_LAND_HEIGHT_BIG = MINIMUM_LAND_HEIGHT * COORDS_Z_STEP;
+constexpr const TileCoordsXY DEFAULT_MAP_SIZE = { 150, 150 };
 
 #define MAP_MINIMUM_X_Y (-MAXIMUM_MAP_SIZE_TECHNICAL)
 
-constexpr const uint32_t MAX_TILE_ELEMENTS_WITH_SPARE_ROOM = 0x30000;
+constexpr const uint32_t MAX_TILE_ELEMENTS_WITH_SPARE_ROOM = 0x1000000;
 constexpr const uint32_t MAX_TILE_ELEMENTS = MAX_TILE_ELEMENTS_WITH_SPARE_ROOM - 512;
 #define MAX_TILE_TILE_ELEMENT_POINTERS (MAXIMUM_MAP_SIZE_TECHNICAL * MAXIMUM_MAP_SIZE_TECHNICAL)
-#define MAX_PEEP_SPAWNS 2
 
 #define TILE_UNDEFINED_TILE_ELEMENT NULL
 
@@ -85,7 +84,7 @@ enum
     MAP_SELECT_TYPE_EDGE_3,
 };
 
-// Used when calling map_can_construct_with_clear_at();
+// Used when calling MapCanConstructWithClearAt();
 // This assumes that the caller has already done the check on the element it wants to place,
 // as this function can only check the element the player wants to build through.
 enum
@@ -98,15 +97,25 @@ enum
 extern const std::array<CoordsXY, 8> CoordsDirectionDelta;
 extern const TileCoordsXY TileDirectionDelta[];
 
-extern uint16_t gWidePathTileLoopX;
-extern uint16_t gWidePathTileLoopY;
+extern TileCoordsXY gWidePathTileLoopPosition;
 extern uint16_t gGrassSceneryTileLoopPosition;
 
-extern int16_t gMapSizeUnits;
-extern int16_t gMapSizeMinus2;
-extern int16_t gMapSize;
-extern int16_t gMapSizeMaxXY;
-extern int16_t gMapBaseZ;
+extern TileCoordsXY gMapSize;
+extern int32_t gMapBaseZ;
+
+inline CoordsXY GetMapSizeUnits()
+{
+    return { (gMapSize.x - 1) * COORDS_XY_STEP, (gMapSize.y - 1) * COORDS_XY_STEP };
+}
+inline CoordsXY GetMapSizeMinus2()
+{
+    return { (gMapSize.x * COORDS_XY_STEP) + (8 * COORDS_XY_STEP - 2),
+             (gMapSize.y * COORDS_XY_STEP) + (8 * COORDS_XY_STEP - 2) };
+}
+inline CoordsXY GetMapSizeMaxXY()
+{
+    return GetMapSizeUnits() - CoordsXY{ 1, 1 };
+}
 
 extern uint16_t gMapSelectFlags;
 extern uint16_t gMapSelectType;
@@ -115,16 +124,8 @@ extern CoordsXY gMapSelectPositionB;
 extern CoordsXYZ gMapSelectArrowPosition;
 extern uint8_t gMapSelectArrowDirection;
 
-extern uint8_t gMapGroundFlags;
-
-extern TileElement gTileElements[MAX_TILE_ELEMENTS_WITH_SPARE_ROOM];
-extern TileElement* gTileElementTilePointers[MAX_TILE_TILE_ELEMENT_POINTERS];
-
 extern std::vector<CoordsXY> gMapSelectionTiles;
 extern std::vector<PeepSpawn> gPeepSpawns;
-
-extern TileElement* gNextFreeTileElement;
-extern uint32_t gNextFreeTileElementPointerIndex;
 
 // Used in the land tool window to enable mountain tool / land smoothing
 extern bool gLandMountainMode;
@@ -135,8 +136,8 @@ extern bool gClearSmallScenery;
 extern bool gClearLargeScenery;
 extern bool gClearFootpath;
 
-extern uint16_t gLandRemainingOwnershipSales;
-extern uint16_t gLandRemainingConstructionSales;
+extern uint32_t gLandRemainingOwnershipSales;
+extern uint32_t gLandRemainingConstructionSales;
 
 extern bool gMapLandRightsUpdateSuccess;
 
@@ -144,42 +145,19 @@ constexpr auto SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT = 0x20;
 extern const uint8_t tile_element_lower_styles[9][32];
 extern const uint8_t tile_element_raise_styles[9][32];
 
-template<typename T> class TilePointerIndex
-{
-    std::vector<T*> TilePointers;
-    uint16_t MapSize;
+void ReorganiseTileElements();
+const std::vector<TileElement>& GetTileElements();
+void SetTileElements(std::vector<TileElement>&& tileElements);
+void StashMap();
+void UnstashMap();
+std::vector<TileElement> GetReorganisedTileElementsWithoutGhosts();
 
-public:
-    explicit TilePointerIndex(const uint16_t mapSize, T* tileElements)
-    {
-        MapSize = mapSize;
-        const uint16_t MaxTileElementPointers = MapSize * MapSize;
-        TilePointers.reserve(MaxTileElementPointers);
-
-        T* tileElement = tileElements;
-        for (size_t y = 0; y < MapSize; y++)
-        {
-            for (size_t x = 0; x < MapSize; x++)
-            {
-                TilePointers.emplace_back(tileElement);
-                while (!(tileElement++)->IsLastForTile())
-                    ;
-            }
-        }
-    }
-
-    T* GetFirstElementAt(TileCoordsXY coords)
-    {
-        return TilePointers[coords.x + (coords.y * MapSize)];
-    }
-};
-
-void map_init(int32_t size);
+void map_init(const TileCoordsXY& size);
 
 void map_count_remaining_land_rights();
 void map_strip_ghost_flag_from_elements();
-void map_update_tile_pointers();
-TileElement* map_get_first_element_at(const CoordsXY& elementPos);
+TileElement* map_get_first_element_at(const CoordsXY& tilePos);
+TileElement* map_get_first_element_at(const TileCoordsXY& tilePos);
 TileElement* map_get_nth_element_at(const CoordsXY& coords, int32_t n);
 void map_set_tile_element(const TileCoordsXY& tilePos, TileElement* elements);
 int32_t map_height_from_slope(const CoordsXY& coords, int32_t slopeDirection, bool isSloped);
@@ -211,33 +189,14 @@ void tile_element_remove(TileElement* tileElement);
 void map_remove_all_rides();
 void map_invalidate_map_selection_tiles();
 void map_invalidate_selection_rect();
-void map_reorganise_elements();
-bool map_check_free_elements_and_reorganise(int32_t num_elements);
+bool MapCheckCapacityAndReorganise(const CoordsXY& loc, size_t numElements = 1);
 TileElement* tile_element_insert(const CoordsXYZ& loc, int32_t occupiedQuadrants, TileElementType type);
 
 template<typename T> T* TileElementInsert(const CoordsXYZ& loc, int32_t occupiedQuadrants)
 {
     auto* element = tile_element_insert(loc, occupiedQuadrants, T::ElementType);
-    return element->template as<T>();
+    return (element != nullptr) ? element->template as<T>() : nullptr;
 }
-
-namespace GameActions
-{
-    class Result;
-    class ConstructClearResult;
-} // namespace GameActions
-
-using CLEAR_FUNC = int32_t (*)(TileElement** tile_element, const CoordsXY& coords, uint8_t flags, money32* price);
-
-int32_t map_place_non_scenery_clear_func(TileElement** tile_element, const CoordsXY& coords, uint8_t flags, money32* price);
-int32_t map_place_scenery_clear_func(TileElement** tile_element, const CoordsXY& coords, uint8_t flags, money32* price);
-bool map_can_construct_with_clear_at(
-    const CoordsXYRangedZ& pos, CLEAR_FUNC clearFunc, QuarterTile quarterTile, uint8_t flags, money32* price,
-    uint8_t crossingMode);
-std::unique_ptr<GameActions::ConstructClearResult> MapCanConstructWithClearAt(
-    const CoordsXYRangedZ& pos, CLEAR_FUNC clearFunc, QuarterTile quarterTile, uint8_t flags, uint8_t crossingMode);
-std::unique_ptr<GameActions::ConstructClearResult> MapCanConstructAt(const CoordsXYRangedZ& pos, QuarterTile bl);
-int32_t map_can_construct_at(const CoordsXYRangedZ& pos, QuarterTile bl);
 
 struct tile_element_iterator
 {
@@ -259,7 +218,8 @@ int32_t map_get_highest_z(const CoordsXY& loc);
 bool tile_element_wants_path_connection_towards(const TileCoordsXYZD& coords, const TileElement* const elementToBeRemoved);
 
 void map_remove_out_of_range_elements();
-void map_extend_boundary_surface();
+void map_extend_boundary_surface_x();
+void map_extend_boundary_surface_y();
 
 bool map_large_scenery_sign_set_colour(const CoordsXYZD& signPos, int32_t sequence, uint8_t mainColour, uint8_t textColour);
 void wall_remove_at(const CoordsXYRangedZ& wallPos);
@@ -291,16 +251,15 @@ TileElement* map_get_track_element_at_of_type(const CoordsXYZ& trackPos, track_t
 TileElement* map_get_track_element_at_of_type_seq(const CoordsXYZ& trackPos, track_type_t trackType, int32_t sequence);
 TrackElement* map_get_track_element_at_of_type(const CoordsXYZD& location, track_type_t trackType);
 TrackElement* map_get_track_element_at_of_type_seq(const CoordsXYZD& location, track_type_t trackType, int32_t sequence);
-TileElement* map_get_track_element_at_of_type_from_ride(const CoordsXYZ& trackPos, track_type_t trackType, ride_id_t rideIndex);
-TileElement* map_get_track_element_at_from_ride(const CoordsXYZ& trackPos, ride_id_t rideIndex);
-TileElement* map_get_track_element_at_with_direction_from_ride(const CoordsXYZD& trackPos, ride_id_t rideIndex);
+TileElement* map_get_track_element_at_of_type_from_ride(const CoordsXYZ& trackPos, track_type_t trackType, RideId rideIndex);
+TileElement* map_get_track_element_at_from_ride(const CoordsXYZ& trackPos, RideId rideIndex);
+TileElement* map_get_track_element_at_with_direction_from_ride(const CoordsXYZD& trackPos, RideId rideIndex);
 
 bool map_is_location_at_edge(const CoordsXY& loc);
-void map_obstruction_set_error_text(TileElement* tileElement, GameActions::Result& res);
 
 uint16_t check_max_allowable_land_rights_for_tile(const CoordsXYZ& tileMapPos);
 
 void FixLandOwnershipTiles(std::initializer_list<TileCoordsXY> tiles);
-void FixLandOwnershipTilesWithOwnership(std::initializer_list<TileCoordsXY> tiles, uint8_t ownership);
-
-#endif
+void FixLandOwnershipTilesWithOwnership(
+    std::initializer_list<TileCoordsXY> tiles, uint8_t ownership, bool doNotDowngrade = false);
+MapRange ClampRangeWithinMap(const MapRange& range);

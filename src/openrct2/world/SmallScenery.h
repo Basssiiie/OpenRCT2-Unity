@@ -13,7 +13,7 @@
 #include "Map.h"
 #include "Scenery.h"
 
-enum SMALL_SCENERY_FLAGS
+enum SMALL_SCENERY_FLAGS : uint32_t
 {
     SMALL_SCENERY_FLAG_FULL_TILE = (1 << 0),            // 0x1
     SMALL_SCENERY_FLAG_VOFFSET_CENTRE = (1 << 1),       // 0x2
@@ -45,7 +45,9 @@ enum SMALL_SCENERY_FLAGS
     SMALL_SCENERY_FLAG_PAINT_SUPPORTS = (1 << 26),       // 0x4000000; used for scenery items which are support structures
     SMALL_SCENERY_FLAG27 = (1 << 27),                    // 0x8000000
 
-    SMALL_SCENERY_FLAG_IS_TREE = (1 << 28), // Added by OpenRCT2
+    // Added by OpenRCT2:
+    SMALL_SCENERY_FLAG_IS_TREE = (1 << 28),
+    SMALL_SCENERY_FLAG_HAS_TERTIARY_COLOUR = (1 << 29),
 };
 
 enum
@@ -53,5 +55,4 @@ enum
     MAP_ELEM_SMALL_SCENERY_COLOUR_FLAG_NEEDS_SUPPORTS = (1 << 5),
 };
 
-bool scenery_small_entry_has_flag(const rct_scenery_entry* sceneryEntry, uint32_t flags);
-rct_scenery_entry* get_small_scenery_entry(ObjectEntryIndex entryIndex);
+SmallSceneryEntry* get_small_scenery_entry(ObjectEntryIndex entryIndex);

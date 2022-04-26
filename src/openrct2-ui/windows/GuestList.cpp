@@ -15,20 +15,23 @@
 #include <openrct2/Game.h>
 #include <openrct2/config/Config.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/entity/EntityRegistry.h>
+#include <openrct2/entity/Guest.h>
+#include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Localisation.h>
 #include <openrct2/ride/RideData.h>
 #include <openrct2/scenario/Scenario.h>
 #include <openrct2/sprites.h>
+#include <openrct2/util/Math.hpp>
 #include <openrct2/util/Util.h>
 #include <openrct2/world/Park.h>
-#include <openrct2/world/Sprite.h>
 #include <vector>
 
 static constexpr const rct_string_id WINDOW_TITLE = STR_GUESTS;
 static constexpr const int32_t WH = 330;
 static constexpr const int32_t WW = 350;
 
-enum WINDOW_GUEST_LIST_WIDGET_IDX
+enum WindowGuestListWidgetIdx
 {
     WIDX_BACKGROUND,
     WIDX_TITLE,
@@ -60,7 +63,7 @@ static rct_widget window_guest_list_widgets[] = {
     MakeTab   ({  3, 17},                                                                        STR_INDIVIDUAL_GUESTS_TIP    ), // tab 1
     MakeTab   ({ 34, 17},                                                                        STR_SUMMARISED_GUESTS_TIP    ), // tab 2
     MakeWidget({  3, 72}, {344, 255}, WindowWidgetType::Scroll,   WindowColour::Secondary, SCROLL_BOTH                                      ), // guest list
-    { WIDGETS_END },
+    WIDGETS_END,
 };
 // clang-format on
 
@@ -118,7 +121,7 @@ private:
     {
         using CompareFunc = bool (*)(const GuestItem&, const GuestItem&);
 
-        uint16_t Id;
+        EntityId Id;
         char Name[256];
     };
 
@@ -151,12 +154,10 @@ public:
     void OnOpen() override
     {
         widgets = window_guest_list_widgets;
-        enabled_widgets = (1 << WIDX_CLOSE) | (1 << WIDX_PAGE_DROPDOWN) | (1 << WIDX_PAGE_DROPDOWN_BUTTON)
-            | (1 << WIDX_INFO_TYPE_DROPDOWN) | (1 << WIDX_INFO_TYPE_DROPDOWN_BUTTON) | (1 << WIDX_MAP) | (1 << WIDX_TRACKING)
-            | (1 << WIDX_TAB_1) | (1 << WIDX_TAB_2) | (1 << WIDX_FILTER_BY_NAME);
         WindowInitScrollWidgets(this);
 
-        _selectedTab = TabId::Individual;
+        _selectedTab = TabId::Summarised;
+        _selectedView = GuestViewType::Thoughts;
         _numPages = 1;
         widgets[WIDX_TRACKING].type = WindowWidgetType::FlatBtn;
         widgets[WIDX_FILTER_BY_NAME].type = WindowWidgetType::FlatBtn;
@@ -182,7 +183,7 @@ public:
         {
             case GuestListFilterType::GuestsOnRide:
             {
-                auto guestRide = get_ride(index);
+                auto guestRide = get_ride(RideId::FromUnderlying(index));
                 if (guestRide != nullptr)
                 {
                     ft.Add<rct_string_id>(
@@ -192,13 +193,13 @@ public:
                     _selectedFilter = GuestFilterType::Guests;
                     _highlightedIndex = {};
                     _selectedTab = TabId::Individual;
-                    _selectedView = GuestViewType::Actions;
+                    _selectedView = GuestViewType::Thoughts;
                 }
                 break;
             }
             case GuestListFilterType::GuestsInQueue:
             {
-                auto guestRide = get_ride(index);
+                auto guestRide = get_ride(RideId::FromUnderlying(index));
                 if (guestRide != nullptr)
                 {
                     ft.Add<rct_string_id>(STR_QUEUING_FOR);
@@ -207,13 +208,13 @@ public:
                     _selectedFilter = GuestFilterType::Guests;
                     _highlightedIndex = {};
                     _selectedTab = TabId::Individual;
-                    _selectedView = GuestViewType::Actions;
+                    _selectedView = GuestViewType::Thoughts;
                 }
                 break;
             }
             case GuestListFilterType::GuestsThinkingAboutRide:
             {
-                auto guestRide = get_ride(index);
+                auto guestRide = get_ride(RideId::FromUnderlying(index));
                 if (guestRide != nullptr)
                 {
                     ft.Add<rct_string_id>(STR_NONE);
@@ -300,8 +301,8 @@ public:
                 }
                 else
                 {
-                    window_text_input_raw_open(
-                        this, WIDX_FILTER_BY_NAME, STR_GUESTS_FILTER_BY_NAME, STR_GUESTS_ENTER_NAME_TO_SEARCH,
+                    WindowTextInputRawOpen(
+                        this, WIDX_FILTER_BY_NAME, STR_GUESTS_FILTER_BY_NAME, STR_GUESTS_ENTER_NAME_TO_SEARCH, {},
                         _filterName.c_str(), 32);
                 }
                 break;
@@ -321,8 +322,13 @@ public:
                 _selectedPage = 0;
                 _numPages = 1;
                 widgets[WIDX_TRACKING].type = WindowWidgetType::Empty;
-                widgets[WIDX_FILTER_BY_NAME].type = WindowWidgetType::Empty;
-                if (_selectedTab == TabId::Individual)
+                if (_selectedTab == TabId::Summarised)
+                {
+                    widgets[WIDX_FILTER_BY_NAME].type = WindowWidgetType::Empty;
+                    SetWidgetPressed(WIDX_FILTER_BY_NAME, false);
+                    _filterName.clear();
+                }
+                else if (_selectedTab == TabId::Individual)
                 {
                     widgets[WIDX_TRACKING].type = WindowWidgetType::FlatBtn;
                     widgets[WIDX_FILTER_BY_NAME].type = WindowWidgetType::FlatBtn;
@@ -346,8 +352,8 @@ public:
 
                 for (size_t i = 0; i < _numPages; i++)
                 {
-                    gDropdownItemsFormat[i] = STR_DROPDOWN_MENU_LABEL;
-                    uint16_t* args = reinterpret_cast<uint16_t*>(&gDropdownItemsArgs[i]);
+                    gDropdownItems[i].Format = STR_DROPDOWN_MENU_LABEL;
+                    uint16_t* args = reinterpret_cast<uint16_t*>(&gDropdownItems[i].Args);
                     args[0] = STR_PAGE_X;
                     args[1] = static_cast<uint16_t>(i + 1);
                 }
@@ -356,10 +362,10 @@ public:
             }
             case WIDX_INFO_TYPE_DROPDOWN_BUTTON:
             {
-                gDropdownItemsFormat[0] = STR_DROPDOWN_MENU_LABEL;
-                gDropdownItemsArgs[0] = GetViewName(GuestViewType::Actions);
-                gDropdownItemsFormat[1] = STR_DROPDOWN_MENU_LABEL;
-                gDropdownItemsArgs[1] = GetViewName(GuestViewType::Thoughts);
+                gDropdownItems[0].Format = STR_DROPDOWN_MENU_LABEL;
+                gDropdownItems[0].Args = GetViewName(GuestViewType::Actions);
+                gDropdownItems[1].Format = STR_DROPDOWN_MENU_LABEL;
+                gDropdownItems[1].Args = GetViewName(GuestViewType::Thoughts);
 
                 auto* widget = &widgets[widgetIndex - 1];
                 WindowDropdownShowTextCustomWidth(
@@ -557,7 +563,7 @@ public:
                         auto guest = GetEntity<Guest>(guestItem.Id);
                         if (guest != nullptr)
                         {
-                            window_guest_open(guest);
+                            WindowGuestOpen(guest);
                         }
                         break;
                     }
@@ -576,6 +582,7 @@ public:
                     _selectedTab = TabId::Individual;
                     widgets[WIDX_TRACKING].type = WindowWidgetType::FlatBtn;
                     Invalidate();
+                    widgets[WIDX_FILTER_BY_NAME].type = WindowWidgetType::FlatBtn;
                     scrolls[0].v_top = 0;
                     RefreshList();
                 }
@@ -610,16 +617,16 @@ public:
         {
             _guestList.clear();
 
-            for (auto peep : EntityList<Guest>(EntityListId::Peep))
+            for (auto peep : EntityList<Guest>())
             {
-                sprite_set_flashing(peep, false);
+                EntitySetFlashing(peep, false);
                 if (peep->OutsideOfPark)
                     continue;
                 if (_selectedFilter)
                 {
                     if (!IsPeepInFilter(*peep))
                         continue;
-                    sprite_set_flashing(peep, true);
+                    EntitySetFlashing(peep, true);
                 }
                 if (!GuestShouldBeVisible(*peep))
                     continue;
@@ -643,12 +650,15 @@ private:
         auto i = (_selectedTab == TabId::Individual ? _tabAnimationIndex & ~3 : 0);
         i += GetPeepAnimation(PeepSpriteType::Normal).base_image + 1;
         i |= 0xA1600000;
-        gfx_draw_sprite(&dpi, i, windowPos + ScreenCoordsXY{ widgets[WIDX_TAB_1].midX(), widgets[WIDX_TAB_1].bottom - 6 }, 0);
+        gfx_draw_sprite(
+            &dpi, ImageId::FromUInt32(i),
+            windowPos + ScreenCoordsXY{ widgets[WIDX_TAB_1].midX(), widgets[WIDX_TAB_1].bottom - 6 });
 
         // Tab 2 image
         i = (_selectedTab == TabId::Summarised ? _tabAnimationIndex / 4 : 0);
         gfx_draw_sprite(
-            &dpi, SPR_TAB_GUESTS_0 + i, windowPos + ScreenCoordsXY{ widgets[WIDX_TAB_2].left, widgets[WIDX_TAB_2].top }, 0);
+            &dpi, ImageId(SPR_TAB_GUESTS_0 + i),
+            windowPos + ScreenCoordsXY{ widgets[WIDX_TAB_2].left, widgets[WIDX_TAB_2].top });
     }
 
     void DrawScrollIndividual(rct_drawpixelinfo& dpi)
@@ -665,7 +675,7 @@ private:
                 rct_string_id format = STR_BLACK_STRING;
                 if (index == _highlightedIndex)
                 {
-                    gfx_filter_rect(&dpi, 0, y, 800, y + SCROLLABLE_ROW_HEIGHT - 1, FilterPaletteID::PaletteDarken1);
+                    gfx_filter_rect(&dpi, { 0, y, 800, y + SCROLLABLE_ROW_HEIGHT - 1 }, FilterPaletteID::PaletteDarken1);
                     format = STR_WINDOW_COLOUR_2_STRINGID;
                 }
 
@@ -683,11 +693,11 @@ private:
                 {
                     case GuestViewType::Actions:
                         // Guest face
-                        gfx_draw_sprite(&dpi, get_peep_face_sprite_small(peep), { 118, y + 1 }, 0);
+                        gfx_draw_sprite(&dpi, ImageId(get_peep_face_sprite_small(peep)), { 118, y + 1 });
 
                         // Tracking icon
                         if (peep->PeepFlags & PEEP_FLAGS_TRACKING)
-                            gfx_draw_sprite(&dpi, STR_ENTER_SELECTION_SIZE, { 112, y + 1 }, 0);
+                            gfx_draw_sprite(&dpi, ImageId(STR_ENTER_SELECTION_SIZE), { 112, y + 1 });
 
                         // Action
                         ft = Formatter();
@@ -707,7 +717,7 @@ private:
 
                             ft = Formatter();
                             peep_thought_set_format_args(&thought, ft);
-                            DrawTextEllipsised(&dpi, { 118, y }, 329, format, ft);
+                            DrawTextEllipsised(&dpi, { 118, y }, 329, format, ft, { FontSpriteBase::SMALL });
                             break;
                         }
                         break;
@@ -735,7 +745,7 @@ private:
                 rct_string_id format = STR_BLACK_STRING;
                 if (index == _highlightedIndex)
                 {
-                    gfx_filter_rect(&dpi, 0, y, 800, y + SUMMARISED_GUEST_ROW_HEIGHT, FilterPaletteID::PaletteDarken1);
+                    gfx_filter_rect(&dpi, { 0, y, 800, y + SUMMARISED_GUEST_ROW_HEIGHT }, FilterPaletteID::PaletteDarken1);
                     format = STR_WINDOW_COLOUR_2_STRINGID;
                 }
 
@@ -743,13 +753,21 @@ private:
                 for (uint32_t j = 0; j < std::size(group.Faces) && j < group.NumGuests; j++)
                 {
                     gfx_draw_sprite(
-                        &dpi, group.Faces[j] + SPR_PEEP_SMALL_FACE_VERY_VERY_UNHAPPY, { static_cast<int32_t>(j) * 8, y + 12 },
-                        0);
+                        &dpi, ImageId(group.Faces[j] + SPR_PEEP_SMALL_FACE_VERY_VERY_UNHAPPY),
+                        { static_cast<int32_t>(j) * 8, y + 12 });
                 }
 
-                // Draw action
+                // Draw action/thoughts
                 Formatter ft(group.Arguments.args);
-                DrawTextEllipsised(&dpi, { 0, y }, 414, format, ft);
+                // Draw small font if displaying guests
+                if (_selectedView == GuestViewType::Thoughts)
+                {
+                    DrawTextEllipsised(&dpi, { 0, y }, 414, format, ft, { FontSpriteBase::SMALL });
+                }
+                else
+                {
+                    DrawTextEllipsised(&dpi, { 0, y }, 414, format, ft);
+                }
 
                 // Draw guest count
                 ft = Formatter();
@@ -762,7 +780,7 @@ private:
         }
     }
 
-    bool GuestShouldBeVisible(const Peep& peep)
+    bool GuestShouldBeVisible(const Guest& peep)
     {
         if (_trackingOnly && !(peep.PeepFlags & PEEP_FLAGS_TRACKING))
             return false;
@@ -783,7 +801,7 @@ private:
         return true;
     }
 
-    bool IsPeepInFilter(const Peep& peep)
+    bool IsPeepInFilter(const Guest& peep)
     {
         auto guestViewType = _selectedFilter == GuestFilterType::Guests ? GuestViewType::Actions : GuestViewType::Thoughts;
         auto peepArgs = GetArgumentsFromPeep(peep, guestViewType);
@@ -796,7 +814,7 @@ private:
 
     bool IsRefreshOfGroupsRequired()
     {
-        uint32_t tick256 = floor2(gScenarioTicks, 256);
+        uint32_t tick256 = floor2(gCurrentTicks, 256);
         if (_selectedView == _lastFindGroupsSelectedView)
         {
             if (_lastFindGroupsWait != 0 || _lastFindGroupsTick == tick256)
@@ -823,12 +841,12 @@ private:
 
     void RefreshGroups()
     {
-        _lastFindGroupsTick = floor2(gScenarioTicks, 256);
+        _lastFindGroupsTick = floor2(gCurrentTicks, 256);
         _lastFindGroupsSelectedView = _selectedView;
         _lastFindGroupsWait = 320;
         _groups.clear();
 
-        for (auto peep : EntityList<Guest>(EntityListId::Peep))
+        for (auto peep : EntityList<Guest>())
         {
             if (peep->OutsideOfPark)
                 continue;
@@ -864,7 +882,7 @@ private:
     /**
      * Calculates a hash value (arguments) for comparing peep actions/thoughts
      */
-    static FilterArguments GetArgumentsFromPeep(const Peep& peep, GuestViewType type)
+    static FilterArguments GetArgumentsFromPeep(const Guest& peep, GuestViewType type)
     {
         FilterArguments result;
         Formatter ft(result.args);
@@ -919,9 +937,9 @@ private:
         if (peepA != nullptr && peepB != nullptr)
         {
             // Compare types
-            if (peepA->AssignedPeepType != peepB->AssignedPeepType)
+            if (peepA->Type != peepB->Type)
             {
-                return static_cast<int32_t>(peepA->AssignedPeepType) < static_cast<int32_t>(peepB->AssignedPeepType);
+                return static_cast<int32_t>(peepA->Type) < static_cast<int32_t>(peepB->Type);
             }
 
             // Compare name
@@ -943,7 +961,7 @@ private:
     }
 };
 
-rct_window* window_guest_list_open()
+rct_window* WindowGuestListOpen()
 {
     auto* window = window_bring_to_front_by_class(WC_GUEST_LIST);
     if (window == nullptr)
@@ -956,9 +974,9 @@ rct_window* window_guest_list_open()
 /**
  * @param index The number of the ride or index of the thought
  */
-rct_window* window_guest_list_open_with_filter(GuestListFilterType type, int32_t index)
+rct_window* WindowGuestListOpenWithFilter(GuestListFilterType type, int32_t index)
 {
-    auto* w = static_cast<GuestListWindow*>(window_guest_list_open());
+    auto* w = static_cast<GuestListWindow*>(WindowGuestListOpen());
     if (w != nullptr)
     {
         w->SetFilter(type, index);
@@ -966,7 +984,7 @@ rct_window* window_guest_list_open_with_filter(GuestListFilterType type, int32_t
     return w;
 }
 
-void window_guest_list_refresh_list()
+void WindowGuestListRefreshList()
 {
     auto* w = window_find_by_class(WC_GUEST_LIST);
     if (w != nullptr)

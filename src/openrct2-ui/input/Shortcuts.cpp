@@ -29,7 +29,7 @@
 #include <openrct2/interface/Screenshot.h>
 #include <openrct2/localisation/Localisation.h>
 #include <openrct2/network/network.h>
-#include <openrct2/platform/platform.h>
+#include <openrct2/platform/Platform.h>
 #include <openrct2/ride/Track.h>
 #include <openrct2/ride/TrackPaint.h>
 #include <openrct2/scenario/Scenario.h>
@@ -189,7 +189,7 @@ static void ShortcutAdjustLand()
     if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
         return;
 
-    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gS6Info.editor_step == EditorStep::LandscapeEditor)
+    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gEditorStep == EditorStep::LandscapeEditor)
     {
         if (!(gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER)))
         {
@@ -208,7 +208,7 @@ static void ShortcutAdjustWater()
     if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
         return;
 
-    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gS6Info.editor_step == EditorStep::LandscapeEditor)
+    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gEditorStep == EditorStep::LandscapeEditor)
     {
         if (!(gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER)))
         {
@@ -227,7 +227,7 @@ static void ShortcutBuildScenery()
     if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
         return;
 
-    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gS6Info.editor_step == EditorStep::LandscapeEditor)
+    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gEditorStep == EditorStep::LandscapeEditor)
     {
         if (!(gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER)))
         {
@@ -246,7 +246,7 @@ static void ShortcutBuildPaths()
     if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
         return;
 
-    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gS6Info.editor_step == EditorStep::LandscapeEditor)
+    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gEditorStep == EditorStep::LandscapeEditor)
     {
         if (!(gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER)))
         {
@@ -353,7 +353,7 @@ static void ShortcutShowMap()
     if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
         return;
 
-    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gS6Info.editor_step == EditorStep::LandscapeEditor)
+    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gEditorStep == EditorStep::LandscapeEditor)
         if (!(gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER)))
             context_open_window(WC_MAP);
 }
@@ -391,12 +391,20 @@ static void ShortcutOpenCheatWindow()
     context_open_window(WC_CHEATS);
 }
 
+static void ShortcutOpenTransparencyWindow()
+{
+    if (gScreenFlags != SCREEN_FLAGS_PLAYING)
+        return;
+
+    context_open_window(WC_TRANSPARENCY);
+}
+
 static void ShortcutClearScenery()
 {
     if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
         return;
 
-    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gS6Info.editor_step == EditorStep::LandscapeEditor)
+    if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gEditorStep == EditorStep::LandscapeEditor)
     {
         if (!(gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER)))
         {
@@ -422,7 +430,7 @@ static void ShortcutQuickSaveGame()
     {
         auto intent = Intent(WC_LOADSAVE);
         intent.putExtra(INTENT_EXTRA_LOADSAVE_TYPE, LOADSAVETYPE_SAVE | LOADSAVETYPE_LANDSCAPE);
-        intent.putExtra(INTENT_EXTRA_PATH, std::string{ gS6Info.name });
+        intent.putExtra(INTENT_EXTRA_PATH, gScenarioName);
         context_open_intent(&intent);
     }
 }
@@ -439,7 +447,7 @@ static void ShortcutLoadGame()
 static void ShortcutOpenSceneryPicker()
 {
     if ((gScreenFlags & (SCREEN_FLAGS_TITLE_DEMO | SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER))
-        || (gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR && gS6Info.editor_step != EditorStep::LandscapeEditor))
+        || (gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR && gEditorStep != EditorStep::LandscapeEditor))
         return;
 
     rct_window* window_scenery = window_find_by_class(WC_SCENERY);
@@ -501,6 +509,25 @@ static void TileInspectorMouseDown(rct_widgetindex widgetIndex)
     }
 }
 
+static void ShortcutToggleVisibility()
+{
+    // TODO: Once the tile inspector window has its own class, move this to its own function
+    if (windowTileInspectorSelectedIndex < 0)
+        return;
+
+    rct_window* w = window_find_by_class(WC_TILE_INSPECTOR);
+    if (w == nullptr)
+        return;
+
+    extern TileCoordsXY windowTileInspectorTile;
+    TileElement* tileElement = map_get_nth_element_at(windowTileInspectorTile.ToCoordsXY(), windowTileInspectorSelectedIndex);
+    if (tileElement != nullptr)
+    {
+        tileElement->SetInvisible(!tileElement->IsInvisible());
+        w->Invalidate();
+    }
+}
+
 static void ShortcutIncreaseElementHeight()
 {
     rct_window* w = window_find_by_class(WC_TILE_INSPECTOR);
@@ -532,9 +559,6 @@ static void ShortcutIncreaseElementHeight()
                 break;
             case WC_TILE_INSPECTOR__TILE_INSPECTOR_PAGE_BANNER:
                 action = WC_TILE_INSPECTOR__WIDX_BANNER_SPINNER_HEIGHT_INCREASE;
-                break;
-            case WC_TILE_INSPECTOR__TILE_INSPECTOR_PAGE_CORRUPT:
-                action = WC_TILE_INSPECTOR__WIDX_CORRUPT_SPINNER_HEIGHT_INCREASE;
                 break;
             case TileInspectorPage::Default:
                 break;
@@ -576,9 +600,6 @@ static void ShortcutDecreaseElementHeight()
                 break;
             case WC_TILE_INSPECTOR__TILE_INSPECTOR_PAGE_BANNER:
                 action = WC_TILE_INSPECTOR__WIDX_BANNER_SPINNER_HEIGHT_DECREASE;
-                break;
-            case WC_TILE_INSPECTOR__TILE_INSPECTOR_PAGE_CORRUPT:
-                action = WC_TILE_INSPECTOR__WIDX_CORRUPT_SPINNER_HEIGHT_DECREASE;
                 break;
             case TileInspectorPage::Default:
                 break;
@@ -704,6 +725,16 @@ static void ShortcutConstructionDemolishCurrent()
     }
 }
 
+static void ShortcutToggleTransparentWater()
+{
+    if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
+        return;
+
+    gConfigGeneral.transparent_water ^= 1;
+    config_save_default();
+    gfx_invalidate_screen();
+}
+
 #pragma endregion
 
 using namespace OpenRCT2::Ui;
@@ -719,7 +750,7 @@ void ShortcutManager::RegisterDefaultShortcuts()
         {
             window_close_all();
         }
-        else if (gS6Info.editor_step == EditorStep::LandscapeEditor)
+        else if (gEditorStep == EditorStep::LandscapeEditor)
         {
             window_close_top();
         }
@@ -751,7 +782,7 @@ void ShortcutManager::RegisterDefaultShortcuts()
         }
     });
 
-    RegisterShortcut(ShortcutId::ScaleToggleWindowMode, STR_SHORTCUT_WINDOWED_MODE_TOGGLE, "ALT+RETURN", []() { platform_toggle_windowed_mode(); });
+    RegisterShortcut(ShortcutId::ScaleToggleWindowMode, STR_SHORTCUT_WINDOWED_MODE_TOGGLE, "ALT+RETURN", []() { ToggleWindowedMode(); });
     RegisterShortcut(ShortcutId::InterfaceScaleIncrease, STR_SHORTCUT_SCALE_UP, []() { ShortcutScaleUp(); });
     RegisterShortcut(ShortcutId::InterfaceScaleDecrease, STR_SHORTCUT_SCALE_DOWN, []() { ShortcutScaleDown(); });
 
@@ -763,6 +794,7 @@ void ShortcutManager::RegisterDefaultShortcuts()
     RegisterShortcut(ShortcutId::InterfaceLoadGame, STR_LOAD_GAME, "CTRL+L", []() { ShortcutLoadGame(); });
     RegisterShortcut(ShortcutId::InterfaceSaveGame, STR_SAVE_GAME, "CTRL+F10", []() { ShortcutQuickSaveGame(); });
     RegisterShortcut(ShortcutId::InterfaceScreenshot, STR_SHORTCUT_SCREENSHOT, "CTRL+S", []() { gScreenshotCountdown = 2; });
+    RegisterShortcut(ShortcutId::InterfaceGiantScreenshot, STR_SHORTCUT_GIANT_SCREENSHOT, "CTRL+SHIFT+S", []() { screenshot_giant(); });
     RegisterShortcut(ShortcutId::InterfaceMute, STR_SHORTCUT_MUTE_SOUND, []() { OpenRCT2::Audio::ToggleAllSounds(); });
     RegisterShortcut(ShortcutId::InterfaceDisableClearance, STR_SHORTCUT_TOGGLE_CLEARANCE_CHECKS, []() { ShortcutToggleClearanceChecks(); });
     RegisterShortcut(ShortcutId::MultiplayerChat, STR_SEND_MESSAGE, "C", []() {
@@ -777,6 +809,7 @@ void ShortcutManager::RegisterDefaultShortcuts()
     RegisterShortcut(ShortcutId::InterfaceSceneryPicker, STR_SHORTCUT_OPEN_SCENERY_PICKER, []() { ShortcutOpenSceneryPicker(); });
 
     RegisterShortcut(ShortcutId::InterfaceShowOptions, STR_SHORTCUT_SHOW_OPTIONS, []() { context_open_window(WC_OPTIONS); });
+    RegisterShortcut(ShortcutId::InterfaceOpenTransparencyOptions, STR_SHORTCUT_OPEN_TRANSPARENCY_OPTIONS, "CTRL+T", []() { ShortcutOpenTransparencyWindow(); });
     RegisterShortcut(ShortcutId::InterfaceOpenCheats, STR_SHORTCUT_OPEN_CHEATS_WINDOW, "CTRL+ALT+C", []() { ShortcutOpenCheatWindow(); });
     RegisterShortcut(ShortcutId::InterfaceOpenMap, STR_SHORTCUT_SHOW_MAP, "TAB", []() { ShortcutShowMap(); });
     RegisterShortcut(ShortcutId::InterfaceClearScenery, STR_SHORTCUT_CLEAR_SCENERY, "B", []() { ShortcutClearScenery(); });
@@ -817,13 +850,17 @@ void ShortcutManager::RegisterDefaultShortcuts()
     RegisterShortcut(ShortcutId::ViewScrollDown, STR_SHORTCUT_SCROLL_MAP_DOWN, "DOWN", []() { });
 
     RegisterShortcut(ShortcutId::ViewToggleUnderground, STR_SHORTCUT_UNDERGROUND_VIEW_TOGGLE, "1", []() { ToggleViewFlag(VIEWPORT_FLAG_UNDERGROUND_INSIDE); });
+    RegisterShortcut(ShortcutId::ViewToggleTransparentWater, STR_VIEWPORT_TRANSPARENT_WATER, "2", []() { ShortcutToggleTransparentWater(); });
     RegisterShortcut(ShortcutId::ViewToggleBaseLand, STR_SHORTCUT_REMOVE_BASE_LAND_TOGGLE, "H", []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_BASE); });
     RegisterShortcut(ShortcutId::ViewToggleVerticalLand, STR_SHORTCUT_REMOVE_VERTICAL_LAND_TOGGLE, "V", []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_VERTICAL); });
-    RegisterShortcut(ShortcutId::ViewToggleRides, STR_SHORTCUT_SEE_THROUGH_RIDES_TOGGLE, "3", []() { ToggleViewFlag(VIEWPORT_FLAG_SEETHROUGH_RIDES); });
-    RegisterShortcut(ShortcutId::ViewToggleScenery, STR_SHORTCUT_SEE_THROUGH_SCENERY_TOGGLE, "4", []() { ToggleViewFlag(VIEWPORT_FLAG_SEETHROUGH_SCENERY); });
-    RegisterShortcut(ShortcutId::ViewToggleFootpaths, STR_SHORTCUT_SEE_THROUGH_PATHS_TOGGLE, []() { ToggleViewFlag(VIEWPORT_FLAG_SEETHROUGH_PATHS); });
-    RegisterShortcut(ShortcutId::ViewToggleSupports, STR_SHORTCUT_INVISIBLE_SUPPORTS_TOGGLE, "5", []() { ToggleViewFlag(VIEWPORT_FLAG_INVISIBLE_SUPPORTS); });
-    RegisterShortcut(ShortcutId::ViewTogglePeeps, STR_SHORTCUT_INVISIBLE_PEOPLE_TOGGLE, "6", []() { ToggleViewFlag(VIEWPORT_FLAG_INVISIBLE_PEEPS); });
+    RegisterShortcut(ShortcutId::ViewToggleRides, STR_SHORTCUT_SEE_THROUGH_RIDES_TOGGLE, "3", []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_RIDES); });
+    RegisterShortcut(ShortcutId::ViewToggleVehicles, STR_SHORTCUT_SEE_THROUGH_VEHICLES_TOGGLE, []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_VEHICLES); });
+    RegisterShortcut(ShortcutId::ViewToggleVegetation, STR_SHORTCUT_SEE_THROUGH_VEGETATION_TOGGLE, []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_VEGETATION); });
+    RegisterShortcut(ShortcutId::ViewToggleScenery, STR_SHORTCUT_SEE_THROUGH_SCENERY_TOGGLE, "4", []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_SCENERY); });
+    RegisterShortcut(ShortcutId::ViewToggleFootpaths, STR_SHORTCUT_SEE_THROUGH_PATHS_TOGGLE, []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_PATHS); });
+    RegisterShortcut(ShortcutId::ViewToggleSupports, STR_SHORTCUT_INVISIBLE_SUPPORTS_TOGGLE, "5", []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_SUPPORTS); });
+    RegisterShortcut(ShortcutId::ViewToggleGuests, STR_SHORTCUT_SEE_THROUGH_GUESTS_TOGGLE, "6", []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_GUESTS); });
+    RegisterShortcut(ShortcutId::ViewToggleStaff, STR_SHORTCUT_SEE_THROUGH_STAFF_TOGGLE, []() { ToggleViewFlag(VIEWPORT_FLAG_HIDE_STAFF); });
     RegisterShortcut(ShortcutId::ViewToggleLandHeightMarkers, STR_SHORTCUT_HEIGHT_MARKS_ON_LAND_TOGGLE, "8", []() { ToggleViewFlag(VIEWPORT_FLAG_LAND_HEIGHTS); });
     RegisterShortcut(ShortcutId::ViewToggleTrackHeightMarkers, STR_SHORTCUT_HEIGHT_MARKS_ON_RIDE_TRACKS_TOGGLE, "9", []() { ToggleViewFlag(VIEWPORT_FLAG_TRACK_HEIGHTS); });
     RegisterShortcut(ShortcutId::ViewToggleFootpathHeightMarkers, STR_SHORTCUT_HEIGHT_MARKS_ON_PATHS_TOGGLE, "0", []() { ToggleViewFlag(VIEWPORT_FLAG_PATH_HEIGHTS); });
@@ -845,7 +882,7 @@ void ShortcutManager::RegisterDefaultShortcuts()
     RegisterShortcut(ShortcutId::WindowRideConstructionBuild, STR_SHORTCUT_CONSTRUCTION_BUILD_CURRENT, "NUMPAD 0", []() { ShortcutConstructionBuildCurrent(); });
     RegisterShortcut(ShortcutId::WindowRideConstructionDemolish, STR_SHORTCUT_CONSTRUCTION_DEMOLISH_CURRENT, "NUMPAD -", []() { ShortcutConstructionDemolishCurrent(); });
 
-    RegisterShortcut(ShortcutId::WindowTileInspectorInsertCorrupt, STR_SHORTCUT_INSERT_CORRPUT_ELEMENT, []() { TileInspectorMouseUp(WC_TILE_INSPECTOR__WIDX_BUTTON_CORRUPT); });
+    RegisterShortcut(ShortcutId::WindowTileInspectorToggleInvisibility, STR_SHORTCUT_TOGGLE_INVISIBILITY, []() { ShortcutToggleVisibility(); });
     RegisterShortcut(ShortcutId::WindowTileInspectorCopy, STR_SHORTCUT_COPY_ELEMENT, []() { TileInspectorMouseUp(WC_TILE_INSPECTOR__WIDX_BUTTON_COPY); });
     RegisterShortcut(ShortcutId::WindowTileInspectorPaste, STR_SHORTCUT_PASTE_ELEMENT, []() { TileInspectorMouseUp(WC_TILE_INSPECTOR__WIDX_BUTTON_PASTE); });
     RegisterShortcut(ShortcutId::WindowTileInspectorRemove, STR_SHORTCUT_REMOVE_ELEMENT, []() { TileInspectorMouseUp(WC_TILE_INSPECTOR__WIDX_BUTTON_REMOVE); });

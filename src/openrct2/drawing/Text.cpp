@@ -9,6 +9,7 @@
 
 #include "Text.h"
 
+#include "../localisation/Formatter.h"
 #include "../localisation/Localisation.h"
 #include "Drawing.h"
 
@@ -18,56 +19,67 @@ static void DrawText(
 static void DrawText(
     rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, const TextPaint& paint, rct_string_id format, const void* args);
 
-StaticLayout::StaticLayout(utf8string source, const TextPaint& paint, int32_t width)
+class StaticLayout
 {
-    Buffer = source;
-    Paint = paint;
+private:
+    utf8string Buffer;
+    TextPaint Paint;
+    int32_t LineCount = 0;
+    int32_t LineHeight;
+    int32_t MaxWidth;
 
-    MaxWidth = gfx_wrap_string(Buffer, width, paint.SpriteBase, &LineCount);
-    LineCount += 1;
-    LineHeight = font_get_line_height(paint.SpriteBase);
-}
-
-void StaticLayout::Draw(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords)
-{
-    TextPaint tempPaint = Paint;
-
-    auto lineCoords = coords;
-    switch (Paint.Alignment)
+public:
+    StaticLayout(utf8string source, const TextPaint& paint, int32_t width)
     {
-        case TextAlignment::LEFT:
-            break;
-        case TextAlignment::CENTRE:
-            lineCoords.x += MaxWidth / 2;
-            break;
-        case TextAlignment::RIGHT:
-            lineCoords.x += MaxWidth;
-            break;
+        Buffer = source;
+        Paint = paint;
+
+        MaxWidth = gfx_wrap_string(Buffer, width, paint.SpriteBase, &LineCount);
+        LineCount += 1;
+        LineHeight = font_get_line_height(paint.SpriteBase);
     }
-    utf8* buffer = Buffer;
-    for (int32_t line = 0; line < LineCount; ++line)
+
+    void Draw(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords)
     {
-        DrawText(dpi, lineCoords, tempPaint, buffer);
-        tempPaint.Colour = TEXT_COLOUR_254;
-        buffer = get_string_end(buffer) + 1;
-        lineCoords.y += LineHeight;
+        TextPaint tempPaint = Paint;
+
+        auto lineCoords = coords;
+        switch (Paint.Alignment)
+        {
+            case TextAlignment::LEFT:
+                break;
+            case TextAlignment::CENTRE:
+                lineCoords.x += MaxWidth / 2;
+                break;
+            case TextAlignment::RIGHT:
+                lineCoords.x += MaxWidth;
+                break;
+        }
+        utf8* buffer = Buffer;
+        for (int32_t line = 0; line < LineCount; ++line)
+        {
+            DrawText(dpi, lineCoords, tempPaint, buffer);
+            tempPaint.Colour = TEXT_COLOUR_254;
+            buffer = get_string_end(buffer) + 1;
+            lineCoords.y += LineHeight;
+        }
     }
-}
 
-int32_t StaticLayout::GetHeight()
-{
-    return LineHeight * LineCount;
-}
+    int32_t GetHeight() const
+    {
+        return LineHeight * LineCount;
+    }
 
-int32_t StaticLayout::GetWidth()
-{
-    return MaxWidth;
-}
+    int32_t GetWidth() const
+    {
+        return MaxWidth;
+    }
 
-int32_t StaticLayout::GetLineCount()
-{
-    return LineCount;
-}
+    int32_t GetLineCount() const
+    {
+        return LineCount;
+    }
+};
 
 static void DrawText(
     rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, const TextPaint& paint, const_utf8string text, bool noFormatting)
@@ -112,16 +124,24 @@ static void DrawText(
     DrawText(dpi, coords, paint, buffer);
 }
 
-void DrawTextBasic(
-    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, rct_string_id format, const void* args, TextPaint textPaint)
+void DrawTextBasic(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, rct_string_id format)
 {
-    DrawText(dpi, coords, textPaint, format, args);
+    Formatter ft{};
+    TextPaint textPaint{};
+    DrawTextBasic(dpi, coords, format, ft, textPaint);
 }
 
 void DrawTextBasic(
     rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, rct_string_id format, const Formatter& ft, TextPaint textPaint)
 {
-    DrawTextBasic(dpi, coords, format, ft.Data(), textPaint);
+    DrawText(dpi, coords, textPaint, format, ft.Data());
+}
+
+void DrawTextEllipsised(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format)
+{
+    Formatter ft{};
+    TextPaint textPaint{};
+    DrawTextEllipsised(dpi, coords, width, format, ft, textPaint);
 }
 
 void DrawTextEllipsised(
@@ -146,14 +166,22 @@ void gfx_draw_string_no_formatting(
     DrawText(dpi, coords, textPaint, buffer, true);
 }
 
+int32_t DrawTextWrapped(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format)
+{
+    Formatter ft{};
+    TextPaint textPaint{};
+    return DrawTextWrapped(dpi, coords, width, format, ft, textPaint);
+}
+
 int32_t DrawTextWrapped(
-    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format, const void* args,
+    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format, const Formatter& ft,
     TextPaint textPaint)
 {
-    utf8 buffer[512];
-    format_string(buffer, sizeof(buffer), format, args);
+    const void* args = ft.Data();
 
-    StaticLayout layout(buffer, textPaint, width);
+    // TODO: Refactor StaticLayout to take a std::string_view instead. It shouldn't have to write to the buffer.
+    const std::string buffer = format_string(format, args);
+    StaticLayout layout(const_cast<char*>(buffer.c_str()), textPaint, width);
 
     if (textPaint.Alignment == TextAlignment::CENTRE)
     {
@@ -170,11 +198,4 @@ int32_t DrawTextWrapped(
     }
 
     return layout.GetHeight();
-}
-
-int32_t DrawTextWrapped(
-    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format, const Formatter& ft,
-    TextPaint textPaint)
-{
-    return DrawTextWrapped(dpi, coords, width, format, ft.Data(), textPaint);
 }

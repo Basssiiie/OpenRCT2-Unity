@@ -9,15 +9,24 @@
 
 #include "StaffSetPatrolAreaAction.h"
 
+#include "../entity/EntityRegistry.h"
+#include "../entity/PatrolArea.h"
+#include "../entity/Peep.h"
+#include "../entity/Staff.h"
 #include "../interface/Window.h"
-#include "../peep/Peep.h"
-#include "../peep/Staff.h"
-#include "../world/Entity.h"
 
-StaffSetPatrolAreaAction::StaffSetPatrolAreaAction(uint16_t spriteId, const CoordsXY& loc)
+StaffSetPatrolAreaAction::StaffSetPatrolAreaAction(EntityId spriteId, const MapRange& range, const StaffSetPatrolAreaMode mode)
     : _spriteId(spriteId)
-    , _loc(loc)
+    , _range(range)
+    , _mode(mode)
 {
+}
+
+void StaffSetPatrolAreaAction::AcceptParameters(GameActionParameterVisitor& visitor)
+{
+    visitor.Visit("id", _spriteId);
+    visitor.Visit(_range);
+    visitor.Visit("mode", _mode);
 }
 
 uint16_t StaffSetPatrolAreaAction::GetActionFlags() const
@@ -28,72 +37,67 @@ uint16_t StaffSetPatrolAreaAction::GetActionFlags() const
 void StaffSetPatrolAreaAction::Serialise(DataSerialiser& stream)
 {
     GameAction::Serialise(stream);
-    stream << DS_TAG(_spriteId) << DS_TAG(_loc);
+    stream << DS_TAG(_spriteId) << DS_TAG(_range) << DS_TAG(_mode);
 }
 
-GameActions::Result::Ptr StaffSetPatrolAreaAction::Query() const
+GameActions::Result StaffSetPatrolAreaAction::Query() const
 {
-    if (_spriteId >= MAX_ENTITIES)
-    {
-        log_error("Invalid spriteId. spriteId = %u", _spriteId);
-        return MakeResult(GameActions::Status::InvalidParameters, STR_NONE);
-    }
-
-    if (!LocationValid(_loc))
-    {
-        return MakeResult(GameActions::Status::InvalidParameters, STR_NONE);
-    }
-
-    auto staff = TryGetEntity<Staff>(_spriteId);
-    if (staff == nullptr)
-    {
-        log_error("Invalid spriteId. spriteId = %u", _spriteId);
-        return MakeResult(GameActions::Status::InvalidParameters, STR_NONE);
-    }
-
-    return MakeResult();
+    return QueryExecute(false);
 }
 
-GameActions::Result::Ptr StaffSetPatrolAreaAction::Execute() const
+GameActions::Result StaffSetPatrolAreaAction::Execute() const
+{
+    return QueryExecute(true);
+}
+
+static void InvalidatePatrolTiles(const MapRange& range)
+{
+    map_invalidate_region(range.Point1, range.Point2);
+}
+
+GameActions::Result StaffSetPatrolAreaAction::QueryExecute(bool executing) const
 {
     auto staff = TryGetEntity<Staff>(_spriteId);
     if (staff == nullptr)
     {
-        log_error("Invalid spriteId. spriteId = %u", _spriteId);
-        return MakeResult(GameActions::Status::InvalidParameters, STR_NONE);
+        log_error("Invalid entity ID: %u", _spriteId.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
     }
 
-    int32_t patrolOffset = staff->StaffId * STAFF_PATROL_AREA_SIZE;
-
-    staff_toggle_patrol_area(staff->StaffId, _loc);
-
-    bool isPatrolling = false;
-    for (int32_t i = 0; i < 128; i++)
+    auto validRange = ClampRangeWithinMap(_range);
+    for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += COORDS_XY_STEP)
     {
-        if (gStaffPatrolAreas[patrolOffset + i])
+        for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += COORDS_XY_STEP)
         {
-            isPatrolling = true;
-            break;
+            if (!LocationValid({ x, y }))
+            {
+                return GameActions::Result(GameActions::Status::NotOwned, STR_SET_PATROL_AREA, STR_LAND_NOT_OWNED_BY_PARK);
+            }
         }
     }
 
-    if (isPatrolling)
+    if (executing)
     {
-        gStaffModes[staff->StaffId] = StaffMode::Patrol;
-    }
-    else if (gStaffModes[staff->StaffId] == StaffMode::Patrol)
-    {
-        gStaffModes[staff->StaffId] = StaffMode::Walk;
-    }
-
-    for (int32_t y = 0; y < 4 * COORDS_XY_STEP; y += COORDS_XY_STEP)
-    {
-        for (int32_t x = 0; x < 4 * COORDS_XY_STEP; x += COORDS_XY_STEP)
+        switch (_mode)
         {
-            map_invalidate_tile_full({ (_loc.x & 0x1F80) + x, (_loc.y & 0x1F80) + y });
+            case StaffSetPatrolAreaMode::Set:
+                staff->SetPatrolArea(_range, true);
+                InvalidatePatrolTiles(_range);
+                break;
+            case StaffSetPatrolAreaMode::Unset:
+                staff->SetPatrolArea(_range, false);
+                if (!staff->HasPatrolArea())
+                {
+                    staff->ClearPatrolArea();
+                }
+                InvalidatePatrolTiles(_range);
+                break;
+            case StaffSetPatrolAreaMode::ClearAll:
+                staff->ClearPatrolArea();
+                gfx_invalidate_screen();
+                break;
         }
+        UpdateConsolidatedPatrolAreas();
     }
-    staff_update_greyed_patrol_areas();
-
-    return MakeResult();
+    return GameActions::Result();
 }

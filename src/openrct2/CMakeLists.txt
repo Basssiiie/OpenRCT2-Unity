@@ -18,7 +18,19 @@ if (APPLE)
     set_source_files_properties(${OPENRCT2_CORE_MM_SOURCES} PROPERTIES COMPILE_FLAGS "-x objective-c++ -fmodules")
 endif ()
 
-add_library(${PROJECT_NAME} ${OPENRCT2_CORE_SOURCES} ${OPENRCT2_CORE_MM_SOURCES})
+if (ENABLE_SCRIPTING)
+    include_directories("${CMAKE_CURRENT_LIST_DIR}/../thirdparty/duktape")
+
+    # duktape is third party, ignore all warnings
+    set(OPENRCT2_DUKTAPE_SOURCES "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/duktape/duktape.cpp")
+    if (MSVC)
+        set_source_files_properties(${OPENRCT2_DUKTAPE_SOURCES} PROPERTIES COMPILE_FLAGS "/w")
+    else ()
+        set_source_files_properties(${OPENRCT2_DUKTAPE_SOURCES} PROPERTIES COMPILE_FLAGS "-w")
+    endif ()
+endif ()
+
+add_library(${PROJECT_NAME} ${OPENRCT2_CORE_SOURCES} ${OPENRCT2_CORE_MM_SOURCES} ${OPENRCT2_DUKTAPE_SOURCES})
 if (APPLE)
     target_link_platform_libraries(${PROJECT_NAME})
 endif ()
@@ -36,11 +48,11 @@ if (NOT DISABLE_NETWORK OR NOT DISABLE_HTTP)
     if (WIN32 AND NOT MINGW_TARGET_NT5_1)
         target_link_libraries(${PROJECT_NAME} bcrypt)
     else ()
-        if (APPLE)
-            if (NOT MACOS_USE_DEPENDENCIES)
-                # Needed for linking with non-broken OpenSSL on Apple platforms
-                set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/opt/openssl/lib/pkgconfig")
-            endif ()
+        if (APPLE AND NOT MACOS_USE_DEPENDENCIES)
+            # note - we are not yet compatible with openssl3, which is now default brew version
+            execute_process(COMMAND brew --prefix openssl@1.1 OUTPUT_VARIABLE HOMEBREW_PREFIX_OPENSSL OUTPUT_STRIP_TRAILING_WHITESPACE)
+            # Needed for linking with non-broken OpenSSL on Apple platforms
+            list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_PREFIX_OPENSSL}")
         endif ()
         find_package(OpenSSL 1.0.0 REQUIRED)
 
@@ -104,16 +116,6 @@ if (NOT DISABLE_GOOGLE_BENCHMARK)
     endif ()
 endif ()
 
-if (ENABLE_SCRIPTING)
-    find_package(duktape CONFIG REQUIRED)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${DUKTAPE_INCLUDE_DIRS})
-    if (STATIC)
-        target_link_libraries(${PROJECT_NAME} ${DUKTAPE_LIBRARY} ${DUKTAPE_STATIC_LIBRARY})
-    else ()
-        target_link_libraries(${PROJECT_NAME} ${DUKTAPE_LIBRARY})
-    endif ()
-endif ()
-
 # Third party libraries
 if (MSVC)
     find_package(png 1.6 REQUIRED)
@@ -173,6 +175,11 @@ find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} Threads::Threads)
 
 if (NOT MINGW AND NOT MSVC)
+    if (APPLE AND NOT MACOS_USE_DEPENDENCIES)
+        execute_process(COMMAND brew --prefix icu4c OUTPUT_VARIABLE HOMEBREW_PREFIX_ICU OUTPUT_STRIP_TRAILING_WHITESPACE)
+        # Needed for linking with non-broken icu on Apple platforms
+        list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_PREFIX_ICU}")
+    endif ()
     # For unicode code page conversion.
     find_package(ICU 59.0 REQUIRED COMPONENTS uc)
         

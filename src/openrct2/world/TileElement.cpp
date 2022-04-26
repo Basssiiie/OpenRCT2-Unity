@@ -25,32 +25,34 @@ bool tile_element_is_underground(TileElement* tileElement)
         tileElement++;
         if ((tileElement - 1)->IsLastForTile())
             return false;
-    } while (tileElement->GetType() != TILE_ELEMENT_TYPE_SURFACE);
+    } while (tileElement->GetType() != TileElementType::Surface);
     return true;
 }
 
 BannerIndex TileElement::GetBannerIndex() const
 {
-    rct_scenery_entry* sceneryEntry;
-
     switch (GetType())
     {
-        case TILE_ELEMENT_TYPE_LARGE_SCENERY:
-            sceneryEntry = AsLargeScenery()->GetEntry();
-            if (sceneryEntry == nullptr || sceneryEntry->large_scenery.scrolling_mode == SCROLLING_MODE_NONE)
-                return BANNER_INDEX_NULL;
+        case TileElementType::LargeScenery:
+        {
+            auto* sceneryEntry = AsLargeScenery()->GetEntry();
+            if (sceneryEntry == nullptr || sceneryEntry->scrolling_mode == SCROLLING_MODE_NONE)
+                return BannerIndex::GetNull();
 
             return AsLargeScenery()->GetBannerIndex();
-        case TILE_ELEMENT_TYPE_WALL:
-            sceneryEntry = AsWall()->GetEntry();
-            if (sceneryEntry == nullptr || sceneryEntry->wall.scrolling_mode == SCROLLING_MODE_NONE)
-                return BANNER_INDEX_NULL;
+        }
+        case TileElementType::Wall:
+        {
+            auto* wallEntry = AsWall()->GetEntry();
+            if (wallEntry == nullptr || wallEntry->scrolling_mode == SCROLLING_MODE_NONE)
+                return BannerIndex::GetNull();
 
             return AsWall()->GetBannerIndex();
-        case TILE_ELEMENT_TYPE_BANNER:
+        }
+        case TileElementType::Banner:
             return AsBanner()->GetIndex();
         default:
-            return BANNER_INDEX_NULL;
+            return BannerIndex::GetNull();
     }
 }
 
@@ -58,13 +60,13 @@ void TileElement::SetBannerIndex(BannerIndex bannerIndex)
 {
     switch (GetType())
     {
-        case TILE_ELEMENT_TYPE_WALL:
+        case TileElementType::Wall:
             AsWall()->SetBannerIndex(bannerIndex);
             break;
-        case TILE_ELEMENT_TYPE_LARGE_SCENERY:
+        case TileElementType::LargeScenery:
             AsLargeScenery()->SetBannerIndex(bannerIndex);
             break;
-        case TILE_ELEMENT_TYPE_BANNER:
+        case TileElementType::Banner:
             AsBanner()->SetIndex(bannerIndex);
             break;
         default:
@@ -79,29 +81,30 @@ void TileElement::RemoveBannerEntry()
     auto banner = GetBanner(bannerIndex);
     if (banner != nullptr)
     {
-        window_close_by_number(WC_BANNER, bannerIndex);
-        *banner = {};
+        window_close_by_number(WC_BANNER, bannerIndex.ToUnderlying());
+        DeleteBanner(banner->id);
     }
 }
 
-ride_id_t TileElement::GetRideIndex() const
+RideId TileElement::GetRideIndex() const
 {
     switch (GetType())
     {
-        case TILE_ELEMENT_TYPE_TRACK:
+        case TileElementType::Track:
             return AsTrack()->GetRideIndex();
-        case TILE_ELEMENT_TYPE_ENTRANCE:
+        case TileElementType::Entrance:
             return AsEntrance()->GetRideIndex();
-        case TILE_ELEMENT_TYPE_PATH:
+        case TileElementType::Path:
             return AsPath()->GetRideIndex();
         default:
-            return RIDE_ID_NULL;
+            return RideId::GetNull();
     }
 }
 
-void TileElement::ClearAs(uint8_t newType)
+void TileElement::ClearAs(TileElementType newType)
 {
-    type = newType;
+    type = 0;
+    SetType(newType);
     Flags = 0;
     base_height = MINIMUM_LAND_HEIGHT;
     clearance_height = MINIMUM_LAND_HEIGHT;

@@ -11,10 +11,15 @@
 #include <openrct2-ui/interface/Widget.h>
 #include <openrct2-ui/windows/Window.h>
 #include <openrct2/Context.h>
+#include <openrct2/PlatformEnvironment.h>
 #include <openrct2/audio/audio.h>
+#include <openrct2/core/File.h>
+#include <openrct2/core/Path.hpp>
+#include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Localisation.h>
 #include <openrct2/object/ObjectManager.h>
-#include <openrct2/platform/Platform2.h>
+#include <openrct2/platform/Platform.h>
+#include <openrct2/ride/RideConstruction.h>
 #include <openrct2/ride/RideData.h>
 #include <openrct2/ride/TrackDesign.h>
 #include <openrct2/ride/TrackDesignRepository.h>
@@ -48,22 +53,22 @@ static rct_widget window_install_track_widgets[] = {
     MakeWidget({PREVIEW_BUTTONS_LEFT, 398}, { 22,  24}, WindowWidgetType::FlatBtn, WindowColour::Primary, SPR_SCENERY,                          STR_TOGGLE_SCENERY_TIP),
     MakeWidget({ ACTION_BUTTONS_LEFT, 241}, { 97,  15}, WindowWidgetType::Button,  WindowColour::Primary, STR_INSTALL_NEW_TRACK_DESIGN_INSTALL                        ),
     MakeWidget({ ACTION_BUTTONS_LEFT, 259}, { 97,  15}, WindowWidgetType::Button,  WindowColour::Primary, STR_INSTALL_NEW_TRACK_DESIGN_CANCEL                         ),
-    { WIDGETS_END },
+    WIDGETS_END,
 };
 
-static void window_install_track_close(rct_window *w);
-static void window_install_track_mouseup(rct_window *w, rct_widgetindex widgetIndex);
-static void window_install_track_invalidate(rct_window *w);
-static void window_install_track_paint(rct_window *w, rct_drawpixelinfo *dpi);
-static void window_install_track_text_input(rct_window *w, rct_widgetindex widgetIndex, char *text);
+static void WindowInstallTrackClose(rct_window *w);
+static void WindowInstallTrackMouseup(rct_window *w, rct_widgetindex widgetIndex);
+static void WindowInstallTrackInvalidate(rct_window *w);
+static void WindowInstallTrackPaint(rct_window *w, rct_drawpixelinfo *dpi);
+static void WindowInstallTrackTextInput(rct_window *w, rct_widgetindex widgetIndex, char *text);
 
 static rct_window_event_list window_install_track_events([](auto& events)
 {
-    events.close = &window_install_track_close;
-    events.mouse_up = &window_install_track_mouseup;
-    events.text_input = &window_install_track_text_input;
-    events.invalidate = &window_install_track_invalidate;
-    events.paint = &window_install_track_paint;
+    events.close = &WindowInstallTrackClose;
+    events.mouse_up = &WindowInstallTrackMouseup;
+    events.text_input = &WindowInstallTrackTextInput;
+    events.invalidate = &WindowInstallTrackInvalidate;
+    events.paint = &WindowInstallTrackPaint;
 });
 // clang-format on
 
@@ -72,16 +77,16 @@ static std::string _trackPath;
 static std::string _trackName;
 static std::vector<uint8_t> _trackDesignPreviewPixels;
 
-static void window_install_track_update_preview();
-static void window_install_track_design(rct_window* w);
+static void WindowInstallTrackUpdatePreview();
+static void WindowInstallTrackDesign(rct_window* w);
 
 /**
  *
  *  rct2: 0x006D386D
  */
-rct_window* window_install_track_open(const utf8* path)
+rct_window* WindowInstallTrackOpen(const utf8* path)
 {
-    _trackDesign = track_design_open(path);
+    _trackDesign = TrackDesignImport(path);
     if (_trackDesign == nullptr)
     {
         context_show_error(STR_UNABLE_TO_LOAD_FILE, STR_NONE, {});
@@ -94,7 +99,7 @@ rct_window* window_install_track_open(const utf8* path)
         log_error("Failed to load track (ride type null): %s", path);
         return nullptr;
     }
-    if (object_manager_load_object(&_trackDesign->vehicle_object) == nullptr)
+    if (object_manager_load_object(&_trackDesign->vehicle_object.Entry) == nullptr)
     {
         log_error("Failed to load track (vehicle load fail): %s", path);
         return nullptr;
@@ -113,8 +118,6 @@ rct_window* window_install_track_open(const utf8* path)
 
     rct_window* w = WindowCreate(ScreenCoordsXY(x, y), WW, WH, &window_install_track_events, WC_INSTALL_TRACK, 0);
     w->widgets = window_install_track_widgets;
-    w->enabled_widgets = (1 << WIDX_CLOSE) | (1 << WIDX_ROTATE) | (1 << WIDX_TOGGLE_SCENERY) | (1 << WIDX_INSTALL)
-        | (1 << WIDX_CANCEL);
     WindowInitScrollWidgets(w);
     w->track_list.track_list_being_updated = false;
     window_push_others_right(w);
@@ -123,7 +126,7 @@ rct_window* window_install_track_open(const utf8* path)
     _trackName = GetNameFromTrackPath(path);
     _trackDesignPreviewPixels.resize(4 * TRACK_PREVIEW_IMAGE_SIZE);
 
-    window_install_track_update_preview();
+    WindowInstallTrackUpdatePreview();
     w->Invalidate();
 
     return w;
@@ -133,7 +136,7 @@ rct_window* window_install_track_open(const utf8* path)
  *
  *  rct2: 0x006D41DC
  */
-static void window_install_track_close(rct_window* w)
+static void WindowInstallTrackClose(rct_window* w)
 {
     _trackPath.clear();
     _trackName.clear();
@@ -146,7 +149,7 @@ static void window_install_track_close(rct_window* w)
  *
  *  rct2: 0x006D407A
  */
-static void window_install_track_mouseup(rct_window* w, rct_widgetindex widgetIndex)
+static void WindowInstallTrackMouseup(rct_window* w, rct_widgetindex widgetIndex)
 {
     switch (widgetIndex)
     {
@@ -161,11 +164,11 @@ static void window_install_track_mouseup(rct_window* w, rct_widgetindex widgetIn
             break;
         case WIDX_TOGGLE_SCENERY:
             gTrackDesignSceneryToggle = !gTrackDesignSceneryToggle;
-            window_install_track_update_preview();
+            WindowInstallTrackUpdatePreview();
             w->Invalidate();
             break;
         case WIDX_INSTALL:
-            window_install_track_design(w);
+            WindowInstallTrackDesign(w);
             break;
     }
 }
@@ -174,16 +177,16 @@ static void window_install_track_mouseup(rct_window* w, rct_widgetindex widgetIn
  *
  *  rct2: 0x006D3B06
  */
-static void window_install_track_invalidate(rct_window* w)
+static void WindowInstallTrackInvalidate(rct_window* w)
 {
-    w->pressed_widgets |= 1 << WIDX_TRACK_PREVIEW;
+    w->pressed_widgets |= 1ULL << WIDX_TRACK_PREVIEW;
     if (!gTrackDesignSceneryToggle)
     {
-        w->pressed_widgets |= (1 << WIDX_TOGGLE_SCENERY);
+        w->pressed_widgets |= (1ULL << WIDX_TOGGLE_SCENERY);
     }
     else
     {
-        w->pressed_widgets &= ~(1 << WIDX_TOGGLE_SCENERY);
+        w->pressed_widgets &= ~(1ULL << WIDX_TOGGLE_SCENERY);
     }
 }
 
@@ -191,7 +194,7 @@ static void window_install_track_invalidate(rct_window* w)
  *
  *  rct2: 0x006D3B1F
  */
-static void window_install_track_paint(rct_window* w, rct_drawpixelinfo* dpi)
+static void WindowInstallTrackPaint(rct_window* w, rct_drawpixelinfo* dpi)
 {
     WindowDrawWidgets(w, dpi);
 
@@ -208,7 +211,7 @@ static void window_install_track_paint(rct_window* w, rct_drawpixelinfo* dpi)
     g1temp.flags = G1_FLAG_BMP;
     gfx_set_g1_element(SPR_TEMP, &g1temp);
     drawing_engine_invalidate_image(SPR_TEMP);
-    gfx_draw_sprite(dpi, SPR_TEMP, screenPos, 0);
+    gfx_draw_sprite(dpi, ImageId(SPR_TEMP), screenPos);
 
     screenPos = w->windowPos + ScreenCoordsXY{ widget->midX(), widget->bottom - 12 };
 
@@ -242,7 +245,7 @@ static void window_install_track_paint(rct_window* w, rct_drawpixelinfo* dpi)
     {
         auto ft = Formatter();
 
-        void* objectEntry = object_manager_load_object(&td6->vehicle_object);
+        const auto* objectEntry = object_manager_load_object(&td6->vehicle_object.Entry);
         if (objectEntry != nullptr)
         {
             auto groupIndex = object_manager_get_loaded_object_entry_index(objectEntry);
@@ -399,7 +402,7 @@ static void window_install_track_paint(rct_window* w, rct_drawpixelinfo* dpi)
     if (td6->cost != 0)
     {
         auto ft = Formatter();
-        ft.Add<uint32_t>(td6->cost);
+        ft.Add<money64>(td6->cost);
         DrawTextBasic(dpi, screenPos, STR_TRACK_LIST_COST_AROUND, ft);
     }
 }
@@ -408,7 +411,7 @@ static void window_install_track_paint(rct_window* w, rct_drawpixelinfo* dpi)
  *
  *  rct2: 0x006D40A7
  */
-static void window_install_track_text_input(rct_window* w, rct_widgetindex widgetIndex, char* text)
+static void WindowInstallTrackTextInput(rct_window* w, rct_widgetindex widgetIndex, char* text)
 {
     if (widgetIndex != WIDX_INSTALL || str_is_null_or_empty(text))
     {
@@ -420,32 +423,30 @@ static void window_install_track_text_input(rct_window* w, rct_widgetindex widge
     window_event_mouse_up_call(w, WIDX_INSTALL);
 }
 
-static void window_install_track_update_preview()
+static void WindowInstallTrackUpdatePreview()
 {
-    track_design_draw_preview(_trackDesign.get(), _trackDesignPreviewPixels.data());
+    TrackDesignDrawPreview(_trackDesign.get(), _trackDesignPreviewPixels.data());
 }
 
-static void window_install_track_design(rct_window* w)
+static void WindowInstallTrackDesign(rct_window* w)
 {
-    utf8 destPath[MAX_PATH];
-
-    platform_get_user_directory(destPath, "track", sizeof(destPath));
-    if (!platform_ensure_directory_exists(destPath))
+    auto env = OpenRCT2::GetContext()->GetPlatformEnvironment();
+    auto destPath = env->GetDirectoryPath(OpenRCT2::DIRBASE::USER, OpenRCT2::DIRID::TRACK);
+    if (!Platform::EnsureDirectoryExists(destPath.c_str()))
     {
-        log_error("Unable to create directory '%s'", destPath);
+        log_error("Unable to create directory '%s'", destPath.c_str());
         context_show_error(STR_CANT_SAVE_TRACK_DESIGN, STR_NONE, {});
         return;
     }
 
-    safe_strcat_path(destPath, _trackName.c_str(), sizeof(destPath));
-    path_append_extension(destPath, ".td6", sizeof(destPath));
+    destPath = Path::Combine(destPath, _trackName + u8".td6");
 
-    if (Platform::FileExists(destPath))
+    if (File::Exists(destPath))
     {
-        log_info("%s already exists, prompting user for a different track design name", destPath);
+        log_info("%s already exists, prompting user for a different track design name", destPath.c_str());
         context_show_error(STR_UNABLE_TO_INSTALL_THIS_TRACK_DESIGN, STR_NONE, {});
-        window_text_input_raw_open(
-            w, WIDX_INSTALL, STR_SELECT_NEW_NAME_FOR_TRACK_DESIGN, STR_AN_EXISTING_TRACK_DESIGN_ALREADY_HAS_THIS_NAME,
+        WindowTextInputRawOpen(
+            w, WIDX_INSTALL, STR_SELECT_NEW_NAME_FOR_TRACK_DESIGN, STR_AN_EXISTING_TRACK_DESIGN_ALREADY_HAS_THIS_NAME, {},
             _trackName.c_str(), 255);
     }
     else

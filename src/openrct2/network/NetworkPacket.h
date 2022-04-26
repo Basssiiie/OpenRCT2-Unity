@@ -27,22 +27,22 @@ static_assert(sizeof(PacketHeader) == 6);
 
 struct NetworkPacket final
 {
-    NetworkPacket() = default;
-    NetworkPacket(NetworkCommand id);
+    NetworkPacket() noexcept = default;
+    NetworkPacket(NetworkCommand id) noexcept;
 
-    uint8_t* GetData();
-    const uint8_t* GetData() const;
+    uint8_t* GetData() noexcept;
+    const uint8_t* GetData() const noexcept;
 
-    NetworkCommand GetCommand() const;
+    NetworkCommand GetCommand() const noexcept;
 
-    void Clear();
-    bool CommandRequiresAuth();
+    void Clear() noexcept;
+    bool CommandRequiresAuth() const noexcept;
 
     const uint8_t* Read(size_t size);
-    const utf8* ReadString();
+    std::string_view ReadString();
 
     void Write(const void* bytes, size_t size);
-    void WriteString(const utf8* string);
+    void WriteString(std::string_view s);
 
     template<typename T> NetworkPacket& operator>>(T& value)
     {

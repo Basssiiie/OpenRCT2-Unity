@@ -17,14 +17,15 @@
 #include <openrct2/ParkImporter.h>
 #include <openrct2/actions/ParkSetParameterAction.h>
 #include <openrct2/actions/RideSetPriceAction.h>
+#include <openrct2/entity/EntityRegistry.h>
+#include <openrct2/entity/EntityTweener.h>
+#include <openrct2/entity/Peep.h>
 #include <openrct2/object/ObjectManager.h>
-#include <openrct2/peep/Peep.h>
-#include <openrct2/platform/platform.h>
+#include <openrct2/platform/Platform.h>
 #include <openrct2/ride/Ride.h>
 #include <openrct2/world/MapAnimation.h>
 #include <openrct2/world/Park.h>
 #include <openrct2/world/Scenery.h>
-#include <openrct2/world/Sprite.h>
 #include <string>
 
 using namespace OpenRCT2;
@@ -37,7 +38,7 @@ static std::unique_ptr<IContext> localStartGame(const std::string& parkPath)
 {
     gOpenRCT2Headless = true;
     gOpenRCT2NoGraphics = true;
-    core_init();
+    Platform::CoreInit();
 
     auto context = CreateContext();
     if (!context->Initialise())
@@ -45,15 +46,14 @@ static std::unique_ptr<IContext> localStartGame(const std::string& parkPath)
 
     auto importer = ParkImporter::CreateS6(context->GetObjectRepository());
     auto loadResult = importer->LoadSavedGame(parkPath.c_str(), false);
-    context->GetObjectManager().LoadObjects(loadResult.RequiredObjects.data(), loadResult.RequiredObjects.size());
+    context->GetObjectManager().LoadObjects(loadResult.RequiredObjects);
     importer->Import();
 
-    reset_sprite_spatial_index();
+    ResetEntitySpatialIndices();
 
     reset_all_sprite_quadrant_placements();
     scenery_set_default_placement_configuration();
     load_palette();
-    map_reorganise_elements();
     EntityTweener::Get().Reset();
     AutoCreateMapAnimations();
     fix_invalid_vehicle_sprite_sizes();
@@ -107,7 +107,7 @@ TEST_F(PlayTests, SecondGuestInQueueShouldNotRideIfNoFunds)
     Ride& ferrisWheel = *it;
 
     // Open it for free
-    ride_set_status(&ferrisWheel, RIDE_STATUS_OPEN);
+    ride_set_status(&ferrisWheel, RideStatus::Open);
     execute<RideSetPriceAction>(ferrisWheel.id, 0, true);
 
     // Ignore intensity to stimulate peeps to queue into ferris wheel
@@ -167,7 +167,7 @@ TEST_F(PlayTests, CarRideWithOneCarOnlyAcceptsTwoGuests)
     Ride& carRide = *it;
 
     // Open it for free
-    ride_set_status(&carRide, RIDE_STATUS_OPEN);
+    ride_set_status(&carRide, RideStatus::Open);
     execute<RideSetPriceAction>(carRide.id, 0, true);
 
     // Ignore intensity to stimulate peeps to queue into the ride

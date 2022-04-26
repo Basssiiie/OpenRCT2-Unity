@@ -28,6 +28,13 @@ ParkMarketingAction::ParkMarketingAction(int32_t type, int32_t item, int32_t num
 {
 }
 
+void ParkMarketingAction::AcceptParameters(GameActionParameterVisitor& visitor)
+{
+    visitor.Visit("type", _type);
+    visitor.Visit("item", _item);
+    visitor.Visit("duration", _numWeeks);
+}
+
 uint16_t ParkMarketingAction::GetActionFlags() const
 {
     return GameAction::GetActionFlags() | GameActions::Flags::AllowWhilePaused;
@@ -39,15 +46,15 @@ void ParkMarketingAction::Serialise(DataSerialiser& stream)
     stream << DS_TAG(_type) << DS_TAG(_item) << DS_TAG(_numWeeks);
 }
 
-GameActions::Result::Ptr ParkMarketingAction::Query() const
+GameActions::Result ParkMarketingAction::Query() const
 {
     if (static_cast<size_t>(_type) >= std::size(AdvertisingCampaignPricePerWeek) || _numWeeks >= 256)
     {
-        return MakeResult(GameActions::Status::InvalidParameters, STR_CANT_START_MARKETING_CAMPAIGN);
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_START_MARKETING_CAMPAIGN, STR_NONE);
     }
     if (gParkFlags & PARK_FLAGS_FORBID_MARKETING_CAMPAIGN)
     {
-        return MakeResult(
+        return GameActions::Result(
             GameActions::Status::Disallowed, STR_CANT_START_MARKETING_CAMPAIGN,
             STR_MARKETING_CAMPAIGNS_FORBIDDEN_BY_LOCAL_AUTHORITY);
     }
@@ -55,7 +62,7 @@ GameActions::Result::Ptr ParkMarketingAction::Query() const
     return CreateResult();
 }
 
-GameActions::Result::Ptr ParkMarketingAction::Execute() const
+GameActions::Result ParkMarketingAction::Execute() const
 {
     MarketingCampaign campaign{};
     campaign.Type = _type;
@@ -63,7 +70,7 @@ GameActions::Result::Ptr ParkMarketingAction::Execute() const
     campaign.Flags = MarketingCampaignFlags::FIRST_WEEK;
     if (campaign.Type == ADVERTISING_CAMPAIGN_RIDE_FREE || campaign.Type == ADVERTISING_CAMPAIGN_RIDE)
     {
-        campaign.RideId = _item;
+        campaign.RideId = RideId::FromUnderlying(_item);
     }
     else if (campaign.Type == ADVERTISING_CAMPAIGN_FOOD_OR_DRINK_FREE)
     {
@@ -78,12 +85,12 @@ GameActions::Result::Ptr ParkMarketingAction::Execute() const
     return CreateResult();
 }
 
-GameActions::Result::Ptr ParkMarketingAction::CreateResult() const
+GameActions::Result ParkMarketingAction::CreateResult() const
 {
-    auto result = MakeResult();
-    result->ErrorTitle = STR_CANT_START_MARKETING_CAMPAIGN;
-    result->Expenditure = ExpenditureType::Marketing;
-    result->Cost = CalculatePrice();
+    auto result = GameActions::Result();
+    result.ErrorTitle = STR_CANT_START_MARKETING_CAMPAIGN;
+    result.Expenditure = ExpenditureType::Marketing;
+    result.Cost = CalculatePrice();
     return result;
 }
 

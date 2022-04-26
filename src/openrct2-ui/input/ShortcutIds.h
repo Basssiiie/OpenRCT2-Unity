@@ -23,6 +23,7 @@ namespace OpenRCT2::Ui::ShortcutId
     constexpr std::string_view InterfaceIncreaseSpeed = "interface.misc.increase_speed";
     constexpr std::string_view InterfaceToggleToolbars = "interface.misc.toggle_toolbars";
     constexpr std::string_view InterfaceScreenshot = "interface.misc.screenshot";
+    constexpr std::string_view InterfaceGiantScreenshot = "interface.misc.giant_screenshot";
     constexpr std::string_view InterfaceLoadGame = "interface.misc.load_game";
     constexpr std::string_view InterfaceSaveGame = "interface.misc.save_game";
     constexpr std::string_view InterfaceMute = "interface.misc.mute";
@@ -51,6 +52,7 @@ namespace OpenRCT2::Ui::ShortcutId
     constexpr std::string_view InterfaceOpenMessages = "interface.open.messages";
     constexpr std::string_view InterfaceOpenMap = "interface.open.map";
     constexpr std::string_view InterfaceShowOptions = "interface.open.options";
+    constexpr std::string_view InterfaceOpenTransparencyOptions = "interface.open.transparency_options";
     constexpr std::string_view InterfaceOpenCheats = "interface.open.cheats";
     constexpr std::string_view InterfaceOpenTileInspector = "interface.open.tileinspector";
     constexpr std::string_view MultiplayerShow = "interface.open.multiplayer";
@@ -69,16 +71,20 @@ namespace OpenRCT2::Ui::ShortcutId
 
     // View / toggle
     constexpr std::string_view ViewToggleUnderground = "view.toggle.show_underground";
+    constexpr std::string_view ViewToggleTransparentWater = "view.toggle.transparent_water";
     constexpr std::string_view ViewToggleBaseLand = "view.toggle.hide_base_land";
     constexpr std::string_view ViewToggleVerticalLand = "view.toggle.hide_vertical_land";
     constexpr std::string_view ViewToggleRides = "view.toggle.transparent_rides";
+    constexpr std::string_view ViewToggleVehicles = "view.toggle.transparent_vehicles";
+    constexpr std::string_view ViewToggleVegetation = "view.toggle.transparent_vegetation";
     constexpr std::string_view ViewToggleScenery = "view.toggle.transparent_scenery";
+    constexpr std::string_view ViewToggleFootpaths = "view.toggle.transparent_footpaths";
     constexpr std::string_view ViewToggleSupports = "view.toggle.hide_supports";
-    constexpr std::string_view ViewTogglePeeps = "view.toggle.hide_peeps";
+    constexpr std::string_view ViewToggleGuests = "view.toggle.hide_guests";
+    constexpr std::string_view ViewToggleStaff = "view.toggle.hide_staff";
     constexpr std::string_view ViewToggleLandHeightMarkers = "view.toggle.show_land_height";
     constexpr std::string_view ViewToggleTrackHeightMarkers = "view.toggle.show_track_height";
     constexpr std::string_view ViewToggleFootpathHeightMarkers = "view.toggle.show_footpath_height";
-    constexpr std::string_view ViewToggleFootpaths = "view.toggle.transparent_footpaths";
     constexpr std::string_view ViewToggleGridlines = "view.toggle.show_gridlines";
     constexpr std::string_view ViewToggleCutAway = "view.toggle.toggle_cut_away";
     constexpr std::string_view ViewToogleFootpathIssues = "view.toggle.highlight_path_issues";
@@ -98,7 +104,7 @@ namespace OpenRCT2::Ui::ShortcutId
     constexpr std::string_view WindowRideConstructionDemolish = "window.rideconstruction.demolish";
 
     // Window / tile inspector
-    constexpr std::string_view WindowTileInspectorInsertCorrupt = "window.tileinspector.insert_corrupt";
+    constexpr std::string_view WindowTileInspectorToggleInvisibility = "window.tileinspector.toggle_invisibility";
     constexpr std::string_view WindowTileInspectorCopy = "window.tileinspector.copy";
     constexpr std::string_view WindowTileInspectorPaste = "window.tileinspector.paste";
     constexpr std::string_view WindowTileInspectorRemove = "window.tileinspector.remove";

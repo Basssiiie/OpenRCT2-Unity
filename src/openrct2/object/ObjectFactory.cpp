@@ -24,6 +24,8 @@
 #include "EntranceObject.h"
 #include "FootpathItemObject.h"
 #include "FootpathObject.h"
+#include "FootpathRailingsObject.h"
+#include "FootpathSurfaceObject.h"
 #include "LargeSceneryObject.h"
 #include "MusicObject.h"
 #include "Object.h"
@@ -105,10 +107,15 @@ private:
     std::string _identifier;
     bool _loadImages;
     std::string _basePath;
+    bool _wasVerbose = false;
     bool _wasWarning = false;
     bool _wasError = false;
 
 public:
+    bool WasVerbose() const
+    {
+        return _wasVerbose;
+    }
     bool WasWarning() const
     {
         return _wasWarning;
@@ -161,6 +168,16 @@ public:
         return {};
     }
 
+    void LogVerbose(ObjectError code, const utf8* text) override
+    {
+        _wasVerbose = true;
+
+        if (!String::IsNullOrEmpty(text))
+        {
+            log_verbose("[%s] Info (%d): %s", _identifier.c_str(), code, text);
+        }
+    }
+
     void LogWarning(ObjectError code, const utf8* text) override
     {
         _wasWarning = true;
@@ -189,7 +206,7 @@ namespace ObjectFactory
      * @note jRoot is deliberately left non-const: json_t behaviour changes when const
      */
     static std::unique_ptr<Object> CreateObjectFromJson(
-        IObjectRepository& objectRepository, json_t& jRoot, const IFileDataRetriever* fileRetriever);
+        IObjectRepository& objectRepository, json_t& jRoot, const IFileDataRetriever* fileRetriever, bool loadImageTable);
 
     static ObjectSourceGame ParseSourceGame(const std::string& s)
     {
@@ -224,7 +241,7 @@ namespace ObjectFactory
         }
     }
 
-    std::unique_ptr<Object> CreateObjectFromLegacyFile(IObjectRepository& objectRepository, const utf8* path)
+    std::unique_ptr<Object> CreateObjectFromLegacyFile(IObjectRepository& objectRepository, const utf8* path, bool loadImages)
     {
         log_verbose("CreateObjectFromLegacyFile(..., \"%s\")", path);
 
@@ -238,7 +255,8 @@ namespace ObjectFactory
 
             if (entry.GetType() != ObjectType::ScenarioText)
             {
-                result = CreateObject(entry);
+                result = CreateObject(entry.GetType());
+                result->SetDescriptor(ObjectEntryDescriptor(entry));
 
                 utf8 objectName[DAT_NAME_LENGTH + 1] = { 0 };
                 object_entry_get_name_fixed(objectName, sizeof(objectName), &entry);
@@ -248,7 +266,7 @@ namespace ObjectFactory
                 log_verbose("  size: %zu", chunk->GetLength());
 
                 auto chunkStream = OpenRCT2::MemoryStream(chunk->GetData(), chunk->GetLength());
-                auto readContext = ReadObjectContext(objectRepository, objectName, !gOpenRCT2NoGraphics, nullptr);
+                auto readContext = ReadObjectContext(objectRepository, objectName, loadImages, nullptr);
                 ReadObjectLegacy(*result, &readContext, &chunkStream);
                 if (readContext.WasError())
                 {
@@ -270,9 +288,11 @@ namespace ObjectFactory
         Guard::ArgumentNotNull(entry, GUARD_LINE);
         Guard::ArgumentNotNull(data, GUARD_LINE);
 
-        auto result = CreateObject(*entry);
+        auto result = CreateObject(entry->GetType());
         if (result != nullptr)
         {
+            result->SetDescriptor(ObjectEntryDescriptor(*entry));
+
             utf8 objectName[DAT_NAME_LENGTH + 1];
             object_entry_get_name_fixed(objectName, sizeof(objectName), entry);
 
@@ -292,54 +312,60 @@ namespace ObjectFactory
         return result;
     }
 
-    std::unique_ptr<Object> CreateObject(const rct_object_entry& entry)
+    std::unique_ptr<Object> CreateObject(ObjectType type)
     {
         std::unique_ptr<Object> result;
-        switch (entry.GetType())
+        switch (type)
         {
             case ObjectType::Ride:
-                result = std::make_unique<RideObject>(entry);
+                result = std::make_unique<RideObject>();
                 break;
             case ObjectType::SmallScenery:
-                result = std::make_unique<SmallSceneryObject>(entry);
+                result = std::make_unique<SmallSceneryObject>();
                 break;
             case ObjectType::LargeScenery:
-                result = std::make_unique<LargeSceneryObject>(entry);
+                result = std::make_unique<LargeSceneryObject>();
                 break;
             case ObjectType::Walls:
-                result = std::make_unique<WallObject>(entry);
+                result = std::make_unique<WallObject>();
                 break;
             case ObjectType::Banners:
-                result = std::make_unique<BannerObject>(entry);
+                result = std::make_unique<BannerObject>();
                 break;
             case ObjectType::Paths:
-                result = std::make_unique<FootpathObject>(entry);
+                result = std::make_unique<FootpathObject>();
                 break;
             case ObjectType::PathBits:
-                result = std::make_unique<FootpathItemObject>(entry);
+                result = std::make_unique<FootpathItemObject>();
                 break;
             case ObjectType::SceneryGroup:
-                result = std::make_unique<SceneryGroupObject>(entry);
+                result = std::make_unique<SceneryGroupObject>();
                 break;
             case ObjectType::ParkEntrance:
-                result = std::make_unique<EntranceObject>(entry);
+                result = std::make_unique<EntranceObject>();
                 break;
             case ObjectType::Water:
-                result = std::make_unique<WaterObject>(entry);
+                result = std::make_unique<WaterObject>();
                 break;
             case ObjectType::ScenarioText:
                 break;
             case ObjectType::TerrainSurface:
-                result = std::make_unique<TerrainSurfaceObject>(entry);
+                result = std::make_unique<TerrainSurfaceObject>();
                 break;
             case ObjectType::TerrainEdge:
-                result = std::make_unique<TerrainEdgeObject>(entry);
+                result = std::make_unique<TerrainEdgeObject>();
                 break;
             case ObjectType::Station:
-                result = std::make_unique<StationObject>(entry);
+                result = std::make_unique<StationObject>();
                 break;
             case ObjectType::Music:
-                result = std::make_unique<MusicObject>(entry);
+                result = std::make_unique<MusicObject>();
+                break;
+            case ObjectType::FootpathSurface:
+                result = std::make_unique<FootpathSurfaceObject>();
+                break;
+            case ObjectType::FootpathRailings:
+                result = std::make_unique<FootpathRailingsObject>();
                 break;
             default:
                 throw std::runtime_error("Invalid object type");
@@ -351,8 +377,6 @@ namespace ObjectFactory
     {
         if (s == "ride")
             return ObjectType::Ride;
-        if (s == "footpath")
-            return ObjectType::Paths;
         if (s == "footpath_banner")
             return ObjectType::Banners;
         if (s == "footpath_item")
@@ -377,10 +401,14 @@ namespace ObjectFactory
             return ObjectType::Station;
         if (s == "music")
             return ObjectType::Music;
+        if (s == "footpath_surface")
+            return ObjectType::FootpathSurface;
+        if (s == "footpath_railings")
+            return ObjectType::FootpathRailings;
         return ObjectType::None;
     }
 
-    std::unique_ptr<Object> CreateObjectFromZipFile(IObjectRepository& objectRepository, std::string_view path)
+    std::unique_ptr<Object> CreateObjectFromZipFile(IObjectRepository& objectRepository, std::string_view path, bool loadImages)
     {
         try
         {
@@ -396,7 +424,7 @@ namespace ObjectFactory
             if (jRoot.is_object())
             {
                 auto fileDataRetriever = ZipDataRetriever(path, *archive);
-                return CreateObjectFromJson(objectRepository, jRoot, &fileDataRetriever);
+                return CreateObjectFromJson(objectRepository, jRoot, &fileDataRetriever, loadImages);
             }
         }
         catch (const std::exception& e)
@@ -406,7 +434,8 @@ namespace ObjectFactory
         return nullptr;
     }
 
-    std::unique_ptr<Object> CreateObjectFromJsonFile(IObjectRepository& objectRepository, const std::string& path)
+    std::unique_ptr<Object> CreateObjectFromJsonFile(
+        IObjectRepository& objectRepository, const std::string& path, bool loadImages)
     {
         log_verbose("CreateObjectFromJsonFile(\"%s\")", path.c_str());
 
@@ -414,7 +443,7 @@ namespace ObjectFactory
         {
             json_t jRoot = Json::ReadFromFile(path.c_str());
             auto fileDataRetriever = FileSystemDataRetriever(Path::GetDirectory(path));
-            return CreateObjectFromJson(objectRepository, jRoot, &fileDataRetriever);
+            return CreateObjectFromJson(objectRepository, jRoot, &fileDataRetriever, loadImages);
         }
         catch (const std::runtime_error& err)
         {
@@ -457,7 +486,7 @@ namespace ObjectFactory
     }
 
     std::unique_ptr<Object> CreateObjectFromJson(
-        IObjectRepository& objectRepository, json_t& jRoot, const IFileDataRetriever* fileRetriever)
+        IObjectRepository& objectRepository, json_t& jRoot, const IFileDataRetriever* fileRetriever, bool loadImageTable)
     {
         Guard::Assert(jRoot.is_object(), "ObjectFactory::CreateObjectFromJson expects parameter jRoot to be object");
 
@@ -470,24 +499,30 @@ namespace ObjectFactory
         {
             auto id = Json::GetString(jRoot["id"]);
 
-            rct_object_entry entry = {};
+            ObjectEntryDescriptor descriptor;
             auto originalId = Json::GetString(jRoot["originalId"]);
-            auto originalName = originalId;
             if (originalId.length() == 8 + 1 + 8 + 1 + 8)
             {
-                entry.flags = std::stoul(originalId.substr(0, 8), nullptr, 16);
-                originalName = originalId.substr(9, 8);
-                entry.checksum = std::stoul(originalId.substr(18, 8), nullptr, 16);
-            }
-            // Always set, since originalId might be missing or incorrect.
-            entry.SetType(objectType);
-            auto minLength = std::min<size_t>(8, originalName.length());
-            std::memcpy(entry.name, originalName.c_str(), minLength);
+                auto originalName = originalId.substr(9, 8);
 
-            result = CreateObject(entry);
+                rct_object_entry entry = {};
+                entry.flags = std::stoul(originalId.substr(0, 8), nullptr, 16);
+                entry.checksum = std::stoul(originalId.substr(18, 8), nullptr, 16);
+                entry.SetType(objectType);
+                auto minLength = std::min<size_t>(8, originalName.length());
+                std::memcpy(entry.name, originalName.c_str(), minLength);
+                descriptor = ObjectEntryDescriptor(entry);
+            }
+            else
+            {
+                descriptor = ObjectEntryDescriptor(objectType, id);
+            }
+
+            result = CreateObject(objectType);
             result->SetIdentifier(id);
+            result->SetDescriptor(descriptor);
             result->MarkAsJsonObject();
-            auto readContext = ReadObjectContext(objectRepository, id, !gOpenRCT2NoGraphics, fileRetriever);
+            auto readContext = ReadObjectContext(objectRepository, id, loadImageTable, fileRetriever);
             result->ReadJson(&readContext, jRoot);
             if (readContext.WasError())
             {

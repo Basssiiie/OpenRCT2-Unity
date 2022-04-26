@@ -19,13 +19,17 @@
 #include "ReplayManager.h"
 #include "actions/GameAction.h"
 #include "config/Config.h"
+#include "entity/EntityRegistry.h"
+#include "entity/PatrolArea.h"
+#include "entity/Staff.h"
 #include "interface/Screenshot.h"
 #include "localisation/Date.h"
 #include "localisation/Localisation.h"
 #include "management/NewsItem.h"
 #include "network/network.h"
-#include "peep/Staff.h"
-#include "platform/Platform2.h"
+#include "platform/Platform.h"
+#include "profiling/Profiling.h"
+#include "ride/Vehicle.h"
 #include "scenario/Scenario.h"
 #include "scripting/ScriptEngine.h"
 #include "title/TitleScreen.h"
@@ -36,7 +40,6 @@
 #include "world/MapAnimation.h"
 #include "world/Park.h"
 #include "world/Scenery.h"
-#include "world/Sprite.h"
 
 #include <algorithm>
 #include <chrono>
@@ -52,17 +55,20 @@ GameState::GameState()
 /**
  * Initialises the map, park etc. basically all S6 data.
  */
-void GameState::InitAll(int32_t mapSize)
+void GameState::InitAll(const TileCoordsXY& mapSize)
 {
+    PROFILED_FUNCTION();
+
     gInMapInitCode = true;
+    gCurrentTicks = 0;
 
     map_init(mapSize);
     _park->Initialise();
     finance_init();
     banner_init();
     ride_init_all();
-    reset_sprite_list();
-    staff_reset_modes();
+    ResetAllEntities();
+    UpdateConsolidatedPatrolAreas();
     date_reset();
     climate_reset(ClimateType::CoolAndWet);
     News::InitQueue();
@@ -78,6 +84,14 @@ void GameState::InitAll(int32_t mapSize)
     context_broadcast_intent(&intent);
 
     load_palette();
+
+    CheatsReset();
+    ClearRestrictedScenery();
+
+#ifdef ENABLE_SCRIPTING
+    auto& scriptEngine = GetContext()->GetScriptEngine();
+    scriptEngine.ClearParkStorage();
+#endif
 }
 
 /**
@@ -86,8 +100,10 @@ void GameState::InitAll(int32_t mapSize)
  * when operating as a client it may run multiple updates to catch up with the server tick,
  * another influence can be the game speed setting.
  */
-void GameState::Update()
+void GameState::Tick()
 {
+    PROFILED_FUNCTION();
+
     gInUpdateCode = true;
 
     // Normal game play will update only once every GAME_UPDATE_TIME_MS
@@ -105,12 +121,6 @@ void GameState::Update()
             player->Update();
         }
     }
-
-    uint32_t realtimeTicksElapsed = gCurrentDeltaTime / GAME_UPDATE_TIME_MS;
-    realtimeTicksElapsed = std::clamp<uint32_t>(realtimeTicksElapsed, 1, GAME_MAX_UPDATES);
-
-    // We use this variable to always advance ticks in normal speed.
-    gCurrentRealTimeTicks += realtimeTicksElapsed;
 
     network_update();
 
@@ -150,14 +160,24 @@ void GameState::Update()
         }
         else
         {
+            // NOTE: Here are a few special cases that would be normally handled in UpdateLogic.
+            // If the game is paused it will not call UpdateLogic at all.
             numUpdates = 0;
+
+            if (network_get_mode() == NETWORK_MODE_SERVER)
+            {
+                // Make sure the client always knows about what tick the host is on.
+                network_send_tick();
+            }
+
             // Update the animation list. Note this does not
             // increment the map animation.
             map_animation_invalidate_all();
 
-            // Special case because we set numUpdates to 0, otherwise in game_logic_update.
+            // Post-tick network update
             network_process_pending();
 
+            // Post-tick game actions.
             GameActions::ProcessQueue();
         }
     }
@@ -182,6 +202,8 @@ void GameState::Update()
             }
         }
     }
+
+    network_flush();
 
     if (!gOpenRCT2Headless)
     {
@@ -230,6 +252,8 @@ void GameState::Update()
 
 void GameState::UpdateLogic(LogicTimings* timings)
 {
+    PROFILED_FUNCTION();
+
     auto start_time = std::chrono::high_resolution_clock::now();
 
     auto report_time = [timings, start_time](LogicTimePart part) {
@@ -309,7 +333,7 @@ void GameState::UpdateLogic(LogicTimings* timings)
     report_time(LogicTimePart::MapRestoreProvisionalElements);
     vehicle_update_all();
     report_time(LogicTimePart::Vehicle);
-    sprite_misc_update_all();
+    UpdateAllMiscEntities();
     report_time(LogicTimePart::Misc);
     Ride::UpdateAll();
     report_time(LogicTimePart::Ride);
@@ -354,7 +378,6 @@ void GameState::UpdateLogic(LogicTimings* timings)
     report_time(LogicTimePart::NetworkFlush);
 
     gCurrentTicks++;
-    gScenarioTicks++;
     gSavedAge++;
 
 #ifdef ENABLE_SCRIPTING
@@ -376,6 +399,8 @@ void GameState::UpdateLogic(LogicTimings* timings)
 
 void GameState::CreateStateSnapshot()
 {
+    PROFILED_FUNCTION();
+
     IGameStateSnapshots* snapshots = GetContext()->GetGameStateSnapshots();
 
     auto& snapshot = snapshots->CreateSnapshot();

@@ -14,15 +14,16 @@
 #include "../core/MemoryStream.h"
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
+#include "../world/ConstructionClearance.h"
 #include "../world/Entrance.h"
 #include "../world/Footpath.h"
 #include "../world/MapAnimation.h"
 #include "../world/Park.h"
-#include "../world/Sprite.h"
 #include "../world/Surface.h"
 
-PlaceParkEntranceAction::PlaceParkEntranceAction(const CoordsXYZD& location)
+PlaceParkEntranceAction::PlaceParkEntranceAction(const CoordsXYZD& location, ObjectEntryIndex pathType)
     : _loc(location)
+    , _pathType(pathType)
 {
 }
 
@@ -36,37 +37,38 @@ void PlaceParkEntranceAction::Serialise(DataSerialiser& stream)
     GameAction::Serialise(stream);
 
     stream << DS_TAG(_loc);
+    stream << DS_TAG(_pathType);
 }
 
-GameActions::Result::Ptr PlaceParkEntranceAction::Query() const
+GameActions::Result PlaceParkEntranceAction::Query() const
 {
     if (!(gScreenFlags & SCREEN_FLAGS_EDITOR) && !gCheatsSandboxMode)
     {
-        return std::make_unique<GameActions::Result>(
-            GameActions::Status::NotInEditorMode, STR_CANT_BUILD_PARK_ENTRANCE_HERE, STR_NONE);
+        return GameActions::Result(GameActions::Status::NotInEditorMode, STR_CANT_BUILD_THIS_HERE, STR_NONE);
     }
 
-    auto res = std::make_unique<GameActions::Result>();
-    res->Expenditure = ExpenditureType::LandPurchase;
-    res->Position = { _loc.x, _loc.y, _loc.z };
+    auto res = GameActions::Result();
+    res.Expenditure = ExpenditureType::LandPurchase;
+    res.Position = { _loc.x, _loc.y, _loc.z };
 
-    if (!map_check_free_elements_and_reorganise(3))
+    auto mapSizeUnits = GetMapSizeUnits() - CoordsXY{ COORDS_XY_STEP, COORDS_XY_STEP };
+    if (!LocationValid(_loc) || _loc.x <= COORDS_XY_STEP || _loc.y <= COORDS_XY_STEP || _loc.x >= mapSizeUnits.x
+        || _loc.y >= mapSizeUnits.y)
     {
-        return std::make_unique<GameActions::Result>(
-            GameActions::Status::NoFreeElements, STR_CANT_BUILD_PARK_ENTRANCE_HERE, STR_NONE);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_CANT_BUILD_THIS_HERE, STR_TOO_CLOSE_TO_EDGE_OF_MAP);
     }
 
-    if (!LocationValid(_loc) || _loc.x <= 32 || _loc.y <= 32 || _loc.x >= (gMapSizeUnits - 32)
-        || _loc.y >= (gMapSizeUnits - 32))
+    if (!CheckMapCapacity(3))
     {
-        return std::make_unique<GameActions::Result>(
-            GameActions::Status::InvalidParameters, STR_CANT_BUILD_PARK_ENTRANCE_HERE, STR_TOO_CLOSE_TO_EDGE_OF_MAP);
+        return GameActions::Result(
+            GameActions::Status::NoFreeElements, STR_CANT_BUILD_THIS_HERE, STR_ERR_LANDSCAPE_DATA_AREA_FULL);
     }
 
-    if (gParkEntrances.size() >= MAX_PARK_ENTRANCES)
+    if (gParkEntrances.size() >= OpenRCT2::Limits::MaxParkEntrances)
     {
-        return std::make_unique<GameActions::Result>(
-            GameActions::Status::InvalidParameters, STR_CANT_BUILD_PARK_ENTRANCE_HERE, STR_ERR_TOO_MANY_PARK_ENTRANCES);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_CANT_BUILD_THIS_HERE, STR_ERR_TOO_MANY_PARK_ENTRANCES);
     }
 
     auto zLow = _loc.z;
@@ -84,30 +86,28 @@ GameActions::Result::Ptr PlaceParkEntranceAction::Query() const
             entranceLoc.y += CoordsDirectionDelta[(_loc.direction + 1) & 0x3].y * 2;
         }
 
-        if (auto res2 = MapCanConstructAt({ entranceLoc, zLow, zHigh }, { 0b1111, 0 }); res2->Error != GameActions::Status::Ok)
+        if (auto res2 = MapCanConstructAt({ entranceLoc, zLow, zHigh }, { 0b1111, 0 }); res2.Error != GameActions::Status::Ok)
         {
-            return std::make_unique<GameActions::Result>(
-                GameActions::Status::NoClearance, STR_CANT_BUILD_PARK_ENTRANCE_HERE, res2->ErrorMessage.GetStringId(),
-                res2->ErrorMessageArgs.data());
+            res2.ErrorTitle = STR_CANT_BUILD_THIS_HERE;
+            return res2;
         }
 
         // Check that entrance element does not already exist at this location
         EntranceElement* entranceElement = map_get_park_entrance_element_at(entranceLoc, false);
         if (entranceElement != nullptr)
         {
-            return std::make_unique<GameActions::Result>(
-                GameActions::Status::ItemAlreadyPlaced, STR_CANT_BUILD_PARK_ENTRANCE_HERE, STR_NONE);
+            return GameActions::Result(GameActions::Status::ItemAlreadyPlaced, STR_CANT_BUILD_THIS_HERE, STR_NONE);
         }
     }
 
     return res;
 }
 
-GameActions::Result::Ptr PlaceParkEntranceAction::Execute() const
+GameActions::Result PlaceParkEntranceAction::Execute() const
 {
-    auto res = std::make_unique<GameActions::Result>();
-    res->Expenditure = ExpenditureType::LandPurchase;
-    res->Position = CoordsXYZ{ _loc.x, _loc.y, _loc.z };
+    auto res = GameActions::Result();
+    res.Expenditure = ExpenditureType::LandPurchase;
+    res.Position = CoordsXYZ{ _loc.x, _loc.y, _loc.z };
 
     uint32_t flags = GetFlags();
 
@@ -146,7 +146,14 @@ GameActions::Result::Ptr PlaceParkEntranceAction::Execute() const
         entranceElement->SetDirection(_loc.direction);
         entranceElement->SetSequenceIndex(index);
         entranceElement->SetEntranceType(ENTRANCE_TYPE_PARK_ENTRANCE);
-        entranceElement->SetPathType(gFootpathSelectedId);
+        if (gFootpathSelection.LegacyPath == OBJECT_ENTRY_INDEX_NULL)
+        {
+            entranceElement->SetSurfaceEntryIndex(gFootpathSelection.NormalSurface);
+        }
+        else
+        {
+            entranceElement->SetLegacyPathEntryIndex(gFootpathSelection.LegacyPath);
+        }
 
         if (!entranceElement->IsGhost())
         {
@@ -168,4 +175,26 @@ GameActions::Result::Ptr PlaceParkEntranceAction::Execute() const
     }
 
     return res;
+}
+
+bool PlaceParkEntranceAction::CheckMapCapacity(int16_t numTiles) const
+{
+    CoordsXYZ entranceLoc = _loc;
+    for (uint8_t index = 0; index < 3; index++)
+    {
+        if (index == 1)
+        {
+            entranceLoc += CoordsDirectionDelta[(_loc.direction - 1) & 0x3];
+        }
+        else if (index == 2)
+        {
+            entranceLoc.x += CoordsDirectionDelta[(_loc.direction + 1) & 0x3].x * 2;
+            entranceLoc.y += CoordsDirectionDelta[(_loc.direction + 1) & 0x3].y * 2;
+        }
+        if (!MapCheckCapacityAndReorganise(entranceLoc, numTiles))
+        {
+            return false;
+        }
+    }
+    return true;
 }

@@ -134,7 +134,7 @@ public:
             }
 
             char scaleQualityBuffer[4];
-            snprintf(scaleQualityBuffer, sizeof(scaleQualityBuffer), "%u", static_cast<int32_t>(scaleQuality));
+            snprintf(scaleQualityBuffer, sizeof(scaleQualityBuffer), "%d", static_cast<int32_t>(scaleQuality));
             SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
             _screenTexture = SDL_CreateTexture(_sdlRenderer, pixelFormat, SDL_TEXTUREACCESS_STREAMING, width, height);
             SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, scaleQualityBuffer);
@@ -385,7 +385,7 @@ private:
     {
         ReadCentrePixel(&_pixelAfterOverlay);
 
-        // Detect an active Steam overlay by checking if the centre pixel is changed by the gray fade.
+        // Detect an active Steam overlay by checking if the centre pixel is changed by the grey fade.
         // Will not be triggered by applications rendering to corners, like FRAPS, MSI Afterburner and Friends popups.
         bool newOverlayActive = _pixelBeforeOverlay != _pixelAfterOverlay;
 

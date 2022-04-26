@@ -15,10 +15,14 @@
 #include "../config/Config.h"
 #include "../core/String.hpp"
 #include "../drawing/Drawing.h"
+#include "../entity/Duck.h"
+#include "../entity/EntityRegistry.h"
+#include "../entity/Staff.h"
 #include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../network/network.h"
 #include "../ride/Ride.h"
+#include "../ride/Vehicle.h"
 #include "../scenario/Scenario.h"
 #include "../ui/UiContext.h"
 #include "../util/Util.h"
@@ -30,7 +34,6 @@
 #include "../world/Map.h"
 #include "../world/Park.h"
 #include "../world/Scenery.h"
-#include "../world/Sprite.h"
 #include "../world/Surface.h"
 #include "ParkSetLoanAction.h"
 #include "ParkSetParameterAction.h"
@@ -62,28 +65,28 @@ void SetCheatAction::Serialise(DataSerialiser& stream)
     stream << DS_TAG(_cheatType) << DS_TAG(_param1) << DS_TAG(_param2);
 }
 
-GameActions::Result::Ptr SetCheatAction::Query() const
+GameActions::Result SetCheatAction::Query() const
 {
     if (static_cast<uint32_t>(_cheatType) >= static_cast<uint32_t>(CheatType::Count))
     {
-        MakeResult(GameActions::Status::InvalidParameters, STR_NONE);
+        GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
     }
 
     ParametersRange validRange = GetParameterRange(static_cast<CheatType>(_cheatType.id));
 
     if (_param1 < validRange.first.first || _param1 > validRange.first.second)
     {
-        MakeResult(GameActions::Status::InvalidParameters, STR_NONE);
+        GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
     }
     if (_param2 < validRange.second.first || _param2 > validRange.second.second)
     {
-        MakeResult(GameActions::Status::InvalidParameters, STR_NONE);
+        GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
     }
 
-    return MakeResult();
+    return GameActions::Result();
 }
 
-GameActions::Result::Ptr SetCheatAction::Execute() const
+GameActions::Result SetCheatAction::Execute() const
 {
     switch (static_cast<CheatType>(_cheatType.id))
     {
@@ -107,7 +110,7 @@ GameActions::Result::Ptr SetCheatAction::Execute() const
             gCheatsShowVehiclesFromOtherTrackTypes = _param1 != 0;
             break;
         case CheatType::FastLiftHill:
-            gCheatsFastLiftHill = _param1 != 0;
+            gCheatsUnlockOperatingLimits = _param1 != 0;
             break;
         case CheatType::DisableBrakesFailure:
             gCheatsDisableBrakesFailure = _param1 != 0;
@@ -232,7 +235,7 @@ GameActions::Result::Ptr SetCheatAction::Execute() const
             CreateDucks(_param1);
             break;
         case CheatType::RemoveDucks:
-            duck_remove_all();
+            Duck::RemoveAll();
             break;
         case CheatType::AllowTrackPlaceInvalidHeights:
             gCheatsAllowTrackPlaceInvalidHeights = _param1 != 0;
@@ -240,7 +243,7 @@ GameActions::Result::Ptr SetCheatAction::Execute() const
         default:
         {
             log_error("Unabled cheat: %d", _cheatType.id);
-            MakeResult(GameActions::Status::InvalidParameters, STR_NONE);
+            GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
         }
         break;
     }
@@ -251,7 +254,7 @@ GameActions::Result::Ptr SetCheatAction::Execute() const
     }
 
     window_invalidate_by_class(WC_CHEATS);
-    return MakeResult();
+    return GameActions::Result();
 }
 
 ParametersRange SetCheatAction::GetParameterRange(CheatType cheatType) const
@@ -380,7 +383,7 @@ void SetCheatAction::WaterPlants() const
     tile_element_iterator_begin(&it);
     do
     {
-        if (it.element->GetType() == TILE_ELEMENT_TYPE_SMALL_SCENERY)
+        if (it.element->GetType() == TileElementType::SmallScenery)
         {
             it.element->AsSmallScenery()->SetAge(0);
         }
@@ -396,7 +399,7 @@ void SetCheatAction::FixVandalism() const
     tile_element_iterator_begin(&it);
     do
     {
-        if (it.element->GetType() != TILE_ELEMENT_TYPE_PATH)
+        if (it.element->GetType() != TileElementType::Path)
             continue;
 
         if (!(it.element)->AsPath()->HasAddition())
@@ -410,26 +413,25 @@ void SetCheatAction::FixVandalism() const
 
 void SetCheatAction::RemoveLitter() const
 {
-    for (auto litter : EntityList<Litter>(EntityListId::Litter))
+    for (auto litter : EntityList<Litter>())
     {
-        sprite_remove(litter);
+        EntityRemove(litter);
     }
 
-    tile_element_iterator it;
-    rct_scenery_entry* sceneryEntry;
-
+    tile_element_iterator it{};
     tile_element_iterator_begin(&it);
     do
     {
-        if (it.element->GetType() != TILE_ELEMENT_TYPE_PATH)
+        if (it.element->GetType() != TileElementType::Path)
             continue;
 
-        if (!(it.element)->AsPath()->HasAddition())
+        auto* path = it.element->AsPath();
+        if (path->HasAddition())
             continue;
 
-        sceneryEntry = it.element->AsPath()->GetAdditionEntry();
-        if (sceneryEntry->path_bit.flags & PATH_BIT_FLAG_IS_BIN)
-            it.element->AsPath()->SetAdditionStatus(0xFF);
+        auto* pathBitEntry = path->GetAdditionEntry();
+        if (pathBitEntry != nullptr && pathBitEntry->flags & PATH_BIT_FLAG_IS_BIN)
+            path->SetAdditionStatus(0xFF);
 
     } while (tile_element_iterator_next(&it));
 
@@ -537,7 +539,7 @@ void SetCheatAction::ClearLoan() const
     AddMoney(gBankLoan);
 
     // Then pay the loan
-    auto gameAction = ParkSetLoanAction(MONEY(0, 00));
+    auto gameAction = ParkSetLoanAction(0.00_GBP);
     GameActions::ExecuteNested(&gameAction);
 }
 
@@ -553,7 +555,7 @@ void SetCheatAction::GenerateGuests(int32_t count) const
 
 void SetCheatAction::SetGuestParameter(int32_t parameter, int32_t value) const
 {
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         switch (parameter)
         {
@@ -597,12 +599,12 @@ void SetCheatAction::SetGuestParameter(int32_t parameter, int32_t value) const
 
 void SetCheatAction::GiveObjectToGuests(int32_t object) const
 {
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         switch (object)
         {
             case OBJECT_MONEY:
-                peep->CashInPocket = MONEY(1000, 00);
+                peep->CashInPocket = 1000.00_GBP;
                 break;
             case OBJECT_PARK_MAP:
                 peep->GiveItem(ShopItem::Map);
@@ -628,10 +630,10 @@ void SetCheatAction::RemoveAllGuests() const
     {
         ride.num_riders = 0;
 
-        for (size_t stationIndex = 0; stationIndex < MAX_STATIONS; stationIndex++)
+        for (auto& station : ride.GetStations())
         {
-            ride.stations[stationIndex].QueueLength = 0;
-            ride.stations[stationIndex].LastPeepInQueue = SPRITE_INDEX_NULL;
+            station.QueueLength = 0;
+            station.LastPeepInQueue = EntityId::GetNull();
         }
 
         for (auto trainIndex : ride.vehicles)
@@ -650,7 +652,7 @@ void SetCheatAction::RemoveAllGuests() const
                             vehicle->ApplyMass(-peep->Mass);
                         }
                     }
-                    peepInTrainIndex = SPRITE_INDEX_NULL;
+                    peepInTrainIndex = EntityId::GetNull();
                 }
 
                 vehicle->num_peeps = 0;
@@ -661,7 +663,7 @@ void SetCheatAction::RemoveAllGuests() const
 
     // Do not use the FOR_ALL_PEEPS macro for this as next sprite index
     // will be fetched on a deleted guest.
-    for (auto guest : EntityList<Guest>(EntityListId::Peep))
+    for (auto guest : EntityList<Guest>())
     {
         guest->Remove();
     }
@@ -672,7 +674,7 @@ void SetCheatAction::RemoveAllGuests() const
 
 void SetCheatAction::SetStaffSpeed(uint8_t value) const
 {
-    for (auto peep : EntityList<Staff>(EntityListId::Peep))
+    for (auto peep : EntityList<Staff>())
     {
         peep->Energy = value;
         peep->EnergyTarget = value;
@@ -681,12 +683,12 @@ void SetCheatAction::SetStaffSpeed(uint8_t value) const
 
 void SetCheatAction::OwnAllLand() const
 {
-    const int32_t min = 32;
-    const int32_t max = gMapSizeUnits - 32;
+    const auto min = CoordsXY{ COORDS_XY_STEP, COORDS_XY_STEP };
+    const auto max = GetMapSizeUnits() - CoordsXY{ COORDS_XY_STEP, COORDS_XY_STEP };
 
-    for (CoordsXY coords = { min, min }; coords.y <= max; coords.y += COORDS_XY_STEP)
+    for (CoordsXY coords = min; coords.y <= max.y; coords.y += COORDS_XY_STEP)
     {
-        for (coords.x = min; coords.x <= max; coords.x += COORDS_XY_STEP)
+        for (coords.x = min.x; coords.x <= max.x; coords.x += COORDS_XY_STEP)
         {
             auto* surfaceElement = map_get_surface_element_at(coords);
             if (surfaceElement == nullptr)

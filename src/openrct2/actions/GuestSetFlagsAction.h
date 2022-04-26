@@ -11,21 +11,21 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(GuestSetFlagsAction, GameCommand::GuestSetFlags, GameActions::Result)
+class GuestSetFlagsAction final : public GameActionBase<GameCommand::GuestSetFlags>
 {
 private:
-    uint16_t _peepId{ SPRITE_INDEX_NULL };
+    EntityId _peepId{ EntityId::GetNull() };
     uint32_t _newFlags{};
 
 public:
     GuestSetFlagsAction() = default;
-    GuestSetFlagsAction(uint16_t peepId, uint32_t flags);
+    GuestSetFlagsAction(EntityId peepId, uint32_t flags);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

@@ -11,22 +11,17 @@
 
 #include "GameAction.h"
 
-class TrackPlaceActionResult final : public GameActions::Result
+struct TrackPlaceActionResult
 {
-public:
-    TrackPlaceActionResult();
-    TrackPlaceActionResult(GameActions::Status error);
-    TrackPlaceActionResult(GameActions::Status error, rct_string_id message);
-    TrackPlaceActionResult(GameActions::Status error, rct_string_id message, uint8_t* args);
-
     uint8_t GroundFlags{ 0 };
 };
 
-DEFINE_GAME_ACTION(TrackPlaceAction, GameCommand::PlaceTrack, TrackPlaceActionResult)
+class TrackPlaceAction final : public GameActionBase<GameCommand::PlaceTrack>
 {
 private:
-    NetworkRideId_t _rideIndex{ RideIdNewNull };
+    RideId _rideIndex{ RideId::GetNull() };
     int32_t _trackType{};
+    ride_type_t _rideType{};
     CoordsXYZD _origin;
     int32_t _brakeSpeed{};
     int32_t _colour{};
@@ -37,14 +32,17 @@ private:
 public:
     TrackPlaceAction() = default;
     TrackPlaceAction(
-        NetworkRideId_t rideIndex, int32_t trackType, const CoordsXYZD& origin, int32_t brakeSpeed, int32_t colour,
+        RideId rideIndex, int32_t trackType, ride_type_t rideType, const CoordsXYZD& origin, int32_t brakeSpeed, int32_t colour,
         int32_t seatRotation, int32_t liftHillAndAlternativeState, bool fromTrackDesign);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override final;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
+
+private:
+    bool CheckMapCapacity(int16_t numTiles) const;
 };

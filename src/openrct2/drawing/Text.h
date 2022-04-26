@@ -11,7 +11,6 @@
 
 #include "../common.h"
 #include "../interface/Colour.h"
-#include "../localisation/Formatter.h"
 #include "Font.h"
 
 struct ScreenCoordsXY;
@@ -124,37 +123,15 @@ struct TextPaint
     }
 };
 
-class StaticLayout
-{
-private:
-    utf8string Buffer;
-    TextPaint Paint;
-    int32_t LineCount = 0;
-    int32_t LineHeight;
-    int32_t MaxWidth;
-
-    StaticLayout();
-    StaticLayout(const StaticLayout&);
-
-public:
-    StaticLayout(utf8string source, const TextPaint& paint, int32_t width);
-    void Draw(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords);
-    int32_t GetHeight();
-    int32_t GetWidth();
-    int32_t GetLineCount();
-};
+void DrawTextBasic(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, rct_string_id format);
+void DrawTextEllipsised(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format);
+int32_t DrawTextWrapped(rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format);
 
 void DrawTextBasic(
-    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, rct_string_id format, const Formatter& ft = {},
-    TextPaint textPaint = {});
-void DrawTextBasic(
-    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, rct_string_id format, const void* args, TextPaint textPaint = {});
+    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, rct_string_id format, const Formatter& ft, TextPaint textPaint = {});
 void DrawTextEllipsised(
     rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format, const Formatter& ft,
     TextPaint textPaint = {});
 int32_t DrawTextWrapped(
-    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format, const Formatter& ft = {},
-    TextPaint textPaint = {});
-int32_t DrawTextWrapped(
-    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format, const void* args,
+    rct_drawpixelinfo* dpi, const ScreenCoordsXY& coords, int32_t width, rct_string_id format, const Formatter& ft,
     TextPaint textPaint = {});

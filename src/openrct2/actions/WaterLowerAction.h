@@ -11,7 +11,7 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(WaterLowerAction, GameCommand::LowerWater, GameActions::Result)
+class WaterLowerAction final : public GameActionBase<GameCommand::LowerWater>
 {
 private:
     MapRange _range;
@@ -22,11 +22,11 @@ public:
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr QueryExecute(bool isExecuting) const;
+    GameActions::Result QueryExecute(bool isExecuting) const;
     uint8_t GetLowestHeight(MapRange validRange) const;
 };

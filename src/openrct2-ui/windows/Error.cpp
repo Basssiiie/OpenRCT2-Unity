@@ -15,6 +15,7 @@
 #include <openrct2/audio/audio.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Font.h>
+#include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Localisation.h>
 
 // clang-format off
@@ -24,16 +25,16 @@ enum {
 
 static rct_widget window_error_widgets[] = {
     MakeWidget({0, 0}, {200, 42}, WindowWidgetType::ImgBtn, WindowColour::Primary),
-    { WIDGETS_END }
+    WIDGETS_END,
 };
 
-static void window_error_unknown5(rct_window *w);
-static void window_error_paint(rct_window *w, rct_drawpixelinfo *dpi);
+static void WindowErrorUnknown5(rct_window *w);
+static void WindowErrorPaint(rct_window *w, rct_drawpixelinfo *dpi);
 
 static rct_window_event_list window_error_events([](auto& events)
 {
-    events.unknown_05 = &window_error_unknown5;
-    events.paint = &window_error_paint;
+    events.unknown_05 = &WindowErrorUnknown5;
+    events.paint = &WindowErrorPaint;
 });
 // clang-format on
 
@@ -47,14 +48,14 @@ static uint16_t _window_error_num_lines;
  * bx: title
  * dx: message
  */
-rct_window* window_error_open(rct_string_id title, rct_string_id message, const Formatter& args)
+rct_window* WindowErrorOpen(rct_string_id title, rct_string_id message, const Formatter& args)
 {
     auto titlez = format_string(title, args.Data());
     auto messagez = format_string(message, args.Data());
-    return window_error_open(titlez, messagez);
+    return WindowErrorOpen(titlez, messagez);
 }
 
-rct_window* window_error_open(std::string_view title, std::string_view message)
+rct_window* WindowErrorOpen(std::string_view title, std::string_view message)
 {
     int32_t numLines, width, height, maxY;
     rct_window* w;
@@ -123,7 +124,7 @@ rct_window* window_error_open(std::string_view title, std::string_view message)
  *
  *  rct2: 0x00667BFE
  */
-static void window_error_unknown5(rct_window* w)
+static void WindowErrorUnknown5(rct_window* w)
 {
     w->error.var_480++;
     if (w->error.var_480 >= 8)
@@ -134,29 +135,44 @@ static void window_error_unknown5(rct_window* w)
  *
  *  rct2: 0x00667AA3
  */
-static void window_error_paint(rct_window* w, rct_drawpixelinfo* dpi)
+static void WindowErrorPaint(rct_window* w, rct_drawpixelinfo* dpi)
 {
-    int32_t t, l, r, b;
+    ScreenCoordsXY leftTop{ w->windowPos };
+    ScreenCoordsXY rightBottom{ w->windowPos + ScreenCoordsXY{ w->width - 1, w->height - 1 } };
+    ScreenCoordsXY leftBottom{ leftTop.x, rightBottom.y };
+    ScreenCoordsXY rightTop{ rightBottom.x, leftTop.y };
 
-    l = w->windowPos.x;
-    t = w->windowPos.y;
-    r = w->windowPos.x + w->width - 1;
-    b = w->windowPos.y + w->height - 1;
+    gfx_filter_rect(
+        dpi, ScreenRect{ leftTop + ScreenCoordsXY{ 1, 1 }, rightBottom - ScreenCoordsXY{ 1, 1 } }, FilterPaletteID::Palette45);
+    gfx_filter_rect(dpi, ScreenRect{ leftTop, rightBottom }, FilterPaletteID::PaletteGlassSaturatedRed);
 
-    gfx_filter_rect(dpi, l + 1, t + 1, r - 1, b - 1, FilterPaletteID::Palette45);
-    gfx_filter_rect(dpi, l, t, r, b, FilterPaletteID::PaletteGlassSaturatedRed);
+    gfx_filter_rect(
+        dpi, ScreenRect{ leftTop + ScreenCoordsXY{ 0, 2 }, leftBottom - ScreenCoordsXY{ 0, 2 } },
+        FilterPaletteID::PaletteDarken3);
+    gfx_filter_rect(
+        dpi, ScreenRect{ rightTop + ScreenCoordsXY{ 0, 2 }, rightBottom - ScreenCoordsXY{ 0, 2 } },
+        FilterPaletteID::PaletteDarken3);
+    gfx_filter_rect(
+        dpi, ScreenRect{ leftBottom + ScreenCoordsXY{ 2, 0 }, rightBottom - ScreenCoordsXY{ 2, 0 } },
+        FilterPaletteID::PaletteDarken3);
+    gfx_filter_rect(
+        dpi, ScreenRect{ leftTop + ScreenCoordsXY{ 2, 0 }, rightTop - ScreenCoordsXY{ 2, 0 } },
+        FilterPaletteID::PaletteDarken3);
 
-    gfx_filter_rect(dpi, l, t + 2, l, b - 2, FilterPaletteID::PaletteDarken3);
-    gfx_filter_rect(dpi, r, t + 2, r, b - 2, FilterPaletteID::PaletteDarken3);
-    gfx_filter_rect(dpi, l + 2, b, r - 2, b, FilterPaletteID::PaletteDarken3);
-    gfx_filter_rect(dpi, l + 2, t, r - 2, t, FilterPaletteID::PaletteDarken3);
+    gfx_filter_rect(
+        dpi, ScreenRect{ rightTop + ScreenCoordsXY{ 1, 1 }, rightTop + ScreenCoordsXY{ 1, 1 } },
+        FilterPaletteID::PaletteDarken3);
+    gfx_filter_rect(
+        dpi, ScreenRect{ rightTop + ScreenCoordsXY{ -1, 1 }, rightTop + ScreenCoordsXY{ -1, 1 } },
+        FilterPaletteID::PaletteDarken3);
+    gfx_filter_rect(
+        dpi, ScreenRect{ leftBottom + ScreenCoordsXY{ 1, -1 }, leftBottom + ScreenCoordsXY{ 1, -1 } },
+        FilterPaletteID::PaletteDarken3);
+    gfx_filter_rect(
+        dpi, ScreenRect{ rightBottom - ScreenCoordsXY{ 1, 1 }, rightBottom - ScreenCoordsXY{ 1, 1 } },
+        FilterPaletteID::PaletteDarken3);
 
-    gfx_filter_rect(dpi, r + 1, t + 1, r + 1, t + 1, FilterPaletteID::PaletteDarken3);
-    gfx_filter_rect(dpi, r - 1, t + 1, r - 1, t + 1, FilterPaletteID::PaletteDarken3);
-    gfx_filter_rect(dpi, l + 1, b - 1, l + 1, b - 1, FilterPaletteID::PaletteDarken3);
-    gfx_filter_rect(dpi, r - 1, b - 1, r - 1, b - 1, FilterPaletteID::PaletteDarken3);
-
-    l = w->windowPos.x + (w->width + 1) / 2 - 1;
-    t = w->windowPos.y + 1;
-    draw_string_centred_raw(dpi, { l, t }, _window_error_num_lines, _window_error_text.data(), FontSpriteBase::MEDIUM);
+    draw_string_centred_raw(
+        dpi, { leftTop + ScreenCoordsXY{ (w->width + 1) / 2 - 1, 1 } }, _window_error_num_lines, _window_error_text.data(),
+        FontSpriteBase::MEDIUM);
 }

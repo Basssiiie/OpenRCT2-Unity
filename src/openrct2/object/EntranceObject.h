@@ -10,6 +10,7 @@
 #pragma once
 
 #include "../world/Entrance.h"
+#include "../world/Location.hpp"
 #include "Object.h"
 
 class EntranceObject final : public Object
@@ -18,11 +19,6 @@ private:
     rct_entrance_type _legacyType = {};
 
 public:
-    explicit EntranceObject(const rct_object_entry& entry)
-        : Object(entry)
-    {
-    }
-
     void* GetLegacyData() override
     {
         return &_legacyType;
@@ -34,4 +30,8 @@ public:
     void Unload() override;
 
     void DrawPreview(rct_drawpixelinfo* dpi, int32_t width, int32_t height) const override;
+
+    ImageIndex GetImage(uint8_t sequence, Direction direction) const;
+    uint8_t GetScrollingMode() const;
+    uint8_t GetTextHeight() const;
 };

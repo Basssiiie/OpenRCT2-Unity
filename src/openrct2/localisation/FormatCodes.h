@@ -70,7 +70,6 @@ enum class FormatToken
     FontTiny,
     FontSmall,
     FontMedium,
-    FontBig,
 
     OutlineEnable,
     OutlineDisable,
@@ -175,6 +174,8 @@ namespace UnicodeChar
     constexpr char32_t o_macron = 0x14D;
     constexpr char32_t o_double_acute_uc = 0x150;
     constexpr char32_t o_double_acute = 0x151;
+    constexpr char32_t oe_uc = 0x152;
+    constexpr char32_t oe = 0x153;
     constexpr char32_t r_caron_uc = 0x158;
     constexpr char32_t r_caron = 0x159;
     constexpr char32_t s_acute_uc = 0x15A;
@@ -277,12 +278,17 @@ namespace UnicodeChar
     constexpr char32_t cyrillic_io = 0x451;
 
     // Punctuation
+    constexpr char32_t left_brace = 0x7B;
+    constexpr char32_t vertical_bar = 0x7C;
+    constexpr char32_t right_brace = 0x7D;
+    constexpr char32_t tilde = 0x7E;
     constexpr char32_t non_breaking_space = 0xA0;
     constexpr char32_t leftguillemet = 0xAB;
     constexpr char32_t rightguillemet = 0xBB;
     constexpr char32_t interpunct = 0xB7;
     constexpr char32_t multiplication_sign = 0xD7;
     constexpr char32_t en_dash = 0x2013;
+    constexpr char32_t em_dash = 0x2014;
     constexpr char32_t single_quote_open = 0x2018;
     constexpr char32_t single_quote_end = 0x2019;
     constexpr char32_t single_german_quote_open = 0x201A;

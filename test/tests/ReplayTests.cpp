@@ -20,7 +20,7 @@
 #include <openrct2/core/FileScanner.h>
 #include <openrct2/core/Path.hpp>
 #include <openrct2/core/String.hpp>
-#include <openrct2/platform/platform.h>
+#include <openrct2/platform/Platform.h>
 #include <openrct2/ride/Ride.h>
 #include <string>
 
@@ -39,7 +39,7 @@ static std::string sanitizeTestName(const std::string& name)
     std::string res;
     for (char c : nameOnly)
     {
-        if (isalnum(c))
+        if (isalnum(static_cast<unsigned char>(c)))
             res += c;
     }
     return res;
@@ -49,11 +49,11 @@ static std::vector<ReplayTestData> GetReplayFiles()
 {
     std::vector<ReplayTestData> res;
     std::string basePath = TestData::GetBasePath();
-    std::string replayPath = Path::Combine(basePath, "replays");
-    std::string replayPathPattern = Path::Combine(replayPath, "*.sv6r");
+    std::string replayPath = Path::Combine(basePath, u8"replays");
+    std::string replayPathPattern = Path::Combine(replayPath, u8"*.parkrep");
     std::vector<std::string> files;
 
-    std::unique_ptr<IFileScanner> scanner = std::unique_ptr<IFileScanner>(Path::ScanDirectory(replayPathPattern, true));
+    auto scanner = Path::ScanDirectory(replayPathPattern, true);
     while (scanner->Next())
     {
         ReplayTestData test;
@@ -71,13 +71,9 @@ protected:
 
 TEST_P(ReplayTests, RunReplay)
 {
-#ifdef PLATFORM_32BIT
-    log_warning("Replay Tests have not been performed. OpenRCT2/OpenRCT2#11279.");
-    return;
-#else
     gOpenRCT2Headless = true;
     gOpenRCT2NoGraphics = true;
-    core_init();
+    Platform::CoreInit();
 
     auto testData = GetParam();
     auto replayFile = testData.filePath;
@@ -103,7 +99,6 @@ TEST_P(ReplayTests, RunReplay)
     }
     ASSERT_FALSE(replayManager->IsReplaying());
     ASSERT_FALSE(replayManager->IsPlaybackStateMismatching());
-#endif
 }
 
 static void PrintTo(const ReplayTestData& testData, std::ostream* os)

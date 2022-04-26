@@ -33,7 +33,6 @@ struct rct_window
 {
     rct_window_event_list* event_handlers{};
     rct_viewport* viewport{};
-    uint64_t enabled_widgets{};
     uint64_t disabled_widgets{};
     uint64_t pressed_widgets{};
     uint64_t hold_down_widgets{};
@@ -45,22 +44,24 @@ struct rct_window
     int16_t max_width{};
     int16_t min_height{};
     int16_t max_height{};
-    rct_windownumber number{};
-    uint16_t flags{};
-    rct_scroll scrolls[3];
-    uint8_t list_item_positions[1024]{};
-    uint16_t no_list_items{};     // 0 for no items
-    int16_t selected_list_item{}; // -1 for none selected
     union
     {
-        coordinate_focus viewport_focus_coordinates;
-        sprite_focus viewport_focus_sprite;
+        rct_windownumber number{};
+        RideId rideId;
+    };
+    uint16_t flags{};
+    rct_scroll scrolls[3];
+    uint32_t list_item_positions[1024]{};
+    uint16_t no_list_items{};     // 0 for no items
+    int16_t selected_list_item{}; // -1 for none selected
+    std::optional<Focus> focus;
+    union
+    {
         campaign_variables campaign;
         new_ride_variables new_ride;
         news_variables news;
         map_variables map;
         ride_variables ride;
-        scenery_variables scenery;
         track_list_variables track_list;
         error_variables error;
         void* custom_info;
@@ -90,18 +91,17 @@ struct rct_window
         uint32_t highlighted_item;
         uint16_t ride_colour;
         ResearchItem* research_item;
-        rct_object_entry* object_entry;
         const scenario_index_entry* highlighted_scenario;
         uint16_t var_496;
     };
     int16_t selected_tab{};
     int16_t var_4AE{};
-    uint16_t viewport_target_sprite{};
+    EntityId viewport_target_sprite{ EntityId::GetNull() };
     ScreenCoordsXY savedViewPos{};
     rct_windowclass classification{};
     colour_t colours[6]{};
     VisibilityCache visibility{};
-    uint16_t viewport_smart_follow_sprite = SPRITE_INDEX_NULL; // Handles setting viewport target sprite etc
+    EntityId viewport_smart_follow_sprite{ EntityId::GetNull() }; // Handles setting viewport target sprite etc
 
     void SetLocation(const CoordsXYZ& coords);
     void ScrollToViewport();
@@ -173,10 +173,22 @@ struct rct_window
     virtual void OnScrollDraw(int32_t scrollIndex, rct_drawpixelinfo& dpi)
     {
     }
+    virtual void OnToolUpdate(rct_widgetindex widgetIndex, const ScreenCoordsXY& screenCoords)
+    {
+    }
     virtual void OnToolDown(rct_widgetindex widgetIndex, const ScreenCoordsXY& screenCoords)
     {
     }
+    virtual void OnToolDrag(rct_widgetindex widgetIndex, const ScreenCoordsXY& screenCoords)
+    {
+    }
+    virtual void OnToolUp(rct_widgetindex, const ScreenCoordsXY&)
+    {
+    }
     virtual void OnToolAbort(rct_widgetindex widgetIndex)
+    {
+    }
+    virtual void OnViewportRotate()
     {
     }
 };

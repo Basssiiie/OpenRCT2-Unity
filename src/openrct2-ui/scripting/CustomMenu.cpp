@@ -14,7 +14,6 @@
 #    include <openrct2-ui/input/ShortcutManager.h>
 #    include <openrct2/Input.h>
 #    include <openrct2/world/Map.h>
-#    include <openrct2/world/Sprite.h>
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Ui;
@@ -195,7 +194,7 @@ namespace OpenRCT2::Scripting
 
             if (info.SpriteType == ViewportInteractionItem::Entity && info.Entity != nullptr)
             {
-                obj.Set("entityId", info.Entity->sprite_index);
+                obj.Set("entityId", info.Entity->sprite_index.ToUnderlying());
             }
             else if (info.Element != nullptr)
             {
@@ -280,7 +279,6 @@ namespace OpenRCT2::Scripting
             duk_error(scriptEngine.GetContext(), DUK_ERR_ERROR, "Invalid parameters.");
         }
     }
-
 } // namespace OpenRCT2::Scripting
 
 #endif

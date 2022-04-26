@@ -10,19 +10,19 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(MazePlaceTrackAction, GameCommand::PlaceMazeDesign, GameActions::Result)
+class MazePlaceTrackAction final : public GameActionBase<GameCommand::PlaceMazeDesign>
 {
 private:
     CoordsXYZ _loc;
-    NetworkRideId_t _rideIndex{ RIDE_ID_NULL };
+    RideId _rideIndex{ RideId::GetNull() };
     uint16_t _mazeEntry{};
 
 public:
     MazePlaceTrackAction() = default;
-    MazePlaceTrackAction(const CoordsXYZ& location, NetworkRideId_t rideIndex, uint16_t mazeEntry);
+    MazePlaceTrackAction(const CoordsXYZ& location, RideId rideIndex, uint16_t mazeEntry);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

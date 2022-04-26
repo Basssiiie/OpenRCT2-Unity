@@ -15,7 +15,16 @@
 #include <cstddef>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
+
+using utf8 = char;
+using utf8string = utf8*;
+using const_utf8string = const utf8*;
+using u8string = std::basic_string<utf8>;
+using u8string_view = std::basic_string_view<utf8>;
+
+using codepoint_t = uint32_t;
 
 namespace CODE_PAGE
 {
@@ -147,6 +156,39 @@ namespace String
         }
         return result;
     }
+
+    /**
+     * Returns codepoint size or no value if not valid
+     */
+    constexpr std::optional<int> UTF8GetCodePointSize(std::string_view v)
+    {
+        if (v.size() >= 1 && !(v[0] & 0x80))
+        {
+            return { 1 };
+        }
+        if (v.size() >= 2 && ((v[0] & 0xE0) == 0xC0))
+        {
+            return { 2 };
+        }
+        if (v.size() >= 3 && ((v[0] & 0xF0) == 0xE0))
+        {
+            return { 3 };
+        }
+        if (v.size() >= 4 && ((v[0] & 0xF8) == 0xF0))
+        {
+            return { 4 };
+        }
+        return std::nullopt;
+    }
+
+    /**
+     * Truncates a string to at most `size` bytes,
+     * making sure not to cut in the middle of a sequence.
+     */
+    std::string_view UTF8Truncate(std::string_view v, size_t size);
+
+    // Escapes special characters in a string to the percentage equivalent that can be used in URLs.
+    std::string URLEncode(std::string_view value);
 } // namespace String
 
 class CodepointView

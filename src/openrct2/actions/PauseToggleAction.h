@@ -13,14 +13,14 @@
 
 // Clang format is broken for small game actions
 // clang-format off
-DEFINE_GAME_ACTION(PauseToggleAction, GameCommand::TogglePause, GameActions::Result)
+class PauseToggleAction final : public GameActionBase<GameCommand::TogglePause>
 {
 public:
     PauseToggleAction() = default;
 
     uint16_t GetActionFlags() const override;
 
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };
 // clang-format on

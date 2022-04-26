@@ -7,8 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef _CHEATS_H_
-#define _CHEATS_H_
+#pragma once
 
 #include "common.h"
 
@@ -17,7 +16,7 @@ extern bool gCheatsDisableClearanceChecks;
 extern bool gCheatsDisableSupportLimits;
 extern bool gCheatsShowAllOperatingModes;
 extern bool gCheatsShowVehiclesFromOtherTrackTypes;
-extern bool gCheatsFastLiftHill;
+extern bool gCheatsUnlockOperatingLimits;
 extern bool gCheatsDisableBrakesFailure;
 extern bool gCheatsDisableAllBreakdowns;
 extern bool gCheatsBuildInPauseMode;
@@ -86,6 +85,7 @@ enum class CheatType : int32_t
     CreateDucks,
     RemoveDucks,
     AllowTrackPlaceInvalidHeights,
+    NoCapOnQueueLengthDummy, // Removed; this dummy exists only for deserialisation parks that had it saved
     Count,
 };
 
@@ -109,7 +109,7 @@ enum
     OBJECT_UMBRELLA
 };
 
-#define CHEATS_GIVE_GUESTS_MONEY MONEY(1000, 00)
+constexpr auto CHEATS_GIVE_GUESTS_MONEY = 1000.00_GBP;
 #define CHEATS_TRAM_INCREMENT 250
 #define CHEATS_DUCK_INCREMENT 20
 #define CHEATS_STAFF_FAST_SPEED 0xFF
@@ -120,5 +120,3 @@ void CheatsReset();
 const char* CheatsGetName(CheatType cheatType);
 void CheatsSet(CheatType cheatType, int32_t param1 = 0, int32_t param2 = 0);
 void CheatsSerialise(class DataSerialiser& ds);
-
-#endif

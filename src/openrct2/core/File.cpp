@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2020 OpenRCT2 developers
+ * Copyright (c) 2014-2021 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -13,7 +13,7 @@
 #    include <sys/stat.h>
 #endif
 
-#include "../platform/Platform2.h"
+#include "../platform/Platform.h"
 #include "../util/Util.h"
 #include "File.h"
 #include "FileStream.h"
@@ -23,70 +23,79 @@
 
 namespace File
 {
-    bool Exists(const std::string& path)
+    bool Exists(u8string_view path)
     {
-        return Platform::FileExists(path);
+        fs::path file = fs::u8path(path);
+        log_verbose("Checking if file exists: %s", u8string(path).c_str());
+        std::error_code ec;
+        const auto result = fs::exists(file, ec);
+        return result && ec.value() == 0;
     }
 
-    bool Copy(const std::string& srcPath, const std::string& dstPath, bool overwrite)
+    bool Copy(u8string_view srcPath, u8string_view dstPath, bool overwrite)
     {
-        return platform_file_copy(srcPath.c_str(), dstPath.c_str(), overwrite);
+        if (!overwrite && Exists(dstPath))
+        {
+            log_warning("File::Copy(): Not overwriting %s, because overwrite flag == false", u8string(dstPath).c_str());
+            return false;
+        }
+
+        std::error_code ec;
+        const auto result = fs::copy_file(fs::u8path(srcPath), fs::u8path(dstPath), ec);
+        return result && ec.value() == 0;
     }
 
-    bool Delete(const std::string& path)
+    bool Delete(u8string_view path)
     {
-        return platform_file_delete(path.c_str());
+        std::error_code ec;
+        const auto result = fs::remove(fs::u8path(path), ec);
+        return result && ec.value() == 0;
     }
 
-    bool Move(const std::string& srcPath, const std::string& dstPath)
+    bool Move(u8string_view srcPath, u8string_view dstPath)
     {
-        return platform_file_move(srcPath.c_str(), dstPath.c_str());
+        std::error_code ec;
+        fs::rename(fs::u8path(srcPath), fs::u8path(dstPath), ec);
+        return ec.value() == 0;
     }
 
-    std::vector<uint8_t> ReadAllBytes(std::string_view path)
+    std::vector<uint8_t> ReadAllBytes(u8string_view path)
     {
-#if defined(_WIN32) && !defined(__MINGW32__)
-        auto pathW = String::ToWideChar(path);
-        std::ifstream fs(pathW, std::ios::in | std::ios::binary);
-#else
-        std::ifstream fs(std::string(path), std::ios::in | std::ios::binary);
-#endif
+        std::ifstream fs(fs::u8path(u8string(path)), std::ios::in | std::ios::binary);
         if (!fs.is_open())
         {
-            throw IOException("Unable to open " + std::string(path));
+            throw IOException("Unable to open " + u8string(path));
         }
 
         std::vector<uint8_t> result;
-        fs.seekg(0, std::ios::end);
-        auto fsize = static_cast<size_t>(fs.tellg());
+        auto fsize = Platform::GetFileSize(path);
         if (fsize > SIZE_MAX)
         {
-            std::string message = String::StdFormat(
-                "'%s' exceeds maximum length of %lld bytes.", std::string(path).c_str(), SIZE_MAX);
+            u8string message = String::StdFormat(
+                "'%s' exceeds maximum length of %lld bytes.", u8string(path).c_str(), SIZE_MAX);
             throw IOException(message);
         }
         else
         {
             result.resize(fsize);
-            fs.seekg(0);
             fs.read(reinterpret_cast<char*>(result.data()), result.size());
             fs.exceptions(fs.failbit);
         }
         return result;
     }
 
-    std::string ReadAllText(std::string_view path)
+    u8string ReadAllText(u8string_view path)
     {
         auto bytes = ReadAllBytes(path);
         // TODO skip BOM
-        std::string result(bytes.size(), 0);
+        u8string result(bytes.size(), 0);
         std::copy(bytes.begin(), bytes.end(), result.begin());
         return result;
     }
 
-    std::vector<std::string> ReadAllLines(std::string_view path)
+    std::vector<u8string> ReadAllLines(u8string_view path)
     {
-        std::vector<std::string> lines;
+        std::vector<u8string> lines;
         auto data = ReadAllBytes(path);
         auto lineStart = reinterpret_cast<const char*>(data.data());
         auto ch = lineStart;
@@ -113,50 +122,19 @@ namespace File
         return lines;
     }
 
-    void WriteAllBytes(const std::string& path, const void* buffer, size_t length)
+    void WriteAllBytes(u8string_view path, const void* buffer, size_t length)
     {
         auto fs = OpenRCT2::FileStream(path, OpenRCT2::FILE_MODE_WRITE);
         fs.Write(buffer, length);
     }
 
-    uint64_t GetLastModified(const std::string& path)
+    uint64_t GetLastModified(u8string_view path)
     {
-        uint64_t lastModified = 0;
-#ifdef _WIN32
-        auto pathW = String::ToWideChar(path);
-        auto hFile = CreateFileW(pathW.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
-        if (hFile != INVALID_HANDLE_VALUE)
-        {
-            FILETIME ftCreate, ftAccess, ftWrite;
-            if (GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite))
-            {
-                lastModified = (static_cast<uint64_t>(ftWrite.dwHighDateTime) << 32ULL)
-                    | static_cast<uint64_t>(ftWrite.dwLowDateTime);
-            }
-            CloseHandle(hFile);
-        }
-#else
-        struct stat statInfo
-        {
-        };
-        if (stat(path.c_str(), &statInfo) == 0)
-        {
-            lastModified = statInfo.st_mtime;
-        }
-#endif
-        return lastModified;
+        return Platform::GetLastModified(path);
+    }
+
+    uint64_t GetSize(u8string_view path)
+    {
+        return Platform::GetFileSize(path);
     }
 } // namespace File
-
-bool writeentirefile(const utf8* path, const void* buffer, size_t length)
-{
-    try
-    {
-        File::WriteAllBytes(String::ToStd(path), buffer, length);
-        return true;
-    }
-    catch (const std::exception&)
-    {
-        return false;
-    }
-}

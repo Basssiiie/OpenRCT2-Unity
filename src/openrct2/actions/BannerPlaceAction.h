@@ -11,25 +11,29 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(BannerPlaceAction, GameCommand::PlaceBanner, GameActions::Result)
+struct BannerPlaceActionResult
+{
+    BannerIndex bannerId = BannerIndex::GetNull();
+};
+
+class BannerPlaceAction final : public GameActionBase<GameCommand::PlaceBanner>
 {
 private:
     CoordsXYZD _loc;
     ObjectEntryIndex _bannerType{ BANNER_NULL };
-    BannerIndex _bannerIndex{ BANNER_INDEX_NULL };
     uint8_t _primaryColour{};
 
 public:
     BannerPlaceAction() = default;
-    BannerPlaceAction(const CoordsXYZD& loc, uint8_t bannerType, BannerIndex bannerIndex, uint8_t primaryColour);
+    BannerPlaceAction(const CoordsXYZD& loc, ObjectEntryIndex bannerType, colour_t primaryColour);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
     PathElement* GetValidPathElement() const;

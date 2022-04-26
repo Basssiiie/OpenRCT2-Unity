@@ -12,102 +12,17 @@
 #include "../Game.h"
 #include "../common.h"
 #include "../core/DataSerialiser.h"
-#include "../core/IStream.hpp"
+#include "../core/Identifier.hpp"
 #include "../localisation/StringIds.h"
-#include "../world/Map.h"
+#include "GameActionResult.h"
 
 #include <array>
 #include <functional>
 #include <memory>
 #include <utility>
 
-class StringVariant
-{
-private:
-    rct_string_id StringId = STR_NONE;
-    std::string String;
-
-public:
-    StringVariant() = default;
-
-    StringVariant(rct_string_id stringId)
-        : StringId(stringId)
-    {
-    }
-
-    StringVariant(const std::string& s)
-        : String(s)
-    {
-    }
-
-    StringVariant(std::string&& s)
-        : String(std::move(s))
-    {
-    }
-
-    StringVariant(const char* s)
-        : String(s)
-    {
-    }
-
-    const std::string* AsString() const
-    {
-        if (!String.empty())
-        {
-            return &String;
-        }
-        return {};
-    }
-
-    const rct_string_id* AsStringId() const
-    {
-        if (String.empty())
-        {
-            return &StringId;
-        }
-        return {};
-    }
-
-    rct_string_id GetStringId() const
-    {
-        return String.empty() ? StringId : STR_NONE;
-    }
-};
-
-#ifdef __WARN_SUGGEST_FINAL_METHODS__
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wsuggest-final-methods"
-#    pragma GCC diagnostic ignored "-Wsuggest-final-types"
-#endif
-
 namespace GameActions
 {
-    /**
-     * Common error codes for game actions.
-     */
-    enum class Status : uint16_t
-    {
-        Ok,
-        InvalidParameters,
-        Disallowed,
-        GamePaused,
-        InsufficientFunds,
-        NotInEditorMode,
-
-        NotOwned,
-        TooLow,
-        TooHigh,
-        NoClearance,
-        ItemAlreadyPlaced,
-
-        NotClosed,
-        Broken,
-
-        NoFreeElements,
-
-        Unknown = UINT16_MAX,
-    };
-
     namespace Flags
     {
         constexpr uint16_t AllowWhilePaused = 1 << 0;
@@ -115,40 +30,13 @@ namespace GameActions
         constexpr uint16_t EditorOnly = 1 << 2;
     } // namespace Flags
 
-    /**
-     * Represents the result of a game action query or execution.
-     */
-    class Result
-    {
-    public:
-        using Ptr = std::unique_ptr<GameActions::Result>;
-
-        GameActions::Status Error = GameActions::Status::Ok;
-        StringVariant ErrorTitle;
-        StringVariant ErrorMessage;
-        std::array<uint8_t, 32> ErrorMessageArgs;
-        CoordsXYZ Position = { LOCATION_NULL, LOCATION_NULL, LOCATION_NULL };
-        money32 Cost = 0;
-        ExpenditureType Expenditure = ExpenditureType::Count;
-
-        Result() = default;
-        Result(GameActions::Status error, rct_string_id message);
-        Result(GameActions::Status error, rct_string_id title, rct_string_id message);
-        Result(GameActions::Status error, rct_string_id title, rct_string_id message, uint8_t* args);
-        Result(const GameActions::Result&) = delete;
-        virtual ~Result(){};
-
-        std::string GetErrorTitle() const;
-        std::string GetErrorMessage() const;
-    };
-
-    class ConstructClearResult final : public Result
-    {
-    public:
-        uint8_t GroundFlags{ 0 };
-    };
-
 } // namespace GameActions
+
+#ifdef __WARN_SUGGEST_FINAL_METHODS__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wsuggest-final-methods"
+#    pragma GCC diagnostic ignored "-Wsuggest-final-types"
+#endif
 
 /**
  *
@@ -191,6 +79,14 @@ public:
         Visit("direction", param.direction);
     }
 
+    void Visit(MapRange& param)
+    {
+        Visit("x1", param.Point1.x);
+        Visit("y1", param.Point1.y);
+        Visit("x2", param.Point2.x);
+        Visit("y2", param.Point2.y);
+    }
+
     template<typename T> void Visit(std::string_view name, T& param)
     {
         static_assert(std::is_arithmetic_v<T> || std::is_enum_v<T>, "Not an arithmetic type");
@@ -199,17 +95,24 @@ public:
         param = static_cast<T>(value);
     }
 
+    template<typename T, T TNull, typename TTag> void Visit(std::string_view name, TIdentifier<T, TNull, TTag>& param)
+    {
+        auto value = param.ToUnderlying();
+        Visit(name, value);
+        param = TIdentifier<T, TNull, TTag>::FromUnderlying(value);
+    }
+
     template<typename T, size_t _TypeID> void Visit(std::string_view name, NetworkObjectId_t<T, _TypeID>& param)
     {
         Visit(name, param.id);
     }
 };
 
-struct GameAction
+class GameAction
 {
 public:
     using Ptr = std::unique_ptr<GameAction>;
-    using Callback_t = std::function<void(const struct GameAction*, const GameActions::Result*)>;
+    using Callback_t = std::function<void(const class GameAction*, const GameActions::Result*)>;
 
 private:
     GameCommand const _type;
@@ -227,7 +130,7 @@ public:
 
     virtual ~GameAction() = default;
 
-    virtual const char* GetName() const = 0;
+    const char* GetName() const;
 
     virtual void AcceptParameters(GameActionParameterVisitor&)
     {
@@ -330,12 +233,12 @@ public:
     /**
      * Query the result of the game action without changing the game state.
      */
-    virtual GameActions::Result::Ptr Query() const abstract;
+    virtual GameActions::Result Query() const abstract;
 
     /**
      * Apply the game action and change the game state.
      */
-    virtual GameActions::Result::Ptr Execute() const abstract;
+    virtual GameActions::Result Execute() const abstract;
 
     bool LocationValid(const CoordsXY& coords) const;
 };
@@ -348,34 +251,14 @@ template<GameCommand TId> struct GameActionNameQuery
 {
 };
 
-template<GameCommand TType, typename TResultType> struct GameActionBase : GameAction
+template<GameCommand TType> struct GameActionBase : GameAction
 {
 public:
-    using Result = TResultType;
-
     static constexpr GameCommand TYPE = TType;
 
     GameActionBase()
         : GameAction(TYPE)
     {
-    }
-
-    virtual const char* GetName() const override
-    {
-        return GameActionNameQuery<TType>::Name();
-    }
-
-    void SetCallback(std::function<void(const struct GameAction*, const TResultType*)> typedCallback)
-    {
-        GameAction::SetCallback([typedCallback](const GameAction* ga, const GameActions::Result* result) {
-            typedCallback(ga, static_cast<const TResultType*>(result));
-        });
-    }
-
-protected:
-    template<class... TTypes> static constexpr std::unique_ptr<TResultType> MakeResult(TTypes&&... args)
-    {
-        return std::make_unique<TResultType>(std::forward<TTypes>(args)...);
     }
 };
 
@@ -383,9 +266,8 @@ namespace GameActions
 {
     using GameActionFactory = GameAction* (*)();
 
-    void Initialize();
-    void Register();
     bool IsValidId(uint32_t id);
+    const char* GetName(GameCommand id);
 
     // Halts the queue processing until ResumeQueue is called, any calls to ProcessQueue
     // will have no effect during suspension. It has no effect of actions that will not
@@ -404,32 +286,11 @@ namespace GameActions
     GameAction::Ptr Clone(const GameAction* action);
 
     // This should be used if a round trip is to be expected.
-    GameActions::Result::Ptr Query(const GameAction* action);
-    GameActions::Result::Ptr Execute(const GameAction* action);
+    GameActions::Result Query(const GameAction* action);
+    GameActions::Result Execute(const GameAction* action);
 
     // This should be used from within game actions.
-    GameActions::Result::Ptr QueryNested(const GameAction* action);
-    GameActions::Result::Ptr ExecuteNested(const GameAction* action);
-
-    GameActionFactory Register(GameCommand id, GameActionFactory action);
-
-    template<typename T> static GameActionFactory Register()
-    {
-        GameActionFactory factory = []() -> GameAction* { return new T(); };
-        Register(T::TYPE, factory);
-        return factory;
-    }
-
-    // clang-format off
-#define DEFINE_GAME_ACTION(cls, id, res)                                         \
-    template<> struct GameActionNameQuery<id>                                    \
-    {                                                                            \
-        static const char* Name()                                                \
-        {                                                                        \
-            return #cls;                                                         \
-        }                                                                        \
-    };                                                                           \
-    struct cls final : public GameActionBase<id, res>
-    // clang-format on
+    GameActions::Result QueryNested(const GameAction* action);
+    GameActions::Result ExecuteNested(const GameAction* action);
 
 } // namespace GameActions

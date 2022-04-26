@@ -11,12 +11,12 @@
 
 #ifdef ENABLE_SCRIPTING
 
-#    include <memory>
 #    include <openrct2/Context.h>
 #    include <openrct2/Game.h>
 #    include <openrct2/OpenRCT2.h>
 #    include <openrct2/ParkImporter.h>
 #    include <openrct2/core/String.hpp>
+#    include <openrct2/entity/EntityRegistry.h>
 #    include <openrct2/object/ObjectManager.h>
 #    include <openrct2/scenario/Scenario.h>
 #    include <openrct2/scripting/ScriptEngine.h>
@@ -24,7 +24,6 @@
 #    include <openrct2/title/TitleSequence.h>
 #    include <openrct2/title/TitleSequenceManager.h>
 #    include <openrct2/title/TitleSequencePlayer.h>
-#    include <openrct2/world/Sprite.h>
 
 namespace OpenRCT2::Scripting
 {
@@ -56,8 +55,8 @@ namespace OpenRCT2::Scripting
                 obj.Set("index", value.SaveIndex);
                 break;
             case TitleScript::Location:
-                obj.Set("x", value.X);
-                obj.Set("y", value.Y);
+                obj.Set("x", value.Location.X);
+                obj.Set("y", value.Location.Y);
                 break;
             case TitleScript::Rotate:
                 obj.Set("rotations", value.Rotations);
@@ -66,10 +65,10 @@ namespace OpenRCT2::Scripting
                 obj.Set("zoom", value.Zoom);
                 break;
             case TitleScript::Follow:
-                if (value.SpriteIndex == SPRITE_INDEX_NULL)
+                if (value.Follow.SpriteIndex.IsNull())
                     obj.Set("id", nullptr);
                 else
-                    obj.Set("id", value.SpriteIndex);
+                    obj.Set("id", value.Follow.SpriteIndex.ToUnderlying());
                 break;
             case TitleScript::Speed:
                 obj.Set("speed", value.Speed);
@@ -104,8 +103,8 @@ namespace OpenRCT2::Scripting
                 command.SaveIndex = value["index"].as_int();
                 break;
             case TitleScript::Location:
-                command.X = value["x"].as_int();
-                command.Y = value["y"].as_int();
+                command.Location.X = value["x"].as_int();
+                command.Location.Y = value["y"].as_int();
                 break;
             case TitleScript::Rotate:
                 command.Rotations = value["rotations"].as_int();
@@ -118,11 +117,11 @@ namespace OpenRCT2::Scripting
                 auto dukId = value["id"];
                 if (dukId.type() == DukValue::Type::NUMBER)
                 {
-                    command.SpriteIndex = dukId.as_int();
+                    command.Follow.SpriteIndex = EntityId::FromUnderlying(dukId.as_int());
                 }
                 else
                 {
-                    command.SpriteIndex = SPRITE_INDEX_NULL;
+                    command.Follow.SpriteIndex = EntityId::GetNull();
                 }
                 break;
             }
@@ -209,13 +208,20 @@ namespace OpenRCT2::Scripting
                     try
                     {
                         auto& objectMgr = GetContext()->GetObjectManager();
-                        auto parkImporter = std::unique_ptr<IParkImporter>(ParkImporter::Create(handle->HintPath));
+                        auto parkImporter = ParkImporter::Create(handle->HintPath);
                         auto result = parkImporter->LoadFromStream(handle->Stream.get(), isScenario);
-                        objectMgr.LoadObjects(result.RequiredObjects.data(), result.RequiredObjects.size());
+                        objectMgr.LoadObjects(result.RequiredObjects);
                         parkImporter->Import();
 
                         auto old = gLoadKeepWindowsOpen;
-                        gLoadKeepWindowsOpen = true;
+
+                        // Unless we are already in the game, we have to re-create the windows
+                        // so that the game toolbars are created.
+                        if (gScreenFlags == SCREEN_FLAGS_PLAYING)
+                        {
+                            gLoadKeepWindowsOpen = true;
+                        }
+
                         if (isScenario)
                             scenario_begin();
                         else
@@ -249,7 +255,7 @@ namespace OpenRCT2::Scripting
                     return i;
                 }
             }
-            return {};
+            return std::nullopt;
         }
     };
 
@@ -490,7 +496,7 @@ namespace OpenRCT2::Scripting
                     return i;
                 }
             }
-            return {};
+            return std::nullopt;
         }
 
         const TitleSequenceManagerItem* GetItem() const

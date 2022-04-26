@@ -7,6 +7,8 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
+#include "Image.h"
+
 #include "../OpenRCT2.h"
 #include "../core/Console.hpp"
 #include "../core/Guard.hpp"
@@ -20,17 +22,11 @@ constexpr uint32_t BASE_IMAGE_ID = SPR_IMAGE_LIST_BEGIN;
 constexpr uint32_t MAX_IMAGES = SPR_IMAGE_LIST_END - BASE_IMAGE_ID;
 constexpr uint32_t INVALID_IMAGE_ID = UINT32_MAX;
 
-struct ImageList
-{
-    uint32_t BaseId;
-    uint32_t Count;
-};
-
 static bool _initialised = false;
 static std::list<ImageList> _freeLists;
 static uint32_t _allocatedImageCount;
 
-#ifdef DEBUG
+#ifdef DEBUG_LEVEL_1
 static std::list<ImageList> _allocatedLists;
 
 // MSVC's compiler doesn't support the [[maybe_unused]] attribute for unused static functions. Until this has been resolved, we
@@ -76,7 +72,7 @@ static void InitialiseImageList()
 
     _freeLists.clear();
     _freeLists.push_back({ BASE_IMAGE_ID, MAX_IMAGES });
-#ifdef DEBUG
+#ifdef DEBUG_LEVEL_1
     _allocatedLists.clear();
 #endif
     _allocatedImageCount = 0;
@@ -124,7 +120,7 @@ static uint32_t TryAllocateImageList(uint32_t count)
                 _freeLists.push_back(remainder);
             }
 
-#ifdef DEBUG
+#ifdef DEBUG_LEVEL_1
             _allocatedLists.push_back({ imageList.BaseId, count });
 #endif
             _allocatedImageCount += count;
@@ -163,9 +159,11 @@ static void FreeImageList(uint32_t baseImageId, uint32_t count)
     Guard::Assert(_initialised, GUARD_LINE);
     Guard::Assert(baseImageId >= BASE_IMAGE_ID, GUARD_LINE);
 
-#ifdef DEBUG
-    bool contains = AllocatedListRemove(baseImageId, count);
-    Guard::Assert(contains, GUARD_LINE);
+#ifdef DEBUG_LEVEL_1
+    if (!AllocatedListRemove(baseImageId, count))
+    {
+        log_error("Cannot unload %u items from offset %u", count, baseImageId);
+    }
 #endif
     _allocatedImageCount -= count;
 
@@ -176,7 +174,8 @@ static void FreeImageList(uint32_t baseImageId, uint32_t count)
             it->Count += count;
             return;
         }
-        else if (baseImageId + count == it->BaseId)
+
+        if (baseImageId + count == it->BaseId)
         {
             it->BaseId = baseImageId;
             it->Count += count;
@@ -234,7 +233,7 @@ void gfx_object_check_all_images_freed()
 {
     if (_allocatedImageCount != 0)
     {
-#ifdef DEBUG
+#ifdef DEBUG_LEVEL_1
         Guard::Assert(_allocatedImageCount == 0, "%u images were not freed", _allocatedImageCount);
 #else
         Console::Error::WriteLine("%u images were not freed", _allocatedImageCount);
@@ -250,4 +249,9 @@ size_t ImageListGetUsedCount()
 size_t ImageListGetMaximum()
 {
     return MAX_IMAGES;
+}
+
+const std::list<ImageList>& GetAvailableAllocationRanges()
+{
+    return _freeLists;
 }

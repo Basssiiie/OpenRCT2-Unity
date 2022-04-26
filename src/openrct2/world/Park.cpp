@@ -18,17 +18,19 @@
 #include "../actions/ParkSetParameterAction.h"
 #include "../config/Config.h"
 #include "../core/Memory.hpp"
+#include "../core/String.hpp"
+#include "../entity/Litter.h"
+#include "../entity/Peep.h"
+#include "../entity/Staff.h"
 #include "../interface/Colour.h"
 #include "../interface/Window.h"
 #include "../localisation/Localisation.h"
 #include "../management/Award.h"
 #include "../management/Finance.h"
 #include "../management/Marketing.h"
-#include "../management/NewsItem.h"
 #include "../management/Research.h"
 #include "../network/network.h"
-#include "../peep/Peep.h"
-#include "../peep/Staff.h"
+#include "../profiling/Profiling.h"
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
 #include "../ride/ShopItem.h"
@@ -37,7 +39,6 @@
 #include "../windows/Intent.h"
 #include "Entrance.h"
 #include "Map.h"
-#include "Sprite.h"
 #include "Surface.h"
 
 #include <algorithm>
@@ -45,22 +46,22 @@
 
 using namespace OpenRCT2;
 
-uint32_t gParkFlags;
+uint64_t gParkFlags;
 uint16_t gParkRating;
 money16 gParkEntranceFee;
 uint16_t gParkSize;
 money16 gLandPrice;
 money16 gConstructionRightsPrice;
 
-uint32_t gTotalAdmissions;
-money32 gTotalIncomeFromAdmissions;
+uint64_t gTotalAdmissions;
+money64 gTotalIncomeFromAdmissions;
 
-money32 gParkValue;
-money32 gCompanyValue;
+money64 gParkValue;
+money64 gCompanyValue;
 
 int16_t gParkRatingCasualtyPenalty;
 uint8_t gParkRatingHistory[32];
-uint8_t gGuestsInParkHistory[32];
+uint32_t gGuestsInParkHistory[32];
 
 // If this value is more than or equal to 0, the park rating is forced to this value. Used for cheat
 static int32_t _forcedParkRating = -1;
@@ -87,10 +88,8 @@ static PeepSpawn* get_random_peep_spawn()
     {
         return &gPeepSpawns[scenario_rand() % gPeepSpawns.size()];
     }
-    else
-    {
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
 void park_set_open(bool open)
@@ -123,7 +122,7 @@ void update_park_fences(const CoordsXY& coords)
         // If an entrance element do not place flags around surface
         do
         {
-            if (tileElement->GetType() != TILE_ELEMENT_TYPE_ENTRANCE)
+            if (tileElement->GetType() != TileElementType::Entrance)
                 continue;
 
             if (tileElement->AsEntrance()->GetEntranceType() != ENTRANCE_TYPE_PARK_ENTRANCE)
@@ -246,12 +245,12 @@ uint16_t Park::GetParkRating() const
     return gParkRating;
 }
 
-money32 Park::GetParkValue() const
+money64 Park::GetParkValue() const
 {
     return gParkValue;
 }
 
-money32 Park::GetCompanyValue() const
+money64 Park::GetCompanyValue() const
 {
     return gCompanyValue;
 }
@@ -259,6 +258,7 @@ money32 Park::GetCompanyValue() const
 void Park::Initialise()
 {
     Name = format_string(STR_UNNAMED_PARK, nullptr);
+    PluginStorage = {};
     gStaffHandymanColour = COLOUR_BRIGHT_RED;
     gStaffMechanicColour = COLOUR_LIGHT_BLUE;
     gStaffSecurityColour = COLOUR_YELLOW;
@@ -279,7 +279,7 @@ void Park::Initialise()
 
     set_all_scenery_items_invented();
 
-    gParkEntranceFee = MONEY(10, 00);
+    gParkEntranceFee = 10.00_GBP;
 
     gPeepSpawns.clear();
     reset_park_entrance();
@@ -289,26 +289,34 @@ void Park::Initialise()
         ResearchCategory::Water, ResearchCategory::Shop, ResearchCategory::SceneryGroup);
     gResearchFundingLevel = RESEARCH_FUNDING_NORMAL;
 
-    gGuestInitialCash = MONEY(50, 00);
+    gGuestInitialCash = 50.00_GBP;
     gGuestInitialHappiness = CalculateGuestInitialHappiness(50);
     gGuestInitialHunger = 200;
     gGuestInitialThirst = 200;
     gScenarioObjective.Type = OBJECTIVE_GUESTS_BY;
     gScenarioObjective.Year = 4;
     gScenarioObjective.NumGuests = 1000;
-    gLandPrice = MONEY(90, 00);
-    gConstructionRightsPrice = MONEY(40, 00);
+    gLandPrice = 90.00_GBP;
+    gConstructionRightsPrice = 40.00_GBP;
     gParkFlags = PARK_FLAGS_NO_MONEY | PARK_FLAGS_SHOW_REAL_GUEST_NAMES;
     ResetHistories();
     finance_reset_history();
     award_reset();
 
-    gS6Info.name[0] = '\0';
-    format_string(gS6Info.details, 256, STR_NO_DETAILS_YET, nullptr);
+    gScenarioName = "";
+    gScenarioDetails = String::ToStd(language_get_string(STR_NO_DETAILS_YET));
 }
 
 void Park::Update(const Date& date)
 {
+    PROFILED_FUNCTION();
+
+    // Every new week
+    if (date.IsWeekStart())
+    {
+        UpdateHistories();
+    }
+
     // Every ~13 seconds
     if (gCurrentTicks % 512 == 0)
     {
@@ -323,17 +331,14 @@ void Park::Update(const Date& date)
         auto intent = Intent(INTENT_ACTION_UPDATE_PARK_RATING);
         context_broadcast_intent(&intent);
     }
+
     // Every ~102 seconds
     if (gCurrentTicks % 4096 == 0)
     {
         gParkSize = CalculateParkSize();
         window_invalidate_by_class(WC_PARK_INFORMATION);
     }
-    // Every new week
-    if (date.IsWeekStart())
-    {
-        UpdateHistories();
-    }
+
     GenerateGuests();
 }
 
@@ -344,7 +349,7 @@ int32_t Park::CalculateParkSize() const
     tile_element_iterator_begin(&it);
     do
     {
-        if (it.element->GetType() == TILE_ELEMENT_TYPE_SURFACE)
+        if (it.element->GetType() == TileElementType::Surface)
         {
             if (it.element->AsSurface()->GetOwnership() & (OWNERSHIP_CONSTRUCTION_RIGHTS_OWNED | OWNERSHIP_OWNED))
             {
@@ -383,7 +388,7 @@ int32_t Park::CalculateParkRating() const
         // Find the number of happy peeps and the number of peeps who can't find the park exit
         uint32_t happyGuestCount = 0;
         uint32_t lostGuestCount = 0;
-        for (auto peep : EntityList<Guest>(EntityListId::Peep))
+        for (auto peep : EntityList<Guest>())
         {
             if (!peep->OutsideOfPark)
             {
@@ -465,15 +470,11 @@ int32_t Park::CalculateParkRating() const
 
     // Litter
     {
-        int32_t litterCount = 0;
-        for (auto litter : EntityList<Litter>(EntityListId::Litter))
-        {
-            // Ignore recently dropped litter
-            if (litter->creationTick - gScenarioTicks >= 7680)
-            {
-                litterCount++;
-            }
-        }
+        // Counts the amount of litter whose age is min. 7680 ticks (5~ min) old.
+        const auto litterList = EntityList<Litter>();
+        const auto litterCount = std::count_if(
+            litterList.begin(), litterList.end(), [](auto* litter) { return litter->GetAge() >= 7680; });
+
         result -= 600 - (4 * (150 - std::min<int32_t>(150, litterCount)));
     }
 
@@ -482,38 +483,39 @@ int32_t Park::CalculateParkRating() const
     return result;
 }
 
-money32 Park::CalculateParkValue() const
+money64 Park::CalculateParkValue() const
 {
     // Sum ride values
-    money32 result = 0;
+    money64 result = 0;
     for (const auto& ride : GetRideManager())
     {
         result += CalculateRideValue(&ride);
     }
 
     // +7.00 per guest
-    result += gNumGuestsInPark * MONEY(7, 00);
+    result += static_cast<money64>(gNumGuestsInPark) * 7.00_GBP;
 
     return result;
 }
 
-money32 Park::CalculateRideValue(const Ride* ride) const
+money64 Park::CalculateRideValue(const Ride* ride) const
 {
-    money32 result = 0;
+    money64 result = 0;
     if (ride != nullptr && ride->value != RIDE_VALUE_UNDEFINED)
     {
         const auto& rtd = ride->GetRideTypeDescriptor();
-        result = (ride->value * 10) * (ride_customers_in_last_5_minutes(ride) + rtd.BonusValue * 4);
+        result = ToMoney32FromGBP(static_cast<int32_t>(ride->value))
+            * (static_cast<money64>(ride_customers_in_last_5_minutes(ride)) + rtd.BonusValue * 4LL);
     }
     return result;
 }
 
-money32 Park::CalculateCompanyValue() const
+money64 Park::CalculateCompanyValue() const
 {
-    money32 result = gParkValue - gBankLoan;
+    auto result = gParkValue - gBankLoan;
 
     // Clamp addition to prevent overflow
-    result = add_clamp_money32(result, finance_get_current_cash());
+    result = add_clamp_money64(result, finance_get_current_cash());
 
     return result;
 }
@@ -524,7 +526,7 @@ money16 Park::CalculateTotalRideValueForMoney() const
     bool ridePricesUnlocked = park_ride_prices_unlocked() && !(gParkFlags & PARK_FLAGS_NO_MONEY);
     for (auto& ride : GetRideManager())
     {
-        if (ride.status != RIDE_STATUS_OPEN)
+        if (ride.status != RideStatus::Open)
             continue;
         if (ride.lifecycle_flags & RIDE_LIFECYCLE_BROKEN_DOWN)
             continue;
@@ -555,7 +557,7 @@ uint32_t Park::CalculateSuggestedMaxGuests() const
     // TODO combine the two ride loops
     for (auto& ride : GetRideManager())
     {
-        if (ride.status != RIDE_STATUS_OPEN)
+        if (ride.status != RideStatus::Open)
             continue;
         if (ride.lifecycle_flags & RIDE_LIFECYCLE_BROKEN_DOWN)
             continue;
@@ -582,7 +584,7 @@ uint32_t Park::CalculateSuggestedMaxGuests() const
                 continue;
             if (!ride.GetRideTypeDescriptor().HasFlag(RIDE_TYPE_FLAG_HAS_DATA_LOGGING))
                 continue;
-            if (ride.stations[0].SegmentLength < (600 << 16))
+            if (ride.GetStation().SegmentLength < (600 << 16))
                 continue;
             if (ride.excitement < RIDE_RATING(6, 00))
                 continue;
@@ -632,20 +634,16 @@ uint32_t Park::CalculateGuestGenerationProbability() const
     }
 
     // Reward or penalties for park awards
-    for (size_t i = 0; i < MAX_AWARDS; i++)
+    for (const auto& award : GetAwards())
     {
-        const auto award = &gCurrentAwards[i];
-        if (award->Time != 0)
+        // +/- 0.25% of the probability
+        if (award_is_positive(award.Type))
         {
-            // +/- 0.25% of the probability
-            if (award_is_positive(award->Type))
-            {
-                probability += probability / 4;
-            }
-            else
-            {
-                probability -= probability / 4;
-            }
+            probability += probability / 4;
+        }
+        else
+        {
+            probability -= probability / 4;
         }
     }
 
@@ -699,7 +697,7 @@ void Park::GenerateGuests()
     }
 }
 
-Peep* Park::GenerateGuestFromCampaign(int32_t campaign)
+Guest* Park::GenerateGuestFromCampaign(int32_t campaign)
 {
     auto peep = GenerateGuest();
     if (peep != nullptr)
@@ -709,14 +707,14 @@ Peep* Park::GenerateGuestFromCampaign(int32_t campaign)
     return peep;
 }
 
-Peep* Park::GenerateGuest()
+Guest* Park::GenerateGuest()
 {
-    Peep* peep = nullptr;
+    Guest* peep = nullptr;
     const auto spawn = get_random_peep_spawn();
     if (spawn != nullptr)
     {
         auto direction = direction_reverse(spawn->direction);
-        peep = Peep::Generate({ spawn->x, spawn->y, spawn->z });
+        peep = Guest::Generate({ spawn->x, spawn->y, spawn->z });
         if (peep != nullptr)
         {
             peep->sprite_direction = direction << 3;
@@ -742,11 +740,8 @@ template<typename T, size_t TSize> static void HistoryPushRecord(T history[TSize
 
 void Park::ResetHistories()
 {
-    for (size_t i = 0; i < 32; i++)
-    {
-        gParkRatingHistory[i] = 255;
-        gGuestsInParkHistory[i] = 255;
-    }
+    std::fill(std::begin(gParkRatingHistory), std::end(gParkRatingHistory), ParkRatingHistoryUndefined);
+    std::fill(std::begin(gGuestsInParkHistory), std::end(gGuestsInParkHistory), GuestsInParkHistoryUndefined);
 }
 
 void Park::UpdateHistories()
@@ -765,22 +760,22 @@ void Park::UpdateHistories()
     gNumGuestsInParkLastWeek = gNumGuestsInPark;
 
     // Update park rating, guests in park and current cash history
-    HistoryPushRecord<uint8_t, 32>(gParkRatingHistory, CalculateParkRating() / 4);
-    HistoryPushRecord<uint8_t, 32>(gGuestsInParkHistory, std::min<uint16_t>(gNumGuestsInPark, 5000) / 20);
-    HistoryPushRecord<money32, 128>(gCashHistory, finance_get_current_cash() - gBankLoan);
+    HistoryPushRecord<uint8_t, 32>(gParkRatingHistory, gParkRating / 4);
+    HistoryPushRecord<uint32_t, 32>(gGuestsInParkHistory, gNumGuestsInPark);
+    HistoryPushRecord<money64, std::size(gCashHistory)>(gCashHistory, finance_get_current_cash() - gBankLoan);
 
     // Update weekly profit history
-    money32 currentWeeklyProfit = gWeeklyProfitAverageDividend;
+    auto currentWeeklyProfit = gWeeklyProfitAverageDividend;
     if (gWeeklyProfitAverageDivisor != 0)
     {
         currentWeeklyProfit /= gWeeklyProfitAverageDivisor;
     }
-    HistoryPushRecord<money32, 128>(gWeeklyProfitHistory, currentWeeklyProfit);
+    HistoryPushRecord<money64, std::size(gWeeklyProfitHistory)>(gWeeklyProfitHistory, currentWeeklyProfit);
     gWeeklyProfitAverageDividend = 0;
     gWeeklyProfitAverageDivisor = 0;
 
     // Update park value history
-    HistoryPushRecord<money32, 128>(gParkValueHistory, gParkValue);
+    HistoryPushRecord<money64, std::size(gParkValueHistory)>(gParkValueHistory, gParkValue);
 
     // Invalidate relevant windows
     auto intent = Intent(INTENT_ACTION_UPDATE_GUEST_COUNT);

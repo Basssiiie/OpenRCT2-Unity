@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "../drawing/ImageId.hpp"
 #include "Object.h"
 
 namespace STATION_OBJECT_FLAGS
@@ -16,22 +17,19 @@ namespace STATION_OBJECT_FLAGS
     const uint32_t HAS_PRIMARY_COLOUR = 1 << 0;
     const uint32_t HAS_SECONDARY_COLOUR = 1 << 1;
     const uint32_t IS_TRANSPARENT = 1 << 2;
+    const uint32_t NO_PLATFORMS = 1 << 3;
+    const uint32_t HAS_SHELTER = (1 << 4);
 } // namespace STATION_OBJECT_FLAGS
 
 class StationObject final : public Object
 {
 public:
     rct_string_id NameStringId{};
-    uint32_t BaseImageId{};
-    uint32_t ShelterImageId{};
+    ImageIndex BaseImageId = ImageIndexUndefined;
+    ImageIndex ShelterImageId = ImageIndexUndefined;
     uint32_t Flags{};
     int32_t Height{};
     uint8_t ScrollingMode{};
-
-    explicit StationObject(const rct_object_entry& entry)
-        : Object(entry)
-    {
-    }
 
     void ReadJson(IReadObjectContext* context, json_t& root) override;
     void Load() override;

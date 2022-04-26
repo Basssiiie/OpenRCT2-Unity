@@ -11,29 +11,29 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(RideDemolishAction, GameCommand::DemolishRide, GameActions::Result)
+class RideDemolishAction final : public GameActionBase<GameCommand::DemolishRide>
 {
 private:
-    NetworkRideId_t _rideIndex{ RideIdNewNull };
+    RideId _rideIndex{ RideId::GetNull() };
     uint8_t _modifyType{ RIDE_MODIFY_DEMOLISH };
 
 public:
     RideDemolishAction() = default;
-    RideDemolishAction(ride_id_t rideIndex, uint8_t modifyType);
+    RideDemolishAction(RideId rideIndex, uint8_t modifyType);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint32_t GetCooldownTime() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr DemolishRide(Ride * ride) const;
+    GameActions::Result DemolishRide(Ride* ride) const;
     money32 MazeRemoveTrack(const CoordsXYZD& coords) const;
     money32 DemolishTracks() const;
-    GameActions::Result::Ptr RefurbishRide(Ride * ride) const;
+    GameActions::Result RefurbishRide(Ride* ride) const;
     money32 GetRefurbishPrice(const Ride* ride) const;
     money32 GetRefundPrice(const Ride* ride) const;
 };

@@ -13,12 +13,15 @@
 
 #include "../OpenRCT2.h"
 #include "../audio/audio.h"
+#include "../core/EnumMap.hpp"
 #include "../core/IStream.hpp"
 #include "../core/Json.hpp"
 #include "../core/Memory.hpp"
 #include "../core/String.hpp"
 #include "../drawing/Drawing.h"
+#include "../drawing/Image.h"
 #include "../localisation/Language.h"
+#include "../rct2/DATLimits.h"
 #include "../rct2/RCT2.h"
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
@@ -40,12 +43,12 @@ static void RideObjectUpdateRideType(rct_ride_entry* rideEntry)
         return;
     }
 
-    for (auto i = 0; i < MAX_RIDE_TYPES_PER_RIDE_ENTRY; i++)
+    for (auto i = 0; i < RCT2::ObjectLimits::MaxRideTypesPerRideEntry; i++)
     {
         auto oldRideType = rideEntry->ride_type[i];
         if (oldRideType != RIDE_TYPE_NULL)
         {
-            rideEntry->ride_type[i] = RCT2RideTypeToOpenRCT2RideType(oldRideType, rideEntry);
+            rideEntry->ride_type[i] = RCT2::RCT2RideTypeToOpenRCT2RideType(oldRideType, rideEntry);
         }
     }
 }
@@ -106,7 +109,7 @@ void RideObject::ReadLegacy(IReadObjectContext* context, IStream* stream)
 
     for (uint8_t i = 0; i < coloursCount; i++)
     {
-        _presetColours.list[i] = stream->ReadValue<vehicle_colour>();
+        _presetColours.list[i] = stream->ReadValue<VehicleColour>();
     }
 
     if (IsRideTypeShopOrFacility(_legacyType.ride_type[0]))
@@ -123,7 +126,7 @@ void RideObject::ReadLegacy(IReadObjectContext* context, IStream* stream)
     }
 
     // Read peep loading positions
-    for (int32_t i = 0; i < RCT2_MAX_VEHICLES_PER_RIDE_ENTRY; i++)
+    for (int32_t i = 0; i < RCT2::ObjectLimits::MaxVehiclesPerRideEntry; i++)
     {
         _peepLoadingWaypoints[i].clear();
         _peepLoadingPositions[i].clear();
@@ -196,8 +199,8 @@ void RideObject::Load()
     _legacyType.images_offset = gfx_object_allocate_images(GetImageTable().GetImages(), GetImageTable().GetCount());
     _legacyType.vehicle_preset_list = &_presetColours;
 
-    int32_t cur_vehicle_images_offset = _legacyType.images_offset + MAX_RIDE_TYPES_PER_RIDE_ENTRY;
-    for (int32_t i = 0; i < RCT2_MAX_VEHICLES_PER_RIDE_ENTRY; i++)
+    int32_t cur_vehicle_images_offset = _legacyType.images_offset + RCT2::ObjectLimits::MaxRideTypesPerRideEntry;
+    for (int32_t i = 0; i < RCT2::ObjectLimits::MaxVehiclesPerRideEntry; i++)
     {
         rct_ride_entry_vehicle* vehicleEntry = &_legacyType.vehicles[i];
         if (vehicleEntry->sprite_flags & VEHICLE_SPRITE_FLAG_FLAT)
@@ -210,23 +213,20 @@ void RideObject::Load()
             vehicleEntry->base_num_frames = CalculateNumVerticalFrames(vehicleEntry)
                 * CalculateNumHorizontalFrames(vehicleEntry);
             vehicleEntry->base_image_id = cur_vehicle_images_offset;
-            int32_t image_index = vehicleEntry->base_image_id;
+            uint32_t image_index = vehicleEntry->base_image_id;
 
-            if (vehicleEntry->car_visual != VEHICLE_VISUAL_RIVER_RAPIDS)
+            if (vehicleEntry->PaintStyle != VEHICLE_VISUAL_RIVER_RAPIDS)
             {
-                int32_t b = vehicleEntry->base_num_frames * 32;
-
-                if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_11)
-                    b /= 2;
-                if (vehicleEntry->sprite_flags & VEHICLE_SPRITE_FLAG_15)
-                    b /= 8;
+                const auto numRotationFrames = vehicleEntry->GetNumRotationFrames();
+                vehicleEntry->NumRotationFrames = numRotationFrames;
+                uint32_t b = vehicleEntry->base_num_frames * numRotationFrames;
 
                 image_index += b;
 
                 if (vehicleEntry->sprite_flags & VEHICLE_SPRITE_FLAG_GENTLE_SLOPES)
                 {
                     vehicleEntry->gentle_slope_image_id = image_index;
-                    b = vehicleEntry->base_num_frames * 72;
+                    b = vehicleEntry->base_num_frames * ((2 * numRotationFrames) + (2 * NumOrthogonalDirections));
                     if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SPINNING_ADDITIONAL_FRAMES)
                     {
                         b = vehicleEntry->base_num_frames * 16;
@@ -237,14 +237,14 @@ void RideObject::Load()
                 if (vehicleEntry->sprite_flags & VEHICLE_SPRITE_FLAG_STEEP_SLOPES)
                 {
                     vehicleEntry->steep_slope_image_id = image_index;
-                    b = vehicleEntry->base_num_frames * 80;
+                    b = vehicleEntry->base_num_frames * ((2 * numRotationFrames) + (4 * NumOrthogonalDirections));
                     image_index += b;
                 }
 
                 if (vehicleEntry->sprite_flags & VEHICLE_SPRITE_FLAG_VERTICAL_SLOPES)
                 {
                     vehicleEntry->vertical_slope_image_id = image_index;
-                    b = vehicleEntry->base_num_frames * 116;
+                    b = vehicleEntry->base_num_frames * ((2 * numRotationFrames) + (13 * NumOrthogonalDirections));
                     image_index += b;
                 }
 
@@ -258,7 +258,7 @@ void RideObject::Load()
                 if (vehicleEntry->sprite_flags & VEHICLE_SPRITE_FLAG_FLAT_BANKED)
                 {
                     vehicleEntry->banked_image_id = image_index;
-                    b = vehicleEntry->base_num_frames * 80;
+                    b = vehicleEntry->base_num_frames * ((2 * numRotationFrames) + (4 * NumOrthogonalDirections));
                     image_index += b;
                 }
 
@@ -272,7 +272,7 @@ void RideObject::Load()
                 if (vehicleEntry->sprite_flags & VEHICLE_SPRITE_FLAG_FLAT_TO_GENTLE_SLOPE_BANKED_TRANSITIONS)
                 {
                     vehicleEntry->flat_to_gentle_bank_image_id = image_index;
-                    b = vehicleEntry->base_num_frames * 128;
+                    b = vehicleEntry->base_num_frames * (4 * numRotationFrames);
                     image_index += b;
                 }
 
@@ -293,7 +293,7 @@ void RideObject::Load()
                 if (vehicleEntry->sprite_flags & VEHICLE_SPRITE_FLAG_GENTLE_SLOPE_BANKED_TURNS)
                 {
                     vehicleEntry->gentle_slope_bank_turn_image_id = image_index;
-                    b = vehicleEntry->base_num_frames * 128;
+                    b = vehicleEntry->base_num_frames * (4 * numRotationFrames);
                     image_index += b;
                 }
 
@@ -322,7 +322,7 @@ void RideObject::Load()
                 {
                     // Same offset as corkscrew
                     vehicleEntry->curved_lift_hill_image_id = image_index;
-                    b = vehicleEntry->base_num_frames * 32;
+                    b = vehicleEntry->base_num_frames * numRotationFrames;
                     image_index += b;
                 }
             }
@@ -338,10 +338,10 @@ void RideObject::Load()
             cur_vehicle_images_offset = image_index + vehicleEntry->no_seating_rows * vehicleEntry->no_vehicle_images;
             // 0x6DEB0D
 
-            if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_10))
+            if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_RECALCULATE_SPRITE_BOUNDS))
             {
                 int32_t num_images = cur_vehicle_images_offset - vehicleEntry->base_image_id;
-                if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_13)
+                if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SPRITE_BOUNDS_INCLUDE_INVERTED_SET)
                 {
                     num_images *= 2;
                 }
@@ -386,11 +386,11 @@ void RideObject::DrawPreview(rct_drawpixelinfo* dpi, [[maybe_unused]] int32_t wi
     {
         if (rideType != RIDE_TYPE_NULL)
             break;
-        else
-            imageId++;
+
+        imageId++;
     }
 
-    gfx_draw_sprite(dpi, imageId, { 0, 0 }, 0);
+    gfx_draw_sprite(dpi, ImageId(imageId), { 0, 0 });
 }
 
 std::string RideObject::GetDescription() const
@@ -403,17 +403,28 @@ std::string RideObject::GetCapacity() const
     return GetString(ObjectStringID::CAPACITY);
 }
 
+ImageIndex RideObject::GetPreviewImage(ride_type_t type)
+{
+    auto it = std::find(std::begin(_legacyType.ride_type), std::end(_legacyType.ride_type), type);
+    if (it == std::end(_legacyType.ride_type))
+    {
+        return ImageIndexUndefined;
+    }
+
+    return _legacyType.images_offset + std::distance(std::begin(_legacyType.ride_type), it);
+}
+
 void RideObject::SetRepositoryItem(ObjectRepositoryItem* item) const
 {
     // Find the first non-null ride type, to be used when checking the ride group and determining the category.
     uint8_t firstRideType = ride_entry_get_first_non_null_ride_type(&_legacyType);
     uint8_t category = GetRideTypeDescriptor(firstRideType).Category;
 
-    for (int32_t i = 0; i < RCT2_MAX_RIDE_TYPES_PER_RIDE_ENTRY; i++)
+    for (int32_t i = 0; i < RCT2::ObjectLimits::MaxRideTypesPerRideEntry; i++)
     {
         item->RideInfo.RideType[i] = _legacyType.ride_type[i];
     }
-    for (int32_t i = 0; i < RCT2_MAX_CATEGORIES_PER_RIDE; i++)
+    for (int32_t i = 0; i < RCT2::ObjectLimits::MaxCategoriesPerRide; i++)
     {
         item->RideInfo.RideCategory[i] = category;
     }
@@ -447,7 +458,7 @@ void RideObject::ReadLegacyVehicle(
     vehicle->double_sound_frequency = stream->ReadValue<uint8_t>();
     vehicle->powered_acceleration = stream->ReadValue<uint8_t>();
     vehicle->powered_max_speed = stream->ReadValue<uint8_t>();
-    vehicle->car_visual = stream->ReadValue<uint8_t>();
+    vehicle->PaintStyle = stream->ReadValue<uint8_t>();
     vehicle->effect_visual = stream->ReadValue<uint8_t>();
     vehicle->draw_order = stream->ReadValue<uint8_t>();
     vehicle->num_vertical_frames_override = stream->ReadValue<uint8_t>();
@@ -497,9 +508,10 @@ uint8_t RideObject::CalculateNumHorizontalFrames(const rct_ride_entry_vehicle* v
     uint8_t numHorizontalFrames;
     if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SWINGING)
     {
-        if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_21) && !(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SLIDE_SWING))
+        if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SUSPENDED_SWING)
+            && !(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SLIDE_SWING))
         {
-            if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_25)
+            if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_WOODEN_WILD_MOUSE_SWING)
             {
                 numHorizontalFrames = 3;
             }
@@ -508,7 +520,9 @@ uint8_t RideObject::CalculateNumHorizontalFrames(const rct_ride_entry_vehicle* v
                 numHorizontalFrames = 5;
             }
         }
-        else if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_21) || !(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SLIDE_SWING))
+        else if (
+            !(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SUSPENDED_SWING)
+            || !(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SLIDE_SWING))
         {
             numHorizontalFrames = 7;
         }
@@ -537,7 +551,7 @@ void RideObject::ReadJson(IReadObjectContext* context, json_t& root)
         json_t rideTypes = Json::AsArray(properties["type"]);
         size_t numRideTypes = rideTypes.size();
 
-        for (size_t i = 0; i < MAX_RIDE_TYPES_PER_RIDE_ENTRY; i++)
+        for (size_t i = 0; i < RCT2::ObjectLimits::MaxRideTypesPerRideEntry; i++)
         {
             ObjectEntryIndex rideType = RIDE_TYPE_NULL;
 
@@ -575,14 +589,14 @@ void RideObject::ReadJson(IReadObjectContext* context, json_t& root)
             car.sprite_height_negative = 1;
             car.sprite_height_positive = 1;
             car.flags = VEHICLE_ENTRY_FLAG_SPINNING;
-            car.car_visual = VEHICLE_VISUAL_FLAT_RIDE_OR_CAR_RIDE;
+            car.PaintStyle = VEHICLE_VISUAL_FLAT_RIDE_OR_CAR_RIDE;
             car.friction_sound_id = OpenRCT2::Audio::SoundId::Null;
             car.sound_range = 0xFF;
             car.draw_order = 6;
 
             // Shop item
             auto rideSells = Json::AsArray(properties["sells"]);
-            auto numShopItems = std::min(static_cast<size_t>(NUM_SHOP_ITEMS_PER_RIDE), rideSells.size());
+            auto numShopItems = std::min(static_cast<size_t>(RCT2::ObjectLimits::MaxShopItemsPerRideEntry), rideSells.size());
             for (size_t i = 0; i < numShopItems; i++)
             {
                 auto shopItem = ParseShopItem(Json::GetString(rideSells[i]));
@@ -644,6 +658,7 @@ void RideObject::ReadJson(IReadObjectContext* context, json_t& root)
                 // Skipping noDoorsOverTrack, moved to ride groups.
                 { "noCollisionCrashes", RIDE_ENTRY_FLAG_DISABLE_COLLISION_CRASHES },
                 { "disablePainting", RIDE_ENTRY_FLAG_DISABLE_COLOUR_TAB },
+                { "riderControlsSpeed", RIDE_ENTRY_FLAG_RIDER_CONTROLS_SPEED },
             });
     }
 
@@ -657,7 +672,7 @@ void RideObject::ReadJsonVehicleInfo([[maybe_unused]] IReadObjectContext* contex
 
     _legacyType.min_cars_in_train = Json::GetNumber<uint8_t>(properties["minCarsPerTrain"], 1);
     _legacyType.max_cars_in_train = Json::GetNumber<uint8_t>(properties["maxCarsPerTrain"], 1);
-    _legacyType.cars_per_flat_ride = Json::GetNumber<uint8_t>(properties["carsPerFlatRide"], 255);
+    _legacyType.cars_per_flat_ride = Json::GetNumber<uint8_t>(properties["carsPerFlatRide"], NoFlatRideCars);
     _legacyType.zero_cars = Json::GetNumber<uint8_t>(properties["numEmptyCars"]);
 
     // Train formation from car indices
@@ -739,7 +754,7 @@ rct_ride_entry_vehicle RideObject::ReadJsonCar(json_t& jCar)
     car.double_sound_frequency = Json::GetNumber<uint8_t>(jCar["doubleSoundFrequency"]);
     car.powered_acceleration = Json::GetNumber<uint8_t>(jCar["poweredAcceleration"]);
     car.powered_max_speed = Json::GetNumber<uint8_t>(jCar["poweredMaxSpeed"]);
-    car.car_visual = Json::GetNumber<uint8_t>(jCar["carVisual"]);
+    car.PaintStyle = Json::GetNumber<uint8_t>(jCar["carVisual"]);
     car.effect_visual = Json::GetNumber<uint8_t>(jCar["effectVisual"], 1);
     car.draw_order = Json::GetNumber<uint8_t>(jCar["drawOrder"]);
     car.num_vertical_frames_override = Json::GetNumber<uint8_t>(jCar["numVerticalFramesOverride"]);
@@ -786,7 +801,7 @@ rct_ride_entry_vehicle RideObject::ReadJsonCar(json_t& jCar)
     auto jFrames = jCar["frames"];
     if (jFrames.is_object())
     {
-        car.sprite_flags = Json::GetFlags<uint16_t>(
+        car.sprite_flags = Json::GetFlags<uint32_t>(
             jFrames,
             {
                 { "flat", VEHICLE_SPRITE_FLAG_FLAT },
@@ -805,39 +820,70 @@ rct_ride_entry_vehicle RideObject::ReadJsonCar(json_t& jCar)
                 { "corkscrews", VEHICLE_SPRITE_FLAG_CORKSCREWS },
                 { "restraintAnimation", VEHICLE_SPRITE_FLAG_RESTRAINT_ANIMATION },
                 { "curvedLiftHill", VEHICLE_SPRITE_FLAG_CURVED_LIFT_HILL },
-                { "VEHICLE_SPRITE_FLAG_15", VEHICLE_SPRITE_FLAG_15 },
+                { "VEHICLE_SPRITE_FLAG_15", VEHICLE_SPRITE_FLAG_USE_4_ROTATION_FRAMES },
             });
     }
 
     car.flags |= Json::GetFlags<uint32_t>(
         jCar,
         {
+            { "isPoweredRideWithUnrestrictedGravity", VEHICLE_ENTRY_FLAG_POWERED_RIDE_UNRESTRICTED_GRAVITY },
+            { "hasNoUpstopWheels", VEHICLE_ENTRY_FLAG_NO_UPSTOP_WHEELS },
+            { "hasNoUpstopWheelsBobsleigh", VEHICLE_ENTRY_FLAG_NO_UPSTOP_BOBSLEIGH },
+            { "isMiniGolf", VEHICLE_ENTRY_FLAG_MINI_GOLF },
+            { "isReverserBogie", VEHICLE_ENTRY_FLAG_REVERSER_BOGIE },
+            { "isReverserPassengerCar", VEHICLE_ENTRY_FLAG_REVERSER_PASSENGER_CAR },
+            { "hasInvertedSpriteSet", VEHICLE_ENTRY_FLAG_HAS_INVERTED_SPRITE_SET },
+            { "hasDodgemInUseLights", VEHICLE_ENTRY_FLAG_DODGEM_INUSE_LIGHTS },
+            { "hasAdditionalColour2", VEHICLE_ENTRY_FLAG_ENABLE_TERNARY_COLOUR },
+            { "recalculateSpriteBounds", VEHICLE_ENTRY_FLAG_RECALCULATE_SPRITE_BOUNDS },
+            { "VEHICLE_ENTRY_FLAG_11", VEHICLE_ENTRY_FLAG_USE_16_ROTATION_FRAMES },
+            { "overrideNumberOfVerticalFrames", VEHICLE_ENTRY_FLAG_OVERRIDE_NUM_VERTICAL_FRAMES },
+            { "spriteBoundsIncludeInvertedSet", VEHICLE_ENTRY_FLAG_SPRITE_BOUNDS_INCLUDE_INVERTED_SET },
+            { "hasAdditionalSpinningFrames", VEHICLE_ENTRY_FLAG_SPINNING_ADDITIONAL_FRAMES },
+            { "isLift", VEHICLE_ENTRY_FLAG_LIFT },
+            { "hasAdditionalColour1", VEHICLE_ENTRY_FLAG_ENABLE_TRIM_COLOUR },
+            { "hasSwinging", VEHICLE_ENTRY_FLAG_SWINGING },
+            { "hasSpinning", VEHICLE_ENTRY_FLAG_SPINNING },
+            { "isPowered", VEHICLE_ENTRY_FLAG_POWERED },
+            { "hasScreamingRiders", VEHICLE_ENTRY_FLAG_RIDERS_SCREAM },
+            { "useSuspendedSwing", VEHICLE_ENTRY_FLAG_SUSPENDED_SWING },
+            { "useBoatHireCollisionDetection", VEHICLE_ENTRY_FLAG_BOAT_HIRE_COLLISION_DETECTION },
+            { "hasVehicleAnimation", VEHICLE_ENTRY_FLAG_VEHICLE_ANIMATION },
+            { "hasRiderAnimation", VEHICLE_ENTRY_FLAG_RIDER_ANIMATION },
+            { "useWoodenWildMouseSwing", VEHICLE_ENTRY_FLAG_WOODEN_WILD_MOUSE_SWING },
+            { "useSlideSwing", VEHICLE_ENTRY_FLAG_SLIDE_SWING },
+            { "isChairlift", VEHICLE_ENTRY_FLAG_CHAIRLIFT },
+            { "isWaterRide", VEHICLE_ENTRY_FLAG_WATER_RIDE },
+            { "isGoKart", VEHICLE_ENTRY_FLAG_GO_KART },
+            { "useDodgemCarPlacement", VEHICLE_ENTRY_FLAG_DODGEM_CAR_PLACEMENT },
+
+            // Obsolete flags that have been replaced with named and camelCased values, but kept for now for backward
+            // compatibility.
             { "VEHICLE_ENTRY_FLAG_POWERED_RIDE_UNRESTRICTED_GRAVITY", VEHICLE_ENTRY_FLAG_POWERED_RIDE_UNRESTRICTED_GRAVITY },
             { "VEHICLE_ENTRY_FLAG_NO_UPSTOP_WHEELS", VEHICLE_ENTRY_FLAG_NO_UPSTOP_WHEELS },
             { "VEHICLE_ENTRY_FLAG_NO_UPSTOP_BOBSLEIGH", VEHICLE_ENTRY_FLAG_NO_UPSTOP_BOBSLEIGH },
             { "VEHICLE_ENTRY_FLAG_MINI_GOLF", VEHICLE_ENTRY_FLAG_MINI_GOLF },
-            { "VEHICLE_ENTRY_FLAG_4", VEHICLE_ENTRY_FLAG_4 },
-            { "VEHICLE_ENTRY_FLAG_5", VEHICLE_ENTRY_FLAG_5 },
+            { "VEHICLE_ENTRY_FLAG_4", VEHICLE_ENTRY_FLAG_REVERSER_BOGIE },
+            { "VEHICLE_ENTRY_FLAG_5", VEHICLE_ENTRY_FLAG_REVERSER_PASSENGER_CAR },
             { "VEHICLE_ENTRY_FLAG_HAS_INVERTED_SPRITE_SET", VEHICLE_ENTRY_FLAG_HAS_INVERTED_SPRITE_SET },
             { "VEHICLE_ENTRY_FLAG_DODGEM_INUSE_LIGHTS", VEHICLE_ENTRY_FLAG_DODGEM_INUSE_LIGHTS },
-            { "VEHICLE_ENTRY_FLAG_ALLOW_DOORS_DEPRECATED", VEHICLE_ENTRY_FLAG_ALLOW_DOORS_DEPRECATED },
-            { "VEHICLE_ENTRY_FLAG_ENABLE_ADDITIONAL_COLOUR_2", VEHICLE_ENTRY_FLAG_ENABLE_ADDITIONAL_COLOUR_2 },
-            { "VEHICLE_ENTRY_FLAG_10", VEHICLE_ENTRY_FLAG_10 },
-            { "VEHICLE_ENTRY_FLAG_11", VEHICLE_ENTRY_FLAG_11 },
+            { "VEHICLE_ENTRY_FLAG_ENABLE_ADDITIONAL_COLOUR_2", VEHICLE_ENTRY_FLAG_ENABLE_TERNARY_COLOUR },
+            { "VEHICLE_ENTRY_FLAG_10", VEHICLE_ENTRY_FLAG_RECALCULATE_SPRITE_BOUNDS },
             { "VEHICLE_ENTRY_FLAG_OVERRIDE_NUM_VERTICAL_FRAMES", VEHICLE_ENTRY_FLAG_OVERRIDE_NUM_VERTICAL_FRAMES },
-            { "VEHICLE_ENTRY_FLAG_13", VEHICLE_ENTRY_FLAG_13 },
+            { "VEHICLE_ENTRY_FLAG_13", VEHICLE_ENTRY_FLAG_SPRITE_BOUNDS_INCLUDE_INVERTED_SET },
             { "VEHICLE_ENTRY_FLAG_SPINNING_ADDITIONAL_FRAMES", VEHICLE_ENTRY_FLAG_SPINNING_ADDITIONAL_FRAMES },
             { "VEHICLE_ENTRY_FLAG_LIFT", VEHICLE_ENTRY_FLAG_LIFT },
-            { "VEHICLE_ENTRY_FLAG_ENABLE_ADDITIONAL_COLOUR_1", VEHICLE_ENTRY_FLAG_ENABLE_ADDITIONAL_COLOUR_1 },
+            { "VEHICLE_ENTRY_FLAG_ENABLE_ADDITIONAL_COLOUR_1", VEHICLE_ENTRY_FLAG_ENABLE_TRIM_COLOUR },
             { "VEHICLE_ENTRY_FLAG_SWINGING", VEHICLE_ENTRY_FLAG_SWINGING },
             { "VEHICLE_ENTRY_FLAG_SPINNING", VEHICLE_ENTRY_FLAG_SPINNING },
             { "VEHICLE_ENTRY_FLAG_POWERED", VEHICLE_ENTRY_FLAG_POWERED },
             { "VEHICLE_ENTRY_FLAG_RIDERS_SCREAM", VEHICLE_ENTRY_FLAG_RIDERS_SCREAM },
-            { "VEHICLE_ENTRY_FLAG_21", VEHICLE_ENTRY_FLAG_21 },
+            { "VEHICLE_ENTRY_FLAG_21", VEHICLE_ENTRY_FLAG_SUSPENDED_SWING },
             { "VEHICLE_ENTRY_FLAG_BOAT_HIRE_COLLISION_DETECTION", VEHICLE_ENTRY_FLAG_BOAT_HIRE_COLLISION_DETECTION },
             { "VEHICLE_ENTRY_FLAG_VEHICLE_ANIMATION", VEHICLE_ENTRY_FLAG_VEHICLE_ANIMATION },
             { "VEHICLE_ENTRY_FLAG_RIDER_ANIMATION", VEHICLE_ENTRY_FLAG_RIDER_ANIMATION },
-            { "VEHICLE_ENTRY_FLAG_25", VEHICLE_ENTRY_FLAG_25 },
+            { "VEHICLE_ENTRY_FLAG_25", VEHICLE_ENTRY_FLAG_WOODEN_WILD_MOUSE_SWING },
             { "VEHICLE_ENTRY_FLAG_SLIDE_SWING", VEHICLE_ENTRY_FLAG_SLIDE_SWING },
             { "VEHICLE_ENTRY_FLAG_CHAIRLIFT", VEHICLE_ENTRY_FLAG_CHAIRLIFT },
             { "VEHICLE_ENTRY_FLAG_WATER_RIDE", VEHICLE_ENTRY_FLAG_WATER_RIDE },
@@ -890,27 +936,27 @@ vehicle_colour_preset_list RideObject::ReadJsonCarColours(json_t& jCarColours)
     return list;
 }
 
-std::vector<vehicle_colour> RideObject::ReadJsonColourConfiguration(json_t& jColourConfig)
+std::vector<VehicleColour> RideObject::ReadJsonColourConfiguration(json_t& jColourConfig)
 {
-    std::vector<vehicle_colour> config;
+    std::vector<VehicleColour> config;
 
     for (auto& jColours : jColourConfig)
     {
-        vehicle_colour carColour = {};
+        VehicleColour carColour = {};
 
         auto colours = Json::AsArray(jColours);
         if (colours.size() >= 1)
         {
-            carColour.main = Colour::FromString(Json::GetString(colours[0]));
-            carColour.additional_1 = carColour.main;
-            carColour.additional_2 = carColour.main;
+            carColour.Body = Colour::FromString(Json::GetString(colours[0]));
+            carColour.Trim = carColour.Body;
+            carColour.Tertiary = carColour.Body;
             if (colours.size() >= 2)
             {
-                carColour.additional_1 = Colour::FromString(Json::GetString(colours[1]));
+                carColour.Trim = Colour::FromString(Json::GetString(colours[1]));
             }
             if (colours.size() >= 3)
             {
-                carColour.additional_2 = Colour::FromString(Json::GetString(colours[2]));
+                carColour.Tertiary = Colour::FromString(Json::GetString(colours[2]));
             }
         }
         config.push_back(carColour);
@@ -935,155 +981,158 @@ bool RideObject::IsRideTypeShopOrFacility(uint8_t rideType)
     }
 }
 
+static const EnumMap<uint8_t> RideTypeLookupTable{
+    { "spiral_rc", RIDE_TYPE_SPIRAL_ROLLER_COASTER },
+    { "stand_up_rc", RIDE_TYPE_STAND_UP_ROLLER_COASTER },
+    { "suspended_swinging_rc", RIDE_TYPE_SUSPENDED_SWINGING_COASTER },
+    { "inverted_rc", RIDE_TYPE_INVERTED_ROLLER_COASTER },
+    { "junior_rc", RIDE_TYPE_JUNIOR_ROLLER_COASTER },
+    { "miniature_railway", RIDE_TYPE_MINIATURE_RAILWAY },
+    { "monorail", RIDE_TYPE_MONORAIL },
+    { "mini_suspended_rc", RIDE_TYPE_MINI_SUSPENDED_COASTER },
+    { "boat_hire", RIDE_TYPE_BOAT_HIRE },
+    { "wooden_wild_mouse", RIDE_TYPE_WOODEN_WILD_MOUSE },
+    { "steeplechase", RIDE_TYPE_STEEPLECHASE },
+    { "car_ride", RIDE_TYPE_CAR_RIDE },
+    { "launched_freefall", RIDE_TYPE_LAUNCHED_FREEFALL },
+    { "bobsleigh_rc", RIDE_TYPE_BOBSLEIGH_COASTER },
+    { "observation_tower", RIDE_TYPE_OBSERVATION_TOWER },
+    { "looping_rc", RIDE_TYPE_LOOPING_ROLLER_COASTER },
+    { "dinghy_slide", RIDE_TYPE_DINGHY_SLIDE },
+    { "mine_train_rc", RIDE_TYPE_MINE_TRAIN_COASTER },
+    { "chairlift", RIDE_TYPE_CHAIRLIFT },
+    { "corkscrew_rc", RIDE_TYPE_CORKSCREW_ROLLER_COASTER },
+    { "maze", RIDE_TYPE_MAZE },
+    { "spiral_slide", RIDE_TYPE_SPIRAL_SLIDE },
+    { "go_karts", RIDE_TYPE_GO_KARTS },
+    { "log_flume", RIDE_TYPE_LOG_FLUME },
+    { "river_rapids", RIDE_TYPE_RIVER_RAPIDS },
+    { "dodgems", RIDE_TYPE_DODGEMS },
+    { "swinging_ship", RIDE_TYPE_SWINGING_SHIP },
+    { "swinging_inverter_ship", RIDE_TYPE_SWINGING_INVERTER_SHIP },
+    { "food_stall", RIDE_TYPE_FOOD_STALL },
+    { "drink_stall", RIDE_TYPE_DRINK_STALL },
+    { "shop", RIDE_TYPE_SHOP },
+    { "merry_go_round", RIDE_TYPE_MERRY_GO_ROUND },
+    { "information_kiosk", RIDE_TYPE_INFORMATION_KIOSK },
+    { "toilets", RIDE_TYPE_TOILETS },
+    { "ferris_wheel", RIDE_TYPE_FERRIS_WHEEL },
+    { "motion_simulator", RIDE_TYPE_MOTION_SIMULATOR },
+    { "3d_cinema", RIDE_TYPE_3D_CINEMA },
+    { "top_spin", RIDE_TYPE_TOP_SPIN },
+    { "space_rings", RIDE_TYPE_SPACE_RINGS },
+    { "reverse_freefall_rc", RIDE_TYPE_REVERSE_FREEFALL_COASTER },
+    { "lift", RIDE_TYPE_LIFT },
+    { "vertical_drop_rc", RIDE_TYPE_VERTICAL_DROP_ROLLER_COASTER },
+    { "cash_machine", RIDE_TYPE_CASH_MACHINE },
+    { "twist", RIDE_TYPE_TWIST },
+    { "haunted_house", RIDE_TYPE_HAUNTED_HOUSE },
+    { "first_aid", RIDE_TYPE_FIRST_AID },
+    { "circus", RIDE_TYPE_CIRCUS },
+    { "ghost_train", RIDE_TYPE_GHOST_TRAIN },
+    { "twister_rc", RIDE_TYPE_TWISTER_ROLLER_COASTER },
+    { "wooden_rc", RIDE_TYPE_WOODEN_ROLLER_COASTER },
+    { "side_friction_rc", RIDE_TYPE_SIDE_FRICTION_ROLLER_COASTER },
+    { "steel_wild_mouse", RIDE_TYPE_STEEL_WILD_MOUSE },
+    { "multi_dimension_rc", RIDE_TYPE_MULTI_DIMENSION_ROLLER_COASTER },
+    { "flying_rc", RIDE_TYPE_FLYING_ROLLER_COASTER },
+    { "virginia_reel", RIDE_TYPE_VIRGINIA_REEL },
+    { "splash_boats", RIDE_TYPE_SPLASH_BOATS },
+    { "mini_helicopters", RIDE_TYPE_MINI_HELICOPTERS },
+    { "lay_down_rc", RIDE_TYPE_LAY_DOWN_ROLLER_COASTER },
+    { "suspended_monorail", RIDE_TYPE_SUSPENDED_MONORAIL },
+    { "reverser_rc", RIDE_TYPE_REVERSER_ROLLER_COASTER },
+    { "heartline_twister_rc", RIDE_TYPE_HEARTLINE_TWISTER_COASTER },
+    { "mini_golf", RIDE_TYPE_MINI_GOLF },
+    { "giga_rc", RIDE_TYPE_GIGA_COASTER },
+    { "roto_drop", RIDE_TYPE_ROTO_DROP },
+    { "flying_saucers", RIDE_TYPE_FLYING_SAUCERS },
+    { "crooked_house", RIDE_TYPE_CROOKED_HOUSE },
+    { "monorail_cycles", RIDE_TYPE_MONORAIL_CYCLES },
+    { "compact_inverted_rc", RIDE_TYPE_COMPACT_INVERTED_COASTER },
+    { "water_coaster", RIDE_TYPE_WATER_COASTER },
+    { "air_powered_vertical_rc", RIDE_TYPE_AIR_POWERED_VERTICAL_COASTER },
+    { "inverted_hairpin_rc", RIDE_TYPE_INVERTED_HAIRPIN_COASTER },
+    { "magic_carpet", RIDE_TYPE_MAGIC_CARPET },
+    { "submarine_ride", RIDE_TYPE_SUBMARINE_RIDE },
+    { "river_rafts", RIDE_TYPE_RIVER_RAFTS },
+    { "enterprise", RIDE_TYPE_ENTERPRISE },
+    { "inverted_impulse_rc", RIDE_TYPE_INVERTED_IMPULSE_COASTER },
+    { "mini_rc", RIDE_TYPE_MINI_ROLLER_COASTER },
+    { "mine_ride", RIDE_TYPE_MINE_RIDE },
+    { "lim_launched_rc", RIDE_TYPE_LIM_LAUNCHED_ROLLER_COASTER },
+    { "hypercoaster", RIDE_TYPE_HYPERCOASTER },
+    { "hyper_twister", RIDE_TYPE_HYPER_TWISTER },
+    { "monster_trucks", RIDE_TYPE_MONSTER_TRUCKS },
+    { "spinning_wild_mouse", RIDE_TYPE_SPINNING_WILD_MOUSE },
+    { "classic_mini_rc", RIDE_TYPE_CLASSIC_MINI_ROLLER_COASTER },
+    { "hybrid_rc", RIDE_TYPE_HYBRID_COASTER },
+    { "single_rail_rc", RIDE_TYPE_SINGLE_RAIL_ROLLER_COASTER },
+};
+
 uint8_t RideObject::ParseRideType(const std::string& s)
 {
-    static const std::unordered_map<std::string, uint8_t> LookupTable{
-        { "spiral_rc", RIDE_TYPE_SPIRAL_ROLLER_COASTER },
-        { "stand_up_rc", RIDE_TYPE_STAND_UP_ROLLER_COASTER },
-        { "suspended_swinging_rc", RIDE_TYPE_SUSPENDED_SWINGING_COASTER },
-        { "inverted_rc", RIDE_TYPE_INVERTED_ROLLER_COASTER },
-        { "junior_rc", RIDE_TYPE_JUNIOR_ROLLER_COASTER },
-        { "miniature_railway", RIDE_TYPE_MINIATURE_RAILWAY },
-        { "monorail", RIDE_TYPE_MONORAIL },
-        { "mini_suspended_rc", RIDE_TYPE_MINI_SUSPENDED_COASTER },
-        { "boat_hire", RIDE_TYPE_BOAT_HIRE },
-        { "wooden_wild_mouse", RIDE_TYPE_WOODEN_WILD_MOUSE },
-        { "steeplechase", RIDE_TYPE_STEEPLECHASE },
-        { "car_ride", RIDE_TYPE_CAR_RIDE },
-        { "launched_freefall", RIDE_TYPE_LAUNCHED_FREEFALL },
-        { "bobsleigh_rc", RIDE_TYPE_BOBSLEIGH_COASTER },
-        { "observation_tower", RIDE_TYPE_OBSERVATION_TOWER },
-        { "looping_rc", RIDE_TYPE_LOOPING_ROLLER_COASTER },
-        { "dinghy_slide", RIDE_TYPE_DINGHY_SLIDE },
-        { "mine_train_rc", RIDE_TYPE_MINE_TRAIN_COASTER },
-        { "chairlift", RIDE_TYPE_CHAIRLIFT },
-        { "corkscrew_rc", RIDE_TYPE_CORKSCREW_ROLLER_COASTER },
-        { "maze", RIDE_TYPE_MAZE },
-        { "spiral_slide", RIDE_TYPE_SPIRAL_SLIDE },
-        { "go_karts", RIDE_TYPE_GO_KARTS },
-        { "log_flume", RIDE_TYPE_LOG_FLUME },
-        { "river_rapids", RIDE_TYPE_RIVER_RAPIDS },
-        { "dodgems", RIDE_TYPE_DODGEMS },
-        { "swinging_ship", RIDE_TYPE_SWINGING_SHIP },
-        { "swinging_inverter_ship", RIDE_TYPE_SWINGING_INVERTER_SHIP },
-        { "food_stall", RIDE_TYPE_FOOD_STALL },
-        { "drink_stall", RIDE_TYPE_DRINK_STALL },
-        { "shop", RIDE_TYPE_SHOP },
-        { "merry_go_round", RIDE_TYPE_MERRY_GO_ROUND },
-        { "information_kiosk", RIDE_TYPE_INFORMATION_KIOSK },
-        { "toilets", RIDE_TYPE_TOILETS },
-        { "ferris_wheel", RIDE_TYPE_FERRIS_WHEEL },
-        { "motion_simulator", RIDE_TYPE_MOTION_SIMULATOR },
-        { "3d_cinema", RIDE_TYPE_3D_CINEMA },
-        { "top_spin", RIDE_TYPE_TOP_SPIN },
-        { "space_rings", RIDE_TYPE_SPACE_RINGS },
-        { "reverse_freefall_rc", RIDE_TYPE_REVERSE_FREEFALL_COASTER },
-        { "lift", RIDE_TYPE_LIFT },
-        { "vertical_drop_rc", RIDE_TYPE_VERTICAL_DROP_ROLLER_COASTER },
-        { "cash_machine", RIDE_TYPE_CASH_MACHINE },
-        { "twist", RIDE_TYPE_TWIST },
-        { "haunted_house", RIDE_TYPE_HAUNTED_HOUSE },
-        { "first_aid", RIDE_TYPE_FIRST_AID },
-        { "circus", RIDE_TYPE_CIRCUS },
-        { "ghost_train", RIDE_TYPE_GHOST_TRAIN },
-        { "twister_rc", RIDE_TYPE_TWISTER_ROLLER_COASTER },
-        { "wooden_rc", RIDE_TYPE_WOODEN_ROLLER_COASTER },
-        { "side_friction_rc", RIDE_TYPE_SIDE_FRICTION_ROLLER_COASTER },
-        { "steel_wild_mouse", RIDE_TYPE_STEEL_WILD_MOUSE },
-        { "multi_dimension_rc", RIDE_TYPE_MULTI_DIMENSION_ROLLER_COASTER },
-        { "flying_rc", RIDE_TYPE_FLYING_ROLLER_COASTER },
-        { "virginia_reel", RIDE_TYPE_VIRGINIA_REEL },
-        { "splash_boats", RIDE_TYPE_SPLASH_BOATS },
-        { "mini_helicopters", RIDE_TYPE_MINI_HELICOPTERS },
-        { "lay_down_rc", RIDE_TYPE_LAY_DOWN_ROLLER_COASTER },
-        { "suspended_monorail", RIDE_TYPE_SUSPENDED_MONORAIL },
-        { "reverser_rc", RIDE_TYPE_REVERSER_ROLLER_COASTER },
-        { "heartline_twister_rc", RIDE_TYPE_HEARTLINE_TWISTER_COASTER },
-        { "mini_golf", RIDE_TYPE_MINI_GOLF },
-        { "giga_rc", RIDE_TYPE_GIGA_COASTER },
-        { "roto_drop", RIDE_TYPE_ROTO_DROP },
-        { "flying_saucers", RIDE_TYPE_FLYING_SAUCERS },
-        { "crooked_house", RIDE_TYPE_CROOKED_HOUSE },
-        { "monorail_cycles", RIDE_TYPE_MONORAIL_CYCLES },
-        { "compact_inverted_rc", RIDE_TYPE_COMPACT_INVERTED_COASTER },
-        { "water_coaster", RIDE_TYPE_WATER_COASTER },
-        { "air_powered_vertical_rc", RIDE_TYPE_AIR_POWERED_VERTICAL_COASTER },
-        { "inverted_hairpin_rc", RIDE_TYPE_INVERTED_HAIRPIN_COASTER },
-        { "magic_carpet", RIDE_TYPE_MAGIC_CARPET },
-        { "submarine_ride", RIDE_TYPE_SUBMARINE_RIDE },
-        { "river_rafts", RIDE_TYPE_RIVER_RAFTS },
-        { "enterprise", RIDE_TYPE_ENTERPRISE },
-        { "inverted_impulse_rc", RIDE_TYPE_INVERTED_IMPULSE_COASTER },
-        { "mini_rc", RIDE_TYPE_MINI_ROLLER_COASTER },
-        { "mine_ride", RIDE_TYPE_MINE_RIDE },
-        { "lim_launched_rc", RIDE_TYPE_LIM_LAUNCHED_ROLLER_COASTER },
-        { "hypercoaster", RIDE_TYPE_HYPERCOASTER },
-        { "hyper_twister", RIDE_TYPE_HYPER_TWISTER },
-        { "monster_trucks", RIDE_TYPE_MONSTER_TRUCKS },
-        { "spinning_wild_mouse", RIDE_TYPE_SPINNING_WILD_MOUSE },
-        { "classic_mini_rc", RIDE_TYPE_CLASSIC_MINI_ROLLER_COASTER },
-        { "hybrid_rc", RIDE_TYPE_HYBRID_COASTER },
-        { "single_rail_rc", RIDE_TYPE_SINGLE_RAIL_ROLLER_COASTER }
-    };
-    auto result = LookupTable.find(s);
-    return (result != LookupTable.end()) ? result->second : static_cast<uint8_t>(RIDE_TYPE_NULL);
+    auto result = RideTypeLookupTable.find(s);
+    return (result != RideTypeLookupTable.end()) ? result->second : static_cast<uint8_t>(RIDE_TYPE_NULL);
 }
+
+static const EnumMap<uint8_t> RideCategoryLookupTable{
+    { "transport", RIDE_CATEGORY_TRANSPORT },
+    { "gentle", RIDE_CATEGORY_GENTLE },
+    { "rollercoaster", RIDE_CATEGORY_ROLLERCOASTER },
+    { "thrill", RIDE_CATEGORY_THRILL },
+    { "water", RIDE_CATEGORY_WATER },
+    { "stall", RIDE_CATEGORY_SHOP },
+};
 
 uint8_t RideObject::ParseRideCategory(const std::string& s)
 {
-    static const std::unordered_map<std::string, uint8_t> LookupTable{
-        { "transport", RIDE_CATEGORY_TRANSPORT },
-        { "gentle", RIDE_CATEGORY_GENTLE },
-        { "rollercoaster", RIDE_CATEGORY_ROLLERCOASTER },
-        { "thrill", RIDE_CATEGORY_THRILL },
-        { "water", RIDE_CATEGORY_WATER },
-        { "stall", RIDE_CATEGORY_SHOP },
-    };
-    auto result = LookupTable.find(s);
-    return (result != LookupTable.end()) ? result->second : static_cast<uint8_t>(RIDE_CATEGORY_TRANSPORT);
+    auto result = RideCategoryLookupTable.find(s);
+    return (result != RideCategoryLookupTable.end()) ? result->second : static_cast<uint8_t>(RIDE_CATEGORY_TRANSPORT);
 }
+
+static const EnumMap<ShopItem> ShopItemLookupTable{
+    { "burger", ShopItem::Burger },
+    { "chips", ShopItem::Chips },
+    { "ice_cream", ShopItem::IceCream },
+    { "candyfloss", ShopItem::Candyfloss },
+    { "pizza", ShopItem::Pizza },
+    { "popcorn", ShopItem::Popcorn },
+    { "hot_dog", ShopItem::HotDog },
+    { "tentacle", ShopItem::Tentacle },
+    { "toffee_apple", ShopItem::ToffeeApple },
+    { "doughnut", ShopItem::Doughnut },
+    { "chicken", ShopItem::Chicken },
+    { "pretzel", ShopItem::Pretzel },
+    { "funnel_cake", ShopItem::FunnelCake },
+    { "beef_noodles", ShopItem::BeefNoodles },
+    { "fried_rice_noodles", ShopItem::FriedRiceNoodles },
+    { "wonton_soup", ShopItem::WontonSoup },
+    { "meatball_soup", ShopItem::MeatballSoup },
+    { "sub_sandwich", ShopItem::SubSandwich },
+    { "cookie", ShopItem::Cookie },
+    { "roast_sausage", ShopItem::RoastSausage },
+    { "drink", ShopItem::Drink },
+    { "coffee", ShopItem::Coffee },
+    { "lemonade", ShopItem::Lemonade },
+    { "chocolate", ShopItem::Chocolate },
+    { "iced_tea", ShopItem::IcedTea },
+    { "fruit_juice", ShopItem::FruitJuice },
+    { "soybean_milk", ShopItem::SoybeanMilk },
+    { "sujeonggwa", ShopItem::Sujeonggwa },
+    { "balloon", ShopItem::Balloon },
+    { "toy", ShopItem::Toy },
+    { "map", ShopItem::Map },
+    { "photo", ShopItem::Photo },
+    { "umbrella", ShopItem::Umbrella },
+    { "voucher", ShopItem::Voucher },
+    { "hat", ShopItem::Hat },
+    { "tshirt", ShopItem::TShirt },
+    { "sunglasses", ShopItem::Sunglasses },
+};
 
 ShopItem RideObject::ParseShopItem(const std::string& s)
 {
-    static const std::unordered_map<std::string, ShopItem> LookupTable{
-        { "burger", ShopItem::Burger },
-        { "chips", ShopItem::Chips },
-        { "ice_cream", ShopItem::IceCream },
-        { "candyfloss", ShopItem::Candyfloss },
-        { "pizza", ShopItem::Pizza },
-        { "popcorn", ShopItem::Popcorn },
-        { "hot_dog", ShopItem::HotDog },
-        { "tentacle", ShopItem::Tentacle },
-        { "toffee_apple", ShopItem::ToffeeApple },
-        { "doughnut", ShopItem::Doughnut },
-        { "chicken", ShopItem::Chicken },
-        { "pretzel", ShopItem::Pretzel },
-        { "funnel_cake", ShopItem::FunnelCake },
-        { "beef_noodles", ShopItem::BeefNoodles },
-        { "fried_rice_noodles", ShopItem::FriedRiceNoodles },
-        { "wonton_soup", ShopItem::WontonSoup },
-        { "meatball_soup", ShopItem::MeatballSoup },
-        { "sub_sandwich", ShopItem::SubSandwich },
-        { "cookie", ShopItem::Cookie },
-        { "roast_sausage", ShopItem::RoastSausage },
-        { "drink", ShopItem::Drink },
-        { "coffee", ShopItem::Coffee },
-        { "lemonade", ShopItem::Lemonade },
-        { "chocolate", ShopItem::Chocolate },
-        { "iced_tea", ShopItem::IcedTea },
-        { "fruit_juice", ShopItem::FruitJuice },
-        { "soybean_milk", ShopItem::SoybeanMilk },
-        { "sujeonggwa", ShopItem::Sujeonggwa },
-        { "balloon", ShopItem::Balloon },
-        { "toy", ShopItem::Toy },
-        { "map", ShopItem::Map },
-        { "photo", ShopItem::Photo },
-        { "umbrella", ShopItem::Umbrella },
-        { "voucher", ShopItem::Voucher },
-        { "hat", ShopItem::Hat },
-        { "tshirt", ShopItem::TShirt },
-        { "sunglasses", ShopItem::Sunglasses },
-    };
-    auto result = LookupTable.find(s);
-    return (result != LookupTable.end()) ? result->second : ShopItem::None;
+    auto result = ShopItemLookupTable.find(s);
+    return (result != ShopItemLookupTable.end()) ? result->second : ShopItem::None;
 }

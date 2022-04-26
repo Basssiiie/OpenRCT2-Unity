@@ -24,23 +24,23 @@ enum class RideSetAppearanceType : uint8_t
     EntranceStyle
 };
 
-DEFINE_GAME_ACTION(RideSetAppearanceAction, GameCommand::SetRideAppearance, GameActions::Result)
+class RideSetAppearanceAction final : public GameActionBase<GameCommand::SetRideAppearance>
 {
 private:
-    NetworkRideId_t _rideIndex{ RideIdNewNull };
+    RideId _rideIndex{ RideId::GetNull() };
     RideSetAppearanceType _type{};
-    uint8_t _value{};
+    uint16_t _value{};
     uint32_t _index{};
 
 public:
     RideSetAppearanceAction() = default;
-    RideSetAppearanceAction(ride_id_t rideIndex, RideSetAppearanceType type, uint8_t value, uint32_t index);
+    RideSetAppearanceAction(RideId rideIndex, RideSetAppearanceType type, uint16_t value, uint32_t index);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

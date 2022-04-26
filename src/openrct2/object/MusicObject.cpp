@@ -56,6 +56,7 @@ void MusicObject::ReadJson(IReadObjectContext* context, json_t& root)
     _originalStyleId = {};
     _rideTypes.clear();
     _tracks.clear();
+    _niceFactor = MusicNiceFactor::Neutral;
 
     auto& properties = root["properties"];
     if (properties != nullptr)
@@ -64,6 +65,12 @@ void MusicObject::ReadJson(IReadObjectContext* context, json_t& root)
         if (originalStyleId.is_number_integer())
         {
             _originalStyleId = originalStyleId.get<uint8_t>();
+        }
+
+        const auto& niceFactor = properties["niceFactor"];
+        if (niceFactor.is_number_integer())
+        {
+            _niceFactor = static_cast<MusicNiceFactor>(std::clamp<int8_t>(niceFactor.get<int8_t>(), -1, 1));
         }
 
         const auto& jRideTypes = properties["rideTypes"];
@@ -106,6 +113,7 @@ void MusicObject::ParseTracks(IReadObjectContext& context, json_t& jTracks)
         {
             MusicObjectTrack track;
             track.Name = Json::GetString(jTrack["name"]);
+            track.Composer = Json::GetString(jTrack["composer"]);
             auto source = Json::GetString(jTrack["source"]);
             if (source.empty())
             {
@@ -132,11 +140,9 @@ bool MusicObject::SupportsRideType(uint8_t rideType)
         // Default behaviour for music is to only exclude from merry-go-round
         return rideType != RIDE_TYPE_MERRY_GO_ROUND;
     }
-    else
-    {
-        auto it = std::find(_rideTypes.begin(), _rideTypes.end(), rideType);
-        return it != _rideTypes.end();
-    }
+
+    auto it = std::find(_rideTypes.begin(), _rideTypes.end(), rideType);
+    return it != _rideTypes.end();
 }
 
 size_t MusicObject::GetTrackCount() const
@@ -162,8 +168,6 @@ ObjectAsset MusicObject::GetAsset(IReadObjectContext& context, std::string_view 
         auto path2 = Path::Combine(dir, std::string(path.substr(11)));
         return ObjectAsset(path2);
     }
-    else
-    {
-        return context.GetAsset(path);
-    }
+
+    return context.GetAsset(path);
 }

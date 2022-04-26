@@ -72,8 +72,16 @@ Since this is my work in progress pet project, the code is subject to random cha
 
 ---
 
-# OpenRCT2
-An open-source re-implementation of RollerCoaster Tycoon 2. A construction and management simulation video game that simulates amusement park management.
+
+<p align="center">
+  <a href="https://openrct2.io">
+    <img src="https://raw.githubusercontent.com/OpenRCT2/OpenRCT2/develop/resources/logo/icon_x128.png" style="width: 128px;" alt="OpenRCT2 logo"/>
+  </a>
+</p>
+
+<h1 align="center">OpenRCT2</h1>
+
+<h3 align="center">An open-source re-implementation of RollerCoaster Tycoon 2, a construction and management simulation video game that simulates amusement park management.</h3>
 
 ---
 
@@ -84,7 +92,7 @@ An open-source re-implementation of RollerCoaster Tycoon 2. A construction and m
 ### Download
 | Latest release | Latest development build |
 |----------------|--------------------------|
-| [![OpenRCT2.org](https://img.shields.io/badge/master-v0.3.3-green.svg)](https://openrct2.org/downloads/master/latest) | [![OpenRCT2.org](https://img.shields.io/badge/develop-v0.3.3+-blue.svg)](https://openrct2.org/downloads/develop/latest) |
+| [![OpenRCT2.org](https://img.shields.io/badge/master-v0.4.0-green.svg)](https://openrct2.org/downloads/master/latest) | [![OpenRCT2.org](https://img.shields.io/badge/develop-v0.4.0-blue.svg)](https://openrct2.org/downloads/develop/latest) |
 
 ---
 
@@ -142,7 +150,7 @@ OpenRCT2 requires original files of RollerCoaster Tycoon 2 to play. It can be bo
 * [Latest development build](https://flathub.org/beta-repo/appstream/io.openrct2.OpenRCT2.flatpakref)
 
 Some Linux distributions offer native packages already. These packages are usually third-party, but we're trying to resolve issues they are facing.
-* ArchLinux AUR: [openrct2-git](https://aur.archlinux.org/packages/openrct2-git) and [openrct2](https://aur.archlinux.org/packages/openrct2)
+* ArchLinux: [openrct2-git](https://aur.archlinux.org/packages/openrct2-git) (AUR) and [openrct2](https://archlinux.org/packages/community/x86_64/openrct2/) (Community)
 * Ubuntu PPA: [`develop` branch](https://launchpad.net/~openrct2/+archive/ubuntu/nightly) (nightly builds)
 * openSUSE OBS: [games/openrct2](https://software.opensuse.org/download.html?project=games&package=openrct2)
 * Gentoo (main portage tree): [games-simulation/openrct2](https://packages.gentoo.org/packages/games-simulation/openrct2)
@@ -166,10 +174,6 @@ OpenRCT2 requires original files of RollerCoaster Tycoon 2 to play. It can be bo
   - Desktop development with C++
 
 ### macOS:
-- Xcode 10+
-
-The program can also be built as a command line program using CMake. This type of build requires:
-
 - Xcode Command Line Tools
 - [Homebrew](https://brew.sh)
 - CMake (available through Homebrew)
@@ -188,7 +192,6 @@ The program can also be built as a command line program using CMake. This type o
 - icu (>= 59.0)
 - zlib
 - gl (commonly provided by Mesa or GPU vendors; only for UI client, can be disabled)
-- duktape (unless scripting is disabled)
 - cmake
 - innoextract (optional runtime dependency; used for GOG installer extraction during setup)
 
@@ -217,19 +220,27 @@ msbuild openrct2.proj /t:PublishPortable
 ```
 
 ### macOS:
-#### Xcode:
-The recommended way of building OpenRCT2 for macOS is with Xcode. The Xcode build will create a self-contained application bundles which include all the necessary game files and dependencies. Open the project file OpenRCT2.xcodeproj in Xcode and build from there. Building this way will handle the dependencies for you automatically. You can also invoke an Xcode build from the command line using `xcodebuild`.
-
 #### CMake:
-A command line version of OpenRCT2 can be built using CMake. CMake will retrieve the dependences from [Dependencies](https://github.com/OpenRCT2/Dependencies/) automatically. You can build the project using CMake using the following commands:
+The recommended way of building OpenRCT2 for macOS is with CMake. CMake can build either a self-contained application bundles which include all the necessary game files and dependencies, or it can build a command line version that links against system installed dependencies. CMake will retrieve the dependences from [Dependencies](https://github.com/OpenRCT2/Dependencies/) automatically. You can build the macOS app using CMake using the following commands:
 ```
 mkdir build
 cd build
 cmake ..
+make install
+```
+Then you can run the game by opening `OpenRCT2.app`
+
+To build the command line version, you'll need to disable the macOS app bundle:
+```
+mkdir build
+cd build
+cmake .. -DMACOS_BUNDLE=off
 make
 ln -s ../data data
 ```
 Then you can run the game by running `./openrct2`.
+
+To link against system dependencies instead of letting CMake download the dependencies from [Dependencies](https://github.com/OpenRCT2/Dependencies), add `-DMACOS_USE_DEPENDENCIES=off` to your cmake args.
 
 Detailed instructions can be found on [Building OpenRCT2 on macOS using CMake](https://github.com/OpenRCT2/OpenRCT2/wiki/Building-OpenRCT2-on-macOS-using-CMake).
 
@@ -291,7 +302,7 @@ We would also like to distribute additional scenarios with the game, when the ti
 
 | [OpenLoco](https://github.com/OpenLoco/OpenLoco) | [OpenTTD](https://github.com/OpenTTD/OpenTTD) | [openage](https://github.com/SFTtech/openage) | [OpenRA](https://github.com/OpenRA/OpenRA) |
 |:------------------------------------------------:|:----------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------:|
-| [![icon_x128](https://user-images.githubusercontent.com/604665/53047651-2c533c00-3493-11e9-911a-1a3540fc1156.png)](https://github.com/OpenLoco/OpenLoco) | [![](https://github.com/OpenTTD/OpenTTD/raw/850d05d24d4768c81d97765204ef2a487dd4972c/media/openttd.128.png)](https://github.com/OpenTTD/OpenTTD) | [![](https://user-images.githubusercontent.com/550290/36507534-4693f354-175a-11e8-93a7-faa0481474fb.png)](https://github.com/SFTtech/openage) | [![](https://raw.githubusercontent.com/OpenRA/OpenRA/bleed/packaging/linux/icons/ra_128x128.png)](https://github.com/OpenRA/OpenRA) |
+| [![icon_x128](https://user-images.githubusercontent.com/604665/53047651-2c533c00-3493-11e9-911a-1a3540fc1156.png)](https://github.com/OpenLoco/OpenLoco) | [![](https://github.com/OpenTTD/OpenTTD/raw/850d05d24d4768c81d97765204ef2a487dd4972c/media/openttd.128.png)](https://github.com/OpenTTD/OpenTTD) | [![](https://user-images.githubusercontent.com/550290/36507534-4693f354-175a-11e8-93a7-faa0481474fb.png)](https://github.com/SFTtech/openage) | [![](https://raw.githubusercontent.com/OpenRA/OpenRA/bleed/packaging/artwork/ra_128x128.png)](https://github.com/OpenRA/OpenRA) |
 | Chris Sawyer's Locomotion | Transport Tycoon Deluxe | Age of Empires 2 | Red Alert |
 
 # 7. Sponsors

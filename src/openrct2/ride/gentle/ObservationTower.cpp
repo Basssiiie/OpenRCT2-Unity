@@ -12,6 +12,7 @@
 #include "../../paint/Paint.h"
 #include "../../paint/Supports.h"
 #include "../../world/Map.h"
+#include "../Ride.h"
 #include "../Track.h"
 #include "../TrackPaint.h"
 #include "../Vehicle.h"
@@ -24,97 +25,93 @@ enum
     SPR_OBSERVATION_TOWER_SEGMENT_TOP = 14988,
 };
 
-/**
- *
- *  rct2: 0x006D6258
- */
-void vehicle_visual_observation_tower(
-    paint_session* session, int32_t x, int32_t imageDirection, int32_t y, int32_t z, const Vehicle* vehicle,
-    const rct_ride_entry_vehicle* vehicleEntry)
+static uint32_t GetObservationTowerVehicleBaseImageId(
+    const Vehicle* vehicle, const rct_ride_entry_vehicle* vehicleEntry, int32_t imageDirection)
 {
-    int32_t image_id;
-    int32_t baseImage_id = (vehicle->restraints_position / 64);
+    uint32_t result = (vehicle->restraints_position / 64);
     if (vehicle->restraints_position >= 64)
     {
         auto directionOffset = imageDirection / 8;
         if ((directionOffset == 0) || (directionOffset == 3))
         {
-            baseImage_id = vehicleEntry->base_image_id + 8;
+            result = vehicleEntry->base_image_id + 8;
         }
         else
         {
-            baseImage_id *= 2;
-            baseImage_id += vehicleEntry->base_image_id;
+            result *= 2;
+            result += vehicleEntry->base_image_id;
             if (directionOffset == 1)
             {
-                baseImage_id += 28;
+                result += 28;
             }
             else
             {
-                baseImage_id += 22;
+                result += 22;
             }
         }
     }
     else
     {
-        baseImage_id = (vehicle->animation_frame * 2) + vehicleEntry->base_image_id + 8;
+        result = (vehicle->animation_frame * 2) + vehicleEntry->base_image_id + 8;
     }
+    return result;
+}
 
-    image_id = baseImage_id | SPRITE_ID_PALETTE_COLOUR_3(vehicle->colours.body_colour, vehicle->colours.trim_colour);
+/**
+ *
+ *  rct2: 0x006D6258
+ */
+void vehicle_visual_observation_tower(
+    paint_session& session, int32_t x, int32_t imageDirection, int32_t y, int32_t z, const Vehicle* vehicle,
+    const rct_ride_entry_vehicle* vehicleEntry)
+{
+    auto baseImageId = GetObservationTowerVehicleBaseImageId(vehicle, vehicleEntry, imageDirection);
+    auto imageId0 = ImageId(
+        baseImageId + 0, vehicle->colours.body_colour, vehicle->colours.trim_colour, vehicle->colours_extended);
+    auto imageId1 = ImageId(
+        baseImageId + 1, vehicle->colours.body_colour, vehicle->colours.trim_colour, vehicle->colours_extended);
     if (vehicle->IsGhost())
     {
-        image_id = (image_id & 0x7FFFF) | CONSTRUCTION_MARKER;
-    }
-    paint_struct* ps = PaintAddImageAsParent(session, image_id, 0, 0, 2, 2, 41, z, -11, -11, z + 1);
-    if (ps != nullptr)
-    {
-        ps->tertiary_colour = vehicle->colours_extended;
+        imageId0 = ImageId(baseImageId + 0).WithRemap(FilterPaletteID::Palette44);
+        imageId1 = ImageId(baseImageId + 1).WithRemap(FilterPaletteID::Palette44);
     }
 
-    image_id++;
-
-    ps = PaintAddImageAsParent(session, image_id, 0, 0, 16, 16, 41, z, -5, -5, z + 1);
-    if (ps != nullptr)
-    {
-        ps->tertiary_colour = vehicle->colours_extended;
-    }
-
+    PaintAddImageAsParent(session, imageId0, { 0, 0, z }, { 2, 2, 41 }, { -11, -11, z + 1 });
+    PaintAddImageAsParent(session, imageId1, { 0, 0, z }, { 16, 16, 41 }, { -5, -5, z + 1 });
     assert(vehicleEntry->effect_visual == 1);
 }
 
 /** rct2: 0x0070DD6C */
 static void paint_observation_tower_base(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     trackSequence = track_map_3x3[direction][trackSequence];
 
     int32_t edges = edges_3x3[trackSequence];
-    CoordsXY position = session->MapPosition;
+    CoordsXY position = session.MapPosition;
 
-    wooden_a_supports_paint_setup(session, (direction & 1), 0, height, session->TrackColours[SCHEME_MISC], nullptr);
+    wooden_a_supports_paint_setup(session, (direction & 1), 0, height, session.TrackColours[SCHEME_MISC]);
 
-    uint32_t imageId = SPR_FLOOR_METAL_B | session->TrackColours[SCHEME_SUPPORTS];
-    PaintAddImageAsParent(session, imageId, 0, 0, 32, 32, 1, height, 0, 0, height);
+    const StationObject* stationObject = ride.GetStationObject();
 
-    auto ride = get_ride(rideIndex);
-    if (ride != nullptr)
-    {
-        track_paint_util_paint_fences(
-            session, edges, position, tileElement, ride, session->TrackColours[SCHEME_TRACK], height, fenceSpritesMetalB,
-            session->CurrentRotation);
-    }
+    track_paint_util_paint_floor(
+        session, edges, session.TrackColours[SCHEME_SUPPORTS], height, floorSpritesMetalB, stationObject);
+
+    track_paint_util_paint_fences(
+        session, edges, position, trackElement, ride, session.TrackColours[SCHEME_TRACK], height, fenceSpritesMetalB,
+        session.CurrentRotation);
 
     if (trackSequence == 0)
     {
-        imageId = SPR_OBSERVATION_TOWER_SEGMENT_BASE | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, 0, 0, 2, 2, 27, height, 8, 8, height + 3);
+        uint32_t imageId = SPR_OBSERVATION_TOWER_SEGMENT_BASE | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { 0, 0, height }, { 2, 2, 27 }, { 8, 8, height + 3 });
 
-        imageId = SPR_OBSERVATION_TOWER_SEGMENT | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, 0, 0, 2, 2, 30, height + 32, 8, 8, height + 32);
+        imageId = SPR_OBSERVATION_TOWER_SEGMENT | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { 0, 0, height + 32 }, { 2, 2, 30 }, { 8, 8, height + 32 });
 
-        imageId = SPR_OBSERVATION_TOWER_SEGMENT | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsParent(session, imageId, 0, 0, 2, 2, 30, height + 64, 8, 8, height + 64);
+        imageId = SPR_OBSERVATION_TOWER_SEGMENT | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsParent(session, imageId, { 0, 0, height + 64 }, { 2, 2, 30 }, { 8, 8, height + 64 });
 
         paint_util_set_vertical_tunnel(session, height + 96);
         paint_util_set_segment_support_height(session, SEGMENTS_ALL, 0xFFFF, 0);
@@ -162,22 +159,22 @@ static void paint_observation_tower_base(
 
 /** rct2: 0x0070DD7C */
 static void paint_observation_tower_section(
-    paint_session* session, ride_id_t rideIndex, uint8_t trackSequence, uint8_t direction, int32_t height,
-    const TileElement* tileElement)
+    paint_session& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement)
 {
     if (trackSequence == 1)
     {
         return;
     }
 
-    uint32_t imageId = SPR_OBSERVATION_TOWER_SEGMENT | session->TrackColours[SCHEME_TRACK];
-    PaintAddImageAsParent(session, imageId, 0, 0, 2, 2, 30, height, 8, 8, height);
+    uint32_t imageId = SPR_OBSERVATION_TOWER_SEGMENT | session.TrackColours[SCHEME_TRACK];
+    PaintAddImageAsParent(session, imageId, { 0, 0, height }, { 2, 2, 30 }, { 8, 8, height });
 
-    const TileElement* nextTileElement = tileElement + 1;
-    if (tileElement->IsLastForTile() || tileElement->GetClearanceZ() != nextTileElement->GetBaseZ())
+    const TileElement* nextTileElement = reinterpret_cast<const TileElement*>(&trackElement) + 1;
+    if (trackElement.IsLastForTile() || trackElement.GetClearanceZ() != nextTileElement->GetBaseZ())
     {
-        imageId = SPR_OBSERVATION_TOWER_SEGMENT_TOP | session->TrackColours[SCHEME_TRACK];
-        PaintAddImageAsChild(session, imageId, 0, 0, 2, 2, 30, height, 8, 8, height);
+        imageId = SPR_OBSERVATION_TOWER_SEGMENT_TOP | session.TrackColours[SCHEME_TRACK];
+        PaintAddImageAsChild(session, imageId, { 0, 0, height }, { 2, 2, 30 }, { 8, 8, height });
     }
 
     paint_util_set_segment_support_height(session, SEGMENTS_ALL, 0xFFFF, 0);

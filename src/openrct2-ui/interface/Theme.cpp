@@ -130,7 +130,7 @@ static constexpr const WindowThemeDesc WindowThemeDescriptors[] =
     { THEME_WC(WC_DEMOLISH_RIDE_PROMPT),           STR_THEMES_WINDOW_DEMOLISH_RIDE_PROMPT,           COLOURS_1(TRANSLUCENT(COLOUR_BORDEAUX_RED)                                                                                     ) },
     { THEME_WC(WC_SCENERY),                        STR_THEMES_WINDOW_SCENERY,                        COLOURS_3(COLOUR_DARK_BROWN,               COLOUR_DARK_GREEN,               COLOUR_DARK_GREEN                                  ) },
     { THEME_WC(WC_SCENERY_SCATTER),                STR_THEMES_WINDOW_SCENERY_SCATTER,                COLOURS_3(COLOUR_DARK_BROWN,               COLOUR_DARK_GREEN,               COLOUR_DARK_GREEN                                  ) },
-    { THEME_WC(WC_OPTIONS),                        STR_THEMES_WINDOW_OPTIONS,                        COLOURS_3(COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE                                  ) },
+    { THEME_WC(WC_OPTIONS),                        STR_THEMES_WINDOW_OPTIONS,                        COLOURS_3(COLOUR_GREY,                     COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE                                  ) },
     { THEME_WC(WC_FOOTPATH),                       STR_THEMES_WINDOW_FOOTPATH,                       COLOURS_3(COLOUR_DARK_BROWN,               COLOUR_DARK_BROWN,               COLOUR_DARK_BROWN                                  ) },
     { THEME_WC(WC_LAND),                           STR_THEMES_WINDOW_LAND,                           COLOURS_3(COLOUR_DARK_BROWN,               COLOUR_DARK_BROWN,               COLOUR_DARK_BROWN                                  ) },
     { THEME_WC(WC_WATER),                          STR_THEMES_WINDOW_WATER,                          COLOURS_3(COLOUR_DARK_BROWN,               COLOUR_DARK_BROWN,               COLOUR_DARK_BROWN                                  ) },
@@ -174,6 +174,9 @@ static constexpr const WindowThemeDesc WindowThemeDescriptors[] =
     { THEME_WC(WC_TITLE_EDITOR),                   STR_TITLE_EDITOR_TITLE,                           COLOURS_3(COLOUR_GREY,                     COLOUR_OLIVE_GREEN,              COLOUR_OLIVE_GREEN                                 ) },
     { THEME_WC(WC_TILE_INSPECTOR),                 STR_TILE_INSPECTOR_TITLE,                         COLOURS_2(COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE                                                                   ) },
     { THEME_WC(WC_VIEW_CLIPPING),                  STR_VIEW_CLIPPING_TITLE,                          COLOURS_1(COLOUR_DARK_GREEN                                                                                                    ) },
+    { THEME_WC(WC_PATROL_AREA),                    STR_SET_PATROL_AREA,                              COLOURS_3(COLOUR_LIGHT_PURPLE,             COLOUR_LIGHT_PURPLE,             COLOUR_LIGHT_PURPLE                                ) },
+    { THEME_WC(WC_TRANSPARENCY),                   STR_TRANSPARENCY_OPTIONS_TITLE,                   COLOURS_3(COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE                                  ) },
+    { THEME_WC(WC_ABOUT),                          STR_ABOUT,                                        COLOURS_2(COLOUR_GREY,                     COLOUR_LIGHT_BLUE                                                                   ) },
     { THEME_WC(WC_CHANGELOG),                      STR_CHANGELOG_TITLE,                              COLOURS_2(COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE                                                                   ) },
     { THEME_WC(WC_MULTIPLAYER),                    STR_MULTIPLAYER,                                  COLOURS_3(COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE                                  ) },
     { THEME_WC(WC_PLAYER),                         STR_THEMES_WINDOW_PLAYER,                         COLOURS_3(COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE,               COLOUR_LIGHT_BLUE                                  ) },
@@ -205,26 +208,27 @@ static constexpr const UIThemeWindowEntry PredefinedThemeRCT1_Entries[] =
     { WC_NEW_CAMPAIGN,             COLOURS_RCT1(COLOUR_LIGHT_PURPLE,       COLOUR_LIGHT_PURPLE,        COLOUR_GREY,                COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
     { WC_TITLE_OPTIONS,            COLOURS_RCT1(TRANSLUCENT(COLOUR_GREY),  TRANSLUCENT(COLOUR_GREY),   TRANSLUCENT(COLOUR_GREY),   COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
     { WC_STAFF,                    COLOURS_RCT1(COLOUR_DARK_GREEN,         COLOUR_LIGHT_PURPLE,        COLOUR_LIGHT_PURPLE,        COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
-    { WC_OPTIONS,                  COLOURS_RCT1(COLOUR_DARK_BROWN,         COLOUR_DARK_BROWN,          COLOUR_DARK_BROWN,          COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
+    { WC_OPTIONS,                  COLOURS_RCT1(COLOUR_GREY,               COLOUR_DARK_BROWN,          COLOUR_DARK_BROWN,          COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
     { WC_KEYBOARD_SHORTCUT_LIST,   COLOURS_RCT1(COLOUR_DARK_BROWN,         COLOUR_DARK_BROWN,          COLOUR_DARK_BROWN,          COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
     { WC_CHANGE_KEYBOARD_SHORTCUT, COLOURS_RCT1(COLOUR_DARK_BROWN,         COLOUR_DARK_BROWN,          COLOUR_DARK_BROWN,          COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
-
-    THEME_DEF_END
+    { WC_TRACK_DESIGN_LIST,        COLOURS_RCT1(COLOUR_DARK_BROWN,         COLOUR_DARK_BROWN,          COLOUR_DARK_BROWN,          COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
+    { WC_MAP,                      COLOURS_RCT1(COLOUR_DARK_BROWN,         COLOUR_GREY,                COLOUR_GREY,                COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
+    { WC_ABOUT,                    COLOURS_RCT1(COLOUR_GREY,               COLOUR_DARK_BROWN,          COLOUR_WHITE,               COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
+    { WC_CHANGELOG,                COLOURS_RCT1(COLOUR_DARK_BROWN,         COLOUR_DARK_BROWN,          COLOUR_WHITE,               COLOUR_BLACK,    COLOUR_BLACK,    COLOUR_BLACK)    },
+    THEME_DEF_END,
 };
+// clang-format on
 
-static constexpr const UIThemeWindowEntry PredefinedThemeRCT2_Entries[] =
-{
-    THEME_DEF_END
+static constexpr const UIThemeWindowEntry PredefinedThemeRCT2_Entries[] = {
+    THEME_DEF_END,
 };
 
 const UITheme PredefinedThemeRCT1 = UITheme::CreatePredefined(
-    "*RCT1", PredefinedThemeRCT1_Entries, UITHEME_FLAG_USE_LIGHTS_RIDE |
-                                         UITHEME_FLAG_USE_LIGHTS_PARK |
-                                         UITHEME_FLAG_USE_ALTERNATIVE_SCENARIO_SELECT_FONT |
-                                         UITHEME_FLAG_USE_FULL_BOTTOM_TOOLBAR);
+    "*RCT1", PredefinedThemeRCT1_Entries,
+    UITHEME_FLAG_USE_LIGHTS_RIDE | UITHEME_FLAG_USE_LIGHTS_PARK | UITHEME_FLAG_USE_ALTERNATIVE_SCENARIO_SELECT_FONT
+        | UITHEME_FLAG_USE_FULL_BOTTOM_TOOLBAR);
 
-const UITheme PredefinedThemeRCT2 = UITheme::CreatePredefined(
-    "*RCT2", PredefinedThemeRCT2_Entries, 0);
+const UITheme PredefinedThemeRCT2 = UITheme::CreatePredefined("*RCT2", PredefinedThemeRCT2_Entries, 0);
 
 struct PredefinedTheme
 {
@@ -234,9 +238,8 @@ struct PredefinedTheme
 
 static constexpr const PredefinedTheme PredefinedThemes[] = {
     { &PredefinedThemeRCT1, STR_TITLE_SEQUENCE_RCT1 },
-    { &PredefinedThemeRCT2, STR_TITLE_SEQUENCE_RCT2 }
+    { &PredefinedThemeRCT2, STR_TITLE_SEQUENCE_RCT2 },
 };
-// clang-format on
 
 #pragma endregion
 
@@ -530,8 +533,8 @@ namespace ThemeManager
             NumPredefinedThemes++;
         }
 
-        auto themesPattern = Path::Combine(GetThemePath(), "*.json");
-        auto scanner = std::unique_ptr<IFileScanner>(Path::ScanDirectory(themesPattern, true));
+        auto themesPattern = Path::Combine(GetThemePath(), u8"*.json");
+        auto scanner = Path::ScanDirectory(themesPattern, true);
         while (scanner->Next())
         {
             auto fileInfo = scanner->GetFileInfo();
@@ -632,7 +635,7 @@ namespace ThemeManager
     std::string GetThemeFileName(const std::string& name)
     {
         auto themeDirectory = GetThemePath();
-        auto themePath = Path::Combine(themeDirectory, name + ".json");
+        auto themePath = Path::Combine(themeDirectory, name + u8".json");
         return themePath;
     }
 
@@ -738,10 +741,8 @@ uint8_t ThemeGetColour(rct_windowclass wc, uint8_t index)
         }
         return desc->DefaultTheme.Colours[index];
     }
-    else
-    {
-        return entry->Theme.Colours[index];
-    }
+
+    return entry->Theme.Colours[index];
 }
 
 void ThemeSetColour(rct_windowclass wc, uint8_t index, colour_t colour)

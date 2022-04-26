@@ -167,10 +167,10 @@ void ShortcutManager::ProcessEvent(const InputEvent& e)
         if (shortcut != nullptr && shortcut->IsSuitableInputEvent(e))
         {
             auto shortcutInput = ShortcutInput::FromInputEvent(e);
-            if (shortcutInput)
+            if (shortcutInput.has_value())
             {
                 shortcut->Current.clear();
-                shortcut->Current.push_back(std::move(*shortcutInput));
+                shortcut->Current.push_back(std::move(shortcutInput.value()));
             }
             _pendingShortcutChange.clear();
             window_close_by_class(WC_CHANGE_KEYBOARD_SHORTCUT);
@@ -234,23 +234,21 @@ std::optional<ShortcutInput> ShortcutManager::ConvertLegacyBinding(uint16_t bind
 
     if (binding == nullBinding)
     {
-        return {};
+        return std::nullopt;
     }
-    else
-    {
-        ShortcutInput result;
-        result.Kind = InputDeviceKind::Keyboard;
-        if (binding & shift)
-            result.Modifiers |= KMOD_SHIFT;
-        if (binding & ctrl)
-            result.Modifiers |= KMOD_CTRL;
-        if (binding & alt)
-            result.Modifiers |= KMOD_ALT;
-        if (binding & cmd)
-            result.Modifiers |= KMOD_GUI;
-        result.Button = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(binding & 0xFF));
-        return result;
-    }
+
+    ShortcutInput result;
+    result.Kind = InputDeviceKind::Keyboard;
+    if (binding & shift)
+        result.Modifiers |= KMOD_SHIFT;
+    if (binding & ctrl)
+        result.Modifiers |= KMOD_CTRL;
+    if (binding & alt)
+        result.Modifiers |= KMOD_ALT;
+    if (binding & cmd)
+        result.Modifiers |= KMOD_GUI;
+    result.Button = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(binding & 0xFF));
+    return result;
 }
 
 void ShortcutManager::LoadLegacyBindings(const fs::path& path)
@@ -273,9 +271,9 @@ void ShortcutManager::LoadLegacyBindings(const fs::path& path)
                 {
                     shortcut->Current.clear();
                     auto input = ConvertLegacyBinding(value);
-                    if (input)
+                    if (input.has_value())
                     {
-                        shortcut->Current.push_back(std::move(*input));
+                        shortcut->Current.push_back(std::move(input.value()));
                     }
                 }
             }
@@ -285,7 +283,7 @@ void ShortcutManager::LoadLegacyBindings(const fs::path& path)
 
 void ShortcutManager::LoadUserBindings(const fs::path& path)
 {
-    auto root = Json::ReadFromFile(path);
+    auto root = Json::ReadFromFile(path.u8string());
     if (root.is_object())
     {
         for (auto it = root.begin(); it != root.end(); ++it)
@@ -331,7 +329,7 @@ void ShortcutManager::SaveUserBindings(const fs::path& path)
     json_t root;
     if (fs::exists(path))
     {
-        root = Json::ReadFromFile(path);
+        root = Json::ReadFromFile(path.u8string());
     }
 
     for (const auto& shortcut : Shortcuts)
@@ -351,12 +349,12 @@ void ShortcutManager::SaveUserBindings(const fs::path& path)
         }
     }
 
-    Json::WriteToFile(path, root);
+    Json::WriteToFile(path.u8string(), root);
 }
 
 std::string_view ShortcutManager::GetLegacyShortcutId(size_t index)
 {
-    static constexpr std::string_view LegacyMap[] = {
+    static constexpr std::string_view _legacyMap[] = {
         ShortcutId::InterfaceCloseTop,
         ShortcutId::InterfaceCloseAll,
         ShortcutId::InterfaceCancelConstruction,
@@ -372,7 +370,7 @@ std::string_view ShortcutManager::GetLegacyShortcutId(size_t index)
         ShortcutId::ViewToggleRides,
         ShortcutId::ViewToggleScenery,
         ShortcutId::ViewToggleSupports,
-        ShortcutId::ViewTogglePeeps,
+        ShortcutId::ViewToggleGuests,
         ShortcutId::ViewToggleLandHeightMarkers,
         ShortcutId::ViewToggleTrackHeightMarkers,
         ShortcutId::ViewToggleFootpathHeightMarkers,
@@ -429,7 +427,7 @@ std::string_view ShortcutManager::GetLegacyShortcutId(size_t index)
         ShortcutId::InterfaceSceneryPicker,
         ShortcutId::InterfaceScaleIncrease,
         ShortcutId::InterfaceScaleDecrease,
-        ShortcutId::WindowTileInspectorInsertCorrupt,
+        ShortcutId::WindowTileInspectorToggleInvisibility,
         ShortcutId::WindowTileInspectorCopy,
         ShortcutId::WindowTileInspectorPaste,
         ShortcutId::WindowTileInspectorRemove,
@@ -443,5 +441,5 @@ std::string_view ShortcutManager::GetLegacyShortcutId(size_t index)
         ShortcutId::WindowTileInspectorDecreaseHeight,
         ShortcutId::InterfaceDisableClearance,
     };
-    return index < std::size(LegacyMap) ? LegacyMap[index] : std::string_view();
+    return index < std::size(_legacyMap) ? _legacyMap[index] : std::string_view();
 }

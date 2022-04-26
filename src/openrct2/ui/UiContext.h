@@ -29,7 +29,8 @@ namespace OpenRCT2
         struct IDrawingEngineFactory;
         struct IWeatherDrawer;
         using DrawWeatherFunc = void (*)(
-            OpenRCT2::Drawing::IWeatherDrawer* weatherDrawer, int32_t left, int32_t top, int32_t width, int32_t height);
+            rct_drawpixelinfo* dpi, OpenRCT2::Drawing::IWeatherDrawer* weatherDrawer, int32_t left, int32_t top, int32_t width,
+            int32_t height);
     } // namespace Drawing
 
     namespace Ui
@@ -64,24 +65,30 @@ namespace OpenRCT2
             return !(lhs == rhs);
         }
 
-        enum class FILE_DIALOG_TYPE
+        enum class FileDialogType : uint8_t
         {
-            OPEN,
-            SAVE,
+            Open,
+            Save
         };
 
         struct FileDialogDesc
         {
             struct Filter
             {
-                std::string Name;    // E.g. "Image Files"
-                std::string Pattern; // E.g. "*.png;*.jpg;*.gif"
+                u8string Name;    // E.g. "Image Files"
+                u8string Pattern; // E.g. "*.png;*.jpg;*.gif"
+
+                Filter(u8string_view name, u8string_view pattern)
+                    : Name(name)
+                    , Pattern(pattern)
+                {
+                }
             };
 
-            FILE_DIALOG_TYPE Type = FILE_DIALOG_TYPE::OPEN;
-            std::string Title;
-            std::string InitialDirectory;
-            std::string DefaultFilename;
+            FileDialogType Type = FileDialogType::Open;
+            u8string Title;
+            u8string InitialDirectory;
+            u8string DefaultFilename;
             std::vector<Filter> Filters;
         };
 
@@ -93,7 +100,7 @@ namespace OpenRCT2
             virtual ~IUiContext() = default;
 
             virtual void Initialise() abstract;
-            virtual void Update() abstract;
+            virtual void Tick() abstract;
             virtual void Draw(rct_drawpixelinfo* dpi) abstract;
 
             // Window
@@ -138,7 +145,7 @@ namespace OpenRCT2
             virtual void SetKeysPressed(uint32_t keysym, uint8_t scancode) abstract;
 
             // Drawing
-            virtual std::shared_ptr<Drawing::IDrawingEngineFactory> GetDrawingEngineFactory() abstract;
+            [[nodiscard]] virtual std::shared_ptr<Drawing::IDrawingEngineFactory> GetDrawingEngineFactory() abstract;
             virtual void DrawWeatherAnimation(
                 OpenRCT2::Drawing::IWeatherDrawer* weatherDrawer, rct_drawpixelinfo* dpi,
                 OpenRCT2::Drawing::DrawWeatherFunc drawFunc) abstract;
@@ -158,6 +165,6 @@ namespace OpenRCT2
             virtual ITitleSequencePlayer* GetTitleSequencePlayer() abstract;
         };
 
-        std::shared_ptr<IUiContext> CreateDummyUiContext();
+        [[nodiscard]] std::shared_ptr<IUiContext> CreateDummyUiContext();
     } // namespace Ui
 } // namespace OpenRCT2

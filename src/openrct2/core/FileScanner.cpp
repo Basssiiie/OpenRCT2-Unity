@@ -25,6 +25,7 @@
 
 #include "FileScanner.h"
 #include "Memory.hpp"
+#include "Numerics.hpp"
 #include "Path.hpp"
 #include "String.hpp"
 
@@ -140,17 +141,14 @@ public:
                 {
                     if (_recurse)
                     {
-                        utf8 childPath[MAX_PATH];
-                        String::Set(childPath, sizeof(childPath), state->Path.c_str());
-                        Path::Append(childPath, sizeof(childPath), child->Name.c_str());
-
+                        auto childPath = Path::Combine(state->Path, child->Name);
                         PushState(childPath);
                     }
                 }
                 else if (PatternMatch(child->Name))
                 {
-                    String::Set(_currentPath, MAX_PATH, state->Path.c_str());
-                    Path::Append(_currentPath, MAX_PATH, child->Name.c_str());
+                    auto path = Path::Combine(state->Path, child->Name);
+                    String::Set(_currentPath, MAX_PATH, path.c_str());
 
                     _currentFileInfo->Name = child->Name.c_str();
                     _currentFileInfo->Size = child->Size;
@@ -314,15 +312,12 @@ private:
             result.Type = DIRECTORY_CHILD_TYPE::DC_FILE;
 
             // Get the full path of the file
-            size_t pathSize = String::SizeOf(directory) + 1 + String::SizeOf(node->d_name) + 1;
-            utf8* path = Memory::Allocate<utf8>(pathSize);
-            String::Set(path, pathSize, directory);
-            Path::Append(path, pathSize, node->d_name);
+            auto path = Path::Combine(directory, node->d_name);
 
             struct stat statInfo
             {
             };
-            int32_t statRes = stat(path, &statInfo);
+            int32_t statRes = stat(path.c_str(), &statInfo);
             if (statRes != -1)
             {
                 result.Size = statInfo.st_size;
@@ -333,8 +328,6 @@ private:
                     result.Type = DIRECTORY_CHILD_TYPE::DC_DIRECTORY;
                 }
             }
-
-            Memory::Free(path);
         }
         return result;
     }
@@ -342,18 +335,18 @@ private:
 
 #endif // defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 
-IFileScanner* Path::ScanDirectory(const std::string& pattern, bool recurse)
+std::unique_ptr<IFileScanner> Path::ScanDirectory(const std::string& pattern, bool recurse)
 {
 #ifdef _WIN32
-    return new FileScannerWindows(pattern, recurse);
+    return std::make_unique<FileScannerWindows>(pattern, recurse);
 #elif defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
-    return new FileScannerUnix(pattern, recurse);
+    return std::make_unique<FileScannerUnix>(pattern, recurse);
 #endif
 }
 
 void Path::QueryDirectory(QueryDirectoryResult* result, const std::string& pattern)
 {
-    IFileScanner* scanner = Path::ScanDirectory(pattern, true);
+    auto scanner = Path::ScanDirectory(pattern, true);
     while (scanner->Next())
     {
         const FileInfo* fileInfo = scanner->GetFileInfo();
@@ -363,15 +356,14 @@ void Path::QueryDirectory(QueryDirectoryResult* result, const std::string& patte
         result->TotalFileSize += fileInfo->Size;
         result->FileDateModifiedChecksum ^= static_cast<uint32_t>(fileInfo->LastModified >> 32)
             ^ static_cast<uint32_t>(fileInfo->LastModified & 0xFFFFFFFF);
-        result->FileDateModifiedChecksum = ror32(result->FileDateModifiedChecksum, 5);
+        result->FileDateModifiedChecksum = Numerics::ror32(result->FileDateModifiedChecksum, 5);
         result->PathChecksum += GetPathChecksum(path);
     }
-    delete scanner;
 }
 
 std::vector<std::string> Path::GetDirectories(const std::string& path)
 {
-    auto scanner = std::unique_ptr<IFileScanner>(ScanDirectory(path, false));
+    auto scanner = ScanDirectory(path, false);
     auto baseScanner = static_cast<FileScannerBase*>(scanner.get());
 
     std::vector<DirectoryChild> children;

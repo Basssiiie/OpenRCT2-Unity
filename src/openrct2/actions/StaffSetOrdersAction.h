@@ -11,19 +11,19 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(StaffSetOrdersAction, GameCommand::SetStaffOrders, GameActions::Result)
+class StaffSetOrdersAction final : public GameActionBase<GameCommand::SetStaffOrders>
 {
 private:
-    uint16_t _spriteIndex{ SPRITE_INDEX_NULL };
+    EntityId _spriteIndex{ EntityId::GetNull() };
     uint8_t _ordersId{};
 
 public:
     StaffSetOrdersAction() = default;
-    StaffSetOrdersAction(uint16_t spriteIndex, uint8_t ordersId);
+    StaffSetOrdersAction(EntityId spriteIndex, uint8_t ordersId);
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

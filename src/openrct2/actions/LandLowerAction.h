@@ -11,7 +11,7 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(LandLowerAction, GameCommand::LowerLand, GameActions::Result)
+class LandLowerAction final : public GameActionBase<GameCommand::LowerLand>
 {
 private:
     CoordsXY _coords;
@@ -24,10 +24,10 @@ public:
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr QueryExecute(bool isExecuting) const;
+    GameActions::Result QueryExecute(bool isExecuting) const;
 };

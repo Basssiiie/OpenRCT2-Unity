@@ -11,7 +11,7 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(WaterSetHeightAction, GameCommand::SetWaterHeight, GameActions::Result)
+class WaterSetHeightAction final : public GameActionBase<GameCommand::SetWaterHeight>
 {
 private:
     CoordsXY _coords;
@@ -23,9 +23,9 @@ public:
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
     rct_string_id CheckParameters() const;

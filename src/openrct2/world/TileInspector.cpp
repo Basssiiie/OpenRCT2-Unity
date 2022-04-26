@@ -37,6 +37,7 @@ TileCoordsXY windowTileInspectorTile;
 int32_t windowTileInspectorElementCount = 0;
 int32_t windowTileInspectorSelectedIndex;
 
+using namespace OpenRCT2::TrackMetaData;
 namespace OpenRCT2::TileInspector
 {
     static bool SwapTileElements(const CoordsXY& loc, int16_t first, int16_t second)
@@ -84,75 +85,12 @@ namespace OpenRCT2::TileInspector
         return nullptr;
     }
 
-    /**
-     * Inserts a corrupt element under a given element on a given tile
-     * @param x The x coordinate of the tile
-     * @param y The y coordinate of the tile
-     * @param elementIndex The nth element on this tile
-     * Returns 0 on success, MONEY_UNDEFINED otherwise.
-     */
-    GameActionResultPtr InsertCorruptElementAt(const CoordsXY& loc, int16_t elementIndex, bool isExecuting)
-    {
-        // Make sure there is enough space for the new element
-        if (!map_check_free_elements_and_reorganise(1))
-            return std::make_unique<GameActions::Result>(GameActions::Status::NoFreeElements, STR_NONE);
-
-        if (isExecuting)
-        {
-            // Create new corrupt element
-            TileElement* corruptElement = tile_element_insert(
-                { loc, (-1 * COORDS_Z_STEP) }, 0b0000,
-                TileElementType::Corrupt); // Ugly hack: -1 guarantees this to be placed first
-            if (corruptElement == nullptr)
-            {
-                log_warning("Failed to insert corrupt element.");
-                return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
-            }
-
-            // Set the base height to be the same as the selected element
-            TileElement* const selectedElement = map_get_nth_element_at(loc, elementIndex + 1);
-            if (selectedElement == nullptr)
-            {
-                return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
-            }
-            corruptElement->base_height = corruptElement->clearance_height = selectedElement->base_height;
-
-            // Move the corrupt element up until the selected list item is reached
-            // this way it's placed under the selected element, even when there are multiple elements with the same base height
-            for (int16_t i = 0; i < elementIndex; i++)
-            {
-                if (!SwapTileElements(loc, i, i + 1))
-                {
-                    // don't return error here, we've already inserted an element
-                    // and moved it as far as we could, the only sensible thing left
-                    // to do is to invalidate the window.
-                    break;
-                }
-            }
-
-            map_invalidate_tile_full(loc);
-
-            if (auto* inspector = GetTileInspectorWithPos(loc); inspector != nullptr)
-            {
-                windowTileInspectorElementCount++;
-                if (windowTileInspectorSelectedIndex > elementIndex)
-                {
-                    windowTileInspectorSelectedIndex++;
-                }
-                inspector->Invalidate();
-            }
-        }
-
-        // Nothing went wrong
-        return std::make_unique<GameActions::Result>();
-    }
-
     static int32_t numLargeScenerySequences(const CoordsXY& loc, const LargeSceneryElement* const largeScenery)
     {
-        const rct_scenery_entry* const largeEntry = largeScenery->GetEntry();
+        const auto* const largeEntry = largeScenery->GetEntry();
         const auto direction = largeScenery->GetDirection();
         const auto sequenceIndex = largeScenery->GetSequenceIndex();
-        const auto* tiles = largeEntry->large_scenery.tiles;
+        const auto* tiles = largeEntry->tiles;
         const auto& tile = tiles[sequenceIndex];
         const auto rotatedFirstTile = CoordsXYZ{
             CoordsXY{ tile.x_offset, tile.y_offset }.Rotate(direction),
@@ -173,7 +111,7 @@ namespace OpenRCT2::TileInspector
             {
                 do
                 {
-                    if (tileElement->GetType() != TILE_ELEMENT_TYPE_LARGE_SCENERY)
+                    if (tileElement->GetType() != TileElementType::LargeScenery)
                         continue;
 
                     if (tileElement->GetDirection() != direction)
@@ -199,7 +137,7 @@ namespace OpenRCT2::TileInspector
      * @param y The y coordinate of the tile
      * @param elementIndex The nth element on this tile
      */
-    GameActionResultPtr RemoveElementAt(const CoordsXY& loc, int16_t elementIndex, bool isExecuting)
+    GameActions::Result RemoveElementAt(const CoordsXY& loc, int16_t elementIndex, bool isExecuting)
     {
         if (isExecuting)
         {
@@ -207,11 +145,11 @@ namespace OpenRCT2::TileInspector
             TileElement* const tileElement = map_get_nth_element_at(loc, elementIndex);
             if (tileElement == nullptr)
             {
-                return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
             }
 
             auto largeScenery = tileElement->AsLargeScenery();
-            if (largeScenery)
+            if (largeScenery != nullptr)
             {
                 // Only delete the banner entry if there are no other parts of the large scenery to delete
                 if (numLargeScenerySequences(loc, largeScenery) == 1)
@@ -246,16 +184,16 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr SwapElementsAt(const CoordsXY& loc, int16_t first, int16_t second, bool isExecuting)
+    GameActions::Result SwapElementsAt(const CoordsXY& loc, int16_t first, int16_t second, bool isExecuting)
     {
         if (isExecuting)
         {
             if (!SwapTileElements(loc, first, second))
             {
-                return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
             }
             map_invalidate_tile_full(loc);
 
@@ -271,10 +209,10 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr RotateElementAt(const CoordsXY& loc, int32_t elementIndex, bool isExecuting)
+    GameActions::Result RotateElementAt(const CoordsXY& loc, int32_t elementIndex, bool isExecuting)
     {
         if (isExecuting)
         {
@@ -283,11 +221,11 @@ namespace OpenRCT2::TileInspector
             TileElement* const tileElement = map_get_nth_element_at(loc, elementIndex);
             if (tileElement == nullptr)
             {
-                return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
             }
             switch (tileElement->GetType())
             {
-                case TILE_ELEMENT_TYPE_PATH:
+                case TileElementType::Path:
                     if (tileElement->AsPath()->IsSloped())
                     {
                         newRotation = (tileElement->AsPath()->GetSlopeDirection() + 1) & TILE_ELEMENT_DIRECTION_MASK;
@@ -298,7 +236,7 @@ namespace OpenRCT2::TileInspector
                     tileElement->AsPath()->SetEdges((pathEdges << 1) | (pathEdges >> 3));
                     tileElement->AsPath()->SetCorners((pathCorners << 1) | (pathCorners >> 3));
                     break;
-                case TILE_ELEMENT_TYPE_ENTRANCE:
+                case TileElementType::Entrance:
                 {
                     // Update element rotation
                     newRotation = tileElement->GetDirectionWithOffset(1);
@@ -309,8 +247,9 @@ namespace OpenRCT2::TileInspector
                     if (ride != nullptr)
                     {
                         auto stationIndex = tileElement->AsEntrance()->GetStationIndex();
-                        auto entrance = ride_get_entrance_location(ride, stationIndex);
-                        auto exit = ride_get_exit_location(ride, stationIndex);
+                        auto& station = ride->GetStation(stationIndex);
+                        auto entrance = station.Entrance;
+                        auto exit = station.Exit;
                         uint8_t entranceType = tileElement->AsEntrance()->GetEntranceType();
                         uint8_t z = tileElement->base_height;
 
@@ -318,24 +257,24 @@ namespace OpenRCT2::TileInspector
                         if (entranceType == ENTRANCE_TYPE_RIDE_ENTRANCE && entrance.x == loc.x / 32 && entrance.y == loc.y / 32
                             && entrance.z == z)
                         {
-                            ride_set_entrance_location(ride, stationIndex, { entrance.x, entrance.y, entrance.z, newRotation });
+                            station.Entrance = { entrance.x, entrance.y, entrance.z, newRotation };
                         }
                         else if (
                             entranceType == ENTRANCE_TYPE_RIDE_EXIT && exit.x == loc.x / 32 && exit.y == loc.y / 32
                             && exit.z == z)
                         {
-                            ride_set_exit_location(ride, stationIndex, { exit.x, exit.y, exit.z, newRotation });
+                            station.Exit = { exit.x, exit.y, exit.z, newRotation };
                         }
                     }
                     break;
                 }
-                case TILE_ELEMENT_TYPE_TRACK:
-                case TILE_ELEMENT_TYPE_SMALL_SCENERY:
-                case TILE_ELEMENT_TYPE_WALL:
+                case TileElementType::Track:
+                case TileElementType::SmallScenery:
+                case TileElementType::Wall:
                     newRotation = tileElement->GetDirectionWithOffset(1);
                     tileElement->SetDirection(newRotation);
                     break;
-                case TILE_ELEMENT_TYPE_BANNER:
+                case TileElementType::Banner:
                 {
                     uint8_t unblockedEdges = tileElement->AsBanner()->GetAllowedEdges();
                     unblockedEdges = (unblockedEdges << 1 | unblockedEdges >> 3) & 0xF;
@@ -343,6 +282,9 @@ namespace OpenRCT2::TileInspector
                     tileElement->AsBanner()->SetPosition((tileElement->AsBanner()->GetPosition() + 1) & 3);
                     break;
                 }
+                case TileElementType::Surface:
+                case TileElementType::LargeScenery:
+                    break;
             }
 
             map_invalidate_tile_full(loc);
@@ -353,15 +295,35 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr PasteElementAt(const CoordsXY& loc, TileElement element, bool isExecuting)
+    GameActions::Result ToggleInvisibilityOfElementAt(const CoordsXY& loc, int32_t elementIndex, bool isExecuting)
+    {
+        if (!isExecuting)
+        {
+            return GameActions::Result();
+        }
+
+        TileElement* tileElement = map_get_nth_element_at(loc, elementIndex);
+        bool currentlyInvisible = tileElement->IsInvisible();
+        tileElement->SetInvisible(!currentlyInvisible);
+
+        map_invalidate_tile_full(loc);
+        if (loc == windowTileInspectorTile.ToCoordsXY())
+        {
+            window_invalidate_by_class(WC_TILE_INSPECTOR);
+        }
+
+        return GameActions::Result();
+    }
+
+    GameActions::Result PasteElementAt(const CoordsXY& loc, TileElement element, bool isExecuting)
     {
         // Make sure there is enough space for the new element
-        if (!map_check_free_elements_and_reorganise(1))
+        if (!MapCheckCapacityAndReorganise(loc))
         {
-            return std::make_unique<GameActions::Result>(GameActions::Status::NoFreeElements, STR_NONE);
+            return GameActions::Result(GameActions::Status::NoFreeElements, STR_NONE, STR_NONE);
         }
 
         auto tileLoc = TileCoordsXY(loc);
@@ -370,20 +332,22 @@ namespace OpenRCT2::TileInspector
         {
             // Check if the element to be pasted refers to a banner index
             auto bannerIndex = element.GetBannerIndex();
-            if (bannerIndex != BANNER_INDEX_NULL)
+            if (bannerIndex != BannerIndex::GetNull())
             {
                 // The element to be pasted refers to a banner index - make a copy of it
-                auto newBannerIndex = create_new_banner(GAME_COMMAND_FLAG_APPLY);
-                if (newBannerIndex == BANNER_INDEX_NULL)
+                auto newBanner = CreateBanner();
+                if (newBanner == nullptr)
                 {
-                    return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                    log_error("No free banners available");
+                    return GameActions::Result(GameActions::Status::Unknown, STR_TOO_MANY_BANNERS_IN_GAME, STR_NONE);
                 }
-                auto& newBanner = *GetBanner(newBannerIndex);
-                newBanner = *GetBanner(bannerIndex);
-                newBanner.position = tileLoc;
+                // Copy the banners style
+                *newBanner = *GetBanner(bannerIndex);
+                // Reset the location to the paste location
+                newBanner->position = tileLoc;
 
                 // Use the new banner index
-                element.SetBannerIndex(newBannerIndex);
+                element.SetBannerIndex(newBanner->id);
             }
 
             // The occupiedQuadrants will be automatically set when the element is copied over, so it's not necessary to set
@@ -412,16 +376,16 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr SortElementsAt(const CoordsXY& loc, bool isExecuting)
+    GameActions::Result SortElementsAt(const CoordsXY& loc, bool isExecuting)
     {
         if (isExecuting)
         {
             const TileElement* const firstElement = map_get_first_element_at(loc);
             if (firstElement == nullptr)
-                return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
             // Count elements on tile
             int32_t numElement = 0;
@@ -470,48 +434,45 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    static GameActionResultPtr ValidateTileHeight(TileElement* const tileElement, int8_t heightOffset)
+    static GameActions::Result ValidateTileHeight(TileElement* const tileElement, int8_t heightOffset)
     {
         int16_t newBaseHeight = static_cast<int16_t>(tileElement->base_height + heightOffset);
         int16_t newClearanceHeight = static_cast<int16_t>(tileElement->clearance_height + heightOffset);
         if (newBaseHeight < 0)
         {
-            return std::make_unique<GameActions::Result>(GameActions::Status::TooLow, STR_CANT_LOWER_ELEMENT_HERE, STR_TOO_LOW);
+            return GameActions::Result(GameActions::Status::TooLow, STR_CANT_LOWER_ELEMENT_HERE, STR_TOO_LOW);
         }
-        else if (newBaseHeight > MAX_ELEMENT_HEIGHT)
+        if (newBaseHeight > MAX_ELEMENT_HEIGHT)
         {
-            return std::make_unique<GameActions::Result>(
-                GameActions::Status::TooHigh, STR_CANT_RAISE_ELEMENT_HERE, STR_TOO_HIGH);
+            return GameActions::Result(GameActions::Status::TooHigh, STR_CANT_RAISE_ELEMENT_HERE, STR_TOO_HIGH);
         }
-        else if (newClearanceHeight < 0)
+        if (newClearanceHeight < 0)
         {
-            return std::make_unique<GameActions::Result>(
-                GameActions::Status::NoClearance, STR_CANT_LOWER_ELEMENT_HERE, STR_NO_CLEARANCE);
+            return GameActions::Result(GameActions::Status::NoClearance, STR_CANT_LOWER_ELEMENT_HERE, STR_NO_CLEARANCE);
         }
-        else if (newClearanceHeight > MAX_ELEMENT_HEIGHT)
+        if (newClearanceHeight > MAX_ELEMENT_HEIGHT)
         {
-            return std::make_unique<GameActions::Result>(
-                GameActions::Status::NoClearance, STR_CANT_RAISE_ELEMENT_HERE, STR_NO_CLEARANCE);
+            return GameActions::Result(GameActions::Status::NoClearance, STR_CANT_RAISE_ELEMENT_HERE, STR_NO_CLEARANCE);
         }
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr AnyBaseHeightOffset(const CoordsXY& loc, int16_t elementIndex, int8_t heightOffset, bool isExecuting)
+    GameActions::Result AnyBaseHeightOffset(const CoordsXY& loc, int16_t elementIndex, int8_t heightOffset, bool isExecuting)
     {
         TileElement* const tileElement = map_get_nth_element_at(loc, elementIndex);
         if (tileElement == nullptr)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         auto heightValidationResult = ValidateTileHeight(tileElement, heightOffset);
-        if (heightValidationResult->Error != GameActions::Status::Ok)
+        if (heightValidationResult.Error != GameActions::Status::Ok)
             return heightValidationResult;
 
         if (isExecuting)
         {
-            if (tileElement->GetType() == TILE_ELEMENT_TYPE_ENTRANCE)
+            if (tileElement->GetType() == TileElementType::Entrance)
             {
                 uint8_t entranceType = tileElement->AsEntrance()->GetEntranceType();
                 if (entranceType != ENTRANCE_TYPE_PARK_ENTRANCE)
@@ -521,16 +482,16 @@ namespace OpenRCT2::TileInspector
                     if (ride != nullptr)
                     {
                         auto entranceIndex = tileElement->AsEntrance()->GetStationIndex();
-                        auto entrance = ride_get_entrance_location(ride, entranceIndex);
-                        auto exit = ride_get_exit_location(ride, entranceIndex);
+                        auto& station = ride->GetStation(entranceIndex);
+                        auto entrance = station.Entrance;
+                        auto exit = station.Exit;
                         uint8_t z = tileElement->base_height;
 
                         // Make sure this is the correct entrance or exit
                         if (entranceType == ENTRANCE_TYPE_RIDE_ENTRANCE && entrance == TileCoordsXYZ{ loc, z })
-                            ride_set_entrance_location(
-                                ride, entranceIndex, { entrance.x, entrance.y, z + heightOffset, entrance.direction });
+                            station.Entrance = { entrance.x, entrance.y, z + heightOffset, entrance.direction };
                         else if (entranceType == ENTRANCE_TYPE_RIDE_EXIT && exit == TileCoordsXYZ{ loc, z })
-                            ride_set_exit_location(ride, entranceIndex, { exit.x, exit.y, z + heightOffset, exit.direction });
+                            station.Exit = { exit.x, exit.y, z + heightOffset, exit.direction };
                     }
                 }
             }
@@ -546,16 +507,16 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr SurfaceShowParkFences(const CoordsXY& loc, bool showFences, bool isExecuting)
+    GameActions::Result SurfaceShowParkFences(const CoordsXY& loc, bool showFences, bool isExecuting)
     {
         auto* const surfaceelement = map_get_surface_element_at(loc);
 
         // No surface element on tile
         if (surfaceelement == nullptr)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -572,62 +533,50 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr SurfaceToggleCorner(const CoordsXY& loc, int32_t cornerIndex, bool isExecuting)
+    GameActions::Result SurfaceToggleCorner(const CoordsXY& loc, int32_t cornerIndex, bool isExecuting)
     {
         auto* const surfaceElement = map_get_surface_element_at(loc);
 
         // No surface element on tile
         if (surfaceElement == nullptr)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
             const uint8_t originalSlope = surfaceElement->GetSlope();
-            const bool diagonal = (originalSlope & TILE_ELEMENT_SLOPE_DOUBLE_HEIGHT) >> 4;
-
             uint8_t newSlope = surfaceElement->GetSlope() ^ (1 << cornerIndex);
-            surfaceElement->SetSlope(newSlope);
-            if (surfaceElement->GetSlope() & TILE_ELEMENT_SLOPE_ALL_CORNERS_UP)
-            {
-                surfaceElement->clearance_height = surfaceElement->base_height + 2;
-            }
-            else
-            {
-                surfaceElement->clearance_height = surfaceElement->base_height;
-            }
 
             // All corners are raised
-            if ((surfaceElement->GetSlope() & TILE_ELEMENT_SLOPE_ALL_CORNERS_UP) == TILE_ELEMENT_SLOPE_ALL_CORNERS_UP)
+            if ((newSlope & TILE_ELEMENT_SLOPE_ALL_CORNERS_UP) == TILE_ELEMENT_SLOPE_ALL_CORNERS_UP)
             {
-                uint8_t slope = TILE_ELEMENT_SLOPE_FLAT;
-
-                if (diagonal)
+                newSlope = TILE_ELEMENT_SLOPE_FLAT;
+                if ((originalSlope & TILE_ELEMENT_SLOPE_DOUBLE_HEIGHT) != 0)
                 {
                     switch (originalSlope & TILE_ELEMENT_SLOPE_ALL_CORNERS_UP)
                     {
                         case TILE_ELEMENT_SLOPE_S_CORNER_DN:
-                            slope |= TILE_ELEMENT_SLOPE_N_CORNER_UP;
+                            newSlope |= TILE_ELEMENT_SLOPE_N_CORNER_UP;
                             break;
                         case TILE_ELEMENT_SLOPE_W_CORNER_DN:
-                            slope |= TILE_ELEMENT_SLOPE_E_CORNER_UP;
+                            newSlope |= TILE_ELEMENT_SLOPE_E_CORNER_UP;
                             break;
                         case TILE_ELEMENT_SLOPE_N_CORNER_DN:
-                            slope |= TILE_ELEMENT_SLOPE_S_CORNER_UP;
+                            newSlope |= TILE_ELEMENT_SLOPE_S_CORNER_UP;
                             break;
                         case TILE_ELEMENT_SLOPE_E_CORNER_DN:
-                            slope |= TILE_ELEMENT_SLOPE_W_CORNER_UP;
+                            newSlope |= TILE_ELEMENT_SLOPE_W_CORNER_UP;
                             break;
                     }
                 }
-                surfaceElement->SetSlope(slope);
 
-                // Update base and clearance heights
                 surfaceElement->base_height += 2;
-                surfaceElement->clearance_height = surfaceElement->base_height + (diagonal ? 2 : 0);
+                surfaceElement->clearance_height = surfaceElement->base_height;
             }
+
+            surfaceElement->SetSlope(newSlope);
 
             map_invalidate_tile_full(loc);
 
@@ -637,33 +586,21 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr SurfaceToggleDiagonal(const CoordsXY& loc, bool isExecuting)
+    GameActions::Result SurfaceToggleDiagonal(const CoordsXY& loc, bool isExecuting)
     {
         auto* const surfaceElement = map_get_surface_element_at(loc);
 
         // No surface element on tile
         if (surfaceElement == nullptr)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
             uint8_t newSlope = surfaceElement->GetSlope() ^ TILE_ELEMENT_SLOPE_DOUBLE_HEIGHT;
             surfaceElement->SetSlope(newSlope);
-            if (surfaceElement->GetSlope() & TILE_ELEMENT_SLOPE_DOUBLE_HEIGHT)
-            {
-                surfaceElement->clearance_height = surfaceElement->base_height + 4;
-            }
-            else if (surfaceElement->GetSlope() & TILE_ELEMENT_SLOPE_ALL_CORNERS_UP)
-            {
-                surfaceElement->clearance_height = surfaceElement->base_height + 2;
-            }
-            else
-            {
-                surfaceElement->clearance_height = surfaceElement->base_height;
-            }
 
             map_invalidate_tile_full(loc);
 
@@ -673,15 +610,15 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr PathSetSloped(const CoordsXY& loc, int32_t elementIndex, bool sloped, bool isExecuting)
+    GameActions::Result PathSetSloped(const CoordsXY& loc, int32_t elementIndex, bool sloped, bool isExecuting)
     {
         TileElement* const pathElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (pathElement == nullptr || pathElement->GetType() != TILE_ELEMENT_TYPE_PATH)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (pathElement == nullptr || pathElement->GetType() != TileElementType::Path)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -695,15 +632,15 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr PathSetBroken(const CoordsXY& loc, int32_t elementIndex, bool broken, bool isExecuting)
+    GameActions::Result PathSetBroken(const CoordsXY& loc, int32_t elementIndex, bool broken, bool isExecuting)
     {
         TileElement* const pathElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (pathElement == nullptr || pathElement->GetType() != TILE_ELEMENT_TYPE_PATH)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (pathElement == nullptr || pathElement->GetType() != TileElementType::Path)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -717,15 +654,15 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr PathToggleEdge(const CoordsXY& loc, int32_t elementIndex, int32_t edgeIndex, bool isExecuting)
+    GameActions::Result PathToggleEdge(const CoordsXY& loc, int32_t elementIndex, int32_t edgeIndex, bool isExecuting)
     {
         TileElement* const pathElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (pathElement == nullptr || pathElement->GetType() != TILE_ELEMENT_TYPE_PATH)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (pathElement == nullptr || pathElement->GetType() != TileElementType::Path)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -740,37 +677,34 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr EntranceMakeUsable(const CoordsXY& loc, int32_t elementIndex, bool isExecuting)
+    GameActions::Result EntranceMakeUsable(const CoordsXY& loc, int32_t elementIndex, bool isExecuting)
     {
         TileElement* const entranceElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (entranceElement == nullptr || entranceElement->GetType() != TILE_ELEMENT_TYPE_ENTRANCE)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (entranceElement == nullptr || entranceElement->GetType() != TileElementType::Entrance)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         auto ride = get_ride(entranceElement->AsEntrance()->GetRideIndex());
         if (ride == nullptr)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
             auto stationIndex = entranceElement->AsEntrance()->GetStationIndex();
+            auto& station = ride->GetStation(stationIndex);
 
             switch (entranceElement->AsEntrance()->GetEntranceType())
             {
                 case ENTRANCE_TYPE_RIDE_ENTRANCE:
-                    ride_set_entrance_location(
-                        ride, stationIndex,
-                        { loc.x / 32, loc.y / 32, entranceElement->base_height,
-                          static_cast<uint8_t>(entranceElement->GetDirection()) });
+                    station.Entrance = { loc.x / 32, loc.y / 32, entranceElement->base_height,
+                                         static_cast<uint8_t>(entranceElement->GetDirection()) };
                     break;
                 case ENTRANCE_TYPE_RIDE_EXIT:
-                    ride_set_exit_location(
-                        ride, stationIndex,
-                        { loc.x / 32, loc.y / 32, entranceElement->base_height,
-                          static_cast<uint8_t>(entranceElement->GetDirection()) });
+                    station.Exit = { loc.x / 32, loc.y / 32, entranceElement->base_height,
+                                     static_cast<uint8_t>(entranceElement->GetDirection()) };
                     break;
             }
 
@@ -780,15 +714,15 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr WallSetSlope(const CoordsXY& loc, int32_t elementIndex, int32_t slopeValue, bool isExecuting)
+    GameActions::Result WallSetSlope(const CoordsXY& loc, int32_t elementIndex, int32_t slopeValue, bool isExecuting)
     {
         TileElement* const wallElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (wallElement == nullptr || wallElement->GetType() != TILE_ELEMENT_TYPE_WALL)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (wallElement == nullptr || wallElement->GetType() != TileElementType::Wall)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -803,16 +737,16 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr WallAnimationFrameOffset(
+    GameActions::Result WallAnimationFrameOffset(
         const CoordsXY& loc, int16_t elementIndex, int8_t animationFrameOffset, bool isExecuting)
     {
         TileElement* const wallElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (wallElement == nullptr || wallElement->GetType() != TILE_ELEMENT_TYPE_WALL)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (wallElement == nullptr || wallElement->GetType() != TileElementType::Wall)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -827,20 +761,20 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
     // Changes the height of all track elements that belong to the same track piece
     // Broxzier: Copied from track_remove and stripped of unneeded code, but I think this should be smaller
-    GameActionResultPtr TrackBaseHeightOffset(const CoordsXY& loc, int32_t elementIndex, int8_t offset, bool isExecuting)
+    GameActions::Result TrackBaseHeightOffset(const CoordsXY& loc, int32_t elementIndex, int8_t offset, bool isExecuting)
     {
         if (offset == 0)
-            return std::make_unique<GameActions::Result>();
+            return GameActions::Result();
 
         TileElement* const trackElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (trackElement == nullptr || trackElement->GetType() != TILE_ELEMENT_TYPE_TRACK)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (trackElement == nullptr || trackElement->GetType() != TileElementType::Track)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -852,9 +786,10 @@ namespace OpenRCT2::TileInspector
             auto rideIndex = trackElement->AsTrack()->GetRideIndex();
             auto ride = get_ride(rideIndex);
             if (ride == nullptr)
-                return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
-            auto trackBlock = TrackBlocks[type];
+            const auto& ted = GetTrackElementDescriptor(type);
+            const auto* trackBlock = ted.Block;
             trackBlock += trackElement->AsTrack()->GetSequenceIndex();
 
             uint8_t originDirection = trackElement->GetDirection();
@@ -866,7 +801,7 @@ namespace OpenRCT2::TileInspector
             originY = static_cast<int16_t>(coords.y);
             originZ -= trackBlock->z;
 
-            trackBlock = TrackBlocks[type];
+            trackBlock = ted.Block;
             for (; trackBlock->index != 255; trackBlock++)
             {
                 CoordsXYZD elem = { originX, originY, originZ + trackBlock->z, rotation };
@@ -878,7 +813,7 @@ namespace OpenRCT2::TileInspector
                 if (tileElement == nullptr)
                 {
                     log_error("Track map element part not found!");
-                    return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                    return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
                 }
 
                 // track_remove returns here on failure, not sure when this would ever be hit. Only thing I can think of is
@@ -900,19 +835,19 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
     // Sets chainlift, optionally for an entire track block
     // Broxzier: Basically a copy of the above function, with just two different lines... should probably be combined
     // somehow
-    GameActionResultPtr TrackSetChain(
+    GameActions::Result TrackSetChain(
         const CoordsXY& loc, int32_t elementIndex, bool entireTrackBlock, bool setChain, bool isExecuting)
     {
         TileElement* const trackElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (trackElement == nullptr || trackElement->GetType() != TILE_ELEMENT_TYPE_TRACK)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (trackElement == nullptr || trackElement->GetType() != TileElementType::Track)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -924,7 +859,7 @@ namespace OpenRCT2::TileInspector
                     trackElement->AsTrack()->SetHasChain(setChain);
                 }
 
-                return std::make_unique<GameActions::Result>();
+                return GameActions::Result();
             }
 
             auto type = trackElement->AsTrack()->GetTrackType();
@@ -935,9 +870,10 @@ namespace OpenRCT2::TileInspector
             auto rideIndex = trackElement->AsTrack()->GetRideIndex();
             auto ride = get_ride(rideIndex);
             if (ride == nullptr)
-                return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
-            auto trackBlock = TrackBlocks[type];
+            const auto& ted = GetTrackElementDescriptor(type);
+            auto trackBlock = ted.Block;
             trackBlock += trackElement->AsTrack()->GetSequenceIndex();
 
             uint8_t originDirection = trackElement->GetDirection();
@@ -949,7 +885,7 @@ namespace OpenRCT2::TileInspector
             originY = static_cast<int16_t>(coords.y);
             originZ -= trackBlock->z;
 
-            trackBlock = TrackBlocks[type];
+            trackBlock = ted.Block;
             for (; trackBlock->index != 255; trackBlock++)
             {
                 CoordsXYZD elem = { originX, originY, originZ + trackBlock->z, rotation };
@@ -961,7 +897,7 @@ namespace OpenRCT2::TileInspector
                 if (tileElement == nullptr)
                 {
                     log_error("Track map element part not found!");
-                    return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+                    return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
                 }
 
                 // track_remove returns here on failure, not sure when this would ever be hit. Only thing I can think of is
@@ -985,15 +921,15 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr TrackSetBlockBrake(const CoordsXY& loc, int32_t elementIndex, bool blockBrake, bool isExecuting)
+    GameActions::Result TrackSetBlockBrake(const CoordsXY& loc, int32_t elementIndex, bool blockBrake, bool isExecuting)
     {
         TileElement* const trackElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (trackElement == nullptr || trackElement->GetType() != TILE_ELEMENT_TYPE_TRACK)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (trackElement == nullptr || trackElement->GetType() != TileElementType::Track)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -1007,16 +943,16 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr TrackSetIndestructible(
+    GameActions::Result TrackSetIndestructible(
         const CoordsXY& loc, int32_t elementIndex, bool isIndestructible, bool isExecuting)
     {
         TileElement* const trackElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (trackElement == nullptr || trackElement->GetType() != TILE_ELEMENT_TYPE_TRACK)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (trackElement == nullptr || trackElement->GetType() != TileElementType::Track)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -1030,16 +966,16 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr ScenerySetQuarterLocation(
+    GameActions::Result ScenerySetQuarterLocation(
         const CoordsXY& loc, int32_t elementIndex, int32_t quarterIndex, bool isExecuting)
     {
         TileElement* const tileElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (tileElement == nullptr || tileElement->GetType() != TILE_ELEMENT_TYPE_SMALL_SCENERY)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (tileElement == nullptr || tileElement->GetType() != TileElementType::SmallScenery)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -1057,16 +993,16 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr ScenerySetQuarterCollision(
+    GameActions::Result ScenerySetQuarterCollision(
         const CoordsXY& loc, int32_t elementIndex, int32_t quarterIndex, bool isExecuting)
     {
         TileElement* const tileElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (tileElement == nullptr || tileElement->GetType() != TILE_ELEMENT_TYPE_SMALL_SCENERY)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (tileElement == nullptr || tileElement->GetType() != TileElementType::SmallScenery)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -1082,15 +1018,15 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr BannerToggleBlockingEdge(const CoordsXY& loc, int32_t elementIndex, int32_t edgeIndex, bool isExecuting)
+    GameActions::Result BannerToggleBlockingEdge(const CoordsXY& loc, int32_t elementIndex, int32_t edgeIndex, bool isExecuting)
     {
         TileElement* const bannerElement = map_get_nth_element_at(loc, elementIndex);
 
-        if (bannerElement == nullptr || bannerElement->GetType() != TILE_ELEMENT_TYPE_BANNER)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
+        if (bannerElement == nullptr || bannerElement->GetType() != TileElementType::Banner)
+            return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
 
         if (isExecuting)
         {
@@ -1104,31 +1040,20 @@ namespace OpenRCT2::TileInspector
             }
         }
 
-        return std::make_unique<GameActions::Result>();
+        return GameActions::Result();
     }
 
-    GameActionResultPtr CorruptClamp(const CoordsXY& loc, int32_t elementIndex, bool isExecuting)
+    // NOTE: The pointer is exclusively used to determine the  current selection,
+    // do not access the data, points to potentially invalid memory.
+    static const TileElement* _highlightedElement = nullptr;
+
+    void SetSelectedElement(const TileElement* elem)
     {
-        TileElement* const corruptElement = map_get_nth_element_at(loc, elementIndex);
-
-        if (corruptElement == nullptr || corruptElement->GetType() != TILE_ELEMENT_TYPE_CORRUPT)
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
-
-        if (corruptElement->IsLastForTile())
-            return std::make_unique<GameActions::Result>(GameActions::Status::Unknown, STR_NONE);
-
-        if (isExecuting)
-        {
-            TileElement* const nextElement = corruptElement + 1;
-            corruptElement->base_height = corruptElement->clearance_height = nextElement->base_height;
-
-            if (auto* inspector = GetTileInspectorWithPos(loc); inspector != nullptr)
-            {
-                inspector->Invalidate();
-            }
-        }
-
-        return std::make_unique<GameActions::Result>();
+        _highlightedElement = elem;
     }
 
+    bool IsElementSelected(const TileElement* elem)
+    {
+        return _highlightedElement == elem;
+    }
 } // namespace OpenRCT2::TileInspector

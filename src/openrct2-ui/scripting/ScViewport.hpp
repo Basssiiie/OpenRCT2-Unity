@@ -142,7 +142,8 @@ namespace OpenRCT2::Scripting
             auto w = GetWindow();
             if (w != nullptr)
             {
-                window_zoom_set(w, value, false);
+                auto i8Value = static_cast<int8_t>(value);
+                window_zoom_set(w, ZoomLevel{ i8Value }, false);
             }
         }
 
@@ -245,8 +246,8 @@ namespace OpenRCT2::Scripting
         {
             if (_class == WC_MAIN_WINDOW)
                 return window_get_main();
-            else
-                return window_find_by_number(_class, _number);
+
+            return window_find_by_number(_class, _number);
         }
 
         rct_viewport* GetViewport() const
@@ -292,11 +293,9 @@ namespace OpenRCT2::Scripting
                     {
                         return CoordsXYZ(x, y, dukZ.as_int());
                     }
-                    else
-                    {
-                        auto z = tile_element_height(CoordsXY(x, y));
-                        return CoordsXYZ(x, y, z);
-                    }
+
+                    auto z = tile_element_height(CoordsXY(x, y));
+                    return CoordsXYZ(x, y, z);
                 }
             }
             return std::nullopt;

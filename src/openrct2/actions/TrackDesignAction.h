@@ -12,18 +12,7 @@
 #include "../ride/TrackDesign.h"
 #include "GameAction.h"
 
-class TrackDesignActionResult final : public GameActions::Result
-{
-public:
-    TrackDesignActionResult();
-    TrackDesignActionResult(GameActions::Status error);
-    TrackDesignActionResult(GameActions::Status error, rct_string_id title, rct_string_id message);
-    TrackDesignActionResult(GameActions::Status error, rct_string_id message);
-
-    ride_id_t rideIndex = RIDE_ID_NULL;
-};
-
-DEFINE_GAME_ACTION(TrackDesignAction, GameCommand::PlaceTrackDesign, TrackDesignActionResult)
+class TrackDesignAction final : public GameActionBase<GameCommand::PlaceTrackDesign>
 {
 private:
     CoordsXYZD _loc;
@@ -33,12 +22,12 @@ public:
     TrackDesignAction() = default;
     TrackDesignAction(const CoordsXYZD& location, const TrackDesign& td);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
+    void Serialise(DataSerialiser& stream) override;
 
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

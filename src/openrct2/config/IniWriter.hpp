@@ -10,6 +10,7 @@
 #pragma once
 
 #include "../common.h"
+#include "../core/String.hpp"
 
 #include <memory>
 #include <string>
@@ -52,4 +53,4 @@ struct IIniWriter
     void WriteString(const std::string& name, const utf8* value);
 };
 
-std::unique_ptr<IIniWriter> CreateIniWriter(OpenRCT2::IStream* stream);
+[[nodiscard]] std::unique_ptr<IIniWriter> CreateIniWriter(OpenRCT2::IStream* stream);

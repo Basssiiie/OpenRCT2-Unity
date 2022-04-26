@@ -12,6 +12,7 @@
 #ifdef ENABLE_SCRIPTING
 
 #    include "../core/Console.hpp"
+#    include "../core/EnumMap.hpp"
 #    include "../ride/Vehicle.h"
 #    include "../world/Map.h"
 
@@ -122,7 +123,21 @@ namespace OpenRCT2::Scripting
             duk_put_prop_string(_ctx, _idx, name);
         }
 
+        void Set(const char* name, int64_t value)
+        {
+            EnsureObjectPushed();
+            duk_push_number(_ctx, value);
+            duk_put_prop_string(_ctx, _idx, name);
+        }
+
         void Set(const char* name, uint64_t value)
+        {
+            EnsureObjectPushed();
+            duk_push_number(_ctx, value);
+            duk_put_prop_string(_ctx, _idx, name);
+        }
+
+        void Set(const char* name, double value)
         {
             EnsureObjectPushed();
             duk_push_number(_ctx, value);
@@ -221,42 +236,7 @@ namespace OpenRCT2::Scripting
     /**
      * Bi-directional map for converting between strings and enums / numbers.
      */
-    template<typename T> class DukEnumMap
-    {
-    private:
-        std::unordered_map<std::string_view, T> _s2n;
-        std::unordered_map<T, std::string_view> _n2s;
-
-    public:
-        DukEnumMap(const std::initializer_list<std::pair<std::string_view, T>>& items)
-        {
-            _s2n = std::unordered_map<std::string_view, T>(items.begin(), items.end());
-            for (const auto& kvp : items)
-            {
-                _n2s.emplace(std::get<1>(kvp), std::get<0>(kvp));
-            }
-        }
-
-        std::string_view operator[](T k) const
-        {
-            auto it = _n2s.find(k);
-            if (it == _n2s.end())
-            {
-                return "";
-            }
-            return it->second;
-        }
-
-        T operator[](std::string_view k) const
-        {
-            auto it = _s2n.find(k);
-            if (it == _s2n.end())
-            {
-                return static_cast<T>(0);
-            }
-            return it->second;
-        }
-    };
+    template<typename T> using DukEnumMap = EnumMap<T>;
 
     inline duk_ret_t duk_json_decode_wrapper(duk_context* ctx, void*)
     {
@@ -271,12 +251,10 @@ namespace OpenRCT2::Scripting
         {
             return DukValue::take_from_stack(ctx);
         }
-        else
-        {
-            // Pop error off stack
-            duk_pop(ctx);
-            return std::nullopt;
-        }
+
+        // Pop error off stack
+        duk_pop(ctx);
+        return std::nullopt;
     }
 
     std::string ProcessString(const DukValue& value);
@@ -308,9 +286,21 @@ namespace OpenRCT2::Scripting
         return DukValue::take_from_stack(ctx);
     }
 
+    template<> inline DukValue ToDuk(duk_context* ctx, const uint16_t& value)
+    {
+        duk_push_int(ctx, value);
+        return DukValue::take_from_stack(ctx);
+    }
+
     template<> inline DukValue ToDuk(duk_context* ctx, const int32_t& value)
     {
         duk_push_int(ctx, value);
+        return DukValue::take_from_stack(ctx);
+    }
+
+    template<> inline DukValue ToDuk(duk_context* ctx, const int64_t& value)
+    {
+        duk_push_number(ctx, value);
         return DukValue::take_from_stack(ctx);
     }
 
@@ -344,7 +334,23 @@ namespace OpenRCT2::Scripting
         return result;
     }
 
+    template<> MapRange inline FromDuk(const DukValue& d)
+    {
+        MapRange range;
+        range.Point1 = FromDuk<CoordsXY>(d["leftTop"]);
+        range.Point2 = FromDuk<CoordsXY>(d["rightBottom"]);
+        return range.Normalise();
+    }
+
     template<> DukValue inline ToDuk(duk_context* ctx, const CoordsXY& coords)
+    {
+        DukObject dukCoords(ctx);
+        dukCoords.Set("x", coords.x);
+        dukCoords.Set("y", coords.y);
+        return dukCoords.Take();
+    }
+
+    template<> DukValue inline ToDuk(duk_context* ctx, const TileCoordsXY& coords)
     {
         DukObject dukCoords(ctx);
         dukCoords.Set("x", coords.x);
@@ -362,18 +368,16 @@ namespace OpenRCT2::Scripting
 
     template<> inline DukValue ToDuk(duk_context* ctx, const CoordsXYZ& value)
     {
-        if (value.isNull())
+        if (value.IsNull())
         {
             return ToDuk(ctx, nullptr);
         }
-        else
-        {
-            DukObject dukCoords(ctx);
-            dukCoords.Set("x", value.x);
-            dukCoords.Set("y", value.y);
-            dukCoords.Set("z", value.z);
-            return dukCoords.Take();
-        }
+
+        DukObject dukCoords(ctx);
+        dukCoords.Set("x", value.x);
+        dukCoords.Set("y", value.y);
+        dukCoords.Set("z", value.z);
+        return dukCoords.Take();
     }
 
     template<> inline CoordsXYZ FromDuk(const DukValue& value)
@@ -387,26 +391,24 @@ namespace OpenRCT2::Scripting
         }
         else
         {
-            result.setNull();
+            result.SetNull();
         }
         return result;
     }
 
     template<> inline DukValue ToDuk(duk_context* ctx, const CoordsXYZD& value)
     {
-        if (value.isNull())
+        if (value.IsNull())
         {
             return ToDuk(ctx, nullptr);
         }
-        else
-        {
-            DukObject dukCoords(ctx);
-            dukCoords.Set("x", value.x);
-            dukCoords.Set("y", value.y);
-            dukCoords.Set("z", value.z);
-            dukCoords.Set("direction", value.direction);
-            return dukCoords.Take();
-        }
+
+        DukObject dukCoords(ctx);
+        dukCoords.Set("x", value.x);
+        dukCoords.Set("y", value.y);
+        dukCoords.Set("z", value.z);
+        dukCoords.Set("direction", value.direction);
+        return dukCoords.Take();
     }
 
     template<> inline DukValue ToDuk(duk_context* ctx, const GForces& value)
@@ -429,7 +431,7 @@ namespace OpenRCT2::Scripting
         }
         else
         {
-            result.setNull();
+            result.SetNull();
         }
         return result;
     }
@@ -440,6 +442,19 @@ namespace OpenRCT2::Scripting
         dukCoords.Set("width", value.width);
         dukCoords.Set("height", value.height);
         return dukCoords.Take();
+    }
+
+    template<> ObjectEntryIndex inline FromDuk(const DukValue& d)
+    {
+        if (d.type() == DukValue::Type::NUMBER)
+        {
+            auto value = d.as_int();
+            if (value >= 0 && value <= std::numeric_limits<ObjectEntryIndex>::max())
+            {
+                return static_cast<ObjectEntryIndex>(value);
+            }
+        }
+        return OBJECT_ENTRY_INDEX_NULL;
     }
 
 } // namespace OpenRCT2::Scripting

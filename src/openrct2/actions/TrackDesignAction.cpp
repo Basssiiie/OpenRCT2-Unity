@@ -14,38 +14,14 @@
 #include "../management/Research.h"
 #include "../object/ObjectManager.h"
 #include "../object/ObjectRepository.h"
+#include "../rct12/RCT12.h"
+#include "../ride/RideConstruction.h"
 #include "../ride/TrackDesign.h"
 #include "RideCreateAction.h"
 #include "RideDemolishAction.h"
 #include "RideSetNameAction.h"
 #include "RideSetSettingAction.h"
 #include "RideSetVehicleAction.h"
-
-static int32_t place_virtual_track(
-    const TrackDesign& td6, uint8_t ptdOperation, bool placeScenery, Ride* ride, const CoordsXYZ& loc)
-{
-    return place_virtual_track(const_cast<TrackDesign*>(&td6), ptdOperation, placeScenery, ride, loc);
-}
-
-TrackDesignActionResult::TrackDesignActionResult()
-    : GameActions::Result(GameActions::Status::Ok, STR_NONE)
-{
-}
-
-TrackDesignActionResult::TrackDesignActionResult(GameActions::Status error)
-    : GameActions::Result(error, STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE, STR_NONE)
-{
-}
-
-TrackDesignActionResult::TrackDesignActionResult(GameActions::Status error, rct_string_id title, rct_string_id message)
-    : GameActions::Result(error, title, message)
-{
-}
-
-TrackDesignActionResult::TrackDesignActionResult(GameActions::Status error, rct_string_id message)
-    : GameActions::Result(error, STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE, message)
-{
-}
 
 TrackDesignAction::TrackDesignAction(const CoordsXYZD& location, const TrackDesign& td)
     : _loc(location)
@@ -72,151 +48,168 @@ void TrackDesignAction::Serialise(DataSerialiser& stream)
     _td.Serialise(stream);
 }
 
-GameActions::Result::Ptr TrackDesignAction::Query() const
+GameActions::Result TrackDesignAction::Query() const
 {
-    auto res = MakeResult();
-    res->Position.x = _loc.x + 16;
-    res->Position.y = _loc.y + 16;
-    res->Position.z = _loc.z;
-    res->Expenditure = ExpenditureType::RideConstruction;
+    auto res = GameActions::Result();
+    res.Position.x = _loc.x + 16;
+    res.Position.y = _loc.y + 16;
+    res.Position.z = _loc.z;
+    res.Expenditure = ExpenditureType::RideConstruction;
     _currentTrackPieceDirection = _loc.direction;
 
     if (!LocationValid(_loc))
     {
-        return MakeResult(GameActions::Status::InvalidParameters);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE, STR_NONE);
     }
 
-    const rct_object_entry* rideEntryObject = &_td.vehicle_object;
-
-    ObjectType entryType;
-    ObjectEntryIndex entryIndex;
-    if (!find_object_in_entry_group(rideEntryObject, &entryType, &entryIndex))
+    auto& objManager = OpenRCT2::GetContext()->GetObjectManager();
+    auto entryIndex = objManager.GetLoadedObjectEntryIndex(_td.vehicle_object);
+    if (entryIndex == OBJECT_ENTRY_INDEX_NULL)
     {
-        entryIndex = OBJECT_ENTRY_INDEX_NULL;
-    }
-    // Force a fallback if the entry is not invented yet a td6 of it is selected, which can happen in select-by-track-type mode.
-    else if (!ride_entry_is_invented(entryIndex) && !gCheatsIgnoreResearchStatus)
-    {
-        entryIndex = OBJECT_ENTRY_INDEX_NULL;
+        // Force a fallback if the entry is not invented yet a td6 of it is selected,
+        // which can happen in select-by-track-type mode
+        if (!ride_entry_is_invented(entryIndex) && !gCheatsIgnoreResearchStatus)
+        {
+            entryIndex = OBJECT_ENTRY_INDEX_NULL;
+        }
     }
 
     // Colours do not matter as will be overwritten
-    auto rideCreateAction = RideCreateAction(_td.type, entryIndex, 0, 0);
+    auto rideCreateAction = RideCreateAction(_td.type, entryIndex, 0, 0, gLastEntranceStyle);
     rideCreateAction.SetFlags(GetFlags());
     auto r = GameActions::ExecuteNested(&rideCreateAction);
-    auto rideIndex = static_cast<RideCreateGameActionResult*>(r.get())->rideIndex;
-
-    if (r->Error != GameActions::Status::Ok)
+    if (r.Error != GameActions::Status::Ok)
     {
-        return MakeResult(GameActions::Status::NoFreeElements, STR_CANT_CREATE_NEW_RIDE_ATTRACTION, STR_NONE);
+        return GameActions::Result(GameActions::Status::NoFreeElements, STR_CANT_CREATE_NEW_RIDE_ATTRACTION, STR_NONE);
     }
 
+    const auto rideIndex = r.GetData<RideId>();
     auto ride = get_ride(rideIndex);
     if (ride == nullptr)
     {
         log_warning("Invalid game command for track placement, ride id = %d", rideIndex);
-        return MakeResult(GameActions::Status::Unknown);
+        return GameActions::Result(GameActions::Status::Unknown, STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE, STR_NONE);
     }
 
-    money32 cost = 0;
-
     bool placeScenery = true;
-    cost = place_virtual_track(_td, PTD_OPERATION_PLACE_QUERY, placeScenery, ride, _loc);
+
+    uint32_t flags = 0;
+    if (GetFlags() & GAME_COMMAND_FLAG_GHOST)
+        flags |= GAME_COMMAND_FLAG_GHOST;
+    if (GetFlags() & GAME_COMMAND_FLAG_REPLAY)
+        flags |= GAME_COMMAND_FLAG_REPLAY;
+
+    auto queryRes = TrackDesignPlace(const_cast<TrackDesign*>(&_td), flags, placeScenery, ride, _loc);
     if (_trackDesignPlaceStateSceneryUnavailable)
     {
         placeScenery = false;
-        cost = place_virtual_track(_td, PTD_OPERATION_PLACE_QUERY, placeScenery, ride, _loc);
+        queryRes = TrackDesignPlace(const_cast<TrackDesign*>(&_td), flags, placeScenery, ride, _loc);
     }
 
-    rct_string_id error_reason = gGameCommandErrorText;
     auto gameAction = RideDemolishAction(ride->id, RIDE_MODIFY_DEMOLISH);
     gameAction.SetFlags(GetFlags());
 
     GameActions::ExecuteNested(&gameAction);
-    if (cost == MONEY32_UNDEFINED)
+
+    if (queryRes.Error != GameActions::Status::Ok)
     {
-        return MakeResult(GameActions::Status::Disallowed, error_reason);
+        res.Error = queryRes.Error;
+        res.ErrorTitle = STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE;
+        res.ErrorMessage = queryRes.ErrorMessage;
+        res.ErrorMessageArgs = queryRes.ErrorMessageArgs;
+        return res;
     }
-    res->Cost = cost;
+
+    res.Cost = queryRes.Cost;
+    res.SetData(RideId{ RideId::GetNull() });
+
     return res;
 }
 
-GameActions::Result::Ptr TrackDesignAction::Execute() const
+GameActions::Result TrackDesignAction::Execute() const
 {
-    auto res = MakeResult();
-    res->Position.x = _loc.x + 16;
-    res->Position.y = _loc.y + 16;
-    res->Position.z = _loc.z;
-    res->Expenditure = ExpenditureType::RideConstruction;
+    auto res = GameActions::Result();
+    res.Position.x = _loc.x + 16;
+    res.Position.y = _loc.y + 16;
+    res.Position.z = _loc.z;
+    res.Expenditure = ExpenditureType::RideConstruction;
 
-    const rct_object_entry* rideEntryObject = &_td.vehicle_object;
-
-    ObjectType entryType;
-    ObjectEntryIndex entryIndex;
-    if (!find_object_in_entry_group(rideEntryObject, &entryType, &entryIndex))
+    auto& objManager = OpenRCT2::GetContext()->GetObjectManager();
+    auto entryIndex = objManager.GetLoadedObjectEntryIndex(_td.vehicle_object);
+    if (entryIndex != OBJECT_ENTRY_INDEX_NULL)
     {
-        entryIndex = OBJECT_ENTRY_INDEX_NULL;
-    }
-    // Force a fallback if the entry is not invented yet a td6 of it is selected, which can happen in select-by-track-type mode.
-    else if (!ride_entry_is_invented(entryIndex) && !gCheatsIgnoreResearchStatus)
-    {
-        entryIndex = OBJECT_ENTRY_INDEX_NULL;
+        // Force a fallback if the entry is not invented yet a track design using it is selected.
+        // This can happen on rides with multiple vehicles where some have been invented and some haven’t.
+        if (!ride_entry_is_invented(entryIndex) && !gCheatsIgnoreResearchStatus)
+        {
+            entryIndex = OBJECT_ENTRY_INDEX_NULL;
+        }
     }
 
     // Colours do not matter as will be overwritten
-    auto rideCreateAction = RideCreateAction(_td.type, entryIndex, 0, 0);
+    auto rideCreateAction = RideCreateAction(_td.type, entryIndex, 0, 0, gLastEntranceStyle);
     rideCreateAction.SetFlags(GetFlags());
     auto r = GameActions::ExecuteNested(&rideCreateAction);
-    auto rideIndex = static_cast<RideCreateGameActionResult*>(r.get())->rideIndex;
-
-    if (r->Error != GameActions::Status::Ok)
+    if (r.Error != GameActions::Status::Ok)
     {
-        return MakeResult(GameActions::Status::NoFreeElements, STR_CANT_CREATE_NEW_RIDE_ATTRACTION, STR_NONE);
+        return GameActions::Result(GameActions::Status::NoFreeElements, STR_CANT_CREATE_NEW_RIDE_ATTRACTION, STR_NONE);
     }
 
+    const auto rideIndex = r.GetData<RideId>();
     auto ride = get_ride(rideIndex);
     if (ride == nullptr)
     {
         log_warning("Invalid game command for track placement, ride id = %d", rideIndex);
-        return MakeResult(GameActions::Status::Unknown);
+        return GameActions::Result(GameActions::Status::Unknown, STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE, STR_NONE);
     }
 
-    money32 cost = 0;
-
+    // Query first, this is required again to determine if scenery is available.
     bool placeScenery = true;
-    cost = place_virtual_track(_td, PTD_OPERATION_PLACE_QUERY, placeScenery, ride, _loc);
+
+    uint32_t flags = 0;
+    if (GetFlags() & GAME_COMMAND_FLAG_GHOST)
+        flags |= GAME_COMMAND_FLAG_GHOST;
+    if (GetFlags() & GAME_COMMAND_FLAG_REPLAY)
+        flags |= GAME_COMMAND_FLAG_REPLAY;
+
+    auto queryRes = TrackDesignPlace(const_cast<TrackDesign*>(&_td), flags, placeScenery, ride, _loc);
     if (_trackDesignPlaceStateSceneryUnavailable)
     {
         placeScenery = false;
-        cost = place_virtual_track(_td, PTD_OPERATION_PLACE_QUERY, placeScenery, ride, _loc);
+        queryRes = TrackDesignPlace(const_cast<TrackDesign*>(&_td), flags, placeScenery, ride, _loc);
     }
 
-    if (cost != MONEY32_UNDEFINED)
+    if (queryRes.Error != GameActions::Status::Ok)
     {
-        uint8_t operation;
-        if (GetFlags() & GAME_COMMAND_FLAG_GHOST)
-        {
-            operation = PTD_OPERATION_PLACE_GHOST;
-        }
-        else
-        {
-            operation = PTD_OPERATION_PLACE;
-        }
-        if (GetFlags() & GAME_COMMAND_FLAG_REPLAY)
-        {
-            operation |= PTD_OPERATION_FLAG_IS_REPLAY;
-        }
-        cost = place_virtual_track(_td, operation, placeScenery, ride, _loc);
-    }
-
-    if (cost == MONEY32_UNDEFINED)
-    {
-        rct_string_id error_reason = gGameCommandErrorText;
         auto gameAction = RideDemolishAction(ride->id, RIDE_MODIFY_DEMOLISH);
         gameAction.SetFlags(GetFlags());
-
         GameActions::ExecuteNested(&gameAction);
-        return MakeResult(GameActions::Status::Disallowed, error_reason);
+
+        res.Error = queryRes.Error;
+        res.ErrorTitle = STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE;
+        res.ErrorMessage = queryRes.ErrorMessage;
+        res.ErrorMessageArgs = queryRes.ErrorMessageArgs;
+
+        return res;
+    }
+
+    // Execute.
+    flags |= GAME_COMMAND_FLAG_APPLY;
+
+    auto execRes = TrackDesignPlace(const_cast<TrackDesign*>(&_td), flags, placeScenery, ride, _loc);
+    if (execRes.Error != GameActions::Status::Ok)
+    {
+        auto gameAction = RideDemolishAction(ride->id, RIDE_MODIFY_DEMOLISH);
+        gameAction.SetFlags(GetFlags());
+        GameActions::ExecuteNested(&gameAction);
+
+        res.Error = execRes.Error;
+        res.ErrorTitle = STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE;
+        res.ErrorMessage = execRes.ErrorMessage;
+        res.ErrorMessageArgs = execRes.ErrorMessageArgs;
+
+        return res;
     }
 
     if (entryIndex != OBJECT_ENTRY_INDEX_NULL)
@@ -250,30 +243,37 @@ GameActions::Result::Ptr TrackDesignAction::Execute() const
     ride->lifecycle_flags |= RIDE_LIFECYCLE_NOT_CUSTOM_DESIGN;
     ride->colour_scheme_type = _td.colour_scheme;
 
-    ride->entrance_style = _td.entrance_style;
+    auto stationIdentifier = GetStationIdentifierFromStyle(_td.entrance_style);
+    ride->entrance_style = objManager.GetLoadedObjectEntryIndex(stationIdentifier);
+    if (ride->entrance_style == OBJECT_ENTRY_INDEX_NULL)
+    {
+        ride->entrance_style = gLastEntranceStyle;
+    }
 
-    for (int32_t i = 0; i < RCT12_NUM_COLOUR_SCHEMES; i++)
+    for (int32_t i = 0; i < RCT12::Limits::NumColourSchemes; i++)
     {
         ride->track_colour[i].main = _td.track_spine_colour[i];
         ride->track_colour[i].additional = _td.track_rail_colour[i];
         ride->track_colour[i].supports = _td.track_support_colour[i];
     }
 
-    for (int32_t i = 0; i <= MAX_VEHICLES_PER_RIDE; i++)
+    for (size_t i = 0; i <= OpenRCT2::Limits::MaxTrainsPerRide; i++)
     {
-        ride->vehicle_colours[i].Body = _td.vehicle_colours[i].body_colour;
-        ride->vehicle_colours[i].Trim = _td.vehicle_colours[i].trim_colour;
-        ride->vehicle_colours[i].Ternary = _td.vehicle_additional_colour[i];
+        auto tdIndex = i % std::size(_td.vehicle_colours);
+        ride->vehicle_colours[i].Body = _td.vehicle_colours[tdIndex].body_colour;
+        ride->vehicle_colours[i].Trim = _td.vehicle_colours[tdIndex].trim_colour;
+        ride->vehicle_colours[i].Tertiary = _td.vehicle_additional_colour[tdIndex];
     }
 
-    for (int32_t count = 1; count == 1 || r->Error != GameActions::Status::Ok; ++count)
+    for (int32_t count = 1; count == 1 || r.Error != GameActions::Status::Ok; ++count)
     {
         auto name = count == 1 ? _td.name : (_td.name + " " + std::to_string(count));
         auto gameAction = RideSetNameAction(ride->id, name);
         gameAction.SetFlags(GetFlags());
         r = GameActions::ExecuteNested(&gameAction);
     }
-    res->Cost = cost;
-    res->rideIndex = ride->id;
+    res.Cost = execRes.Cost;
+    res.SetData(RideId{ ride->id });
+
     return res;
 }

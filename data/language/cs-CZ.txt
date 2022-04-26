@@ -138,7 +138,7 @@ STR_0555    :Návštěvníci jezdí ve výtahu nahoru a dolů
 STR_0556    :Extra široké vozy se vrhají střemhlav dolů za zážitky úplného volného pádu na horské dráze
 STR_0557    :Bankomat, který se návštěvníkům hodí zejména, když utratí všechny peníze
 STR_0558    :Návštěvníci sedí po dvojicích v rotujících kabinách
-STR_0559    :"Dům hrůzy" - budova, se strašidelnými chodbami a děsivými nástrahami
+STR_0559    :„Dům hrůzy“ - budova, se strašidelnými chodbami a děsivými nástrahami
 STR_0560    :První pomoc pro hosty, kterým se udělá nevolno
 STR_0561    :Cirkus ve velkém cirkusovém stanu
 STR_0562    :Vozy jezdí po vícepatrovém okruhu okolo strašidelných kulis a speciálních efektů
@@ -236,8 +236,8 @@ STR_0831    :Oddálit pohled
 STR_0832    :Otočit o 90° po směru hod. ruč.
 STR_0833    :Pozastavit hru
 STR_0834    :Uložení a nastavení hry
-STR_0839    :{UINT16} x {UINT16}
-STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} x {UINT16}
+STR_0839    :{UINT16} × {UINT16}
+STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} × {UINT16}
 # The following six strings were used for display resolutions, but have been replaced.
 STR_0847    :O hře OpenRCT2
 STR_0850    :{WINDOW_COLOUR_2}Copyright © 2002 Chris Sawyer, všechna práva vyhrazena
@@ -796,14 +796,14 @@ STR_1410    :Svislá věž
 STR_1411    :{STRINGID} v cestě
 STR_1412    :{WINDOW_COLOUR_3}Měření dat není pro tento typ atrakcí dostupné
 STR_1413    :{WINDOW_COLOUR_3}Měření dat začne, až další {STRINGID} vyrazí z {STRINGID}
-STR_1414    :{SMALLFONT}{BLACK}{DURATION}
+STR_1414    :{BLACK}{DURATION}
 STR_1415    :{WINDOW_COLOUR_2}Rychlost
 STR_1416    :{WINDOW_COLOUR_2}Výška
 STR_1417    :{WINDOW_COLOUR_2}Vert.zrych.
 STR_1418    :{WINDOW_COLOUR_2}Late.zrych.
-STR_1419    :{SMALLFONT}{BLACK}{VELOCITY}
-STR_1420    :{SMALLFONT}{BLACK}{LENGTH}
-STR_1421    :{SMALLFONT}{BLACK}{COMMA16}g
+STR_1419    :{BLACK}{VELOCITY}
+STR_1420    :{BLACK}{LENGTH}
+STR_1421    :{BLACK}{COMMA16}g
 STR_1422    :Měření dat z {POP16}{STRINGID}
 STR_1423    :Fronta
 STR_1424    :Cesta
@@ -862,131 +862,131 @@ STR_1476    :{WINDOW_COLOUR_2}Intenzita: {BLACK}Zatím neznámá
 STR_1477    :{WINDOW_COLOUR_2}Intenzita: {OUTLINE}{RED}{COMMA2DP32}  ({STRINGID})
 STR_1478    :{WINDOW_COLOUR_2}Nevolnost: {BLACK}{COMMA2DP32}  ({STRINGID})
 STR_1479    :{WINDOW_COLOUR_2}Nevolnost: {BLACK}Zatím neznámá
-STR_1480    :{SMALLFONT}„Nemohu si dovolit {STRINGID}“
-STR_1481    :{SMALLFONT}„Utratil jsem všechny své peníze“
-STR_1482    :{SMALLFONT}„Je mi špatně“
-STR_1483    :{SMALLFONT}„Je mi hrozně špatně“
-STR_1484    :{SMALLFONT}„Chci na něco víc adrenalinového, než {STRINGID}“
-STR_1485    :{SMALLFONT}„{STRINGID} na mě vypadá moc intenzivně“
-STR_1486    :{SMALLFONT}„Ještě jsem nevypil/nedojedl {STRINGID}“
-STR_1487    :{SMALLFONT}„Jen ze pohledu na {STRINGID} se mi dělá zle“
-STR_1488    :{SMALLFONT}„Nezaplatím tak moc za vstup na {STRINGID}“
-STR_1489    :{SMALLFONT}„Chci jít domů“
-STR_1490    :{SMALLFONT}„{STRINGID} se opravdu vyplatí“
-STR_1491    :{SMALLFONT}„Už mám {STRINGID}“
-STR_1492    :{SMALLFONT}„Nemohu si dovolit {STRINGID}“
-STR_1493    :{SMALLFONT}„Nemám hlad“
-STR_1494    :{SMALLFONT}„Nemám žízeň“
-STR_1495    :{SMALLFONT}„Pomoc! Topím se!“
-STR_1496    :{SMALLFONT}„Ztratil jsem se!“
-STR_1497    :{SMALLFONT}„Na {STRINGID} to bylo super“
-STR_1498    :{SMALLFONT}„Čekám v řadě na {STRINGID} už věky“
-STR_1499    :{SMALLFONT}„Jsem unavený“
-STR_1500    :{SMALLFONT}„Mám hlad“
-STR_1501    :{SMALLFONT}„Mám žízeň“
-STR_1502    :{SMALLFONT}„Potřebuji jít na toaletu“
-STR_1503    :{SMALLFONT}„Nemůžu najít {STRINGID}“
-STR_1504    :{SMALLFONT}„Nezaplatím tak moc, jen abych mohl na {STRINGID}“
-STR_1505    :{SMALLFONT}„Nepůjdu na {STRINGID} když prší“
-STR_1506    :{SMALLFONT}„Je tu hrozný nepořádek“
-STR_1507    :{SMALLFONT}„Nemůžu najít východ z praku“
-STR_1508    :{SMALLFONT}„Chci pryč z {STRINGID}“
-STR_1509    :{SMALLFONT}„Chci se dostat pryč z {STRINGID}“
-STR_1510    :{SMALLFONT}„Nepůjdu na {STRINGID} - není to bezpečné“
-STR_1511    :{SMALLFONT}„Tahle cesta je odporná“
-STR_1512    :{SMALLFONT}„Je to tady hrozně přelidněné“
-STR_1513    :{SMALLFONT}„Je tu spousta vandalů“
-STR_1514    :{SMALLFONT}„Krásné kulisy!“
-STR_1515    :{SMALLFONT}„Tenhle park je opravdu čistý“
-STR_1516    :{SMALLFONT}„Ty fontány jsou opravdu pěkné“
-STR_1517    :{SMALLFONT}„Hraje tu hezká hudba“
-STR_1518    :{SMALLFONT}„Tenhle balónek z {STRINGID} je skutečně výhodný“
-STR_1519    :{SMALLFONT}„Tenhle plyšák z {STRINGID} se opravdu vyplatí“
-STR_1520    :{SMALLFONT}„Tahle mapa parku z {STRINGID} se opravdu vyplatí“
-STR_1521    :{SMALLFONT}„Tahle fotka z atrakce {STRINGID} se opravdu vyplatí“
-STR_1522    :{SMALLFONT}„Tenhle deštník z {STRINGID} se opravdu vyplatí“
-STR_1523    :{SMALLFONT}„Tohle pití od {STRINGID} se opravdu vyplatí“
-STR_1524    :{SMALLFONT}„Tenhle burgr od {STRINGID} se opravdu vyplatí“
-STR_1525    :{SMALLFONT}„Tyhle hranolky od {STRINGID} se opravdu vyplatí“
-STR_1526    :{SMALLFONT}„Ta zmrzlina od {STRINGID} se opravdu vyplatí“
-STR_1527    :{SMALLFONT}„Tahle cukrová vata od {STRINGID} se opravdu vyplatí“
+STR_1480    :„Nemohu si dovolit {STRINGID}“
+STR_1481    :„Utratil jsem všechny své peníze“
+STR_1482    :„Je mi špatně“
+STR_1483    :„Je mi hrozně špatně“
+STR_1484    :„Chci na něco víc adrenalinového, než {STRINGID}“
+STR_1485    :„{STRINGID} na mě vypadá moc intenzivně“
+STR_1486    :„Ještě jsem nevypil/nedojedl {STRINGID}“
+STR_1487    :„Jen ze pohledu na {STRINGID} se mi dělá zle“
+STR_1488    :„Nezaplatím tak moc za vstup na {STRINGID}“
+STR_1489    :„Chci jít domů“
+STR_1490    :„{STRINGID} se opravdu vyplatí“
+STR_1491    :„Už mám {STRINGID}“
+STR_1492    :„Nemohu si dovolit {STRINGID}“
+STR_1493    :„Nemám hlad“
+STR_1494    :„Nemám žízeň“
+STR_1495    :„Pomoc! Topím se!“
+STR_1496    :„Ztratil jsem se!“
+STR_1497    :„Na {STRINGID} to bylo super“
+STR_1498    :„Čekám v řadě na {STRINGID} už věky“
+STR_1499    :„Jsem unavený“
+STR_1500    :„Mám hlad“
+STR_1501    :„Mám žízeň“
+STR_1502    :„Potřebuji jít na toaletu“
+STR_1503    :„Nemůžu najít {STRINGID}“
+STR_1504    :„Nezaplatím tak moc, jen abych mohl na {STRINGID}“
+STR_1505    :„Nepůjdu na {STRINGID} když prší“
+STR_1506    :„Je tu hrozný nepořádek“
+STR_1507    :„Nemůžu najít východ z praku“
+STR_1508    :„Chci pryč z {STRINGID}“
+STR_1509    :„Chci se dostat pryč z {STRINGID}“
+STR_1510    :„Nepůjdu na {STRINGID} - není to bezpečné“
+STR_1511    :„Tahle cesta je odporná“
+STR_1512    :„Je to tady hrozně přelidněné“
+STR_1513    :„Je tu spousta vandalů“
+STR_1514    :„Krásné kulisy!“
+STR_1515    :„Tenhle park je opravdu čistý“
+STR_1516    :„Ty fontány jsou opravdu pěkné“
+STR_1517    :„Hraje tu hezká hudba“
+STR_1518    :„Tenhle balónek z {STRINGID} je skutečně výhodný“
+STR_1519    :„Tenhle plyšák z {STRINGID} se opravdu vyplatí“
+STR_1520    :„Tahle mapa parku z {STRINGID} se opravdu vyplatí“
+STR_1521    :„Tahle fotka z atrakce {STRINGID} se opravdu vyplatí“
+STR_1522    :„Tenhle deštník z {STRINGID} se opravdu vyplatí“
+STR_1523    :„Tohle pití od {STRINGID} se opravdu vyplatí“
+STR_1524    :„Tenhle burgr od {STRINGID} se opravdu vyplatí“
+STR_1525    :„Tyhle hranolky od {STRINGID} se opravdu vyplatí“
+STR_1526    :„Ta zmrzlina od {STRINGID} se opravdu vyplatí“
+STR_1527    :„Tahle cukrová vata od {STRINGID} se opravdu vyplatí“
 STR_1528    :
 STR_1529    :
 STR_1530    :
-STR_1531    :{SMALLFONT}„Tenhle kus pizzy od {STRINGID} se opravdu vyplatí“
+STR_1531    :„Tenhle kus pizzy od {STRINGID} se opravdu vyplatí“
 STR_1532    :
-STR_1533    :{SMALLFONT}„Tenhle popcorn od {STRINGID} se opravdu vyplatí“
-STR_1534    :{SMALLFONT}„Tenhle párek v rohlíku od {STRINGID} se opravdu vyplatí“
-STR_1535    :{SMALLFONT}„Tohle chapadlo od {STRINGID} se opravdu vyplatí“
-STR_1536    :{SMALLFONT}„Tahle čepice z {STRINGID} se opravdu vyplatí“
-STR_1537    :{SMALLFONT}„Tohle jablko v županu od {STRINGID} se opravdu vyplatí“
-STR_1538    :{SMALLFONT}„Tohle tričko od {STRINGID} se opravdu vyplatí“
-STR_1539    :{SMALLFONT}„Tenhle koblížek od {STRINGID} se opravdu vyplatí“
-STR_1540    :{SMALLFONT}„Tohle kafe od {STRINGID} se opravdu vyplatí“
+STR_1533    :„Tenhle popcorn od {STRINGID} se opravdu vyplatí“
+STR_1534    :„Tenhle párek v rohlíku od {STRINGID} se opravdu vyplatí“
+STR_1535    :„Tohle chapadlo od {STRINGID} se opravdu vyplatí“
+STR_1536    :„Tahle čepice z {STRINGID} se opravdu vyplatí“
+STR_1537    :„Tohle jablko v županu od {STRINGID} se opravdu vyplatí“
+STR_1538    :„Tohle tričko od {STRINGID} se opravdu vyplatí“
+STR_1539    :„Tenhle koblížek od {STRINGID} se opravdu vyplatí“
+STR_1540    :„Tohle kafe od {STRINGID} se opravdu vyplatí“
 STR_1541    :
-STR_1542    :{SMALLFONT}„Tohle smažené kuře od {STRINGID} se opravdu vyplatí“
-STR_1543    :{SMALLFONT}„Tahle limonáda od {STRINGID} se opravdu vyplatí“
+STR_1542    :„Tohle smažené kuře od {STRINGID} se opravdu vyplatí“
+STR_1543    :„Tahle limonáda od {STRINGID} se opravdu vyplatí“
 STR_1544    :
 STR_1545    :
 STR_1546    :
 STR_1547    :
 STR_1548    :
 STR_1549    :
-STR_1550    :{SMALLFONT}„Wow!“
-STR_1551    :{SMALLFONT}„Mám takový divný pocit, jako by mě někdo pozoroval“
-STR_1552    :{SMALLFONT}„Nezaplatím tak moc za balónek od {STRINGID}“
-STR_1553    :{SMALLFONT}„Nezaplatím tak moc za plyšáka od {STRINGID}“
-STR_1554    :{SMALLFONT}„Nezaplatím tak moc za mapu parku z {STRINGID}“
-STR_1555    :{SMALLFONT}„Nezaplatím tak moc za fotku z atrakce {STRINGID}“
-STR_1556    :{SMALLFONT}„Nezaplatím tak moc za deštník z {STRINGID}“
-STR_1557    :{SMALLFONT}„Nezaplatím tak moc za pití od {STRINGID}“
-STR_1558    :{SMALLFONT}„Nezaplatím tak moc za burgr od {STRINGID}“
-STR_1559    :{SMALLFONT}„Nezaplatím tak moc za hranolky od {STRINGID}“
-STR_1560    :{SMALLFONT}„Nezaplatím tak moc za zmrzlinu od {STRINGID}“
-STR_1561    :{SMALLFONT}„Nezaplatím tak moc za cukrovou vatu od {STRINGID}“
+STR_1550    :„Wow!“
+STR_1551    :„Mám takový divný pocit, jako by mě někdo pozoroval“
+STR_1552    :„Nezaplatím tak moc za balónek od {STRINGID}“
+STR_1553    :„Nezaplatím tak moc za plyšáka od {STRINGID}“
+STR_1554    :„Nezaplatím tak moc za mapu parku z {STRINGID}“
+STR_1555    :„Nezaplatím tak moc za fotku z atrakce {STRINGID}“
+STR_1556    :„Nezaplatím tak moc za deštník z {STRINGID}“
+STR_1557    :„Nezaplatím tak moc za pití od {STRINGID}“
+STR_1558    :„Nezaplatím tak moc za burgr od {STRINGID}“
+STR_1559    :„Nezaplatím tak moc za hranolky od {STRINGID}“
+STR_1560    :„Nezaplatím tak moc za zmrzlinu od {STRINGID}“
+STR_1561    :„Nezaplatím tak moc za cukrovou vatu od {STRINGID}“
 STR_1562    :
 STR_1563    :
 STR_1564    :
-STR_1565    :{SMALLFONT}„Nezaplatím tak moc za kus pizzy od {STRINGID}“
+STR_1565    :„Nezaplatím tak moc za kus pizzy od {STRINGID}“
 STR_1566    :
-STR_1567    :{SMALLFONT}„Nezaplatím tak moc za popcorn od {STRINGID}“
-STR_1568    :{SMALLFONT}„Nezaplatím tak moc za párek v rohlíku od {STRINGID}“
-STR_1569    :{SMALLFONT}„Nezaplatím tak moc za chapadlo od {STRINGID}“
-STR_1570    :{SMALLFONT}„Nezaplatím tak moc za čepici z {STRINGID}“
-STR_1571    :{SMALLFONT}„Nezaplatím tak moc za jablko v županu od {STRINGID}“
-STR_1572    :{SMALLFONT}„Nezaplatím tak moc za tričko z {STRINGID}“
-STR_1573    :{SMALLFONT}„Nezaplatím tak moc za koblížek od {STRINGID}“
-STR_1574    :{SMALLFONT}„Nezaplatím tak moc za kafe od {STRINGID}“
+STR_1567    :„Nezaplatím tak moc za popcorn od {STRINGID}“
+STR_1568    :„Nezaplatím tak moc za párek v rohlíku od {STRINGID}“
+STR_1569    :„Nezaplatím tak moc za chapadlo od {STRINGID}“
+STR_1570    :„Nezaplatím tak moc za čepici z {STRINGID}“
+STR_1571    :„Nezaplatím tak moc za jablko v županu od {STRINGID}“
+STR_1572    :„Nezaplatím tak moc za tričko z {STRINGID}“
+STR_1573    :„Nezaplatím tak moc za koblížek od {STRINGID}“
+STR_1574    :„Nezaplatím tak moc za kafe od {STRINGID}“
 STR_1575    :
-STR_1576    :{SMALLFONT}„Nezaplatím tak moc za smažené kuře od {STRINGID}“
-STR_1577    :{SMALLFONT}„Nezaplatím tak moc za limonádu od {STRINGID}“
+STR_1576    :„Nezaplatím tak moc za smažené kuře od {STRINGID}“
+STR_1577    :„Nezaplatím tak moc za limonádu od {STRINGID}“
 STR_1578    :
 STR_1579    :
 STR_1580    :
 STR_1581    :
 STR_1582    :
 STR_1583    :
-STR_1584    :{SMALLFONT}„Tahle fotka z atrakce {STRINGID} se opravdu vyplatí“
-STR_1585    :{SMALLFONT}„Tahle fotka z atrakce {STRINGID} se opravdu vyplatí“
-STR_1586    :{SMALLFONT}„Tahle fotka z atrakce {STRINGID} se opravdu vyplatí“
-STR_1587    :{SMALLFONT}„Tenhle preclík od {STRINGID} se opravdu vyplatí“
-STR_1588    :{SMALLFONT}„Tahle horká čokoláda od {STRINGID} se opravdu vyplatí“
-STR_1589    :{SMALLFONT}„Tenhle ledový čaj od {STRINGID} se opravdu vyplatí“
-STR_1590    :{SMALLFONT}„Tahle palačinka od {STRINGID} se opravdu vyplatí“
-STR_1591    :{SMALLFONT}„Tyhle sluneční brýle z {STRINGID} se opravdu vyplatí“
-STR_1592    :{SMALLFONT}„Tahle nudlová polívka od {STRINGID} se opravdu vyplatí“
-STR_1593    :{SMALLFONT}„Tyhle smažené nudle od {STRINGID} se opravdu vyplatí“
-STR_1594    :{SMALLFONT}„Tahle čínská knedlíčková polévka od {STRINGID} se opravdu vyplatí“
-STR_1595    :{SMALLFONT}„Tahle knedlíčková polévka od {STRINGID} se opravdu vyplatí“
-STR_1596    :{SMALLFONT}„Tenhle ovocný džus od {STRINGID} se opravdu vyplatí“
-STR_1597    :{SMALLFONT}„Tohle sojové mléko od {STRINGID} se opravdu vyplatí“
-STR_1598    :{SMALLFONT}„Tahle suzungkwa od {STRINGID} se opravdu vyplatí“
-STR_1599    :{SMALLFONT}„Tenhle sendvič od {STRINGID} se opravdu vyplatí“
-STR_1600    :{SMALLFONT}„Tahle sušenka od {STRINGID} se opravdu vyplatí“
+STR_1584    :„Tahle fotka z atrakce {STRINGID} se opravdu vyplatí“
+STR_1585    :„Tahle fotka z atrakce {STRINGID} se opravdu vyplatí“
+STR_1586    :„Tahle fotka z atrakce {STRINGID} se opravdu vyplatí“
+STR_1587    :„Tenhle preclík od {STRINGID} se opravdu vyplatí“
+STR_1588    :„Tahle horká čokoláda od {STRINGID} se opravdu vyplatí“
+STR_1589    :„Tenhle ledový čaj od {STRINGID} se opravdu vyplatí“
+STR_1590    :„Tahle palačinka od {STRINGID} se opravdu vyplatí“
+STR_1591    :„Tyhle sluneční brýle z {STRINGID} se opravdu vyplatí“
+STR_1592    :„Tahle nudlová polívka od {STRINGID} se opravdu vyplatí“
+STR_1593    :„Tyhle smažené nudle od {STRINGID} se opravdu vyplatí“
+STR_1594    :„Tahle čínská knedlíčková polévka od {STRINGID} se opravdu vyplatí“
+STR_1595    :„Tahle knedlíčková polévka od {STRINGID} se opravdu vyplatí“
+STR_1596    :„Tenhle ovocný džus od {STRINGID} se opravdu vyplatí“
+STR_1597    :„Tohle sojové mléko od {STRINGID} se opravdu vyplatí“
+STR_1598    :„Tahle suzungkwa od {STRINGID} se opravdu vyplatí“
+STR_1599    :„Tenhle sendvič od {STRINGID} se opravdu vyplatí“
+STR_1600    :„Tahle sušenka od {STRINGID} se opravdu vyplatí“
 STR_1601    :
 STR_1602    :
 STR_1603    :
-STR_1604    :{SMALLFONT}„Tahle grilovaná klobása od {STRINGID} se opravdu vyplatí“
+STR_1604    :„Tahle grilovaná klobása od {STRINGID} se opravdu vyplatí“
 STR_1605    :
 STR_1606    :
 STR_1607    :
@@ -998,27 +998,27 @@ STR_1612    :
 STR_1613    :
 STR_1614    :
 STR_1615    :
-STR_1616    :{SMALLFONT}„Nezaplatím tak moc za fotku z {STRINGID}“
-STR_1617    :{SMALLFONT}„Nezaplatím tak moc za fotku z {STRINGID}“
-STR_1618    :{SMALLFONT}„Nezaplatím tak moc za fotku z {STRINGID}“
-STR_1619    :{SMALLFONT}„Nezaplatím tak moc za preclík od {STRINGID}“
-STR_1620    :{SMALLFONT}„Nezaplatím tak moc za horkou čokoládu od {STRINGID}“
-STR_1621    :{SMALLFONT}„Nezaplatím tak moc za ledový čaj od {STRINGID}“
-STR_1622    :{SMALLFONT}„Nezaplatím tak moc za palačinku od {STRINGID}“
-STR_1623    :{SMALLFONT}„Nezaplatím tak moc za slunečná brýle od {STRINGID}“
-STR_1624    :{SMALLFONT}„Nezaplatím tak moc za nudlovou polévku od {STRINGID}“
-STR_1625    :{SMALLFONT}„Nezaplatím tak moc za smažené nudle od {STRINGID}“
-STR_1626    :{SMALLFONT}„Nezaplatím tak moc za čínskou knedlíčkovou polívku od {STRINGID}“
-STR_1627    :{SMALLFONT}„Nezaplatím tak moc za knedlíčkovou polívku od {STRINGID}“
-STR_1628    :{SMALLFONT}„Nezaplatím tak moc za ovocný džus od {STRINGID}“
-STR_1629    :{SMALLFONT}„Nezaplatím tak moc za sojové mléko od {STRINGID}“
-STR_1630    :{SMALLFONT}„Nezaplatím tak moc za suzungkwu od {STRINGID}“
-STR_1631    :{SMALLFONT}„Nezaplatím tak moc za sendvič od {STRINGID}“
-STR_1632    :{SMALLFONT}„Nezaplatím tak moc za sušenku od {STRINGID}“
+STR_1616    :„Nezaplatím tak moc za fotku z {STRINGID}“
+STR_1617    :„Nezaplatím tak moc za fotku z {STRINGID}“
+STR_1618    :„Nezaplatím tak moc za fotku z {STRINGID}“
+STR_1619    :„Nezaplatím tak moc za preclík od {STRINGID}“
+STR_1620    :„Nezaplatím tak moc za horkou čokoládu od {STRINGID}“
+STR_1621    :„Nezaplatím tak moc za ledový čaj od {STRINGID}“
+STR_1622    :„Nezaplatím tak moc za palačinku od {STRINGID}“
+STR_1623    :„Nezaplatím tak moc za slunečná brýle od {STRINGID}“
+STR_1624    :„Nezaplatím tak moc za nudlovou polévku od {STRINGID}“
+STR_1625    :„Nezaplatím tak moc za smažené nudle od {STRINGID}“
+STR_1626    :„Nezaplatím tak moc za čínskou knedlíčkovou polívku od {STRINGID}“
+STR_1627    :„Nezaplatím tak moc za knedlíčkovou polívku od {STRINGID}“
+STR_1628    :„Nezaplatím tak moc za ovocný džus od {STRINGID}“
+STR_1629    :„Nezaplatím tak moc za sojové mléko od {STRINGID}“
+STR_1630    :„Nezaplatím tak moc za suzungkwu od {STRINGID}“
+STR_1631    :„Nezaplatím tak moc za sendvič od {STRINGID}“
+STR_1632    :„Nezaplatím tak moc za sušenku od {STRINGID}“
 STR_1633    :
 STR_1634    :
 STR_1635    :
-STR_1636    :{SMALLFONT}„Nezaplatím tak moc za grilovanou klobásu od {STRINGID}“
+STR_1636    :„Nezaplatím tak moc za grilovanou klobásu od {STRINGID}“
 STR_1637    :
 STR_1638    :
 STR_1639    :
@@ -1030,11 +1030,11 @@ STR_1644    :
 STR_1645    :
 STR_1646    :
 STR_1647    :
-STR_1648    :{SMALLFONT}„Pomoc! Polož mě dolů!“
-STR_1649    :{SMALLFONT}„Dochází mi hotovost!“
-STR_1650    :{SMALLFONT}„Wow! Tady se staví nová atrakce!“
+STR_1648    :„Pomoc! Polož mě dolů!“
+STR_1649    :„Dochází mi hotovost!“
+STR_1650    :„Wow! Tady se staví nová atrakce!“
 # Two removed inside jokes about Intamin and Phoenix
-STR_1653    :{SMALLFONT}„…a teď jsme na {STRINGID}!“
+STR_1653    :„…a teď jsme na {STRINGID}!“
 STR_1654    :{WINDOW_COLOUR_2}Poslední myšlenky:
 STR_1655    :Stavět cestu na povrchu
 STR_1656    :Stavět most nebo tunel
@@ -1064,12 +1064,12 @@ STR_1679    :Spirála nahoru (levá)
 STR_1680    :Spirála nahoru (pravá)
 STR_1681    :Spirála dolů (levá)
 STR_1682    :Spirála dolů (pravá)
-STR_1683    :Velikost podstavy 2 x 2
-STR_1684    :Velikost podstavy 4 x 4
-STR_1685    :Velikost podstavy 2 x 4
-STR_1686    :Velikost podstavy 5 x 1
+STR_1683    :Velikost podstavy 2 × 2
+STR_1684    :Velikost podstavy 4 × 4
+STR_1685    :Velikost podstavy 2 × 4
+STR_1686    :Velikost podstavy 5 × 1
 STR_1687    :Průjezd vodou
-STR_1688    :Velikost podstavy 4 x 1
+STR_1688    :Velikost podstavy 4 × 1
 STR_1689    :Brzdící blok
 STR_1690    :{WINDOW_COLOUR_2}{STRINGID}{NEWLINE}{BLACK}{STRINGID}
 STR_1691    :{WINDOW_COLOUR_2}  Cena: {BLACK}{CURRENCY}
@@ -1186,7 +1186,7 @@ STR_1808    :{WINDOW_COLOUR_2}Poslední porucha: {BLACK}{STRINGID}
 STR_1809    :{WINDOW_COLOUR_2}Současná porucha: {OUTLINE}{RED}{STRINGID}
 STR_1810    :{WINDOW_COLOUR_2}Návštěvník nese:
 STR_1811    :Tohle zde nelze postavit…
-STR_1812    :{SMALLFONT}{BLACK}{STRINGID}
+STR_1812    :{BLACK}{STRINGID}
 STR_1813    :Ostatní objekty
 STR_1814    :Dle aktivity
 STR_1815    :Dle myšlenek
@@ -1195,7 +1195,7 @@ STR_1817    :({COMMA32})
 STR_1818    :{WINDOW_COLOUR_2}Všichni návštěvníci
 STR_1819    :{WINDOW_COLOUR_2}Všichni návštěvníci (sumarizace)
 STR_1820    :{WINDOW_COLOUR_2}Návštěvníci {STRINGID}
-STR_1821    :{WINDOW_COLOUR_2}Návštěvníci myslící si {STRINGID}
+STR_1821    :{WINDOW_COLOUR_2}Návštěvníci myslící si {SMALLFONT}{STRINGID}
 STR_1822    :{WINDOW_COLOUR_2}Návštěvníci myslící na {POP16}{STRINGID}
 STR_1823    :Zobrazit myšlenky návštěvníků o této atrakci
 STR_1824    :Zobrazit návštěvníky na této atrakci
@@ -1298,7 +1298,6 @@ STR_1921    :Začít novou hru
 STR_1922    :Nahrát uloženou hru
 STR_1924    :Ukončit hru
 STR_1925    :Sem tuto osobu nelze umístit…
-STR_1926    :{SMALLFONT}
 STR_1927    :{YELLOW}{STRINGID} má poruchu
 STR_1928    :{RED}{STRINGID} havaroval!
 STR_1929    :{RED}{STRINGID} má stále poruchu!{NEWLINE}Zkontrolujte, kde jsou vaši mechanici a zkuste je lépe organizovat
@@ -1579,7 +1578,7 @@ STR_2218    :{RED}{STRINGID} na {STRINGID} se stále nevrátil do {STRINGID}!{NE
 STR_2219    :{RED}{COMMA16} lidí zemřelo při nehodě na {STRINGID}
 STR_2220    :{WINDOW_COLOUR_2}Hodnocení parku: {BLACK}{COMMA16}
 STR_2221    :Hodnocení parku: {COMMA16}
-STR_2222    :{SMALLFONT}{BLACK}{STRINGID}
+STR_2222    :{BLACK}{STRINGID}
 STR_2223    :{WINDOW_COLOUR_2}Návštěvníci v parku: {BLACK}{COMMA32}
 STR_2224    :{WINDOW_COLOUR_2}Hotovost: {BLACK}{CURRENCY2DP}
 STR_2225    :{WINDOW_COLOUR_2}Hotovost: {RED}{CURRENCY2DP}
@@ -1592,7 +1591,7 @@ STR_2231    :Držení brzd pro pád
 STR_2232    :Řetězový výtah
 STR_2233    :Informace o zábavním parku
 STR_2234    :Poslední zprávy
-STR_2235    :{SMALLFONT}{STRINGID} {STRINGID}
+STR_2235    :{STRINGID} {STRINGID}
 STR_2236    :leden
 STR_2237    :únor
 STR_2238    :březen
@@ -1672,7 +1671,7 @@ STR_2312    :{WINDOW_COLOUR_2}Intenzita: asi {BLACK}{COMMA2DP32}
 STR_2313    :{WINDOW_COLOUR_2}Nevolnost: asi {BLACK}{COMMA2DP32}
 STR_2314    :{WINDOW_COLOUR_2}Délka jízdy: {BLACK}{STRINGID}
 STR_2315    :{WINDOW_COLOUR_2}Cena: {BLACK}okolo {CURRENCY}
-STR_2316    :{WINDOW_COLOUR_2}Vyžadovaný prostor: {BLACK}{COMMA16} x {COMMA16} dlaždic
+STR_2316    :{WINDOW_COLOUR_2}Vyžadovaný prostor: {BLACK}{COMMA16} × {COMMA16} dlaždic
 STR_2321    :{WINDOW_COLOUR_2}Celkem atrakcí: {BLACK}{COMMA16}
 STR_2322    :{WINDOW_COLOUR_2}Personál: {BLACK}{COMMA16}
 STR_2323    :{WINDOW_COLOUR_2}Velikost parku: {BLACK}{COMMA32}m²
@@ -1702,12 +1701,12 @@ STR_2347    :{RED}{STRINGID} se utopil!
 STR_2348    :Zobrazit statistiku zaměstnance
 STR_2349    :{WINDOW_COLOUR_2}Plat: {BLACK}{CURRENCY} měsíčně
 STR_2350    :{WINDOW_COLOUR_2}Zaměstnán od: {BLACK}{MONTHYEAR}
-STR_2351    :{WINDOW_COLOUR_2}Posekáno dlaždic trávy: {BLACK}{COMMA16}
-STR_2352    :{WINDOW_COLOUR_2}Zalito květin: {BLACK}{COMMA16}
-STR_2353    :{WINDOW_COLOUR_2}Zameteno odpadků: {BLACK}{COMMA16}
-STR_2354    :{WINDOW_COLOUR_2}Vysypáno košů: {BLACK}{COMMA16}
-STR_2355    :{WINDOW_COLOUR_2}Opraveno atrakcí: {BLACK}{COMMA16}
-STR_2356    :{WINDOW_COLOUR_2}Provedeno inspekcí: {BLACK}{COMMA16}
+STR_2351    :{WINDOW_COLOUR_2}Posekáno dlaždic trávy: {BLACK}{COMMA32}
+STR_2352    :{WINDOW_COLOUR_2}Zalito květin: {BLACK}{COMMA32}
+STR_2353    :{WINDOW_COLOUR_2}Zameteno odpadků: {BLACK}{COMMA32}
+STR_2354    :{WINDOW_COLOUR_2}Vysypáno košů: {BLACK}{COMMA32}
+STR_2355    :{WINDOW_COLOUR_2}Opraveno atrakcí: {BLACK}{COMMA32}
+STR_2356    :{WINDOW_COLOUR_2}Provedeno inspekcí: {BLACK}{COMMA32}
 STR_2358    :Jednotky
 STR_2359    :Reálné hodnoty
 STR_2360    :Rozlišení displeje:
@@ -1737,7 +1736,7 @@ STR_2383    :Vodní plochy
 STR_2384    :{WINDOW_COLOUR_2}Cíl scénáře:
 STR_2385    :{BLACK}žádný
 STR_2386    :{BLACK}Mít v parku alespoň {COMMA16} návštěvníků na konci {MONTHYEAR}, s hodnocením parku alespoň 600
-STR_2387    :{BLACK}Dosáhnout hodnoty parku alespoň {POP16}{POP16}{CURRENCY} na konci {PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
+STR_2387    :{BLACK}Dosáhnout hodnoty parku alespoň {POP16}{POP16}{CURRENCY} na konci {PUSH16}{PUSH16}{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
 STR_2388    :{BLACK}Příjemnou zábavu!
 STR_2389    :{BLACK}Postav ten nejlepší {STRINGID}!
 STR_2390    :{BLACK}Mít v parku 10 druhů kolotočů v provozu, každý s hodnotou zábavnosti alespoň 6.00
@@ -1796,7 +1795,7 @@ STR_2450    :{YELLOW}Reklamní kampaň pro park skončila
 STR_2451    :{YELLOW}Reklamní kampaň pro {STRINGID} skončila
 STR_2452    :{WINDOW_COLOUR_2}Hotovost (bez půjčky): {BLACK}{CURRENCY2DP}
 STR_2453    :{WINDOW_COLOUR_2}Hotovost (bez půjčky): {RED}{CURRENCY2DP}
-STR_2454    :{SMALLFONT}{BLACK}{CURRENCY2DP} -
+STR_2454    :{BLACK}{CURRENCY2DP} -
 STR_2457    :Zobrazit účet
 STR_2458    :Zobrazit graf hotovosti
 STR_2459    :Zobrazit graf hodnoty parku
@@ -1906,7 +1905,6 @@ STR_2636    :NumPad /
 STR_2669    :NumLock
 STR_2670    :Scroll
 STR_2680    :Všechen výzkum byl dokončen
-STR_2681    :{MEDIUMFONT}{BLACK}Přidat {CURRENCY} hotovosti
 STR_2684    :Dorazí velká skupina návštěvníků
 STR_2685    :Parametry simplex noise
 STR_2686    :Hloubky:
@@ -1993,7 +1991,7 @@ STR_2789    :{WINDOW_COLOUR_2}Nepodařilo se dosáhnout cíle scénáře!
 STR_2790    :Zadejte jméno do žebříčku scénáře
 STR_2791    :Zadejte jméno
 STR_2792    :Zadejte prosím vaše jméno do žebříčku scénáře:
-STR_2793    :{SMALLFONT}(Dosáhl: {STRINGID})
+STR_2793    :(Dosáhl: {STRINGID})
 STR_2794    :{WINDOW_COLOUR_2}Dosáhl: {BLACK}{STRINGID}{NEWLINE}{WINDOW_COLOUR_2}s hodnotou společnosti: {BLACK}{CURRENCY}
 STR_2795    :Seřadit
 STR_2796    :Seřadit seznam podle zobrazené informace
@@ -2058,51 +2056,6 @@ STR_2854    :{RED}Návštěvníci nemohou najít vstup do {STRINGID} !{NEWLINE}P
 STR_2855    :{RED}{STRINGID} nemá postavenou vestu z východu!{NEWLINE}Postavte cestu z východu atrakce
 STR_2858    :Nelze zahájit reklamní kampaň…
 STR_2861    :{WINDOW_COLOUR_2}Licencováno Infogrames Interactive Inc.
-STR_2862    :Poděkování za hudbu…
-STR_2863    :Poděkování za hudbu
-STR_2864    :{WINDOW_COLOUR_2}Děti pluku - pochod:   (Fučík) non copyright
-STR_2865    :{WINDOW_COLOUR_2}Heyken's Serenade:   (J.Heyken) British Standard Music Coy; GEMA, BRITICO
-STR_2866    :{WINDOW_COLOUR_2}La Belle Espagnole:   (Robert Vollstedt) non copyright
-STR_2867    :{WINDOW_COLOUR_2}Wedding Journey:   (Traditional)
-STR_2868    :{WINDOW_COLOUR_2}Tales from the Vienna Woods:   (Johann Strauss) non copyright
-STR_2869    :{WINDOW_COLOUR_2}Slavonic Dance:   (Traditional)
-STR_2870    :{WINDOW_COLOUR_2}Das Alpenhorn:   (Traditional)
-STR_2871    :{WINDOW_COLOUR_2}The Blond Sailor:   (Traditional)
-STR_2872    :{WINDOW_COLOUR_2}Overture - Poet and Peasant:   (Suppe) non copyright
-STR_2873    :{WINDOW_COLOUR_2}Waltz Medley:   (Johann Strauss) non copyright
-STR_2874    :{WINDOW_COLOUR_2}Bella Bella Bimba:   (Traditional)
-STR_2875    :{WINDOW_COLOUR_2}Original recordings (P) 1976 C.J.Mears Organization, used with consent
-STR_2876    :{WINDOW_COLOUR_2}RollerCoaster Tycoon 2 Title Music:   (Allister Brimble) copyright © Chris Sawyer
-STR_2877    :{WINDOW_COLOUR_2}Dodgems Beat:   (Allister Brimble) copyright © Chris Sawyer
-STR_2878    :{WINDOW_COLOUR_2}Mid Summer's Heat:   (Allister Brimble) copyright © Chris Sawyer
-STR_2879    :{WINDOW_COLOUR_2}Pharaoh's Tomb:   (Allister Brimble) copyright © Chris Sawyer
-STR_2880    :{WINDOW_COLOUR_2}Caesar's March:   (Allister Brimble) copyright © Chris Sawyer
-STR_2881    :{WINDOW_COLOUR_2}Drifting To Heaven:   (Allister Brimble) copyright © Chris Sawyer
-STR_2882    :{WINDOW_COLOUR_2}Invaders:   (Allister Brimble) copyright © Chris Sawyer
-STR_2883    :{WINDOW_COLOUR_2}Eternal Toybox:   (Allister Brimble) copyright © Chris Sawyer
-STR_2884    :{WINDOW_COLOUR_2}Jungle Juice:   (Allister Brimble) copyright © Chris Sawyer
-STR_2885    :{WINDOW_COLOUR_2}Ninja's Noodles:   (Allister Brimble) copyright © Chris Sawyer
-STR_2886    :{WINDOW_COLOUR_2}Voyage to Andromeda:   (Allister Brimble) copyright © Chris Sawyer
-STR_2887    :{WINDOW_COLOUR_2}Brimble's Beat:   (Allister Brimble) copyright © Chris Sawyer
-STR_2888    :{WINDOW_COLOUR_2}Atlantis:   (Allister Brimble) copyright © Chris Sawyer
-STR_2889    :{WINDOW_COLOUR_2}Wild West Kid:   (Allister Brimble) copyright © Chris Sawyer
-STR_2890    :{WINDOW_COLOUR_2}Vampire's Lair:   (Allister Brimble) copyright © Chris Sawyer
-STR_2891    :{WINDOW_COLOUR_2}Blockbuster:   (Allister Brimble) copyright © Chris Sawyer
-STR_2892    :{WINDOW_COLOUR_2}Airtime Rock:   (Allister Brimble) copyright © Chris Sawyer
-STR_2893    :{WINDOW_COLOUR_2}Searchlight Rag:   (Scott Joplin/Allister Brimble) copyright © Chris Sawyer
-STR_2894    :{WINDOW_COLOUR_2}Flight of Fantasy:   (Steve Blenkinsopp) copyright © Chris Sawyer
-STR_2895    :{WINDOW_COLOUR_2}Big Rock:   (Allister Brimble) copyright © Chris Sawyer
-STR_2896    :{WINDOW_COLOUR_2}Hypothermia:   (Allister Brimble) copyright © Chris Sawyer
-STR_2897    :{WINDOW_COLOUR_2}Last Sleigh Ride:   (Allister Brimble) copyright © Chris Sawyer
-STR_2898    :{WINDOW_COLOUR_2}Pipes of Glencairn:   (Allister Brimble) copyright © Chris Sawyer
-STR_2899    :{WINDOW_COLOUR_2}Traffic Jam:   (Allister Brimble) copyright © Chris Sawyer
-STR_2901    :{WINDOW_COLOUR_2}(Samples courtesy of Spectrasonics „Liquid Grooves“)
-STR_2902    :{WINDOW_COLOUR_2}Toccata:   (C.M.Widor, played by Peter James Adcock) recording © Chris Sawyer
-STR_2903    :{WINDOW_COLOUR_2}Space Rock:   (Allister Brimble) copyright © Chris Sawyer
-STR_2904    :{WINDOW_COLOUR_2}Manic Mechanic:   (Allister Brimble) copyright © Chris Sawyer
-STR_2905    :{WINDOW_COLOUR_2}Techno Torture:   (Allister Brimble) copyright © Chris Sawyer
-STR_2906    :{WINDOW_COLOUR_2}Sweat Dreams:   (Allister Brimble) copyright © Chris Sawyer
-STR_2907    :{WINDOW_COLOUR_2}What shall we do with the Drunken Sailor:   (Anon/Allister Brimble) copyright © Chris Sawyer
 STR_2971    :Primární barevná kombinace
 STR_2972    :Alternativní barevná kombinace 1
 STR_2973    :Alternativní barevná kombinace 2
@@ -2307,7 +2260,7 @@ STR_3208    :Správa návrhů tratí
 STR_3209    :Zpět k předchozímu kroku:
 STR_3210    :Jít na následující krok:
 STR_3211    :Velikost mapy:
-STR_3212    :{POP16}{COMMA16} x {PUSH16}{COMMA16}
+STR_3212    :{POP16}{COMMA16} × {PUSH16}{COMMA16}
 STR_3213    :Mapu nelze více zmenšit
 STR_3214    :Mapu nelze více zvětšit
 STR_3215    :Příliš blízko u kraje mapy
@@ -2500,7 +2453,7 @@ STR_5134    :Změnit větší oblast pozemkových práv
 STR_5135    :Koupit pozemková a konstrukční práva
 STR_5136    :Pozemková práva
 STR_5137    :Povolit rychlost výtahů drah až do {VELOCITY}
-STR_5138    :{SMALLFONT}{WINDOW_COLOUR_2}{STRINGID}
+STR_5138    :{WINDOW_COLOUR_2}{STRINGID}
 STR_5139    :{WHITE}{STRINGID}
 STR_5140    :Vypnout poruchy brzd
 STR_5141    :Vypnout rozbíjení atrakcí
@@ -2646,7 +2599,7 @@ STR_5297    :Otevřít zábavní park
 STR_5298    :{RED}{STRINGID}
 STR_5299    :{LIGHTPINK}{STRINGID}
 STR_5300    :Propustit zaměstnance
-STR_5301    :{MEDIUMFONT}{BLACK}Vyrovnání dluhů
+STR_5301    :Vyrovnání dluhů
 STR_5302    :Vyrovnat dluh
 STR_5303    :Povolit stavění, když je hra pozastavená
 STR_5304    :Úvodní herní sekvence:
@@ -2805,7 +2758,7 @@ STR_5481    :Motivy
 STR_5482    :{WINDOW_COLOUR_2}Doba od poslední inspekce: {BLACK}1 minuta
 STR_5483    :{BLACK}(zbývá {COMMA16} týdnů)
 STR_5484    :{BLACK}(zbývá {COMMA16} týden)
-STR_5485    :{SMALLFONT}{STRING}
+STR_5485    :{STRING}
 STR_5486    :{BLACK}{COMMA16}
 STR_5487    :Zobrazit poslední zprávy
 STR_5489    :Zobrazit pouze sledované návštěvníky
@@ -3010,8 +2963,6 @@ STR_5723    :Déšť
 STR_5724    :Bouřka
 STR_5725    :{BLACK}Vynutit počasí:
 STR_5726    :Nastaví momentální počasí v parku
-STR_5727    :Metoda škálování:
-STR_5731    :Lineární
 STR_5734    :Vykreslování
 STR_5735    :Stav připojení
 STR_5736    :Hráč
@@ -3096,7 +3047,6 @@ STR_5814    :{WINDOW_COLOUR_1}„{STRING}“
 #tooltips
 STR_5815    :Zobrazovat počítadlo FPS ve hře
 STR_5816    :Nastaví poměr stran pro škálování{NEWLINE} velikosti herního okna.{NEWLINE}Nejužitečnější je tato volba při hře ve vysokém rozlišení.
-STR_5817    :Nastaví typ škálování UI prvků. Vyžaduje hardwarové vykreslování.{NEWLINE}Lineární škálování má hladký, ale rozmazaný obraz. Metoda vyhlazeného nejbližšího souseda má ostrý obraz, ale může způsobovat mírný výkonostní propad.
 STR_5819    :[Vyžaduje hardwarové zobrazování]{NEWLINE}Pozastavit hru, pokud je {NEWLINE}zapnutý Steam in-game overlay
 STR_5820    :Minimalizovat hru, pokud je v{NEWLINE}režimu celé obrazovky a jiné okno se stane aktivním
 STR_5822    :Zapnout cyklus dne a noci.{NEWLINE}Jeden cyklus trvá jeden herní měsíc
@@ -3208,56 +3158,56 @@ STR_5930    :Detaily velkých kulis
 STR_5931    :Detaily banneru
 STR_5932    :Detaily poškozených elementů
 STR_5933    :Vlastnosti
-STR_5934    :{WINDOW_COLOUR_2}Textura terénu: {BLACK}{STRINGID}
-STR_5935    :{WINDOW_COLOUR_2}Hrana terénu: {BLACK}{STRINGID}
-STR_5936    :{WINDOW_COLOUR_2}Pozemková práva: {BLACK}{STRINGID}
+STR_5934    :Textura terénu: {BLACK}{STRINGID}
+STR_5935    :Hrana terénu: {BLACK}{STRINGID}
+STR_5936    :Pozemková práva: {BLACK}{STRINGID}
 STR_5937    :Není vlastněno a není na prodej
-STR_5938    :{WINDOW_COLOUR_2}Úroveň vody: {BLACK}{COMMA16}
+STR_5938    :Úroveň vody: {BLACK}{COMMA16}
 STR_5939    :Odebrat plot parku
 STR_5940    :Obnovit plot parku
-STR_5941    :{WINDOW_COLOUR_2}Základní výška:
-STR_5942    :{WINDOW_COLOUR_2}Jméno cesty: {BLACK}{STRINGID}
-STR_5943    :{WINDOW_COLOUR_2}Dodatky: {BLACK}{STRINGID}
-STR_5944    :{WINDOW_COLOUR_2}Dodatky: {BLACK}None
-STR_5945    :{WINDOW_COLOUR_2}Připojené hrany:
-STR_5946    :{WINDOW_COLOUR_2}Typ atrakce: {BLACK}{STRINGID}
-STR_5947    :{WINDOW_COLOUR_2}ID atrakce: {BLACK}{COMMA16}
-STR_5948    :{WINDOW_COLOUR_2}Název atrakce: {BLACK}{STRINGID}
-STR_5949    :{WINDOW_COLOUR_2}Řetězový výtah
-STR_5950    :{WINDOW_COLOUR_2}Aplikovat změny pro celou část traťi
-STR_5951    :{WINDOW_COLOUR_2}ID části traťi: {BLACK}{COMMA16}
-STR_5952    :{WINDOW_COLOUR_2}Číslo sekvence: {BLACK}{COMMA16}
+STR_5941    :Základní výška:
+STR_5942    :Jméno cesty: {BLACK}{STRINGID}
+STR_5943    :Dodatky: {BLACK}{STRINGID}
+STR_5944    :Dodatky: {BLACK}None
+STR_5945    :Připojené hrany:
+STR_5946    :Typ atrakce: {BLACK}{STRINGID}
+STR_5947    :ID atrakce: {BLACK}{COMMA16}
+STR_5948    :Název atrakce: {BLACK}{STRINGID}
+STR_5949    :Řetězový výtah
+STR_5950    :Aplikovat změny pro celou část traťi
+STR_5951    :ID části traťi: {BLACK}{COMMA16}
+STR_5952    :Číslo sekvence: {BLACK}{COMMA16}
 STR_5953    :Seřadit elementy mapy vybrané dlaždice podle jejich základní výšky
-STR_5954    :{WINDOW_COLOUR_2}Stáří kulis: {BLACK}{COMMA16}
-STR_5955    :{WINDOW_COLOUR_2}Kvadrant umístění: {BLACK}{STRINGID}
+STR_5954    :Stáří kulis: {BLACK}{COMMA16}
+STR_5955    :Kvadrant umístění: {BLACK}{STRINGID}
 STR_5956    :Jihozápad
 STR_5957    :Severozápad
 STR_5958    :Severovýchod
 STR_5959    :Jihovýchod
-STR_5960    :{WINDOW_COLOUR_2}Kvadrant umístění:
-STR_5961    :{WINDOW_COLOUR_2}Index vstupu: {BLACK}{COMMA16}
-STR_5962    :{WINDOW_COLOUR_2}Detekce kolizí:
-STR_5963    :{WINDOW_COLOUR_2}Zdvihnuté rohy:
-STR_5964    :{WINDOW_COLOUR_2}Diagonální
-STR_5965    :{WINDOW_COLOUR_2}Typ vstupu: {BLACK}{STRINGID}
-STR_5966    :{WINDOW_COLOUR_2}Část vstupu do parku: {BLACK}{STRINGID}
+STR_5960    :Kvadrant umístění:
+STR_5961    :Index vstupu: {BLACK}{COMMA16}
+STR_5962    :Detekce kolizí:
+STR_5963    :Zdvihnuté rohy:
+STR_5964    :Diagonální
+STR_5965    :Typ vstupu: {BLACK}{STRINGID}
+STR_5966    :Část vstupu do parku: {BLACK}{STRINGID}
 STR_5967    :Prostředek
 STR_5968    :Levý
 STR_5969    :Pravý
-STR_5970    :{WINDOW_COLOUR_2}ID vstupu: {BLACK}{COMMA16}
-STR_5971    :{WINDOW_COLOUR_2}ID východu: {BLACK}{COMMA16}
-STR_5972    :{WINDOW_COLOUR_2}ID atrakce: {BLACK}{COMMA16}
+STR_5970    :ID vstupu: {BLACK}{COMMA16}
+STR_5971    :ID východu: {BLACK}{COMMA16}
+STR_5972    :ID atrakce: {BLACK}{COMMA16}
 STR_5973    :Omezit dalším
 STR_5974    :Nastaví základní a celkovou výšku stejnou, jako je výška dalšího elementu na stejné dlaždici. To usnadní stavění na této dlaždici.
 STR_5975    :Sklon:
 STR_5976    :Rovina
 STR_5977    :Pravá strana
 STR_5978    :Levá strana
-STR_5979    :{WINDOW_COLOUR_2}Typ plotu: {BLACK}{COMMA16}
-STR_5980    :{WINDOW_COLOUR_2}Text banneru: {BLACK}{STRINGID}
-STR_5981    :{WINDOW_COLOUR_2}To není banner
-STR_5982    :{WINDOW_COLOUR_2}Typ velké kulisy: {BLACK}{COMMA16}
-STR_5983    :{WINDOW_COLOUR_2}ID velké kulisy: {BLACK}{COMMA16}
+STR_5979    :Typ plotu: {BLACK}{COMMA16}
+STR_5980    :Text banneru: {BLACK}{STRINGID}
+STR_5981    :To není banner
+STR_5982    :Typ velké kulisy: {BLACK}{COMMA16}
+STR_5983    :ID velké kulisy: {BLACK}{COMMA16}
 STR_5984    :Zablokované cesty:
 STR_5985    :Nová složka
 STR_5986    :Napiště název nové složky
@@ -3308,7 +3258,7 @@ STR_6030    :Výběr kulis. Klikněte na jakoukoliv kulisu na mapě pro postaven
 STR_6031    :Popis serveru:
 STR_6032    :Uvítací zpráva serveru:
 STR_6033    :Cesta k RCT1 instalaci:
-STR_6034    :{SMALLFONT}{BLACK}{STRING}
+STR_6034    :{BLACK}{STRING}
 STR_6035    :Prosím vyberte složku s RCT1
 STR_6036    :Zrušit
 STR_6037    :Vybraná složka neobsahuje instalaci RollerCoaster Tycoon 1.
@@ -3346,10 +3296,10 @@ STR_6068    :Server zastaven.
 STR_6069    :Uživatel {STRING} byl vyhozen ze hry uživatelem {STRING}.
 STR_6070    :Uživatel {STRING} byl přidán do skupiny „{STRING}“ uživatelem {STRING}.
 STR_6071    :Uživatel {STRING} vytvořil novou skupinu „{STRING}“.
-STR_6072    :Uživatel {STRING} smazal skupinu „{String}“.
-STR_6073    :Uživatel {STRING} upravil oprávnění skupiny „{String}“.
-STR_6074    :Uživatel {STRING} změnil název skupiny z „{String}“ na „{String}“.
-STR_6075    :Uživatel {STRING} nastavil výchozí skupinu na „{String}“.
+STR_6072    :Uživatel {STRING} smazal skupinu „{STRING}“.
+STR_6073    :Uživatel {STRING} upravil oprávnění skupiny „{STRING}“.
+STR_6074    :Uživatel {STRING} změnil název skupiny z „{STRING}“ na „{STRING}“.
+STR_6075    :Uživatel {STRING} nastavil výchozí skupinu na „{STRING}“.
 STR_6076    :Uživatel {STRING} použil/přepnul cheat „{STRING}“.
 STR_6077    :Přidat peníze
 STR_6078    :Uživatel {STRING} vytvořil atrakci „{STRING}“.
@@ -3425,7 +3375,6 @@ STR_6155    :Není nainstalován KDialog ani Zenity. Jeden z nich prosím nainst
 STR_6156    :Tento název je rezervován a nelze jej použít.
 STR_6157    :Konzole
 STR_6158    :Tento soubor nelze načíst…{NEWLINE}Nekompatibilní verze RCTC: {COMMA16}
-STR_6159    :Vyhlazený nejbližší soused
 STR_6160    :{WINDOW_COLOUR_2}Dostupné vozy: {BLACK}{STRING} 
 STR_6161    :Přepnout vykreslování mřížky
 STR_6162    :Točící se divoká myš
@@ -3453,7 +3402,7 @@ STR_6183    :Následovat{MOVE_X}{87}Zvolte sprite
 STR_6184    :Následovat sprite
 STR_6185    :Zvolit sprite
 STR_6186    :Nezvolen žádný sprite
-STR_6187    :{MEDIUMFONT}{OUTLINE}{WINDOW_COLOUR_2}{STRING}
+STR_6187    :{OUTLINE}{WINDOW_COLOUR_2}{STRING}
 STR_6188    :Zvratky
 STR_6189    :Kachna
 STR_6190    :Nelze zvolit sprite, když je aktivní hlavní obrazovka.
@@ -3529,7 +3478,7 @@ STR_6273    :Hudba
 STR_6274    :Nelze nastavit schéma barev…
 STR_6275    :{WINDOW_COLOUR_2}Styl stanice:
 STR_6276    :{RED}Na atrakci {STRINGID} se zasekávají návštěvníci, zkontrolujte typ atrakce a mód provozu.
-STR_6277    :{WINDOW_COLOUR_2}Index stanice: {BLACK}{STRINGID}
+STR_6277    :Index stanice: {BLACK}{STRINGID}
 STR_6278    :Počet autouložení
 STR_6279    :Maximální počet autouložených her
 STR_6280    :Chat
@@ -3562,9 +3511,9 @@ STR_6315    :{WINDOW_COLOUR_2}Cíl hledání cesty: {BLACK}{INT32}, {INT32}, {IN
 STR_6316    :{WINDOW_COLOUR_2}Historie hledání cest:
 STR_6317    :{BLACK}{INT32}, {INT32}, {INT32} směr {INT32}
 STR_6318    :Detekována síťová desynchronizace.{NEWLINE}Log: {STRING}
-STR_6319    :{WINDOW_COLOUR_2}Uzavřený brzdný blok
-STR_6320    :{WINDOW_COLOUR_2}Nezničitelné
-STR_6321    :{WINDOW_COLOUR_2}Rozbitá část
+STR_6319    :Uzavřený brzdný blok
+STR_6320    :Nezničitelné
+STR_6321    :Rozbitá část
 STR_6322    :{WINDOW_COLOUR_2}Sprite Id: {BLACK}{INT32}
 STR_6323    :Probíhá simulace
 STR_6324    :Simulovat
@@ -3603,14 +3552,14 @@ STR_6356    :Přivolat kachny (pokud park má vodní plochu)
 STR_6357    :Zmizet kachny z mapy
 STR_6358    :Strana {UINT16}
 STR_6359    :{POP16}{POP16}Strana {UINT16}
-STR_6360    :{SMALLFONT}{BLACK}{COMMA32}
+STR_6360    :{BLACK}{COMMA32}
 STR_6361    :Povolit světelné efekty na atrakcích (experimentální)
 STR_6362    :Zapne noční osvětlené atrakcí na kolejích.
 STR_6363    :Text zkopírován do schránky
 STR_6364    :{RED}{COMMA16} zemřel(a) při nehodě na {STRINGID}
 STR_6365    :Oběti atrakce
 STR_6366    :Zaseklá vozidla
-STR_6367    :{WINDOW_COLOUR_2}Snímek animace:
+STR_6367    :Snímek animace:
 STR_6368    :Z důvodů kompatibility není doporučeno spuštět OpenRCT2 pod Wine. OpenRCT2 má nativví podporu pro macOS, Linux, FreeBSD a OpenBSD.
 STR_6369    :Povolit stavbu trati v jakémkoliv výšce
 STR_6370    :Umožní stavět dráhu v neplatné výšce
@@ -3922,11 +3871,11 @@ STR_PARK    :Metropolis
 STR_DTLS    :Vlastníte volný pozemek v městské oblasti téměř bez růstu. Abyste vymačkali co nejvíce z vaší nemovitosti, postavíte mrakodrap-zábavní park inspirovaný architekturou dvacátých let.
 
 <Rock 'n' Roll - Flower Power>
-STR_SCNR    :Rock 'n' Roll - Flower Power
+STR_SCNR    :Rock ’n’ Roll - Flower Power
 STR_PARK    :Woodstock
 STR_DTLS    :Obrovský každoroční hudební festival se bude konat na vašem pozemku. Postavte pořádný park, abyste zabavili návštěvníky.
 
 <Rock 'n' Roll - Rock 'n' Roll>
-STR_SCNR    :Rock 'n' Roll - Rock 'n' Roll
-STR_PARK    :Rock 'n' Roll Revival
-STR_DTLS    :Tento stárnoucí zábavní park už viděl lepší dny. Pomozte majiteli dát parku retro rock 'n' roll vzhled a udělat z něho vyhledávané místo.
+STR_SCNR    :Rock ’n’ Roll - Rock ’n’ Roll
+STR_PARK    :Rock ’n’ Roll Revival
+STR_DTLS    :Tento stárnoucí zábavní park už viděl lepší dny. Pomozte majiteli dát parku retro rock ’n’ roll vzhled a udělat z něho vyhledávané místo.

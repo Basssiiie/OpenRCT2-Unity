@@ -27,14 +27,14 @@ struct TitleCommand
         {
             uint8_t X;
             uint8_t Y;
-        };
+        } Location;
         uint8_t Rotations; // ROTATE (counter-clockwise)
         uint8_t Zoom;      // ZOOM
         struct             // FOLLOW
         {
-            uint16_t SpriteIndex;
+            EntityId SpriteIndex;
             utf8 SpriteName[USER_STRING_MAX_LENGTH];
-        };
+        } Follow;
         uint8_t Speed;                                // SPEED
         uint16_t Milliseconds;                        // WAIT
         utf8 Scenario[TITLE_COMMAND_SCENARIO_LENGTH]; // LOADSC
@@ -78,9 +78,9 @@ enum class TitleScript : uint8_t
 constexpr const utf8* TITLE_SEQUENCE_EXTENSION = ".parkseq";
 constexpr uint8_t SAVE_INDEX_INVALID = UINT8_MAX;
 
-std::unique_ptr<TitleSequence> CreateTitleSequence();
-std::unique_ptr<TitleSequence> LoadTitleSequence(const std::string& path);
-std::unique_ptr<TitleSequenceParkHandle> TitleSequenceGetParkHandle(const TitleSequence& seq, size_t index);
+[[nodiscard]] std::unique_ptr<TitleSequence> CreateTitleSequence();
+[[nodiscard]] std::unique_ptr<TitleSequence> LoadTitleSequence(const std::string& path);
+[[nodiscard]] std::unique_ptr<TitleSequenceParkHandle> TitleSequenceGetParkHandle(const TitleSequence& seq, size_t index);
 
 bool TitleSequenceSave(const TitleSequence& seq);
 bool TitleSequenceAddPark(TitleSequence& seq, const utf8* path, const utf8* name);

@@ -11,24 +11,26 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(LargeScenerySetColourAction, GameCommand::SetLargeSceneryColour, GameActions::Result)
+class LargeScenerySetColourAction final : public GameActionBase<GameCommand::SetLargeSceneryColour>
 {
 private:
     CoordsXYZD _loc;
     uint8_t _tileIndex{};
     uint8_t _primaryColour{};
     uint8_t _secondaryColour{};
+    uint8_t _tertiaryColour{};
 
 public:
     LargeScenerySetColourAction() = default;
-    LargeScenerySetColourAction(const CoordsXYZD& loc, uint8_t tileIndex, uint8_t primaryColour, uint8_t secondaryColour);
+    LargeScenerySetColourAction(
+        const CoordsXYZD& loc, uint8_t tileIndex, uint8_t primaryColour, uint8_t secondaryColour, uint8_t tertiaryColour);
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr QueryExecute(bool isExecuting) const;
+    GameActions::Result QueryExecute(bool isExecuting) const;
 };

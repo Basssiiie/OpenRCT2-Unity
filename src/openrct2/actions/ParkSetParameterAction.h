@@ -19,13 +19,18 @@ enum class ParkParameter : uint8_t
     Count
 };
 
-DEFINE_GAME_ACTION(ParkSetParameterAction, GameCommand::SetParkOpen, GameActions::Result)
+class ParkSetParameterAction final : public GameActionBase<GameCommand::SetParkOpen>
 {
 private:
     ParkParameter _parameter{ ParkParameter::Count };
     uint64_t _value{};
 
-    constexpr static rct_string_id _ErrorTitles[] = { STR_CANT_CLOSE_PARK, STR_CANT_OPEN_PARK, STR_NONE, STR_NONE };
+    constexpr static rct_string_id _ErrorTitles[] = {
+        STR_CANT_CLOSE_PARK,
+        STR_CANT_OPEN_PARK,
+        STR_NONE,
+        STR_NONE,
+    };
 
 public:
     ParkSetParameterAction() = default;
@@ -33,7 +38,7 @@ public:
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

@@ -7,8 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef _WIDGET_H_
-#define _WIDGET_H_
+#pragma once
 
 #include "../localisation/StringIds.h"
 #include "Window.h"
@@ -41,17 +40,8 @@ enum class WindowWidgetType : uint8_t
     Last = 26,
 };
 
-#define WIDGETS_END WindowWidgetType::Last, 0, 0, 0, 0, 0, 0, 0
+constexpr const auto WIDGETS_END = rct_widget{ WindowWidgetType::Last, 0, 0, 0, 0, 0, 0, 0 };
 #define BAR_BLINK (1u << 31)
-
-#define SPINNER_INCREASE(l, r, t, b) (r) - 12, (r)-1, (t) + 1, (b)-1
-#define SPINNER_DECREASE(l, r, t, b) (r) - 25, (r)-13, (t) + 1, (b)-1
-#define SPINNER_WIDGETS(colour, left, right, top, bottom, text, tooltip)                                                       \
-    { WindowWidgetType::Spinner, colour, left, right, top, bottom, text, tooltip },                                            \
-        { WindowWidgetType::Button, colour, SPINNER_INCREASE(left, right, top, bottom), STR_NUMERIC_UP, STR_NONE },            \
-    {                                                                                                                          \
-        WindowWidgetType::Button, colour, SPINNER_DECREASE(left, right, top, bottom), STR_NUMERIC_DOWN, STR_NONE               \
-    }
 
 enum
 {
@@ -136,21 +126,19 @@ constexpr rct_widget MakeSpinnerIncreaseWidget(
 void WidgetScrollUpdateThumbs(rct_window* w, rct_widgetindex widget_index);
 void WidgetDraw(rct_drawpixelinfo* dpi, rct_window* w, rct_widgetindex widgetIndex);
 
-bool WidgetIsEnabled(rct_window* w, rct_widgetindex widgetIndex);
-bool WidgetIsDisabled(rct_window* w, rct_widgetindex widgetIndex);
-bool WidgetIsHoldable(rct_window* w, rct_widgetindex widgetIndex);
-bool WidgetIsVisible(rct_window* w, rct_widgetindex widgetIndex);
-bool WidgetIsPressed(rct_window* w, rct_widgetindex widgetIndex);
-bool WidgetIsHighlighted(rct_window* w, rct_widgetindex widgetIndex);
-bool WidgetIsActiveTool(rct_window* w, rct_widgetindex widgetIndex);
+bool WidgetIsDisabled(const rct_window* w, rct_widgetindex widgetIndex);
+bool WidgetIsHoldable(const rct_window* w, rct_widgetindex widgetIndex);
+bool WidgetIsVisible(const rct_window* w, rct_widgetindex widgetIndex);
+bool WidgetIsPressed(const rct_window* w, rct_widgetindex widgetIndex);
+bool WidgetIsHighlighted(const rct_window* w, rct_widgetindex widgetIndex);
+bool WidgetIsActiveTool(const rct_window* w, rct_widgetindex widgetIndex);
 void WidgetScrollGetPart(
-    rct_window* w, rct_widget* widget, const ScreenCoordsXY& screenCoords, ScreenCoordsXY& retScreenCoords,
+    rct_window* w, const rct_widget* widget, const ScreenCoordsXY& screenCoords, ScreenCoordsXY& retScreenCoords,
     int32_t* output_scroll_area, int32_t* scroll_id);
 
 void WidgetSetEnabled(rct_window* w, rct_widgetindex widgetIndex, bool enabled);
 void WidgetSetDisabled(rct_window* w, rct_widgetindex widgetIndex, bool value);
 void WidgetSetHoldable(rct_window* w, rct_widgetindex widgetIndex, bool value);
 void WidgetSetVisible(rct_window* w, rct_widgetindex widgetIndex, bool value);
-void WidgetSetCheckboxValue(rct_window* w, rct_widgetindex widgetIndex, int32_t value);
-
-#endif
+void WidgetSetPressed(rct_window* w, rct_widgetindex widgetIndex, bool value);
+void WidgetSetCheckboxValue(rct_window* w, rct_widgetindex widgetIndex, bool value);

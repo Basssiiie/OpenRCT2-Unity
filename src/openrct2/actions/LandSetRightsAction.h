@@ -21,7 +21,7 @@ enum class LandSetRightSetting : uint8_t
     Count
 };
 
-DEFINE_GAME_ACTION(LandSetRightsAction, GameCommand::SetLandOwnership, GameActions::Result)
+class LandSetRightsAction final : public GameActionBase<GameCommand::SetLandOwnership>
 {
 private:
     MapRange _range;
@@ -35,11 +35,11 @@ public:
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr QueryExecute(bool isExecuting) const;
-    GameActions::Result::Ptr map_buy_land_rights_for_tile(const CoordsXY& loc, bool isExecuting) const;
+    GameActions::Result QueryExecute(bool isExecuting) const;
+    GameActions::Result map_buy_land_rights_for_tile(const CoordsXY& loc, bool isExecuting) const;
 };

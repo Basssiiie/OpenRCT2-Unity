@@ -13,6 +13,7 @@
 
 #include "../Version.h"
 #include "../drawing/Drawing.h"
+#include "FileSystem.hpp"
 #include "Guard.hpp"
 #include "IStream.hpp"
 #include "Memory.hpp"
@@ -124,7 +125,7 @@ namespace Imaging
             }
             else if (bitDepth == 8 && !expandTo32)
             {
-                // 8-bit paletted or grayscale
+                // 8-bit paletted or greyscale
                 Guard::Assert(rowBytes == pngWidth, GUARD_LINE);
                 for (png_uint_32 i = 0; i < pngHeight; i++)
                 {
@@ -257,14 +258,13 @@ namespace Imaging
         {
             return IMAGE_FORMAT::PNG;
         }
-        else if (String::EndsWith(path, ".bmp", true))
+
+        if (String::EndsWith(path, ".bmp", true))
         {
             return IMAGE_FORMAT::BITMAP;
         }
-        else
-        {
-            return IMAGE_FORMAT::UNKNOWN;
-        }
+
+        return IMAGE_FORMAT::UNKNOWN;
     }
 
     static ImageReaderFunc GetReader(IMAGE_FORMAT format)
@@ -312,12 +312,7 @@ namespace Imaging
                 return ReadFromFile(path, GetImageFormatFromPath(path));
             default:
             {
-#if defined(_WIN32) && !defined(__MINGW32__)
-                auto pathW = String::ToWideChar(path);
-                std::ifstream fs(pathW, std::ios::binary);
-#else
-                std::ifstream fs(std::string(path), std::ios::binary);
-#endif
+                std::ifstream fs(fs::u8path(path), std::ios::binary);
                 return ReadFromStream(fs, format);
             }
         }
@@ -338,12 +333,7 @@ namespace Imaging
                 break;
             case IMAGE_FORMAT::PNG:
             {
-#if defined(_WIN32) && !defined(__MINGW32__)
-                auto pathW = String::ToWideChar(path);
-                std::ofstream fs(pathW, std::ios::binary);
-#else
-                std::ofstream fs(std::string(path), std::ios::binary);
-#endif
+                std::ofstream fs(fs::u8path(path), std::ios::binary);
                 WritePng(fs, image);
                 break;
             }

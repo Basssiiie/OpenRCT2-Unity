@@ -75,14 +75,14 @@ public:
 public:
     std::tuple<bool, TrackRepositoryItem> Create(int32_t, const std::string& path) const override
     {
-        auto td6 = track_design_open(path.c_str());
+        auto td6 = TrackDesignImport(path.c_str());
         if (td6 != nullptr)
         {
             TrackRepositoryItem item;
             item.Name = GetNameFromTrackPath(path);
             item.Path = path;
             item.RideType = td6->type;
-            item.ObjectEntry = std::string(td6->vehicle_object.name, 8);
+            item.ObjectEntry = std::string(td6->vehicle_object.Entry.name, 8);
             item.Flags = 0;
             if (IsTrackReadOnly(path))
             {
@@ -90,10 +90,8 @@ public:
             }
             return std::make_tuple(true, item);
         }
-        else
-        {
-            return std::make_tuple(true, TrackRepositoryItem());
-        }
+
+        return std::make_tuple(true, TrackRepositoryItem());
     }
 
 protected:

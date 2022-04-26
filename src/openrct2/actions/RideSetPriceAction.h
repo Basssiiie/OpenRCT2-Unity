@@ -11,24 +11,24 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(RideSetPriceAction, GameCommand::SetRidePrice, GameActions::Result)
+class RideSetPriceAction final : public GameActionBase<GameCommand::SetRidePrice>
 {
 private:
-    NetworkRideId_t _rideIndex{ RideIdNewNull };
+    RideId _rideIndex{ RideId::GetNull() };
     money16 _price{ MONEY16_UNDEFINED };
     bool _primaryPrice{ true };
 
 public:
     RideSetPriceAction() = default;
-    RideSetPriceAction(ride_id_t rideIndex, money16 price, bool primaryPrice);
+    RideSetPriceAction(RideId rideIndex, money16 price, bool primaryPrice);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
     void RideSetCommonPrice(ShopItem shopItem) const;

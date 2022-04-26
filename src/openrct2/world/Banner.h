@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "../Identifiers.h"
 #include "../common.h"
 #include "../ride/RideTypes.h"
 #include "Location.hpp"
@@ -19,21 +20,19 @@ class Formatter;
 struct TileElement;
 struct WallElement;
 
-using BannerIndex = uint16_t;
-
 constexpr ObjectEntryIndex BANNER_NULL = OBJECT_ENTRY_INDEX_NULL;
-constexpr size_t MAX_BANNERS = 250;
-constexpr BannerIndex BANNER_INDEX_NULL = static_cast<BannerIndex>(-1);
+constexpr size_t MAX_BANNERS = 8192;
 
 constexpr uint8_t SCROLLING_MODE_NONE = 255;
 
 struct Banner
 {
+    BannerIndex id = BannerIndex::GetNull();
     ObjectEntryIndex type = BANNER_NULL;
     uint8_t flags{};
     std::string text;
     uint8_t colour{};
-    ride_id_t ride_index{};
+    RideId ride_index{};
     uint8_t text_colour{};
     TileCoordsXY position;
 
@@ -56,10 +55,17 @@ enum BANNER_FLAGS
 };
 
 void banner_init();
-BannerIndex create_new_banner(uint8_t flags);
 TileElement* banner_get_tile_element(BannerIndex bannerIndex);
 WallElement* banner_get_scrolling_wall_tile_element(BannerIndex bannerIndex);
-uint8_t banner_get_closest_ride_index(const CoordsXYZ& mapPos);
+RideId banner_get_closest_ride_index(const CoordsXYZ& mapPos);
 void banner_reset_broken_index();
 void fix_duplicated_banners();
+void UnlinkAllRideBanners();
+void UnlinkAllBannersForRide(RideId rideId);
 Banner* GetBanner(BannerIndex id);
+Banner* GetOrCreateBanner(BannerIndex id);
+Banner* CreateBanner();
+void DeleteBanner(BannerIndex id);
+void TrimBanners();
+size_t GetNumBanners();
+bool HasReachedBannerLimit();

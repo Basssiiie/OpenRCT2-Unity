@@ -77,7 +77,7 @@ STR_0072    :Discos Voadores
 STR_0073    :Casa Maluca
 STR_0074    :Bicicletas de Monotrilho
 STR_0075    :Montanha Compacta Invertida
-STR_0076    :Montanha-Russa D'água
+STR_0076    :Montanha-Russa D’água
 STR_0077    :Montanha Vertical de Propulsão Hidráulica
 STR_0078    :Montanha Fechada Invertida
 STR_0079    :Tapete Mágico
@@ -119,8 +119,8 @@ STR_0531    :Uma montanha-russa de aço compacta onde trens viajam por parafusos
 STR_0532    :O Labirinto é construído com cercas vivas ou muros de 1,82 metros de altura. Os visitantes vagam pelo labirinto podendo sair apenas quando encontrarem a saída
 STR_0533    :Prédio de madeira com uma escada interna e um escorregador espiral externo para ser usado com tapetes deslizantes
 STR_0534    :Visitantes disputam uma corrida de kart em uma pista de asfalto
-STR_0535    :Barcos navegam por um canal d'água, esparrinhando água e molhando passageiros em declives íngremes
-STR_0536    :Barcos circulares serpenteiam por um largo canal d'água, esparrinhando por cachoeiras e empolgando os passageiros por corredeiras espumantes
+STR_0535    :Barcos navegam por um canal d’água, esparrinhando água e molhando passageiros em declives íngremes
+STR_0536    :Barcos circulares serpenteiam por um largo canal d’água, esparrinhando por cachoeiras e empolgando os passageiros por corredeiras espumantes
 STR_0537    :Carros de bate-bate controlados pelos passageiros
 STR_0538    :Grande navio pirata de balanço.
 STR_0539    :Navio anexado com um contrapeso no lado oposto, que balança até completar 360 graus
@@ -151,7 +151,7 @@ STR_0566    :Carros individuais de montanha-russa percorrem em alta velocidade p
 STR_0567    :Sentados em cadeiras suspensas de cada lado do trilho, passageiros são lançados para cima enquanto são puxados para baixo em quedas íngremes e viajam por várias inversões
 STR_0569    :Passeando embaixo do trilho em travas especiais, passageiros tem a sensação de voo enquanto arrebatam pelo ar
 STR_0571    :Carros circulares giram enquanto viajam por uma pista de madeira em zigue-zague
-STR_0572    :Barcos de alta capacidade viajam por um largo canal d'água, subindo por uma correia transportadora, acelerando ladeira abaixo para molhar os passageiros com uma onda gigante
+STR_0572    :Barcos de alta capacidade viajam por um largo canal d’água, subindo por uma correia transportadora, acelerando ladeira abaixo para molhar os passageiros com uma onda gigante
 STR_0573    :Carros motorizados em formato de helicópteros correm por um trilho de aço, controlados pelo pedalar dos passageiros
 STR_0574    :Passageiros são segurados por uma trava especial na posição deitada, viajando por trilhos retorcidos e inversões tanto de costas quanto olhando para o chão
 STR_0575    :Trens motorizados pendurados em um trilho único transportam pessoas pelo parque
@@ -240,8 +240,8 @@ STR_0831    :Afastar Vista
 STR_0832    :Girar visão em 90° no sentido horário
 STR_0833    :Pausar Jogo
 STR_0834    :Opções de disco e jogo
-STR_0839    :{UINT16} x {UINT16}
-STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} x {UINT16}
+STR_0839    :{UINT16} × {UINT16}
+STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} × {UINT16}
 STR_0847    :Sobre ‘OpenRCT2’
 STR_0850    :{WINDOW_COLOUR_2}Copyright © 2002 Chris Sawyer, Todos os direitos reservados
 STR_0851    :{WINDOW_COLOUR_2}Projetado e programado por Chris Sawyer
@@ -413,9 +413,9 @@ STR_1025    :{COMMA16} carros por trens
 STR_1026    :Plataforma da estação é muito longa!
 STR_1027    :Localizar isto na Visão Principal
 STR_1028    :Fora da borda do mapa!
-STR_1029    :Impossível construir parcialmente acima ou abaixo d'água!
-STR_1030    :Somente possível construir isto embaixo d'água!
-STR_1031    :Impossível construir isto embaixo d'água!
+STR_1029    :Impossível construir parcialmente acima ou abaixo d’água!
+STR_1030    :Somente possível construir isto embaixo d’água!
+STR_1031    :Impossível construir isto embaixo d’água!
 STR_1032    :Somente possível construir isto em cima da água!
 STR_1033    :Somente possível construir isto acima do chão!
 STR_1034    :Somente possível construir isto em terra!
@@ -798,14 +798,14 @@ STR_1410    :Torre Vertical
 STR_1411    :{STRINGID} no caminho
 STR_1412    :{WINDOW_COLOUR_3}O registro de dados não estão disponíveis para este tipo de atração
 STR_1413    :{WINDOW_COLOUR_3}O registro de dados vai começar quando o próximo {STRINGID} sair de {STRINGID}
-STR_1414    :{SMALLFONT}{BLACK}{DURATION}
+STR_1414    :{BLACK}{DURATION}
 STR_1415    :{WINDOW_COLOUR_2}Velocidade
 STR_1416    :{WINDOW_COLOUR_2}Altitude
 STR_1417    :{WINDOW_COLOUR_2}G vertical
 STR_1418    :{WINDOW_COLOUR_2}G lateral
-STR_1419    :{SMALLFONT}{BLACK}{VELOCITY}
-STR_1420    :{SMALLFONT}{BLACK}{LENGTH}
-STR_1421    :{SMALLFONT}{BLACK}{COMMA16}g
+STR_1419    :{BLACK}{VELOCITY}
+STR_1420    :{BLACK}{LENGTH}
+STR_1421    :{BLACK}{COMMA16}g
 STR_1422    :Obtendo dados de {POP16}{STRINGID}
 STR_1423    :Fila de espera
 STR_1424    :Calçada
@@ -864,131 +864,131 @@ STR_1476    :{WINDOW_COLOUR_2}Intensidade: {BLACK}Indisponível
 STR_1477    :{WINDOW_COLOUR_2}Intensidade: {OUTLINE}{RED}{COMMA2DP32}  ({STRINGID})
 STR_1478    :{WINDOW_COLOUR_2}Náusea: {BLACK}{COMMA2DP32}  ({STRINGID})
 STR_1479    :{WINDOW_COLOUR_2}Náusea: {BLACK}Indisponível
-STR_1480    :{SMALLFONT}“Eu não posso pagar {STRINGID}”
-STR_1481    :{SMALLFONT}“Eu gastei todo o meu dinheiro”
-STR_1482    :{SMALLFONT}“Eu me sinto mal”
-STR_1483    :{SMALLFONT}“Eu me sinto muito mal”
-STR_1484    :{SMALLFONT}“Eu quero ir em algo mais emocionante do que {STRINGID}”
-STR_1485    :{SMALLFONT}“{STRINGID} parece muito intenso para mim”
-STR_1486    :{SMALLFONT}“Eu não terminei meu {STRINGID} ainda”
-STR_1487    :{SMALLFONT}“Só de olhar para {STRINGID} já me sento mal”
-STR_1488    :{SMALLFONT}“Eu não vou pagar tudo isso para ir em {STRINGID}”
-STR_1489    :{SMALLFONT}“Eu quero ir para casa”
-STR_1490    :{SMALLFONT}“{STRINGID} tem um preço bom”
-STR_1491    :{SMALLFONT}“Eu já tenho {STRINGID}”
-STR_1492    :{SMALLFONT}“Não posso pagar {STRINGID}”
-STR_1493    :{SMALLFONT}“Eu não estou com fome”
-STR_1494    :{SMALLFONT}“Eu não estou com sede”
-STR_1495    :{SMALLFONT}“Socorro! Estou me afogando!”
-STR_1496    :{SMALLFONT}“Eu estou perdido!”
-STR_1497    :{SMALLFONT}“{STRINGID} foi ótimo”
-STR_1498    :{SMALLFONT}“Eu estive na fila para {STRINGID} por anos”
-STR_1499    :{SMALLFONT}“Eu estou cansado”
-STR_1500    :{SMALLFONT}“Eu estou com fome”
-STR_1501    :{SMALLFONT}“Eu estou com sede”
-STR_1502    :{SMALLFONT}“Eu preciso ir ao banheiro”
-STR_1503    :{SMALLFONT}“Eu não consigo encontrar {STRINGID}”
-STR_1504    :{SMALLFONT}“Eu não vou pagar tudo isso para usar {STRINGID}”
-STR_1505    :{SMALLFONT}“Eu não vou em {STRINGID} enquanto está chovendo”
-STR_1506    :{SMALLFONT}“A limpeza aqui é muito ruim”
-STR_1507    :{SMALLFONT}“Eu não estou encontrando a saída do parque”
-STR_1508    :{SMALLFONT}“Eu quero sair de {STRINGID}”
-STR_1509    :{SMALLFONT}“Eu quero sair de {STRINGID}”
-STR_1510    :{SMALLFONT}“Eu não vou em {STRINGID} - Não é seguro”
-STR_1511    :{SMALLFONT}“Este caminho é nojento”
-STR_1512    :{SMALLFONT}“Está lotado aqui”
-STR_1513    :{SMALLFONT}“O vandalismo aqui é muito ruim”
-STR_1514    :{SMALLFONT}“Excelente cenário!”
-STR_1515    :{SMALLFONT}“Este parque é realmente limpo e arrumado”
-STR_1516    :{SMALLFONT}“As fontes saltitantes são ótimas”
-STR_1517    :{SMALLFONT}“A música é agradável aqui”
-STR_1518    :{SMALLFONT}“Este balão de {STRINGID} tem um preço bom”
-STR_1519    :{SMALLFONT}“Este brinquedo de pelúcia de {STRINGID} tem um preço bom”
-STR_1520    :{SMALLFONT}“Este mapa do parque de {STRINGID} tem um preço bom”
-STR_1521    :{SMALLFONT}“Esta foto em {STRINGID} tem um preço bom”
-STR_1522    :{SMALLFONT}“Este guarda-chuva de {STRINGID} tem um preço bom”
-STR_1523    :{SMALLFONT}“Esta bebida de {STRINGID} tem um preço bom”
-STR_1524    :{SMALLFONT}“Este hambúrguer de {STRINGID} tem um preço bom”
-STR_1525    :{SMALLFONT}“Estas batatas fritas de {STRINGID} tem um preço bom”
-STR_1526    :{SMALLFONT}“Este sorvete de {STRINGID} tem um preço bom”
-STR_1527    :{SMALLFONT}“Este algodão-doce de {STRINGID} tem um preço bom”
+STR_1480    :“Eu não posso pagar {STRINGID}”
+STR_1481    :“Eu gastei todo o meu dinheiro”
+STR_1482    :“Eu me sinto mal”
+STR_1483    :“Eu me sinto muito mal”
+STR_1484    :“Eu quero ir em algo mais emocionante do que {STRINGID}”
+STR_1485    :“{STRINGID} parece muito intenso para mim”
+STR_1486    :“Eu não terminei meu {STRINGID} ainda”
+STR_1487    :“Só de olhar para {STRINGID} já me sento mal”
+STR_1488    :“Eu não vou pagar tudo isso para ir em {STRINGID}”
+STR_1489    :“Eu quero ir para casa”
+STR_1490    :“{STRINGID} tem um preço bom”
+STR_1491    :“Eu já tenho {STRINGID}”
+STR_1492    :“Não posso pagar {STRINGID}”
+STR_1493    :“Eu não estou com fome”
+STR_1494    :“Eu não estou com sede”
+STR_1495    :“Socorro! Estou me afogando!”
+STR_1496    :“Eu estou perdido!”
+STR_1497    :“{STRINGID} foi ótimo”
+STR_1498    :“Eu estive na fila para {STRINGID} por anos”
+STR_1499    :“Eu estou cansado”
+STR_1500    :“Eu estou com fome”
+STR_1501    :“Eu estou com sede”
+STR_1502    :“Eu preciso ir ao banheiro”
+STR_1503    :“Eu não consigo encontrar {STRINGID}”
+STR_1504    :“Eu não vou pagar tudo isso para usar {STRINGID}”
+STR_1505    :“Eu não vou em {STRINGID} enquanto está chovendo”
+STR_1506    :“A limpeza aqui é muito ruim”
+STR_1507    :“Eu não estou encontrando a saída do parque”
+STR_1508    :“Eu quero sair de {STRINGID}”
+STR_1509    :“Eu quero sair de {STRINGID}”
+STR_1510    :“Eu não vou em {STRINGID} - Não é seguro”
+STR_1511    :“Este caminho é nojento”
+STR_1512    :“Está lotado aqui”
+STR_1513    :“O vandalismo aqui é muito ruim”
+STR_1514    :“Excelente cenário!”
+STR_1515    :“Este parque é realmente limpo e arrumado”
+STR_1516    :“As fontes saltitantes são ótimas”
+STR_1517    :“A música é agradável aqui”
+STR_1518    :“Este balão de {STRINGID} tem um preço bom”
+STR_1519    :“Este brinquedo de pelúcia de {STRINGID} tem um preço bom”
+STR_1520    :“Este mapa do parque de {STRINGID} tem um preço bom”
+STR_1521    :“Esta foto em {STRINGID} tem um preço bom”
+STR_1522    :“Este guarda-chuva de {STRINGID} tem um preço bom”
+STR_1523    :“Esta bebida de {STRINGID} tem um preço bom”
+STR_1524    :“Este hambúrguer de {STRINGID} tem um preço bom”
+STR_1525    :“Estas batatas fritas de {STRINGID} tem um preço bom”
+STR_1526    :“Este sorvete de {STRINGID} tem um preço bom”
+STR_1527    :“Este algodão-doce de {STRINGID} tem um preço bom”
 STR_1528    :
 STR_1529    :
 STR_1530    :
-STR_1531    :{SMALLFONT}“Esta pizza de {STRINGID} tem um preço bom”
+STR_1531    :“Esta pizza de {STRINGID} tem um preço bom”
 STR_1532    :
-STR_1533    :{SMALLFONT}“Esta pipoca de {STRINGID} tem um preço bom”
-STR_1534    :{SMALLFONT}“Este cachorro quente de {STRINGID} tem um preço bom”
-STR_1535    :{SMALLFONT}“Este tentáculo de {STRINGID} tem um preço bom”
-STR_1536    :{SMALLFONT}“Este chapéu de {STRINGID} tem um preço bom”
-STR_1537    :{SMALLFONT}“Esta maçã do amor de {STRINGID} tem um preço bom”
-STR_1538    :{SMALLFONT}“Esta camiseta de {STRINGID} tem um preço bom”
-STR_1539    :{SMALLFONT}“Esta rosquinha de {STRINGID} tem um preço bom”
-STR_1540    :{SMALLFONT}“Este café de {STRINGID} tem um preço bom”
+STR_1533    :“Esta pipoca de {STRINGID} tem um preço bom”
+STR_1534    :“Este cachorro quente de {STRINGID} tem um preço bom”
+STR_1535    :“Este tentáculo de {STRINGID} tem um preço bom”
+STR_1536    :“Este chapéu de {STRINGID} tem um preço bom”
+STR_1537    :“Esta maçã do amor de {STRINGID} tem um preço bom”
+STR_1538    :“Esta camiseta de {STRINGID} tem um preço bom”
+STR_1539    :“Esta rosquinha de {STRINGID} tem um preço bom”
+STR_1540    :“Este café de {STRINGID} tem um preço bom”
 STR_1541    :
-STR_1542    :{SMALLFONT}“Este frango frito de {STRINGID} tem um preço bom”
-STR_1543    :{SMALLFONT}“Esta limonada de {STRINGID} tem um preço bom”
+STR_1542    :“Este frango frito de {STRINGID} tem um preço bom”
+STR_1543    :“Esta limonada de {STRINGID} tem um preço bom”
 STR_1544    :
 STR_1545    :
 STR_1546    :
 STR_1547    :
 STR_1548    :
 STR_1549    :
-STR_1550    :{SMALLFONT}“Uau!”
-STR_1551    :{SMALLFONT}“Estou com a sensação estranha de que alguém está me observando”
-STR_1552    :{SMALLFONT}“Eu não vou pagar tudo isso por um balão de {STRINGID}”
-STR_1553    :{SMALLFONT}“Eu não vou pagar tudo isso por um brinquedo de pelúcia de {STRINGID}”
-STR_1554    :{SMALLFONT}“Eu não vou pagar tudo isso por um mapa de {STRINGID}”
-STR_1555    :{SMALLFONT}“Eu não vou pagar tudo isso por uma foto de {STRINGID}”
-STR_1556    :{SMALLFONT}“Eu não vou pagar tudo isso por um guarda-chuva {STRINGID}”
-STR_1557    :{SMALLFONT}“Eu não vou pagar tudo isso por uma bebida de {STRINGID}”
-STR_1558    :{SMALLFONT}“Eu não vou pagar tudo isso por um hambúrguer de {STRINGID}”
-STR_1559    :{SMALLFONT}“Eu não vou pagar tudo isso por uma batata frita de {STRINGID}”
-STR_1560    :{SMALLFONT}“Eu não vou pagar tudo isso por um sorvete de {STRINGID}”
-STR_1561    :{SMALLFONT}“Eu não vou pagar tudo isso por algodão doce de {STRINGID}”
+STR_1550    :“Uau!”
+STR_1551    :“Estou com a sensação estranha de que alguém está me observando”
+STR_1552    :“Eu não vou pagar tudo isso por um balão de {STRINGID}”
+STR_1553    :“Eu não vou pagar tudo isso por um brinquedo de pelúcia de {STRINGID}”
+STR_1554    :“Eu não vou pagar tudo isso por um mapa de {STRINGID}”
+STR_1555    :“Eu não vou pagar tudo isso por uma foto de {STRINGID}”
+STR_1556    :“Eu não vou pagar tudo isso por um guarda-chuva {STRINGID}”
+STR_1557    :“Eu não vou pagar tudo isso por uma bebida de {STRINGID}”
+STR_1558    :“Eu não vou pagar tudo isso por um hambúrguer de {STRINGID}”
+STR_1559    :“Eu não vou pagar tudo isso por uma batata frita de {STRINGID}”
+STR_1560    :“Eu não vou pagar tudo isso por um sorvete de {STRINGID}”
+STR_1561    :“Eu não vou pagar tudo isso por algodão doce de {STRINGID}”
 STR_1562    :
 STR_1563    :
 STR_1564    :
-STR_1565    :{SMALLFONT}“Eu não vou pagar tudo isso por uma pizza de {STRINGID}”
+STR_1565    :“Eu não vou pagar tudo isso por uma pizza de {STRINGID}”
 STR_1566    :
-STR_1567    :{SMALLFONT}“Eu não vou pagar tudo isso por uma pipoca de {STRINGID}”
-STR_1568    :{SMALLFONT}“Eu não vou pagar tudo isso por um cachorro-quente de {STRINGID}”
-STR_1569    :{SMALLFONT}“Eu não vou pagar tudo isso por um tentáculo de {STRINGID}”
-STR_1570    :{SMALLFONT}“Eu não vou pagar tudo isso por um chapéu de {STRINGID}”
-STR_1571    :{SMALLFONT}“Eu não vou pagar tudo isso por uma maçã do amor de {STRINGID}”
-STR_1572    :{SMALLFONT}“Eu não vou pagar tudo isso por uma camiseta de {STRINGID}”
-STR_1573    :{SMALLFONT}“Eu não vou pagar tudo isso por um donut de {STRINGID}”
-STR_1574    :{SMALLFONT}“Eu não vou pagar tudo isso por um café de {STRINGID}”
+STR_1567    :“Eu não vou pagar tudo isso por uma pipoca de {STRINGID}”
+STR_1568    :“Eu não vou pagar tudo isso por um cachorro-quente de {STRINGID}”
+STR_1569    :“Eu não vou pagar tudo isso por um tentáculo de {STRINGID}”
+STR_1570    :“Eu não vou pagar tudo isso por um chapéu de {STRINGID}”
+STR_1571    :“Eu não vou pagar tudo isso por uma maçã do amor de {STRINGID}”
+STR_1572    :“Eu não vou pagar tudo isso por uma camiseta de {STRINGID}”
+STR_1573    :“Eu não vou pagar tudo isso por um donut de {STRINGID}”
+STR_1574    :“Eu não vou pagar tudo isso por um café de {STRINGID}”
 STR_1575    :
-STR_1576    :{SMALLFONT}“Eu não vou pagar tudo isso por um frango frito de {STRINGID}”
-STR_1577    :{SMALLFONT}“Eu não vou pagar tudo isso por uma limonada de {STRINGID}”
+STR_1576    :“Eu não vou pagar tudo isso por um frango frito de {STRINGID}”
+STR_1577    :“Eu não vou pagar tudo isso por uma limonada de {STRINGID}”
 STR_1578    :
 STR_1579    :
 STR_1580    :
 STR_1581    :
 STR_1582    :
 STR_1583    :
-STR_1584    :{SMALLFONT}“Esta foto de {STRINGID} tem um preço bom”
-STR_1585    :{SMALLFONT}“Esta foto de {STRINGID} tem um preço bom”
-STR_1586    :{SMALLFONT}“Esta foto de {STRINGID} tem um preço bom”
-STR_1587    :{SMALLFONT}“Este pretzel de {STRINGID} tem um preço bom”
-STR_1588    :{SMALLFONT}“Este chocolate quente de {STRINGID} tem um preço bom”
-STR_1589    :{SMALLFONT}“Este chá gelado de {STRINGID} tem um preço bom”
-STR_1590    :{SMALLFONT}“Este bolo de {STRINGID} tem um preço bom”
-STR_1591    :{SMALLFONT}“Estes óculos de sol de {STRINGID} tem um preço bom”
-STR_1592    :{SMALLFONT}“Este macarrão de {STRINGID} tem um preço bom”
-STR_1593    :{SMALLFONT}“Este arroz frito de {STRINGID} tem um preço bom”
-STR_1594    :{SMALLFONT}“Esta sopa de wonton de {STRINGID} tem um preço bom”
-STR_1595    :{SMALLFONT}“Esta sopa de almôndegas de {STRINGID} tem um preço bom”
-STR_1596    :{SMALLFONT}“Este suco de frutas {STRINGID} tem um preço bom”
-STR_1597    :{SMALLFONT}“Este leite de soja de {STRINGID} tem um preço bom”
-STR_1598    :{SMALLFONT}“Este sujongkwa de {STRINGID} tem um preço bom”
-STR_1599    :{SMALLFONT}“Este sanduíche de {STRINGID} tem um preço bom”
-STR_1600    :{SMALLFONT}“Este cookie de {STRINGID} tem um preço bom”
+STR_1584    :“Esta foto de {STRINGID} tem um preço bom”
+STR_1585    :“Esta foto de {STRINGID} tem um preço bom”
+STR_1586    :“Esta foto de {STRINGID} tem um preço bom”
+STR_1587    :“Este pretzel de {STRINGID} tem um preço bom”
+STR_1588    :“Este chocolate quente de {STRINGID} tem um preço bom”
+STR_1589    :“Este chá gelado de {STRINGID} tem um preço bom”
+STR_1590    :“Este bolo de {STRINGID} tem um preço bom”
+STR_1591    :“Estes óculos de sol de {STRINGID} tem um preço bom”
+STR_1592    :“Este macarrão de {STRINGID} tem um preço bom”
+STR_1593    :“Este arroz frito de {STRINGID} tem um preço bom”
+STR_1594    :“Esta sopa de wonton de {STRINGID} tem um preço bom”
+STR_1595    :“Esta sopa de almôndegas de {STRINGID} tem um preço bom”
+STR_1596    :“Este suco de frutas {STRINGID} tem um preço bom”
+STR_1597    :“Este leite de soja de {STRINGID} tem um preço bom”
+STR_1598    :“Este sujongkwa de {STRINGID} tem um preço bom”
+STR_1599    :“Este sanduíche de {STRINGID} tem um preço bom”
+STR_1600    :“Este cookie de {STRINGID} tem um preço bom”
 STR_1601    :
 STR_1602    :
 STR_1603    :
-STR_1604    :{SMALLFONT}“Esta linguiça grelhada {STRINGID} tem um preço bom”
+STR_1604    :“Esta linguiça grelhada {STRINGID} tem um preço bom”
 STR_1605    :
 STR_1606    :
 STR_1607    :
@@ -1000,27 +1000,27 @@ STR_1612    :
 STR_1613    :
 STR_1614    :
 STR_1615    :
-STR_1616    :{SMALLFONT}“Eu não vou pagar tudo isso por uma foto em {STRINGID}”
-STR_1617    :{SMALLFONT}“Eu não vou pagar tudo isso por uma foto em {STRINGID}”
-STR_1618    :{SMALLFONT}“Eu não vou pagar tudo isso por uma foto em {STRINGID}”
-STR_1619    :{SMALLFONT}“Eu não vou pagar tudo isso por um pretzel de {STRINGID}”
-STR_1620    :{SMALLFONT}“Eu não vou pagar tudo isso por um chocolate quente de {STRINGID}”
-STR_1621    :{SMALLFONT}“Eu não vou pagar tudo isso por um chá gelado de {STRINGID}”
-STR_1622    :{SMALLFONT}“Eu não vou pagar tudo isso por um bolo de {STRINGID}”
-STR_1623    :{SMALLFONT}“Eu não vou pagar tudo isso por um óculos de sol de {STRINGID}”
-STR_1624    :{SMALLFONT}“Eu não vou pagar tudo isso por um macarrão de {STRINGID}”
-STR_1625    :{SMALLFONT}“Eu não vou pagar tudo isso por um arroz frito de {STRINGID}”
-STR_1626    :{SMALLFONT}“Eu não vou pagar tudo isso por uma sopa de wonton de {STRINGID}”
-STR_1627    :{SMALLFONT}“Eu não vou pagar tudo isso por uma sopa de almôndegas de {STRINGID}”
-STR_1628    :{SMALLFONT}“Eu não vou pagar tudo isso por um suco de frutas de {STRINGID}”
-STR_1629    :{SMALLFONT}“Eu não vou pagar tudo isso por um leite de soja de {STRINGID}”
-STR_1630    :{SMALLFONT}“Eu não vou pagar tudo isso por um sujongkwa de {STRINGID}”
-STR_1631    :{SMALLFONT}“Eu não vou pagar tudo isso por um sanduíche de {STRINGID}”
-STR_1632    :{SMALLFONT}“Eu não vou pagar tudo isso por um cookie de {STRINGID}”
+STR_1616    :“Eu não vou pagar tudo isso por uma foto em {STRINGID}”
+STR_1617    :“Eu não vou pagar tudo isso por uma foto em {STRINGID}”
+STR_1618    :“Eu não vou pagar tudo isso por uma foto em {STRINGID}”
+STR_1619    :“Eu não vou pagar tudo isso por um pretzel de {STRINGID}”
+STR_1620    :“Eu não vou pagar tudo isso por um chocolate quente de {STRINGID}”
+STR_1621    :“Eu não vou pagar tudo isso por um chá gelado de {STRINGID}”
+STR_1622    :“Eu não vou pagar tudo isso por um bolo de {STRINGID}”
+STR_1623    :“Eu não vou pagar tudo isso por um óculos de sol de {STRINGID}”
+STR_1624    :“Eu não vou pagar tudo isso por um macarrão de {STRINGID}”
+STR_1625    :“Eu não vou pagar tudo isso por um arroz frito de {STRINGID}”
+STR_1626    :“Eu não vou pagar tudo isso por uma sopa de wonton de {STRINGID}”
+STR_1627    :“Eu não vou pagar tudo isso por uma sopa de almôndegas de {STRINGID}”
+STR_1628    :“Eu não vou pagar tudo isso por um suco de frutas de {STRINGID}”
+STR_1629    :“Eu não vou pagar tudo isso por um leite de soja de {STRINGID}”
+STR_1630    :“Eu não vou pagar tudo isso por um sujongkwa de {STRINGID}”
+STR_1631    :“Eu não vou pagar tudo isso por um sanduíche de {STRINGID}”
+STR_1632    :“Eu não vou pagar tudo isso por um cookie de {STRINGID}”
 STR_1633    :
 STR_1634    :
 STR_1635    :
-STR_1636    :{SMALLFONT}“Eu não vou pagar tudo isso por uma linguiça grelhada de {STRINGID}”
+STR_1636    :“Eu não vou pagar tudo isso por uma linguiça grelhada de {STRINGID}”
 STR_1637    :
 STR_1638    :
 STR_1639    :
@@ -1032,10 +1032,10 @@ STR_1644    :
 STR_1645    :
 STR_1646    :
 STR_1647    :
-STR_1648    :{SMALLFONT}“Socorro! Me solte!”
-STR_1649    :{SMALLFONT}“Estou ficando sem dinheiro!”
-STR_1650    :{SMALLFONT}“Uau! Uma nova atração está sendo construída!”
-STR_1653    :{SMALLFONT}“…e aqui estamos no {STRINGID}!”
+STR_1648    :“Socorro! Me solte!”
+STR_1649    :“Estou ficando sem dinheiro!”
+STR_1650    :“Uau! Uma nova atração está sendo construída!”
+STR_1653    :“…e aqui estamos no {STRINGID}!”
 STR_1654    :{WINDOW_COLOUR_2}Pensamentos recentes:
 STR_1655    :Construir caminho no terreno
 STR_1656    :Construir ponte ou túnel de caminho
@@ -1065,9 +1065,9 @@ STR_1679    :Espiral para Cima (esquerda)
 STR_1680    :Espiral para Cima (direita)
 STR_1681    :Espiral para Baixo (esquerda)
 STR_1682    :Espiral para Baixo (direita)
-STR_1683    :Tamanho da base 2 x 2
-STR_1684    :Tamanho da base 4 x 4
-STR_1685    :Tamanho da base 2 x 4
+STR_1683    :Tamanho da base 2 × 2
+STR_1684    :Tamanho da base 4 × 4
+STR_1685    :Tamanho da base 2 × 4
 STR_1686    :Tamanho da base 5 x 1
 STR_1687    :Respingo da água
 STR_1688    :Tamanho da base 4 x 1
@@ -1187,7 +1187,7 @@ STR_1808    :{WINDOW_COLOUR_2}Última quebra: {BLACK}{STRINGID}
 STR_1809    :{WINDOW_COLOUR_2}Quebra atual: {OUTLINE}{RED}{STRINGID}
 STR_1810    :{WINDOW_COLOUR_2}Transportando:
 STR_1811    :Impossível construir isto aqui…
-STR_1812    :{SMALLFONT}{BLACK}{STRINGID}
+STR_1812    :{BLACK}{STRINGID}
 STR_1813    :Objetos variados
 STR_1814    :Ações
 STR_1815    :Pensamentos
@@ -1196,7 +1196,7 @@ STR_1817    :({COMMA32})
 STR_1818    :{WINDOW_COLOUR_2}Todos os visitantes
 STR_1819    :{WINDOW_COLOUR_2}Todos os visitantes (resumido)
 STR_1820    :{WINDOW_COLOUR_2}Visitantes {STRINGID}
-STR_1821    :{WINDOW_COLOUR_2}Pensamentos dos visitantes {STRINGID}
+STR_1821    :{WINDOW_COLOUR_2}Pensamentos dos visitantes {SMALLFONT}{STRINGID}
 STR_1822    :{WINDOW_COLOUR_2}Visitantes pensam sobre {{POP16}{STRINGID}
 STR_1823    :Mostrar os pensamentos dos visitantes sobre essa atração
 STR_1824    :Mostrar os visitantes nesta atração
@@ -1297,7 +1297,6 @@ STR_1921    :Começar um novo jogo
 STR_1922    :Continuar um jogo salvo
 STR_1924    :Sair
 STR_1925    :Impossível colocar uma pessoa aqui…
-STR_1926    :{SMALLFONT}
 STR_1927    :{YELLOW}{STRINGID} quebrou
 STR_1928    :{RED}{STRINGID} bateu!
 STR_1929    :{RED}{STRINGID} ainda não foi consertado{NEWLINE}Verifique aonde seus mecânicos estão e considere organizá-los melhor
@@ -1578,7 +1577,7 @@ STR_2218    :{RED}{STRINGID} em {STRINGID} não voltou à {STRINGID} ainda!{NEWL
 STR_2219    :{RED}{COMMA16} pessoas morreram em um acidente em {STRINGID}
 STR_2220    :{WINDOW_COLOUR_2}Classificação do Parque: {BLACK}{COMMA16}
 STR_2221    :Classificação do Parque: {COMMA16}
-STR_2222    :{SMALLFONT}{BLACK}{STRINGID}
+STR_2222    :{BLACK}{STRINGID}
 STR_2223    :{WINDOW_COLOUR_2}Visitantes no parque: {BLACK}{COMMA32}
 STR_2224    :{WINDOW_COLOUR_2}Dinheiro: {BLACK}{CURRENCY2DP}
 STR_2225    :{WINDOW_COLOUR_2}Dinheiro: {RED}{CURRENCY2DP}
@@ -1591,7 +1590,7 @@ STR_2231    :Freio que segura para queda
 STR_2232    :Cabo de elevação
 STR_2233    :Informação do Parque
 STR_2234    :Mensagens Recentes
-STR_2235    :{SMALLFONT}{STRINGID} {STRINGID}
+STR_2235    :{STRINGID} {STRINGID}
 STR_2236    :Janeiro
 STR_2237    :Fevereiro
 STR_2238    :Março
@@ -1701,12 +1700,12 @@ STR_2347    :{RED}{STRINGID} se afogou!
 STR_2348    :Mostrar as estatísticas desse funcionário
 STR_2349    :{WINDOW_COLOUR_2}Salário: {BLACK}{CURRENCY} por mês
 STR_2350    :{WINDOW_COLOUR_2}Empregado em: {BLACK}{MONTHYEAR}
-STR_2351    :{WINDOW_COLOUR_2}Gramados cortados: {BLACK}{COMMA16}
-STR_2352    :{WINDOW_COLOUR_2}Jardins regados: {BLACK}{COMMA16}
-STR_2353    :{WINDOW_COLOUR_2}Calçadas varridas: {BLACK}{COMMA16}
-STR_2354    :{WINDOW_COLOUR_2}Lixeiras esvaziadas: {BLACK}{COMMA16}
-STR_2355    :{WINDOW_COLOUR_2}Atrações consertadas: {BLACK}{COMMA16}
-STR_2356    :{WINDOW_COLOUR_2}Atrações Inspecionadas: {BLACK}{COMMA16}
+STR_2351    :{WINDOW_COLOUR_2}Gramados cortados: {BLACK}{COMMA32}
+STR_2352    :{WINDOW_COLOUR_2}Jardins regados: {BLACK}{COMMA32}
+STR_2353    :{WINDOW_COLOUR_2}Calçadas varridas: {BLACK}{COMMA32}
+STR_2354    :{WINDOW_COLOUR_2}Lixeiras esvaziadas: {BLACK}{COMMA32}
+STR_2355    :{WINDOW_COLOUR_2}Atrações consertadas: {BLACK}{COMMA32}
+STR_2356    :{WINDOW_COLOUR_2}Atrações Inspecionadas: {BLACK}{COMMA32}
 STR_2358    :Unidades
 STR_2359    :Valores Reais
 STR_2360    :Resolução da tela:
@@ -1736,7 +1735,7 @@ STR_2383    :Água
 STR_2384    :{WINDOW_COLOUR_2}Seu objetivo:
 STR_2385    :{BLACK}Nenhum
 STR_2386    :{BLACK}Ter pelo menos {COMMA16} visitantes em seu parque até o fim de {MONTHYEAR}, com classificação de parque de pelo menos 600
-STR_2387    :{BLACK}Alcançar um valor do parque de pelo menos {POP16}{POP16}{CURRENCY} até o fim de {PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
+STR_2387    :{BLACK}Alcançar um valor do parque de pelo menos {POP16}{POP16}{CURRENCY} até o fim de {PUSH16}{PUSH16}{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
 STR_2388    :{BLACK}Divirta-se!
 STR_2389    :{BLACK}Construir o melhor {STRINGID} que puder!
 STR_2390    :{BLACK}Ter 10 tipos de montanha-russa diferentes operando em seu parque, cada uma com um valor de emoção de pelo menos 6.00
@@ -1795,7 +1794,7 @@ STR_2450    :{YELLOW}Sua campanha publicitária para o parque terminou
 STR_2451    :{YELLOW}Sua campanha publicitária para {STRINGID} terminou
 STR_2452    :{WINDOW_COLOUR_2}Dinheiro (menos empréstimo): {BLACK}{CURRENCY2DP}
 STR_2453    :{WINDOW_COLOUR_2}Dinheiro (menos empréstimo): {RED}{CURRENCY2DP}
-STR_2454    :{SMALLFONT}{BLACK}{CURRENCY2DP} -
+STR_2454    :{BLACK}{CURRENCY2DP} -
 STR_2457    :Mostrar contas financeiras
 STR_2458    :Mostrar gráfico de dinheiro (menos de empréstimo) ao longo do tempo
 STR_2459    :Mostrar gráfico de valor parque ao longo do tempo
@@ -1905,7 +1904,6 @@ STR_2636    :NumPad /
 STR_2669    :NumLock
 STR_2670    :Scroll
 STR_2680    :Todas as pesquisas completadas
-STR_2681    :{MEDIUMFONT}{BLACK}Incrementa seu dinheiro em {CURRENCY}
 STR_2684    :Um grande grupo de visitantes está chegando (250 visitantes)
 STR_2685    :Parâmetros de ruído simples
 STR_2686    :Baixo:
@@ -1955,7 +1953,7 @@ STR_2739    :Nenhum
 STR_2740    :RollerCoaster Tycoon 1
 STR_2741    :RollerCoaster Tycoon 2
 STR_2742    :css50.dat não encontrado
-STR_2743    :Copie data\css17.dat da instalação do seu RCT1 para data\css50.dat na sua pasta de instalação do RCT2, ou tenha certeza que o caminho para o RCT1 na aba Avançado está correto.
+STR_2743    :Copie data/css17.dat da instalação do seu RCT1 para data/css50.dat na sua pasta de instalação do RCT2, ou tenha certeza que o caminho para o RCT1 na aba Avançado está correto.
 STR_2749    :Meu novo cenário
 # New strings used in the cheats window previously these were ???
 STR_2750    :Mover todos os itens para o topo
@@ -1992,7 +1990,7 @@ STR_2789    :{WINDOW_COLOUR_2}Você falhou no seu objetivo!
 STR_2790    :Inserir nome na lista de cenário
 STR_2791    :Inserir nome
 STR_2792    :Por favor, insira o seu nome {NEWLINE}para a lista de cenário:
-STR_2793    :{SMALLFONT}(Completado por {STRINGID})
+STR_2793    :(Completado por {STRINGID})
 STR_2794    :{WINDOW_COLOUR_2}Completado por: {BLACK}{STRINGID}{NEWLINE}{WINDOW_COLOUR_2} com o valor da empresa de: {BLACK}{CURRENCY}
 STR_2795    :Ordenar
 STR_2796    :Ordenar a lista de atrações de acordo com o tipo de informação exibido
@@ -2057,51 +2055,6 @@ STR_2854    :{RED}Os visitantes não conseguem entrar em {STRINGID}!{NEWLINE}Con
 STR_2855    :{RED}{STRINGID} não tem um caminho de saída!{NEWLINE}Construa um caminho a partir da saída da atração
 STR_2858    :Impossível iniciar campanha de marketing…
 STR_2861    :{WINDOW_COLOUR_2}Licenciado para Infogrames Interactive Inc.
-STR_2862    :Créditos das músicas…
-STR_2863    :Créditos das músicas
-STR_2864    :{WINDOW_COLOUR_2}March - Children of the Regiment:   (Fucik) sem direitos autorais
-STR_2865    :{WINDOW_COLOUR_2}Heyken's Serenade:   (J.Heyken) British Standard Music Coy; GEMA, BRITICO
-STR_2866    :{WINDOW_COLOUR_2}La Belle Espagnole:   (Robert Vollstedt) sem direitos autorais
-STR_2867    :{WINDOW_COLOUR_2}Wedding Journey:   (Tradicional)
-STR_2868    :{WINDOW_COLOUR_2}Tales from the Vienna Woods:   (Johann Strauss) sem direitos autorais
-STR_2869    :{WINDOW_COLOUR_2}Slavonic Dance:   (Tradicional)
-STR_2870    :{WINDOW_COLOUR_2}Das Alpenhorn:   (Tradicional)
-STR_2871    :{WINDOW_COLOUR_2}The Blond Sailor:   (Tradicional)
-STR_2872    :{WINDOW_COLOUR_2}Overture - Poet and Peasant:   (Suppe) sem direitos autorais
-STR_2873    :{WINDOW_COLOUR_2}Waltz Medley:   (Johann Strauss) sem direitos autorais
-STR_2874    :{WINDOW_COLOUR_2}Bella Bella Bimba:   (Tradicional)
-STR_2875    :{WINDOW_COLOUR_2}Gravações originais (P) 1976 C.J.Mears Organization, usado com autorização
-STR_2876    :{WINDOW_COLOUR_2}Música Título - RollerCoaster Tycoon 2: (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2877    :{WINDOW_COLOUR_2}Dodgems Beat:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2878    :{WINDOW_COLOUR_2}Mid Summer's Heat:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2879    :{WINDOW_COLOUR_2}Pharaoh's Tomb:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2880    :{WINDOW_COLOUR_2}Caesar's March:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2881    :{WINDOW_COLOUR_2}Drifting To Heaven:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2882    :{WINDOW_COLOUR_2}Invaders:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2883    :{WINDOW_COLOUR_2}Eternal Toybox:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2884    :{WINDOW_COLOUR_2}Jungle Juice:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2885    :{WINDOW_COLOUR_2}Ninja's Noodles:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2886    :{WINDOW_COLOUR_2}Voyage to Andromeda:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2887    :{WINDOW_COLOUR_2}Brimble's Beat:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2888    :{WINDOW_COLOUR_2}Atlantis:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2889    :{WINDOW_COLOUR_2}Wild West Kid:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2890    :{WINDOW_COLOUR_2}Vampire's Lair:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2891    :{WINDOW_COLOUR_2}Blockbuster:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2892    :{WINDOW_COLOUR_2}Airtime Rock:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2893    :{WINDOW_COLOUR_2}Searchlight Rag:   (Scott Joplin/Allister Brimble) direitos autorais © Chris Sawyer
-STR_2894    :{WINDOW_COLOUR_2}Flight of Fantasy:   (Steve Blenkinsopp) direitos autorais © Chris Sawyer
-STR_2895    :{WINDOW_COLOUR_2}Big Rock:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2896    :{WINDOW_COLOUR_2}Hypothermia:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2897    :{WINDOW_COLOUR_2}Last Sleigh Ride:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2898    :{WINDOW_COLOUR_2}Pipes of Glencairn:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2899    :{WINDOW_COLOUR_2}Traffic Jam:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2901    :{WINDOW_COLOUR_2}(Amostras Grátis de Spectrasonics “Liquid Grooves”)
-STR_2902    :{WINDOW_COLOUR_2}Toccata:   (C.M.Widor, executada por Peter James Adcock) gravada por © Chris Sawyer
-STR_2903    :{WINDOW_COLOUR_2}Space Rock:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2904    :{WINDOW_COLOUR_2}Manic Mechanic:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2905    :{WINDOW_COLOUR_2}Techno Torture:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2906    :{WINDOW_COLOUR_2}Sweat Dreams:   (Allister Brimble) direitos autorais © Chris Sawyer
-STR_2907    :{WINDOW_COLOUR_2}What shall we do with the Drunken Sailor:   (Anon/Allister Brimble) direitos autorais © Chris Sawyer
 STR_2971    :Esquema de cor principal
 STR_2972    :Esquema de cor alternativo 1
 STR_2973    :Esquema de cor alternativo 2
@@ -2190,7 +2143,7 @@ STR_3059    :Sebes
 STR_3060    :Blocos de Gelo
 STR_3061    :Cercas de Madeira
 STR_3062    :Pista de montanha-russa padrão
-STR_3063    :Canal d'água (pista submersa)
+STR_3063    :Canal d’água (pista submersa)
 STR_3064    :Parques para Iniciantes
 STR_3065    :Parques Desafiadores
 STR_3066    :Parques para Especialistas
@@ -2284,7 +2237,7 @@ STR_3185    :Cenário Pequeno
 STR_3186    :Cenário Grande
 STR_3187    :Muros/Cercas
 STR_3188    :Placa para Caminho
-STR_3189    :Calçadas
+STR_3189    :Calçadas Obsoletas
 STR_3190    :Caminhos Extras
 STR_3191    :Grupo de Cenários
 STR_3192    :Entrada do Parque
@@ -2499,7 +2452,7 @@ STR_5134    :Ajustar área maior de direitos de terreno
 STR_5135    :Comprar direitos de terreno e direitos de construção
 STR_5136    :Direitos de terreno
 STR_5137    :Destrava os limites de operação
-STR_5138    :{SMALLFONT}{WINDOW_COLOUR_2}{STRINGID}
+STR_5138    :{WINDOW_COLOUR_2}{STRINGID}
 STR_5139    :{WHITE}{STRINGID}
 STR_5140    :Desativar falhas nos freios
 STR_5141    :Desativar todas as quebras
@@ -2645,7 +2598,7 @@ STR_5297    :Abrir parque
 STR_5298    :{RED}{STRINGID}
 STR_5299    :{LIGHTPINK}{STRINGID}
 STR_5300    :Demitir funcionários rapidamente
-STR_5301    :{MEDIUMFONT}{BLACK}Limpar seu empréstimo
+STR_5301    :Limpar seu empréstimo
 STR_5302    :Limpar empréstimo
 STR_5303    :Permitir construir com jogo pausado
 STR_5304    :Sequência de Títulos:
@@ -2804,7 +2757,7 @@ STR_5481    :Temas
 STR_5482    :{WINDOW_COLOUR_2}Tempo desde a última inspeção: {BLACK}1 minuto
 STR_5483    :{BLACK}({COMMA16} semanas restantes)
 STR_5484    :{BLACK}({COMMA16} semana restante)
-STR_5485    :{SMALLFONT}{STRING}
+STR_5485    :{STRING}
 STR_5486    :{BLACK}{COMMA16}
 STR_5487    :Exibir mensagens recentes
 STR_5489    :Mostrar apenas os visitantes monitorados
@@ -3009,8 +2962,6 @@ STR_5723    :Chuva Forte
 STR_5724    :Tempestade
 STR_5725    :{BLACK}Mudar clima para:
 STR_5726    :Define o clima atual no parque
-STR_5727    :Qualidade da escala:
-STR_5731    :Linear
 # tooltip for tab in options window
 STR_5734    :Renderizando
 STR_5735    :Estado da Rede
@@ -3097,7 +3048,6 @@ STR_5814    :{WINDOW_COLOUR_1}“{STRING}”
 #tooltips
 STR_5815    :Mostra o contador de FPS dentro do jogo
 STR_5816    :Define a proporção de dimensionamento do jogo.{NEWLINE}Mais útil quando está jogando em{NEWLINE}alta resolução
-STR_5817    :Define o tipo de escala da interface de usuário. Requer exibição por hardware para ser usado.{NEWLINE}Escala linear é suave, mas embaçada. Suavizar Vizinho Mais Próximo é nítido, mas podem causar uma pequena queda no desempenho.
 STR_5819    :[Requer exibição por hardware]{NEWLINE}Pausa o jogo quando a interface da Steam{NEWLINE}estiver sobrepondo durante o jogo
 STR_5820    :Minimiza o jogo se o foco for{NEWLINE}perdido enquanto estiver em modo tela cheia
 STR_5822    :Alterna entre dia e noite.{NEWLINE}Ciclo completo leva um mês do jogo
@@ -3209,56 +3159,56 @@ STR_5930    :Detalhes de cenário grande
 STR_5931    :Detalhes de banner
 STR_5932    :Detalhes de elemento corrompido
 STR_5933    :Propriedades
-STR_5934    :{WINDOW_COLOUR_2}Textura do terreno: {BLACK}{STRINGID}
-STR_5935    :{WINDOW_COLOUR_2}Borda do terreno: {BLACK}{STRINGID}
-STR_5936    :{WINDOW_COLOUR_2}Posse de terra: {BLACK}{STRINGID}
+STR_5934    :Textura do terreno: {BLACK}{STRINGID}
+STR_5935    :Borda do terreno: {BLACK}{STRINGID}
+STR_5936    :Posse de terra: {BLACK}{STRINGID}
 STR_5937    :Não comprado e não está à venda
-STR_5938    :{WINDOW_COLOUR_2}Nível da água: {BLACK}{COMMA16}
+STR_5938    :Nível da água: {BLACK}{COMMA16}
 STR_5939    :Remover cercas do parque
 STR_5940    :Restaurar cercas do parque
-STR_5941    :{WINDOW_COLOUR_2}Altura da base:
-STR_5942    :{WINDOW_COLOUR_2}Nome do caminho: {BLACK}{STRINGID}
-STR_5943    :{WINDOW_COLOUR_2}Adições: {BLACK}{STRINGID}
-STR_5944    :{WINDOW_COLOUR_2}Adições: {BLACK}Nenhuma
-STR_5945    :{WINDOW_COLOUR_2}Bordas conectadas:
-STR_5946    :{WINDOW_COLOUR_2}Tipo de atração: {BLACK}{STRINGID}
-STR_5947    :{WINDOW_COLOUR_2}ID da atração: {BLACK}{COMMA16}
-STR_5948    :{WINDOW_COLOUR_2}Nome da atração: {BLACK}{STRINGID}
-STR_5949    :{WINDOW_COLOUR_2}Corrente de elevação
-STR_5950    :{WINDOW_COLOUR_2}Aplicar mudanças para a pista toda
-STR_5951    :{WINDOW_COLOUR_2}ID do pedaço de pista: {BLACK}{COMMA16}
-STR_5952    :{WINDOW_COLOUR_2}Número sequencial: {BLACK}{COMMA16}
+STR_5941    :Altura da base:
+STR_5942    :Nome do caminho: {BLACK}{STRINGID}
+STR_5943    :Adições: {BLACK}{STRINGID}
+STR_5944    :Adições: {BLACK}Nenhuma
+STR_5945    :Bordas conectadas:
+STR_5946    :Tipo de atração: {BLACK}{STRINGID}
+STR_5947    :ID da atração: {BLACK}{COMMA16}
+STR_5948    :Nome da atração: {BLACK}{STRINGID}
+STR_5949    :Corrente de elevação
+STR_5950    :Aplicar mudanças para a pista toda
+STR_5951    :ID do pedaço de pista: {BLACK}{COMMA16}
+STR_5952    :Número sequencial: {BLACK}{COMMA16}
 STR_5953    :Sortear os elementos do mapa no azulejo atual baseado em sua altura base.
-STR_5954    :{WINDOW_COLOUR_2}Idade do cenário: {BLACK}{COMMA16}
-STR_5955    :{WINDOW_COLOUR_2}Posicionamento em quadrante: {BLACK}{STRINGID}
+STR_5954    :Idade do cenário: {BLACK}{COMMA16}
+STR_5955    :Posicionamento em quadrante: {BLACK}{STRINGID}
 STR_5956    :Sudoeste
 STR_5957    :Noroeste
 STR_5958    :Nordeste
 STR_5959    :Sudeste
-STR_5960    :{WINDOW_COLOUR_2}Posicionamento em quadrante:
-STR_5961    :{WINDOW_COLOUR_2}Índice de entrada: {BLACK}{COMMA16}
-STR_5962    :{WINDOW_COLOUR_2}Detecção de colisão:
-STR_5963    :{WINDOW_COLOUR_2}Cantos elevados:
-STR_5964    :{WINDOW_COLOUR_2}Diagonal
-STR_5965    :{WINDOW_COLOUR_2}Tipo de entrada: {BLACK}{STRINGID}
-STR_5966    :{WINDOW_COLOUR_2}Parte de entrada do parque: {BLACK}{STRINGID}
+STR_5960    :Posicionamento em quadrante:
+STR_5961    :Índice de entrada: {BLACK}{COMMA16}
+STR_5962    :Detecção de colisão:
+STR_5963    :Cantos elevados:
+STR_5964    :Diagonal
+STR_5965    :Tipo de entrada: {BLACK}{STRINGID}
+STR_5966    :Parte de entrada do parque: {BLACK}{STRINGID}
 STR_5967    :Meio
 STR_5968    :Esquerda
 STR_5969    :Direita
-STR_5970    :{WINDOW_COLOUR_2}ID da entrada: {BLACK}{COMMA16}
-STR_5971    :{WINDOW_COLOUR_2}ID da saída: {BLACK}{COMMA16}
-STR_5972    :{WINDOW_COLOUR_2}ID da atração: {BLACK}{COMMA16}
+STR_5970    :ID da entrada: {BLACK}{COMMA16}
+STR_5971    :ID da saída: {BLACK}{COMMA16}
+STR_5972    :ID da atração: {BLACK}{COMMA16}
 STR_5973    :Prender ao próximo
 STR_5974    :Muda a base e a altura de segurança para que sejam as mesmas que o próximo elemento no azulejo atual. Fazendo isto fica mais fácil de construir neste azulejo.
 STR_5975    :Inclinação:
 STR_5976    :Reto
 STR_5977    :Direita para cima
 STR_5978    :Esquerda para cima
-STR_5979    :{WINDOW_COLOUR_2}Tipo de cerca: {BLACK}{COMMA16}
-STR_5980    :{WINDOW_COLOUR_2}Texto do banner: {BLACK}{STRINGID}
-STR_5981    :{WINDOW_COLOUR_2}Não é um banner
-STR_5982    :{WINDOW_COLOUR_2}Tipo de cenário grande: {BLACK}{COMMA16}
-STR_5983    :{WINDOW_COLOUR_2}ID da peça de cenário grande: {BLACK}{COMMA16}
+STR_5979    :Tipo de cerca: {BLACK}{COMMA16}
+STR_5980    :Texto do banner: {BLACK}{STRINGID}
+STR_5981    :Não é um banner
+STR_5982    :Tipo de cenário grande: {BLACK}{COMMA16}
+STR_5983    :ID da peça de cenário grande: {BLACK}{COMMA16}
 STR_5984    :Caminhos bloqueados:
 STR_5985    :Nova pasta
 STR_5986    :Insira o nome da nova pasta.
@@ -3309,7 +3259,7 @@ STR_6030    :Apanhador de cenário. Clique em qualquer cenário do mapa para sel
 STR_6031    :Descrição do Servidor:
 STR_6032    :Saudação do Servidor:
 STR_6033    :Caminho para a instalação do RCT1:
-STR_6034    :{SMALLFONT}{BLACK}{STRING}
+STR_6034    :{BLACK}{STRING}
 STR_6035    :Por favor, selecione o diretório do seu RCT1
 STR_6036    :Limpar
 STR_6037    :O diretório selecionado não contém uma instalação válida de RollerCoaster 1.
@@ -3426,7 +3376,6 @@ STR_6155    :Nem KDialog ou Zenity estão instalados. Por favor, instale um, ou 
 STR_6156    :Nome está reservado
 STR_6157    :Console
 STR_6158    :Falha ao carregar este arquivo…{NEWLINE}Versão do RCTC incompatível: {COMMA16}
-STR_6159    :Suavizar Vizinho Mais Próximo
 STR_6160    :{WINDOW_COLOUR_2}Veículos disponíveis: {BLACK}{STRING}
 STR_6161    :Alternar exibição de grade
 STR_6162    :Rato Maluco Giratório
@@ -3454,7 +3403,7 @@ STR_6183    :Seguir{MOVE_X}{87}Nenhum sprite selecionado
 STR_6184    :Seguir Sprite
 STR_6185    :Selecionar Sprite
 STR_6186    :Nenhum sprite selecionado
-STR_6187    :{MEDIUMFONT}{OUTLINE}{WINDOW_COLOUR_2}{STRING}
+STR_6187    :{OUTLINE}{WINDOW_COLOUR_2}{STRING}
 STR_6188    :Vômito
 STR_6189    :Pato
 STR_6190    :Você não pode selecionar um sprite enquanto a tela principal está ativa.
@@ -3530,7 +3479,7 @@ STR_6273    :Música
 STR_6274    :Impossível definir esquema de cor…
 STR_6275    :{WINDOW_COLOUR_2}Estilo da estação:
 STR_6276    :{RED}{STRINGID} está deixando visitantes presos, possivelmente por um tipo de brinquedo ou modo de operação inválido.
-STR_6277    :{WINDOW_COLOUR_2}Índice de estação: {BLACK}{STRINGID}
+STR_6277    :Índice de estação: {BLACK}{STRINGID}
 STR_6278    :Quantidade de Autosave
 STR_6279    :Número de autosaves que devem ser guardados
 STR_6280    :Bate-papo
@@ -3563,9 +3512,9 @@ STR_6315    :{WINDOW_COLOUR_2}Objetivo de Desbravamento: {BLACK}{INT32}, {INT32}
 STR_6316    :{WINDOW_COLOUR_2}Histórico de Desbravamento:
 STR_6317    :{BLACK}{INT32}, {INT32}, {INT32} dir {INT32}
 STR_6318    :Assincronia de rede detectada.{NEWLINE}Arquivo de registro: {STRING}
-STR_6319    :{WINDOW_COLOUR_2}Freios Bloqueadores Fechados
-STR_6320    :{WINDOW_COLOUR_2}Indestrutível
-STR_6321    :{WINDOW_COLOUR_2}Adição quebrada
+STR_6319    :Freios Bloqueadores Fechados
+STR_6320    :Indestrutível
+STR_6321    :Adição quebrada
 STR_6322    :{WINDOW_COLOUR_2}Id da Sprite: {BLACK}{INT32}
 STR_6323    :Simulando
 STR_6324    :Simular
@@ -3604,18 +3553,18 @@ STR_6356    :Gerar patos se o parque tiver água
 STR_6357    :Remover todos os patos do mapa
 STR_6358    :Página {UINT16}
 STR_6359    :{POP16}{POP16}Página {UINT16}
-STR_6360    :{SMALLFONT}{BLACK}{COMMA32}
+STR_6360    :{BLACK}{COMMA32}
 STR_6361    :Habilitar efeitos luminosos em atrações (experimental)
 STR_6362    :Se habilitados, veículos de atrações com trilhos serão iluminados à noite.
 STR_6363    :Texto copiado para a área de transferência
 STR_6364    :{RED}{COMMA16} pessoa morreu em um acidente em {STRINGID}
 STR_6365    :Acidentes em atrações
 STR_6366    :Veículos presos ou parados
-STR_6367    :{WINDOW_COLOUR_2}Quadro de animação:
+STR_6367    :Quadro de animação:
 STR_6368    :Por questão de compatibilidade, não é recomendado executar o OpenRCT2 com Wine. O OpenRCT2 tem suporte nativo a macOS, Linux, FreeBSD e OpenBSD.
 STR_6369    :Permitir construção de trilhos em alturas inválidas
 STR_6370    :Permite a construção de trilhos em qualquer intervalo de altura
-STR_6371    :O caminho especificado contém uma instalação do RollerCoaster Tycoon 1, mas o arquivo “csg1i.dat” não existe. Esse arquivo tem de ser copiado do CD do RollerCoaster Tycoon 1 para a pasta “Data” do RollerCoaster Tycoon 1 instalado em sua memória.
+STR_6371    :O caminho especificado contém uma instalação do RollerCoaster Tycoon 1, mas o arquivo “csg1i.dat” não existe. Esse arquivo tem de ser copiado da instalação da Loopy Landscapes ou RCT Deluxe para a pasta “Data” do RollerCoaster Tycoon 1 instalado em sua memória.
 STR_6372    :O caminho especificado contém uma instalação do RollerCoaster Tycoon 1, mas essa versão não é compatível. O OpenRCT2 precisa da instalação do Loopy Landscapes ou RCT Deluxe para usar os recursos do RollerCoaster Tycoon 1.
 STR_6373    :Liga/desliga verificação de folga
 STR_6374    :F
@@ -3679,6 +3628,59 @@ STR_6431    :Botão Direito Mouse
 STR_6432    :Mouse {INT32}
 STR_6433    :Remover
 STR_6434    :Remover todos os vínculos desse atalho.
+STR_6435    :{WINDOW_COLOUR_2}Vândalos impedidos: {BLACK}{COMMA32}
+STR_6436    :Liga/desliga invisibilidade
+STR_6437    :Visível
+STR_6438    :V
+STR_6439    :Inspetor de Azulejo: Liga/desliga invisibilidade
+STR_6440    :Água transparente
+STR_6441    :Pelo menos um objeto de superfície de calçada que não seja fila deve ser selecionado.
+STR_6442    :Pelo menos um objeto de superfície de calçada de fila deve ser selecionado.
+STR_6443    :Pelo menos um objeto de corrimão de calçada deve ser selecionado.
+STR_6444    :Superfícies de Calçada
+STR_6445    :Corrimões de Calçada
+STR_6446    :{WINDOW_COLOUR_2}Nome da superfície: {BLACK}{STRINGID}
+STR_6447    :{WINDOW_COLOUR_2}Nome do corrimão: {BLACK}{STRINGID}
+STR_6448    :Formato de objeto não suportado
+STR_6449    :{WINDOW_COLOUR_2}Trilhos:
+STR_6450    :{BLACK}“{STRING}”
+STR_6451    :{BLACK}“{STRING}” - {STRING}
+STR_6452    :{WINDOW_COLOUR_2}Vende: {BLACK}{STRING}
+STR_6453    :Copiar informações da versão
+STR_6454    :Não é possível renomear o banner…
+STR_6455    :Não é possível renomear a placa…
+STR_6456    :Captura Gigante de Tela
+STR_6457    :Relatar um problema pelo GitHub
+STR_6458    :Seguir isto na Visão Principal
+STR_6460    :D
+STR_6461    :Direção
+STR_6462    :Emoção
+STR_6463    :Emoção: {COMMA2DP32}
+STR_6464    :Intensidade
+STR_6465    :Intensidade: {COMMA2DP32}
+STR_6466    :Náusea
+STR_6467    :Náusea: {COMMA2DP32}
+STR_6468    :Ainda desconhecida
+STR_6469    :Ajustar menor área da área de patrulha
+STR_6470    :Ajustar maior área da área de patrulha
+STR_6471    :Vegetações transparentes
+STR_6472    :Veículos transparentes
+STR_6473    :Suportes transparentes
+STR_6474    :Clientes transparentes
+STR_6475    :Funcionários transparentes
+STR_6476    :Vegetações invisíveis
+STR_6477    :Cenários invisíveis
+STR_6478    :Caminhos invisíveis
+STR_6479    :Atrações invisíveis
+STR_6480    :Veículos invisíveis
+STR_6481    :Opções de Transparência
+STR_6482    :Opções de Transparência
+STR_6483    :Abrir opções de transparência
+STR_6484    :Alternar transparência das vegetações
+STR_6485    :Alternar transparência dos veículos
+STR_6486    :Alternar transparência dos clientes
+STR_6487    :Alternar transparência dos funcionários
+STR_6488    :{RED}Os visitantes estão reclamando do tamanho das filas no seu parque.{NEWLINE}Considere encurtar filas problemáticas, ou aumentar a vazão das atrações.
 
 #############
 # Scenarios #

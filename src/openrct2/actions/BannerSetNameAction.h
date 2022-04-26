@@ -11,21 +11,21 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(BannerSetNameAction, GameCommand::SetBannerName, GameActions::Result)
+class BannerSetNameAction final : public GameActionBase<GameCommand::SetBannerName>
 {
 private:
-    BannerIndex _bannerIndex{ BANNER_INDEX_NULL };
+    BannerIndex _bannerIndex{ BannerIndex::GetNull() };
     std::string _name;
 
 public:
     BannerSetNameAction() = default;
     BannerSetNameAction(BannerIndex bannerIndex, const std::string& name);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

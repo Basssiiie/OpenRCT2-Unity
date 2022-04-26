@@ -392,8 +392,9 @@ void format_string_to_upper(utf8* dest, size_t size, rct_string_id format, const
 
 void format_readable_size(char* buf, size_t bufSize, uint64_t sizeBytes)
 {
-    constexpr uint32_t SizeTable[] = { STR_SIZE_BYTE, STR_SIZE_KILOBYTE, STR_SIZE_MEGABYTE, STR_SIZE_GIGABYTE,
-                                       STR_SIZE_TERABYTE };
+    constexpr uint32_t SizeTable[] = {
+        STR_SIZE_BYTE, STR_SIZE_KILOBYTE, STR_SIZE_MEGABYTE, STR_SIZE_GIGABYTE, STR_SIZE_TERABYTE,
+    };
 
     double size = sizeBytes;
     size_t idx = 0;
@@ -445,8 +446,7 @@ money32 string_to_money(const char* string_to_monetise)
         {
             if (hasDecSep)
                 return MONEY32_UNDEFINED;
-            else
-                hasDecSep = true;
+            hasDecSep = true;
 
             // Replace localised decimal separator with an English one.
             *dst_ptr++ = '.';
@@ -457,8 +457,7 @@ money32 string_to_money(const char* string_to_monetise)
         {
             if (hasMinus)
                 return MONEY32_UNDEFINED;
-            else
-                hasMinus = true;
+            hasMinus = true;
         }
         else
         {
@@ -499,17 +498,11 @@ money32 string_to_money(const char* string_to_monetise)
 
     auto number = std::stod(processedString, nullptr);
     number /= (currencyDesc->rate / 10.0);
-    auto whole = static_cast<int32_t>(number);
-    auto fraction = static_cast<uint8_t>(ceil((number - whole) * 100.0));
 
-    money32 result = MONEY(whole, fraction);
     // Check if MONEY resulted in overflow
-    if ((whole > 0 && result < 0) || result / 10 < whole)
-    {
-        result = INT_MAX;
-    }
+    uint64_t result = std::min<uint64_t>(ToMoney32FromGBP(number), (std::numeric_limits<uint32_t>::max)());
     result *= sign;
-    return result;
+    return static_cast<uint32_t>(result);
 }
 
 /**

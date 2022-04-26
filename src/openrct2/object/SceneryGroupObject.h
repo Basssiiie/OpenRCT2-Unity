@@ -25,11 +25,6 @@ private:
     std::vector<ObjectEntryDescriptor> _items;
 
 public:
-    explicit SceneryGroupObject(const rct_object_entry& entry)
-        : Object(entry)
-    {
-    }
-
     void* GetLegacyData() override
     {
         return &_legacyType;
@@ -45,9 +40,11 @@ public:
 
     void SetRepositoryItem(ObjectRepositoryItem* item) const override;
 
+    uint16_t GetNumIncludedObjects() const;
+
 private:
     static std::vector<ObjectEntryDescriptor> ReadItems(OpenRCT2::IStream* stream);
     static uint32_t ReadJsonEntertainerCostumes(json_t& jCostumes);
     static EntertainerCostume ParseEntertainerCostume(const std::string& s);
-    static std::vector<ObjectEntryDescriptor> ReadJsonEntries(json_t& jEntries);
+    static std::vector<ObjectEntryDescriptor> ReadJsonEntries(IReadObjectContext* context, json_t& jEntries);
 };

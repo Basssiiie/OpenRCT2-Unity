@@ -15,13 +15,14 @@
 #include <openrct2/config/Config.h>
 #include <openrct2/core/String.hpp>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Localisation.h>
 #include <openrct2/util/Util.h>
 
 static constexpr const int32_t WW = 250;
 static constexpr const int32_t WH = 90;
 
-enum WINDOW_TEXT_INPUT_WIDGET_IDX
+enum WindowTextInputWidgetIdx
 {
     WIDX_BACKGROUND,
     WIDX_TITLE,
@@ -34,7 +35,7 @@ static rct_widget window_text_input_widgets[] = {
     WINDOW_SHIM(STR_NONE, WW, WH),
     MakeWidget({ 170, 68 }, { 71, 14 }, WindowWidgetType::Button, WindowColour::Secondary, STR_CANCEL),
     MakeWidget({ 10, 68 }, { 71, 14 }, WindowWidgetType::Button, WindowColour::Secondary, STR_OK),
-    { WIDGETS_END }
+    WIDGETS_END,
 };
 
 class TextInputWindow final : public Window
@@ -47,18 +48,18 @@ private:
 
     std::string _description;
     rct_string_id _descriptionStringId = STR_NONE;
+    Formatter _descriptionArgs;
 
     std::function<void(std::string_view)> _callback;
     std::function<void()> _cancelCallback;
 
     int32_t _cursorBlink{};
     size_t _maxInputLength{};
-    std::string _buffer;
+    std::vector<utf8> _buffer;
 
 public:
     void OnOpen() override
     {
-        enabled_widgets = (1ULL << WIDX_CLOSE) | (1ULL << WIDX_CANCEL) | (1ULL << WIDX_OKAY);
         widgets = window_text_input_widgets;
         WindowInitScrollWidgets(this);
         SetParentWindow(nullptr, 0);
@@ -89,10 +90,11 @@ public:
         }
     }
 
-    void SetTitle(rct_string_id title, rct_string_id description)
+    void SetTitle(rct_string_id title, rct_string_id description, const Formatter& decriptionArgs)
     {
         _titleStringId = title;
         _descriptionStringId = description;
+        _descriptionArgs = decriptionArgs;
     }
 
     void SetTitle(std::string_view title, std::string_view description)
@@ -105,8 +107,8 @@ public:
 
     void SetText(std::string_view text, size_t maxLength)
     {
-        _buffer = text;
         _buffer.resize(maxLength);
+        safe_strcpy(_buffer.data(), std::string(text).c_str(), maxLength);
         _maxInputLength = maxLength;
         gTextInput = context_start_text_input(_buffer.data(), maxLength);
     }
@@ -202,21 +204,22 @@ public:
 
         if (_descriptionStringId == STR_NONE)
         {
-            auto* text = _description.c_str();
+            auto ft = Formatter();
+            ft.Add<const char*>(_description.c_str());
             DrawTextWrapped(
-                &dpi, { windowPos.x + WW / 2, screenCoords.y }, WW, STR_STRING, &text, { colours[1], TextAlignment::CENTRE });
+                &dpi, { windowPos.x + WW / 2, screenCoords.y }, WW, STR_STRING, ft, { colours[1], TextAlignment::CENTRE });
         }
         else
         {
             DrawTextWrapped(
-                &dpi, { windowPos.x + WW / 2, screenCoords.y }, WW, _descriptionStringId, &TextInputDescriptionArgs,
+                &dpi, { windowPos.x + WW / 2, screenCoords.y }, WW, _descriptionStringId, _descriptionArgs,
                 { colours[1], TextAlignment::CENTRE });
         }
 
         screenCoords.y += 25;
 
         char wrapped_string[TEXT_INPUT_SIZE];
-        safe_strcpy(wrapped_string, _buffer.data(), TEXT_INPUT_SIZE);
+        safe_strcpy(wrapped_string, _buffer.data(), _buffer.size());
 
         // String length needs to add 12 either side of box
         // +13 for cursor when max length.
@@ -282,7 +285,7 @@ public:
 
         if (!cur_drawn)
         {
-            cursorX = gLastDrawStringX;
+            cursorX = dpi.lastStringPos.x;
             cursorY = screenCoords.y - 10;
         }
 
@@ -368,9 +371,9 @@ private:
     }
 };
 
-void window_text_input_raw_open(
+void WindowTextInputRawOpen(
     rct_window* call_w, rct_widgetindex call_widget, rct_string_id title, rct_string_id description,
-    const_utf8string existing_text, int32_t maxLength)
+    const Formatter& descriptionArgs, const_utf8string existing_text, int32_t maxLength)
 {
     window_close_by_class(WC_TEXTINPUT);
 
@@ -379,12 +382,12 @@ void window_text_input_raw_open(
     if (w != nullptr)
     {
         w->SetParentWindow(call_w, call_widget);
-        w->SetTitle(title, description);
+        w->SetTitle(title, description, descriptionArgs);
         w->SetText(existing_text, maxLength);
     }
 }
 
-void window_text_input_open(
+void WindowTextInputOpen(
     std::string_view title, std::string_view description, std::string_view initialValue, size_t maxLength,
     std::function<void(std::string_view)> callback, std::function<void()> cancelCallback)
 {
@@ -398,16 +401,19 @@ void window_text_input_open(
     }
 }
 
-void window_text_input_open(
+void WindowTextInputOpen(
     rct_window* call_w, rct_widgetindex call_widget, rct_string_id title, rct_string_id description,
-    rct_string_id existing_text, uintptr_t existing_args, int32_t maxLength)
+    const Formatter& descriptionArgs, rct_string_id existing_text, uintptr_t existing_args, int32_t maxLength)
 {
     auto existingText = format_string(existing_text, &existing_args);
-    window_text_input_raw_open(call_w, call_widget, title, description, existingText.c_str(), maxLength);
+    WindowTextInputRawOpen(call_w, call_widget, title, description, descriptionArgs, existingText.c_str(), maxLength);
 }
 
-void window_text_input_key(rct_window* w, char keychar)
+void WindowTextInputKey(rct_window* w, char keychar)
 {
+    const auto wndNumber = w->number;
+    const auto wndClass = w->classification;
+
     // If the return button is pressed stop text input
     if (keychar == '\r')
     {
@@ -417,5 +423,9 @@ void window_text_input_key(rct_window* w, char keychar)
             textInputWindow->OnReturnPressed();
         }
     }
-    w->Invalidate();
+
+    // The window can be potentially closed within a callback, we need to check if its still alive.
+    w = window_find_by_number(wndClass, wndNumber);
+    if (w != nullptr)
+        w->Invalidate();
 }

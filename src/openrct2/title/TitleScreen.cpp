@@ -23,6 +23,7 @@
 #include "../interface/Viewport.h"
 #include "../interface/Window.h"
 #include "../localisation/Localisation.h"
+#include "../network/NetworkBase.h"
 #include "../network/network.h"
 #include "../scenario/Scenario.h"
 #include "../scenario/ScenarioRepository.h"
@@ -124,9 +125,11 @@ void TitleScreen::Load()
     gScreenAge = 0;
     gCurrentLoadedPath = "";
 
-    network_close();
+#ifndef DISABLE_NETWORK
+    GetContext()->GetNetwork().Close();
+#endif
     OpenRCT2::Audio::StopAll();
-    GetContext()->GetGameState()->InitAll(150);
+    GetContext()->GetGameState()->InitAll(DEFAULT_MAP_SIZE);
     viewport_init_all();
     context_open_window(WC_MAIN_WINDOW);
     CreateWindows();
@@ -152,7 +155,7 @@ void TitleScreen::Load()
     log_verbose("TitleScreen::Load() finished");
 }
 
-void TitleScreen::Update()
+void TitleScreen::Tick()
 {
     gInUpdateCode = true;
 
@@ -332,7 +335,8 @@ bool TitleScreen::TryLoadSequence(bool loadPreview)
         _loadedTitleSequenceId = SIZE_MAX;
         if (!loadPreview)
         {
-            GetContext()->GetGameState()->InitAll(150);
+            GetContext()->GetGameState()->InitAll(DEFAULT_MAP_SIZE);
+            game_notify_map_changed();
         }
         return false;
     }
@@ -436,7 +440,7 @@ void DrawOpenRCT2(rct_drawpixelinfo* dpi, const ScreenCoordsXY& screenCoords)
 {
     thread_local std::string buffer;
     buffer.clear();
-    buffer.assign("{MEDIUMFONT}{OUTLINE}{WHITE}");
+    buffer.assign("{OUTLINE}{WHITE}");
 
     // Write name and version information
     buffer += gVersionInfoFull;
@@ -448,7 +452,7 @@ void DrawOpenRCT2(rct_drawpixelinfo* dpi, const ScreenCoordsXY& screenCoords)
         { screenCoords, screenCoords + ScreenCoordsXY{ width, 30 } }); // 30 is an arbitrary height to catch both strings
 
     // Write platform information
-    buffer.assign("{MEDIUMFONT}{OUTLINE}{WHITE}");
+    buffer.assign("{OUTLINE}{WHITE}");
     buffer.append(OPENRCT2_PLATFORM);
     buffer.append(" (");
     buffer.append(OPENRCT2_ARCHITECTURE);

@@ -11,10 +11,10 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(SignSetStyleAction, GameCommand::SetSignStyle, GameActions::Result)
+class SignSetStyleAction final : public GameActionBase<GameCommand::SetSignStyle>
 {
 private:
-    BannerIndex _bannerIndex{ BANNER_INDEX_NULL };
+    BannerIndex _bannerIndex{ BannerIndex::GetNull() };
     uint8_t _mainColour{};
     uint8_t _textColour{};
     bool _isLarge{};
@@ -25,7 +25,7 @@ public:
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

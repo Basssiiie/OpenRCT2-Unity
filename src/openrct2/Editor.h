@@ -7,8 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef _EDITOR_H_
-#define _EDITOR_H_
+#pragma once
 
 #include "common.h"
 #include "object/Object.h"
@@ -21,8 +20,8 @@ namespace Editor
     void LoadTrackManager();
     bool LoadLandscape(const utf8* path);
 
-    bool CheckPark();
-    ObjectType CheckObjectSelection();
+    std::pair<bool, rct_string_id> CheckPark();
+    std::pair<ObjectType, rct_string_id> CheckObjectSelection();
 
     void OpenWindowsForCurrentStep();
 
@@ -44,6 +43,6 @@ enum class EditorStep : uint8_t
     Invalid = 255,         // 255
 };
 
-void editor_open_windows_for_current_step();
+extern EditorStep gEditorStep;
 
-#endif
+void editor_open_windows_for_current_step();

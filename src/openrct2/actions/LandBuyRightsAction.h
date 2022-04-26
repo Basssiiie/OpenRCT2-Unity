@@ -18,13 +18,16 @@ enum class LandBuyRightSetting : uint8_t
     Count
 };
 
-DEFINE_GAME_ACTION(LandBuyRightsAction, GameCommand::BuyLandRights, GameActions::Result)
+class LandBuyRightsAction final : public GameActionBase<GameCommand::BuyLandRights>
 {
 private:
     MapRange _range;
     LandBuyRightSetting _setting{ LandBuyRightSetting::Count };
 
-    constexpr static rct_string_id _ErrorTitles[] = { STR_CANT_BUY_LAND, STR_CANT_BUY_CONSTRUCTION_RIGHTS_HERE };
+    constexpr static rct_string_id _ErrorTitles[] = {
+        STR_CANT_BUY_LAND,
+        STR_CANT_BUY_CONSTRUCTION_RIGHTS_HERE,
+    };
 
 public:
     LandBuyRightsAction() = default;
@@ -33,11 +36,11 @@ public:
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result::Ptr QueryExecute(bool isExecuting) const;
-    GameActions::Result::Ptr map_buy_land_rights_for_tile(const CoordsXY& loc, bool isExecuting) const;
+    GameActions::Result QueryExecute(bool isExecuting) const;
+    GameActions::Result map_buy_land_rights_for_tile(const CoordsXY& loc, bool isExecuting) const;
 };

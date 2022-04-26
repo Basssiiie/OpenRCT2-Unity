@@ -7,32 +7,38 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef _DRAWING_SUPPORTS_H_
-#define _DRAWING_SUPPORTS_H_
+#pragma once
 
 #include "../common.h"
+#include "../drawing/ImageId.hpp"
 #include "../world/Footpath.h"
+
+struct FootpathPaintInfo;
 
 constexpr const uint8_t NumVanillaWoodenSupportTypes = 49;
 
 bool wooden_a_supports_paint_setup(
-    paint_session* session, int32_t supportType, int32_t special, int32_t height, uint32_t imageColourFlags, bool* underground);
+    paint_session& session, int32_t supportType, int32_t special, int32_t height, ImageId imageTemplate);
 bool wooden_b_supports_paint_setup(
-    paint_session* session, int32_t supportType, int32_t special, int32_t height, uint32_t imageColourFlags, bool* underground);
+    paint_session& session, int32_t supportType, int32_t special, int32_t height, ImageId imageTemplate);
+bool wooden_a_supports_paint_setup(
+    paint_session& session, int32_t supportType, int32_t special, int32_t height, uint32_t imageColourFlags);
+bool wooden_b_supports_paint_setup(
+    paint_session& session, int32_t supportType, int32_t special, int32_t height, uint32_t imageColourFlags);
 bool metal_a_supports_paint_setup(
-    paint_session* session, uint8_t supportType, uint8_t segment, int32_t special, int32_t height, uint32_t imageColourFlags);
+    paint_session& session, uint8_t supportType, uint8_t segment, int32_t special, int32_t height, uint32_t imageColourFlags);
 bool metal_b_supports_paint_setup(
-    paint_session* session, uint8_t supportType, uint8_t segment, int32_t special, int32_t height, uint32_t imageColourFlags);
+    paint_session& session, uint8_t supportType, uint8_t segment, int32_t special, int32_t height, uint32_t imageColourFlags);
 bool path_a_supports_paint_setup(
-    paint_session* session, int32_t supportType, int32_t special, int32_t height, uint32_t imageColourFlags,
-    PathRailingsEntry* railingEntry, bool* underground);
+    paint_session& session, int32_t supportType, int32_t special, int32_t height, ImageId imageTemplate,
+    const FootpathPaintInfo& pathPaintInfo, bool* underground);
 bool path_b_supports_paint_setup(
-    paint_session* session, int32_t supportType, int32_t special, int32_t height, uint32_t imageColourFlags,
-    PathRailingsEntry* railingEntry);
+    paint_session& session, int32_t supportType, int32_t special, int32_t height, ImageId imageTemplate,
+    const FootpathPaintInfo& pathPaintInfo);
 
 // There are 13 types of metal supports. A graphic showing all of them is available here:
 // https://cloud.githubusercontent.com/assets/737603/19420485/7eaba28e-93ec-11e6-83cb-03190accc094.png
-enum
+enum : uint8_t
 {
     METAL_SUPPORTS_TUBES,         // Used by the steel twister, looping rc, and other rides
     METAL_SUPPORTS_FORK,          // Used by the junior RC and other rides
@@ -54,5 +60,3 @@ enum
 {
     SUPPORTS_SLOPE_5 = 1 << 5
 };
-
-#endif

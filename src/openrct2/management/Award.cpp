@@ -10,10 +10,11 @@
 #include "Award.h"
 
 #include "../config/Config.h"
+#include "../entity/Guest.h"
 #include "../interface/Window.h"
 #include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
-#include "../peep/Peep.h"
+#include "../profiling/Profiling.h"
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
 #include "../scenario/Scenario.h"
@@ -26,23 +27,23 @@ constexpr uint8_t NEGATIVE = 0;
 constexpr uint8_t POSITIVE = 1;
 
 static constexpr const uint8_t AwardPositiveMap[] = {
-    NEGATIVE, // ParkAward::MostUntidy
-    POSITIVE, // ParkAward::MostTidy
-    POSITIVE, // ParkAward::BestRollerCoasters
-    POSITIVE, // ParkAward::BestValue
-    POSITIVE, // ParkAward::MostBeautiful
-    NEGATIVE, // ParkAward::WorstValue
-    POSITIVE, // ParkAward::Safest
-    POSITIVE, // ParkAward::BestStaff
-    POSITIVE, // ParkAward::BestFood
-    NEGATIVE, // ParkAward::WorstFood
-    POSITIVE, // ParkAward::BestRestrooms
-    NEGATIVE, // ParkAward::MostDisappointing
-    POSITIVE, // ParkAward::BestWaterRides
-    POSITIVE, // ParkAward::BestCustomDesignedRides
-    POSITIVE, // ParkAward::MostDazzlingRideColours
-    NEGATIVE, // ParkAward::MostConfusingLayout
-    POSITIVE, // ParkAward::BestGentleRides
+    NEGATIVE, // AwardType::MostUntidy
+    POSITIVE, // AwardType::MostTidy
+    POSITIVE, // AwardType::BestRollerCoasters
+    POSITIVE, // AwardType::BestValue
+    POSITIVE, // AwardType::MostBeautiful
+    NEGATIVE, // AwardType::WorstValue
+    POSITIVE, // AwardType::Safest
+    POSITIVE, // AwardType::BestStaff
+    POSITIVE, // AwardType::BestFood
+    NEGATIVE, // AwardType::WorstFood
+    POSITIVE, // AwardType::BestRestrooms
+    NEGATIVE, // AwardType::MostDisappointing
+    POSITIVE, // AwardType::BestWaterRides
+    POSITIVE, // AwardType::BestCustomDesignedRides
+    POSITIVE, // AwardType::MostDazzlingRideColours
+    NEGATIVE, // AwardType::MostConfusingLayout
+    POSITIVE, // AwardType::BestGentleRides
 };
 
 static constexpr const rct_string_id AwardNewsStrings[] = {
@@ -65,11 +66,16 @@ static constexpr const rct_string_id AwardNewsStrings[] = {
     STR_NEWS_ITEM_BEST_GENTLE_RIDES,
 };
 
-Award gCurrentAwards[MAX_AWARDS];
+static std::vector<Award> _currentAwards;
 
-bool award_is_positive(int32_t type)
+std::vector<Award>& GetAwards()
 {
-    return AwardPositiveMap[type];
+    return _currentAwards;
+}
+
+bool award_is_positive(AwardType type)
+{
+    return AwardPositiveMap[EnumValue(type)];
 }
 
 #pragma region Award checks
@@ -77,24 +83,25 @@ bool award_is_positive(int32_t type)
 /** More than 1/16 of the total guests must be thinking untidy thoughts. */
 static bool award_is_deserved_most_untidy(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostBeautiful))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostBeautiful))
         return false;
-    if (activeAwardTypes & EnumToFlag(ParkAward::BestStaff))
+    if (activeAwardTypes & EnumToFlag(AwardType::BestStaff))
         return false;
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostTidy))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostTidy))
         return false;
 
     uint32_t negativeCount = 0;
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         if (peep->OutsideOfPark)
             continue;
 
-        if (peep->Thoughts[0].freshness > 5)
+        const auto& thought = std::get<0>(peep->Thoughts);
+        if (thought.freshness > 5)
             continue;
 
-        if (peep->Thoughts[0].type == PeepThoughtType::BadLitter || peep->Thoughts[0].type == PeepThoughtType::PathDisgusting
-            || peep->Thoughts[0].type == PeepThoughtType::Vandalism)
+        if (thought.type == PeepThoughtType::BadLitter || thought.type == PeepThoughtType::PathDisgusting
+            || thought.type == PeepThoughtType::Vandalism)
         {
             negativeCount++;
         }
@@ -106,26 +113,27 @@ static bool award_is_deserved_most_untidy(int32_t activeAwardTypes)
 /** More than 1/64 of the total guests must be thinking tidy thoughts and less than 6 guests thinking untidy thoughts. */
 static bool award_is_deserved_most_tidy(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostUntidy))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostUntidy))
         return false;
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostDisappointing))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostDisappointing))
         return false;
 
     uint32_t positiveCount = 0;
     uint32_t negativeCount = 0;
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         if (peep->OutsideOfPark)
             continue;
 
-        if (peep->Thoughts[0].freshness > 5)
+        const auto& thought = std::get<0>(peep->Thoughts);
+        if (thought.freshness > 5)
             continue;
 
-        if (peep->Thoughts[0].type == PeepThoughtType::VeryClean)
+        if (thought.type == PeepThoughtType::VeryClean)
             positiveCount++;
 
-        if (peep->Thoughts[0].type == PeepThoughtType::BadLitter || peep->Thoughts[0].type == PeepThoughtType::PathDisgusting
-            || peep->Thoughts[0].type == PeepThoughtType::Vandalism)
+        if (thought.type == PeepThoughtType::BadLitter || thought.type == PeepThoughtType::PathDisgusting
+            || thought.type == PeepThoughtType::Vandalism)
         {
             negativeCount++;
         }
@@ -146,7 +154,7 @@ static bool award_is_deserved_best_rollercoasters([[maybe_unused]] int32_t activ
             continue;
         }
 
-        if (ride.status != RIDE_STATUS_OPEN || (ride.lifecycle_flags & RIDE_LIFECYCLE_CRASHED))
+        if (ride.status != RideStatus::Open || (ride.lifecycle_flags & RIDE_LIFECYCLE_CRASHED))
         {
             continue;
         }
@@ -164,19 +172,19 @@ static bool award_is_deserved_best_rollercoasters([[maybe_unused]] int32_t activ
 /** Entrance fee is 0.10 less than half of the total ride value. */
 static bool award_is_deserved_best_value(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::WorstValue))
+    if (activeAwardTypes & EnumToFlag(AwardType::WorstValue))
         return false;
 
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostDisappointing))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostDisappointing))
         return false;
 
     if ((gParkFlags & PARK_FLAGS_NO_MONEY) || !park_entry_price_unlocked())
         return false;
 
-    if (gTotalRideValueForMoney < MONEY(10, 00))
+    if (gTotalRideValueForMoney < 10.00_GBP)
         return false;
 
-    if (park_get_entrance_fee() + MONEY(0, 10) >= gTotalRideValueForMoney / 2)
+    if (park_get_entrance_fee() + 0.10_GBP >= gTotalRideValueForMoney / 2)
         return false;
 
     return true;
@@ -185,27 +193,28 @@ static bool award_is_deserved_best_value(int32_t activeAwardTypes)
 /** More than 1/128 of the total guests must be thinking scenic thoughts and fewer than 16 untidy thoughts. */
 static bool award_is_deserved_most_beautiful(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostUntidy))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostUntidy))
         return false;
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostDisappointing))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostDisappointing))
         return false;
 
     uint32_t positiveCount = 0;
     uint32_t negativeCount = 0;
-    auto list = EntityList<Guest>(EntityListId::Peep);
+    auto list = EntityList<Guest>();
     for (auto peep : list)
     {
         if (peep->OutsideOfPark)
             continue;
 
-        if (peep->Thoughts[0].freshness > 5)
+        const auto& thought = std::get<0>(peep->Thoughts);
+        if (thought.freshness > 5)
             continue;
 
-        if (peep->Thoughts[0].type == PeepThoughtType::Scenery)
+        if (thought.type == PeepThoughtType::Scenery)
             positiveCount++;
 
-        if (peep->Thoughts[0].type == PeepThoughtType::BadLitter || peep->Thoughts[0].type == PeepThoughtType::PathDisgusting
-            || peep->Thoughts[0].type == PeepThoughtType::Vandalism)
+        if (thought.type == PeepThoughtType::BadLitter || thought.type == PeepThoughtType::PathDisgusting
+            || thought.type == PeepThoughtType::Vandalism)
         {
             negativeCount++;
         }
@@ -217,13 +226,13 @@ static bool award_is_deserved_most_beautiful(int32_t activeAwardTypes)
 /** Entrance fee is more than total ride value. */
 static bool award_is_deserved_worst_value(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::BestValue))
+    if (activeAwardTypes & EnumToFlag(AwardType::BestValue))
         return false;
     if (gParkFlags & PARK_FLAGS_NO_MONEY)
         return false;
 
-    money32 parkEntranceFee = park_get_entrance_fee();
-    if (parkEntranceFee == MONEY(0, 00))
+    const auto parkEntranceFee = park_get_entrance_fee();
+    if (parkEntranceFee == 0.00_GBP)
         return false;
     if (parkEntranceFee <= gTotalRideValueForMoney)
         return false;
@@ -234,11 +243,13 @@ static bool award_is_deserved_worst_value(int32_t activeAwardTypes)
 static bool award_is_deserved_safest([[maybe_unused]] int32_t activeAwardTypes)
 {
     auto peepsWhoDislikeVandalism = 0;
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         if (peep->OutsideOfPark)
             continue;
-        if (peep->Thoughts[0].freshness <= 5 && peep->Thoughts[0].type == PeepThoughtType::Vandalism)
+
+        const auto& thought = std::get<0>(peep->Thoughts);
+        if (thought.freshness <= 5 && thought.type == PeepThoughtType::Vandalism)
             peepsWhoDislikeVandalism++;
     }
 
@@ -260,13 +271,11 @@ static bool award_is_deserved_safest([[maybe_unused]] int32_t activeAwardTypes)
 /** All staff types, at least 20 staff, one staff per 32 peeps. */
 static bool award_is_deserved_best_staff(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostUntidy))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostUntidy))
         return false;
 
-    auto staff = EntityList<Staff>(EntityListId::Peep);
-    auto staffCount = std::distance(staff.begin(), staff.end());
-    auto guests = EntityList<Guest>(EntityListId::Peep);
-    auto peepCount = std::distance(guests.begin(), guests.end());
+    auto staffCount = GetEntityListCount(EntityType::Staff);
+    auto peepCount = GetEntityListCount(EntityType::Guest);
 
     return ((staffCount != 0) && staffCount >= 20 && staffCount >= peepCount / 32);
 }
@@ -274,7 +283,7 @@ static bool award_is_deserved_best_staff(int32_t activeAwardTypes)
 /** At least 7 shops, 4 unique, one shop per 128 guests and no more than 12 hungry guests. */
 static bool award_is_deserved_best_food(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::WorstFood))
+    if (activeAwardTypes & EnumToFlag(AwardType::WorstFood))
         return false;
 
     uint32_t shops = 0;
@@ -282,7 +291,7 @@ static bool award_is_deserved_best_food(int32_t activeAwardTypes)
     uint64_t shopTypes = 0;
     for (const auto& ride : GetRideManager())
     {
-        if (ride.status != RIDE_STATUS_OPEN)
+        if (ride.status != RideStatus::Open)
             continue;
         if (!ride.GetRideTypeDescriptor().HasFlag(RIDE_TYPE_FLAG_SELLS_FOOD))
             continue;
@@ -304,12 +313,13 @@ static bool award_is_deserved_best_food(int32_t activeAwardTypes)
 
     // Count hungry peeps
     auto hungryPeeps = 0;
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         if (peep->OutsideOfPark)
             continue;
 
-        if (peep->Thoughts[0].freshness <= 5 && peep->Thoughts[0].type == PeepThoughtType::Hungry)
+        const auto& thought = std::get<0>(peep->Thoughts);
+        if (thought.freshness <= 5 && thought.type == PeepThoughtType::Hungry)
             hungryPeeps++;
     }
     return (hungryPeeps <= 12);
@@ -318,7 +328,7 @@ static bool award_is_deserved_best_food(int32_t activeAwardTypes)
 /** No more than 2 unique shops, less than one shop per 256 guests and more than 15 hungry guests. */
 static bool award_is_deserved_worst_food(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::BestFood))
+    if (activeAwardTypes & EnumToFlag(AwardType::BestFood))
         return false;
 
     uint32_t shops = 0;
@@ -326,7 +336,7 @@ static bool award_is_deserved_worst_food(int32_t activeAwardTypes)
     uint64_t shopTypes = 0;
     for (const auto& ride : GetRideManager())
     {
-        if (ride.status != RIDE_STATUS_OPEN)
+        if (ride.status != RideStatus::Open)
             continue;
         if (!ride.GetRideTypeDescriptor().HasFlag(RIDE_TYPE_FLAG_SELLS_FOOD))
             continue;
@@ -348,12 +358,13 @@ static bool award_is_deserved_worst_food(int32_t activeAwardTypes)
 
     // Count hungry peeps
     auto hungryPeeps = 0;
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         if (peep->OutsideOfPark)
             continue;
 
-        if (peep->Thoughts[0].freshness <= 5 && peep->Thoughts[0].type == PeepThoughtType::Hungry)
+        const auto& thought = std::get<0>(peep->Thoughts);
+        if (thought.freshness <= 5 && thought.type == PeepThoughtType::Hungry)
             hungryPeeps++;
     }
     return (hungryPeeps > 15);
@@ -365,7 +376,7 @@ static bool award_is_deserved_best_restrooms([[maybe_unused]] int32_t activeAwar
     // Count open restrooms
     const auto& rideManager = GetRideManager();
     auto numRestrooms = static_cast<size_t>(std::count_if(rideManager.begin(), rideManager.end(), [](const Ride& ride) {
-        return ride.type == RIDE_TYPE_TOILETS && ride.status == RIDE_STATUS_OPEN;
+        return ride.type == RIDE_TYPE_TOILETS && ride.status == RideStatus::Open;
     }));
 
     // At least 4 open restrooms
@@ -378,12 +389,13 @@ static bool award_is_deserved_best_restrooms([[maybe_unused]] int32_t activeAwar
 
     // Count number of guests who are thinking they need the restroom
     auto guestsWhoNeedRestroom = 0;
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         if (peep->OutsideOfPark)
             continue;
 
-        if (peep->Thoughts[0].freshness <= 5 && peep->Thoughts[0].type == PeepThoughtType::Toilet)
+        const auto& thought = std::get<0>(peep->Thoughts);
+        if (thought.freshness <= 5 && thought.type == PeepThoughtType::Toilet)
             guestsWhoNeedRestroom++;
     }
     return (guestsWhoNeedRestroom <= 16);
@@ -392,7 +404,7 @@ static bool award_is_deserved_best_restrooms([[maybe_unused]] int32_t activeAwar
 /** More than half of the rides have satisfaction <= 6 and park rating <= 650. */
 static bool award_is_deserved_most_disappointing(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::BestValue))
+    if (activeAwardTypes & EnumToFlag(AwardType::BestValue))
         return false;
     if (gParkRating > 650)
         return false;
@@ -428,7 +440,7 @@ static bool award_is_deserved_best_water_rides([[maybe_unused]] int32_t activeAw
             continue;
         }
 
-        if (ride.status != RIDE_STATUS_OPEN || (ride.lifecycle_flags & RIDE_LIFECYCLE_CRASHED))
+        if (ride.status != RideStatus::Open || (ride.lifecycle_flags & RIDE_LIFECYCLE_CRASHED))
         {
             continue;
         }
@@ -447,7 +459,7 @@ static bool award_is_deserved_best_water_rides([[maybe_unused]] int32_t activeAw
 /** At least 6 custom designed rides. */
 static bool award_is_deserved_best_custom_designed_rides(int32_t activeAwardTypes)
 {
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostDisappointing))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostDisappointing))
         return false;
 
     auto customDesignedRides = 0;
@@ -459,7 +471,7 @@ static bool award_is_deserved_best_custom_designed_rides(int32_t activeAwardType
             continue;
         if (ride.excitement < RIDE_RATING(5, 50))
             continue;
-        if (ride.status != RIDE_STATUS_OPEN || (ride.lifecycle_flags & RIDE_LIFECYCLE_CRASHED))
+        if (ride.status != RideStatus::Open || (ride.lifecycle_flags & RIDE_LIFECYCLE_CRASHED))
             continue;
 
         customDesignedRides++;
@@ -471,10 +483,14 @@ static bool award_is_deserved_best_custom_designed_rides(int32_t activeAwardType
 static bool award_is_deserved_most_dazzling_ride_colours(int32_t activeAwardTypes)
 {
     /** At least 5 colourful rides and more than half of the rides are colourful. */
-    static constexpr const colour_t dazzling_ride_colours[] = { COLOUR_BRIGHT_PURPLE, COLOUR_BRIGHT_GREEN, COLOUR_LIGHT_ORANGE,
-                                                                COLOUR_BRIGHT_PINK };
+    static constexpr const colour_t dazzling_ride_colours[] = {
+        COLOUR_BRIGHT_PURPLE,
+        COLOUR_BRIGHT_GREEN,
+        COLOUR_LIGHT_ORANGE,
+        COLOUR_BRIGHT_PINK,
+    };
 
-    if (activeAwardTypes & EnumToFlag(ParkAward::MostDisappointing))
+    if (activeAwardTypes & EnumToFlag(AwardType::MostDisappointing))
         return false;
 
     auto countedRides = 0;
@@ -505,14 +521,14 @@ static bool award_is_deserved_most_confusing_layout([[maybe_unused]] int32_t act
 {
     uint32_t peepsCounted = 0;
     uint32_t peepsLost = 0;
-    for (auto peep : EntityList<Guest>(EntityListId::Peep))
+    for (auto peep : EntityList<Guest>())
     {
         if (peep->OutsideOfPark)
             continue;
 
         peepsCounted++;
-        if (peep->Thoughts[0].freshness <= 5
-            && (peep->Thoughts[0].type == PeepThoughtType::Lost || peep->Thoughts[0].type == PeepThoughtType::CantFind))
+        const auto& thought = std::get<0>(peep->Thoughts);
+        if (thought.freshness <= 5 && (thought.type == PeepThoughtType::Lost || thought.type == PeepThoughtType::CantFind))
             peepsLost++;
     }
 
@@ -531,7 +547,7 @@ static bool award_is_deserved_best_gentle_rides([[maybe_unused]] int32_t activeA
             continue;
         }
 
-        if (ride.status != RIDE_STATUS_OPEN || (ride.lifecycle_flags & RIDE_LIFECYCLE_CRASHED))
+        if (ride.status != RideStatus::Open || (ride.lifecycle_flags & RIDE_LIFECYCLE_CRASHED))
         {
             continue;
         }
@@ -569,20 +585,16 @@ static constexpr const award_deserved_check _awardChecks[] = {
     award_is_deserved_best_gentle_rides,
 };
 
-static bool award_is_deserved(int32_t awardType, int32_t activeAwardTypes)
+static bool award_is_deserved(AwardType awardType, int32_t activeAwardTypes)
 {
-    return _awardChecks[awardType](activeAwardTypes);
+    return _awardChecks[EnumValue(awardType)](activeAwardTypes);
 }
 
 #pragma endregion
 
 void award_reset()
 {
-    for (auto& award : gCurrentAwards)
-    {
-        award.Time = 0;
-        award.Type = 0;
-    }
+    _currentAwards.clear();
 }
 
 /**
@@ -591,39 +603,36 @@ void award_reset()
  */
 void award_update_all()
 {
+    PROFILED_FUNCTION();
+
     // Only add new awards if park is open
     if (gParkFlags & PARK_FLAGS_PARK_OPEN)
     {
         // Set active award types as flags
         int32_t activeAwardTypes = 0;
-        int32_t freeAwardEntryIndex = -1;
-        for (int32_t i = 0; i < MAX_AWARDS; i++)
+        for (auto& award : _currentAwards)
         {
-            if (gCurrentAwards[i].Time != 0)
-                activeAwardTypes |= (1 << gCurrentAwards[i].Type);
-            else if (freeAwardEntryIndex == -1)
-                freeAwardEntryIndex = i;
+            activeAwardTypes |= (1 << EnumValue(award.Type));
         }
 
         // Check if there was a free award entry
-        if (freeAwardEntryIndex != -1)
+        if (_currentAwards.size() < OpenRCT2::Limits::MaxAwards)
         {
             // Get a random award type not already active
-            int32_t awardType;
+            AwardType awardType;
             do
             {
-                awardType = (((scenario_rand() & 0xFF) * 17) >> 8) & 0xFF;
-            } while (activeAwardTypes & (1 << awardType));
+                awardType = static_cast<AwardType>((((scenario_rand() & 0xFF) * EnumValue(AwardType::Count)) >> 8) & 0xFF);
+            } while (activeAwardTypes & (1 << EnumValue(awardType)));
 
             // Check if award is deserved
             if (award_is_deserved(awardType, activeAwardTypes))
             {
                 // Add award
-                gCurrentAwards[freeAwardEntryIndex].Type = awardType;
-                gCurrentAwards[freeAwardEntryIndex].Time = 5;
+                _currentAwards.push_back(Award{ 5u, awardType });
                 if (gConfigNotifications.park_award)
                 {
-                    News::AddItemToQueue(News::ItemType::Award, AwardNewsStrings[awardType], 0, {});
+                    News::AddItemToQueue(News::ItemType::Award, AwardNewsStrings[EnumValue(awardType)], 0, {});
                 }
                 window_invalidate_by_class(WC_PARK_INFORMATION);
             }
@@ -631,10 +640,17 @@ void award_update_all()
     }
 
     // Decrease award times
-    for (auto& award : gCurrentAwards)
+    for (auto& award : _currentAwards)
     {
-        if (award.Time != 0)
-            if (--award.Time == 0)
-                window_invalidate_by_class(WC_PARK_INFORMATION);
+        --award.Time;
+    }
+
+    // Remove any 0 time awards
+    auto res = std::remove_if(
+        std::begin(_currentAwards), std::end(_currentAwards), [](const Award& award) { return award.Time == 0; });
+    if (res != std::end(_currentAwards))
+    {
+        _currentAwards.erase(res, std::end(_currentAwards));
+        window_invalidate_by_class(WC_PARK_INFORMATION);
     }
 }

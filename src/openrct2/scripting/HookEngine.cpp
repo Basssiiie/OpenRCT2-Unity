@@ -11,27 +11,35 @@
 
 #    include "HookEngine.h"
 
+#    include "../core/EnumMap.hpp"
 #    include "ScriptEngine.h"
 
 #    include <unordered_map>
 
 using namespace OpenRCT2::Scripting;
 
+static const EnumMap<HOOK_TYPE> HooksLookupTable({
+    { "action.query", HOOK_TYPE::ACTION_QUERY },
+    { "action.execute", HOOK_TYPE::ACTION_EXECUTE },
+    { "interval.tick", HOOK_TYPE::INTERVAL_TICK },
+    { "interval.day", HOOK_TYPE::INTERVAL_DAY },
+    { "network.chat", HOOK_TYPE::NETWORK_CHAT },
+    { "network.authenticate", HOOK_TYPE::NETWORK_AUTHENTICATE },
+    { "network.join", HOOK_TYPE::NETWORK_JOIN },
+    { "network.leave", HOOK_TYPE::NETWORK_LEAVE },
+    { "ride.ratings.calculate", HOOK_TYPE::RIDE_RATINGS_CALCULATE },
+    { "action.location", HOOK_TYPE::ACTION_LOCATION },
+    { "guest.generation", HOOK_TYPE::GUEST_GENERATION },
+    { "vehicle.crash", HOOK_TYPE::VEHICLE_CRASH },
+    { "map.change", HOOK_TYPE::MAP_CHANGE },
+    { "map.changed", HOOK_TYPE::MAP_CHANGED },
+    { "map.save", HOOK_TYPE::MAP_SAVE },
+});
+
 HOOK_TYPE OpenRCT2::Scripting::GetHookType(const std::string& name)
 {
-    static const std::unordered_map<std::string, HOOK_TYPE> LookupTable(
-        { { "action.query", HOOK_TYPE::ACTION_QUERY },
-          { "action.execute", HOOK_TYPE::ACTION_EXECUTE },
-          { "interval.tick", HOOK_TYPE::INTERVAL_TICK },
-          { "interval.day", HOOK_TYPE::INTERVAL_DAY },
-          { "network.chat", HOOK_TYPE::NETWORK_CHAT },
-          { "network.authenticate", HOOK_TYPE::NETWORK_AUTHENTICATE },
-          { "network.join", HOOK_TYPE::NETWORK_JOIN },
-          { "network.leave", HOOK_TYPE::NETWORK_LEAVE },
-          { "ride.ratings.calculate", HOOK_TYPE::RIDE_RATINGS_CALCULATE },
-          { "action.location", HOOK_TYPE::ACTION_LOCATION } });
-    auto result = LookupTable.find(name);
-    return (result != LookupTable.end()) ? result->second : HOOK_TYPE::UNDEFINED;
+    auto result = HooksLookupTable.find(name);
+    return (result != HooksLookupTable.end()) ? result->second : HOOK_TYPE::UNDEFINED;
 }
 
 HookEngine::HookEngine(ScriptEngine& scriptEngine)
@@ -89,6 +97,15 @@ bool HookEngine::HasSubscriptions(HOOK_TYPE type) const
 {
     auto& hookList = GetHookList(type);
     return !hookList.Hooks.empty();
+}
+
+bool HookEngine::IsValidHookForPlugin(HOOK_TYPE type, Plugin& plugin) const
+{
+    if (type == HOOK_TYPE::MAP_CHANGED && plugin.GetMetadata().Type != PluginType::Intransient)
+    {
+        return false;
+    }
+    return true;
 }
 
 void HookEngine::Call(HOOK_TYPE type, bool isGameStateMutable)

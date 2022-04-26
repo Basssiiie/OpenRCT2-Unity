@@ -22,7 +22,7 @@
 static int32_t ResizeLanguage = LANGUAGE_UNDEFINED;
 
 // clang-format off
-enum WINDOW_DEBUG_PAINT_WIDGET_IDX
+enum WindowDebugPaintWidgetIdx
 {
     WIDX_BACKGROUND,
     WIDX_TOGGLE_SHOW_WIDE_PATHS,
@@ -42,22 +42,22 @@ static rct_widget window_debug_paint_widgets[] = {
     MakeWidget({8, 8 + 15 * 2}, {         185,            12}, WindowWidgetType::Checkbox, WindowColour::Secondary, STR_DEBUG_PAINT_SHOW_SEGMENT_HEIGHTS),
     MakeWidget({8, 8 + 15 * 3}, {         185,            12}, WindowWidgetType::Checkbox, WindowColour::Secondary, STR_DEBUG_PAINT_SHOW_BOUND_BOXES    ),
     MakeWidget({8, 8 + 15 * 4}, {         185,            12}, WindowWidgetType::Checkbox, WindowColour::Secondary, STR_DEBUG_PAINT_SHOW_DIRTY_VISUALS  ),
-    { WIDGETS_END },
+    WIDGETS_END,
 };
 
-static void window_debug_paint_mouseup(rct_window * w, rct_widgetindex widgetIndex);
-static void window_debug_paint_invalidate(rct_window * w);
-static void window_debug_paint_paint(rct_window * w, rct_drawpixelinfo * dpi);
+static void WindowDebugPaintMouseup(rct_window * w, rct_widgetindex widgetIndex);
+static void WindowDebugPaintInvalidate(rct_window * w);
+static void WindowDebugPaintPaint(rct_window * w, rct_drawpixelinfo * dpi);
 
 static rct_window_event_list window_debug_paint_events([](auto& events)
 {
-    events.mouse_up = &window_debug_paint_mouseup;
-    events.invalidate = &window_debug_paint_invalidate;
-    events.paint = &window_debug_paint_paint;
+    events.mouse_up = &WindowDebugPaintMouseup;
+    events.invalidate = &WindowDebugPaintInvalidate;
+    events.paint = &WindowDebugPaintPaint;
 });
 // clang-format on
 
-rct_window* window_debug_paint_open()
+rct_window* WindowDebugPaintOpen()
 {
     rct_window* window;
 
@@ -71,8 +71,6 @@ rct_window* window_debug_paint_open()
         &window_debug_paint_events, WC_DEBUG_PAINT, WF_STICK_TO_FRONT | WF_TRANSPARENT);
 
     window->widgets = window_debug_paint_widgets;
-    window->enabled_widgets = (1 << WIDX_TOGGLE_SHOW_WIDE_PATHS) | (1 << WIDX_TOGGLE_SHOW_BLOCKED_TILES)
-        | (1 << WIDX_TOGGLE_SHOW_BOUND_BOXES) | (1 << WIDX_TOGGLE_SHOW_SEGMENT_HEIGHTS) | (1 << WIDX_TOGGLE_SHOW_DIRTY_VISUALS);
     WindowInitScrollWidgets(window);
     window_push_others_below(window);
 
@@ -83,7 +81,7 @@ rct_window* window_debug_paint_open()
     return window;
 }
 
-static void window_debug_paint_mouseup([[maybe_unused]] rct_window* w, rct_widgetindex widgetIndex)
+static void WindowDebugPaintMouseup([[maybe_unused]] rct_window* w, rct_widgetindex widgetIndex)
 {
     switch (widgetIndex)
     {
@@ -114,7 +112,7 @@ static void window_debug_paint_mouseup([[maybe_unused]] rct_window* w, rct_widge
     }
 }
 
-static void window_debug_paint_invalidate(rct_window* w)
+static void WindowDebugPaintInvalidate(rct_window* w)
 {
     const auto& ls = OpenRCT2::GetContext()->GetLocalisationService();
     const auto currentLanguage = ls.GetCurrentLanguage();
@@ -157,7 +155,7 @@ static void window_debug_paint_invalidate(rct_window* w)
     WidgetSetCheckboxValue(w, WIDX_TOGGLE_SHOW_DIRTY_VISUALS, gShowDirtyVisuals);
 }
 
-static void window_debug_paint_paint(rct_window* w, rct_drawpixelinfo* dpi)
+static void WindowDebugPaintPaint(rct_window* w, rct_drawpixelinfo* dpi)
 {
     WindowDrawWidgets(w, dpi);
 }

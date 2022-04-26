@@ -53,7 +53,7 @@ std::unique_ptr<TitleSequence> LoadTitleSequence(const std::string& path)
     auto ext = Path::GetExtension(path);
     if (String::Equals(ext, TITLE_SEQUENCE_EXTENSION))
     {
-        auto zip = std::unique_ptr<IZipArchive>(Zip::TryOpen(path, ZIP_ACCESS::READ));
+        auto zip = Zip::TryOpen(path, ZIP_ACCESS::READ);
         if (zip == nullptr)
         {
             Console::Error::WriteLine("Unable to open '%s'", path.c_str());
@@ -72,7 +72,7 @@ std::unique_ptr<TitleSequence> LoadTitleSequence(const std::string& path)
     }
     else
     {
-        auto scriptPath = Path::Combine(path, "script.txt");
+        auto scriptPath = Path::Combine(path, u8"script.txt");
         script = ReadScriptFile(scriptPath);
         if (script.empty())
         {
@@ -87,7 +87,7 @@ std::unique_ptr<TitleSequence> LoadTitleSequence(const std::string& path)
     auto commands = LegacyScriptRead(script, saves);
 
     auto seq = CreateTitleSequence();
-    seq->Name = Path::GetFileNameWithoutExtension(std::string(path));
+    seq->Name = Path::GetFileNameWithoutExtension(path);
     seq->Path = path;
     seq->Saves = saves;
     seq->Commands = commands;
@@ -98,12 +98,12 @@ std::unique_ptr<TitleSequence> LoadTitleSequence(const std::string& path)
 std::unique_ptr<TitleSequenceParkHandle> TitleSequenceGetParkHandle(const TitleSequence& seq, size_t index)
 {
     std::unique_ptr<TitleSequenceParkHandle> handle;
-    if (index <= seq.Saves.size())
+    if (index < seq.Saves.size())
     {
         const auto& filename = seq.Saves[index];
         if (seq.IsZip)
         {
-            auto zip = std::unique_ptr<IZipArchive>(Zip::TryOpen(seq.Path, ZIP_ACCESS::READ));
+            auto zip = Zip::TryOpen(seq.Path, ZIP_ACCESS::READ);
             if (zip != nullptr)
             {
                 auto data = zip->GetFileData(filename);
@@ -157,7 +157,7 @@ bool TitleSequenceSave(const TitleSequence& seq)
         }
         else
         {
-            auto scriptPath = Path::Combine(seq.Path, "script.txt");
+            auto scriptPath = Path::Combine(seq.Path, u8"script.txt");
             File::WriteAllBytes(scriptPath, script.data(), script.size());
         }
         return true;
@@ -291,8 +291,8 @@ static std::vector<std::string> GetSaves(const std::string& directory)
 {
     std::vector<std::string> saves;
 
-    auto pattern = Path::Combine(directory, "*.sc6;*.sv6");
-    IFileScanner* scanner = Path::ScanDirectory(pattern, true);
+    auto pattern = Path::Combine(directory, u8"*.sc6;*.sv6;*.park;*.sv4;*.sc4");
+    auto scanner = Path::ScanDirectory(pattern, true);
     while (scanner->Next())
     {
         const utf8* path = scanner->GetPathRelative();
@@ -309,7 +309,7 @@ static std::vector<std::string> GetSaves(IZipArchive* zip)
     {
         auto name = zip->GetFileName(i);
         auto ext = Path::GetExtension(name);
-        if (String::Equals(ext, ".sv6", true) || String::Equals(ext, ".sc6", true))
+        if (String::Equals(ext, ".sv6", true) || String::Equals(ext, ".sc6", true) || String::Equals(ext, ".park", true))
         {
             saves.push_back(std::move(name));
         }
@@ -350,8 +350,8 @@ static std::vector<TitleCommand> LegacyScriptRead(const std::vector<uint8_t>& sc
             else if (_stricmp(token, "LOCATION") == 0)
             {
                 command.Type = TitleScript::Location;
-                command.X = atoi(part1) & 0xFF;
-                command.Y = atoi(part2) & 0xFF;
+                command.Location.X = atoi(part1) & 0xFF;
+                command.Location.Y = atoi(part2) & 0xFF;
             }
             else if (_stricmp(token, "ROTATE") == 0)
             {
@@ -371,8 +371,8 @@ static std::vector<TitleCommand> LegacyScriptRead(const std::vector<uint8_t>& sc
             else if (_stricmp(token, "FOLLOW") == 0)
             {
                 command.Type = TitleScript::Follow;
-                command.SpriteIndex = atoi(part1) & 0xFFFF;
-                safe_strcpy(command.SpriteName, part2, USER_STRING_MAX_LENGTH);
+                command.Follow.SpriteIndex = EntityId::FromUnderlying(atoi(part1) & 0xFFFF);
+                safe_strcpy(command.Follow.SpriteName, part2, USER_STRING_MAX_LENGTH);
             }
             else if (_stricmp(token, "WAIT") == 0)
             {
@@ -425,7 +425,7 @@ static void LegacyScriptGetLine(OpenRCT2::IStream* stream, char* parts)
             parts[part * 128 + cindex] = 0;
             return;
         }
-        else if (c == '#')
+        if (c == '#')
         {
             parts[part * 128 + cindex] = 0;
             comment = 1;
@@ -526,7 +526,7 @@ static std::string LegacyScriptWrite(const TitleSequence& seq)
             case TitleScript::EndLoop:
                 break;
             case TitleScript::Location:
-                String::Format(buffer, sizeof(buffer), "LOCATION %u %u", command.X, command.Y);
+                String::Format(buffer, sizeof(buffer), "LOCATION %u %u", command.Location.X, command.Location.Y);
                 sb.Append(buffer);
                 break;
             case TitleScript::Rotate:
@@ -538,9 +538,9 @@ static std::string LegacyScriptWrite(const TitleSequence& seq)
                 sb.Append(buffer);
                 break;
             case TitleScript::Follow:
-                String::Format(buffer, sizeof(buffer), "FOLLOW %u ", command.SpriteIndex);
+                String::Format(buffer, sizeof(buffer), "FOLLOW %u ", command.Follow.SpriteIndex);
                 sb.Append(buffer);
-                sb.Append(command.SpriteName);
+                sb.Append(command.Follow.SpriteName);
                 break;
             case TitleScript::Speed:
                 String::Format(buffer, sizeof(buffer), "SPEED %u", command.Speed);

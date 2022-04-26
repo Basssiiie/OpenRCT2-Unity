@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 set -e
 
 echo -e "\033[0;36mBuilding AppImage for OpenRCT2...\033[0m"
@@ -8,7 +9,7 @@ basedir="$(readlink -f `dirname $0`/..)"
 cd $basedir
 
 linuxdeploy=/tmp/linuxdeploy-x86_64.AppImage
-curl -Lo $linuxdeploy https://github.com/TheAssassin/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+curl -fLo $linuxdeploy https://github.com/TheAssassin/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 chmod +x $linuxdeploy
 pushd bin
     $linuxdeploy --appimage-extract-and-run --appdir install/ --output appimage --desktop-file install/usr/share/applications/openrct2.desktop

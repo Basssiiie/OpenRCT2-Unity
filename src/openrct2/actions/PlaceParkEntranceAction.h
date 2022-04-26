@@ -11,18 +11,22 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(PlaceParkEntranceAction, GameCommand::PlaceParkEntrance, GameActions::Result)
+class PlaceParkEntranceAction final : public GameActionBase<GameCommand::PlaceParkEntrance>
 {
 private:
     CoordsXYZD _loc;
+    ObjectEntryIndex _pathType;
 
 public:
     PlaceParkEntranceAction() = default;
-    PlaceParkEntranceAction(const CoordsXYZD& location);
+    PlaceParkEntranceAction(const CoordsXYZD& location, ObjectEntryIndex pathType);
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
+
+private:
+    bool CheckMapCapacity(int16_t numTiles) const;
 };

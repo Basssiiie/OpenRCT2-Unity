@@ -9,6 +9,7 @@
 
 #include "Localisation.h"
 
+#include <cstring>
 #include <wchar.h>
 
 uint32_t utf8_get_next(const utf8* char_ptr, const utf8** nextchar_ptr)
@@ -77,18 +78,15 @@ int32_t utf8_get_codepoint_length(char32_t codepoint)
     {
         return 1;
     }
-    else if (codepoint <= 0x7FF)
+    if (codepoint <= 0x7FF)
     {
         return 2;
     }
-    else if (codepoint <= 0xFFFF)
+    if (codepoint <= 0xFFFF)
     {
         return 3;
     }
-    else
-    {
-        return 4;
-    }
+    return 4;
 }
 
 /**

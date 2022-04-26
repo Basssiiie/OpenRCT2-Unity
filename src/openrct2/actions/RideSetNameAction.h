@@ -11,21 +11,21 @@
 
 #include "GameAction.h"
 
-DEFINE_GAME_ACTION(RideSetNameAction, GameCommand::SetRideName, GameActions::Result)
+class RideSetNameAction final : public GameActionBase<GameCommand::SetRideName>
 {
 private:
-    NetworkRideId_t _rideIndex{ RideIdNewNull };
+    RideId _rideIndex{ RideId::GetNull() };
     std::string _name;
 
 public:
     RideSetNameAction() = default;
-    RideSetNameAction(ride_id_t rideIndex, const std::string& name);
+    RideSetNameAction(RideId rideIndex, const std::string& name);
 
-    void AcceptParameters(GameActionParameterVisitor & visitor) override;
+    void AcceptParameters(GameActionParameterVisitor& visitor) override;
 
     uint16_t GetActionFlags() const override;
 
-    void Serialise(DataSerialiser & stream) override;
-    GameActions::Result::Ptr Query() const override;
-    GameActions::Result::Ptr Execute() const override;
+    void Serialise(DataSerialiser& stream) override;
+    GameActions::Result Query() const override;
+    GameActions::Result Execute() const override;
 };

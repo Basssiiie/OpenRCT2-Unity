@@ -7,8 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifndef OPENRCT2_FONTS_H
-#define OPENRCT2_FONTS_H
+#pragma once
 
 namespace OpenRCT2::Localisation
 {
@@ -26,6 +25,7 @@ extern TTFFontSetDescriptor TTFFontHeiti;
 extern TTFFontSetDescriptor TTFFontSimSun;
 extern TTFFontSetDescriptor TTFFontLiHeiPro;
 extern TTFFontSetDescriptor TTFFontGulim;
+extern TTFFontSetDescriptor TTFFontMalgun;
 extern TTFFontSetDescriptor TTFFontNanum;
 extern TTFFontSetDescriptor TTFFontArial;
 extern TTFFontSetDescriptor TTFFontArialUnicode;
@@ -36,5 +36,3 @@ extern TTFFontSetDescriptor TTFFontMicroHei;
 #endif // NO_TTF
 
 void TryLoadFonts(OpenRCT2::Localisation::LocalisationService& localisationService);
-
-#endif // OPENRCT2_FONTS_H

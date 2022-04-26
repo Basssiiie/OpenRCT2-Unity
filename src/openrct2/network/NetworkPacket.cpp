@@ -15,34 +15,34 @@
 
 #    include <memory>
 
-NetworkPacket::NetworkPacket(NetworkCommand id)
+NetworkPacket::NetworkPacket(NetworkCommand id) noexcept
     : Header{ 0, id }
 {
 }
 
-uint8_t* NetworkPacket::GetData()
+uint8_t* NetworkPacket::GetData() noexcept
 {
     return Data.data();
 }
 
-const uint8_t* NetworkPacket::GetData() const
+const uint8_t* NetworkPacket::GetData() const noexcept
 {
     return Data.data();
 }
 
-NetworkCommand NetworkPacket::GetCommand() const
+NetworkCommand NetworkPacket::GetCommand() const noexcept
 {
     return Header.Id;
 }
 
-void NetworkPacket::Clear()
+void NetworkPacket::Clear() noexcept
 {
     BytesTransferred = 0;
     BytesRead = 0;
     Data.clear();
 }
 
-bool NetworkPacket::CommandRequiresAuth()
+bool NetworkPacket::CommandRequiresAuth() const noexcept
 {
     switch (GetCommand())
     {
@@ -66,40 +66,45 @@ void NetworkPacket::Write(const void* bytes, size_t size)
     Data.insert(Data.end(), src, src + size);
 }
 
-void NetworkPacket::WriteString(const utf8* string)
+void NetworkPacket::WriteString(std::string_view s)
 {
-    Write(reinterpret_cast<const uint8_t*>(string), strlen(string) + 1);
+    Write(s.data(), s.size());
+    Data.push_back(0);
 }
 
 const uint8_t* NetworkPacket::Read(size_t size)
 {
-    if (BytesRead + size > Header.Size)
+    if (BytesRead + size > Data.size())
     {
         return nullptr;
     }
-    else
-    {
-        uint8_t* data = &GetData()[BytesRead];
-        BytesRead += size;
-        return data;
-    }
+
+    const uint8_t* data = Data.data() + BytesRead;
+    BytesRead += size;
+    return data;
 }
 
-const utf8* NetworkPacket::ReadString()
+std::string_view NetworkPacket::ReadString()
 {
-    char* str = reinterpret_cast<char*>(&GetData()[BytesRead]);
-    char* strend = str;
-    while (BytesRead < Header.Size && *strend != 0)
+    if (BytesRead >= Data.size())
+        return {};
+
+    const char* str = reinterpret_cast<const char*>(Data.data() + BytesRead);
+
+    size_t stringLen = 0;
+    while (BytesRead < Data.size() && str[stringLen] != '\0')
     {
         BytesRead++;
-        strend++;
+        stringLen++;
     }
-    if (*strend != 0)
-    {
-        return nullptr;
-    }
+
+    if (str[stringLen] != '\0')
+        return {};
+
+    // Skip null terminator.
     BytesRead++;
-    return str;
+
+    return std::string_view(str, stringLen);
 }
 
 #endif

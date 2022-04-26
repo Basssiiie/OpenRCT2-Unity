@@ -19,42 +19,24 @@
 #include "../management/Finance.h"
 #include "../ride/Ride.h"
 #include "../ride/TrackDesign.h"
+#include "../world/ConstructionClearance.h"
 #include "../world/MapAnimation.h"
 #include "../world/Park.h"
 #include "../world/SmallScenery.h"
-#include "../world/Sprite.h"
 #include "../world/Surface.h"
 #include "../world/TileElement.h"
 #include "GameAction.h"
 #include "SmallSceneryRemoveAction.h"
 
-SmallSceneryPlaceActionResult::SmallSceneryPlaceActionResult()
-    : GameActions::Result(GameActions::Status::Ok, STR_CANT_POSITION_THIS_HERE)
-{
-}
-
-SmallSceneryPlaceActionResult::SmallSceneryPlaceActionResult(GameActions::Status error)
-    : GameActions::Result(error, STR_CANT_POSITION_THIS_HERE)
-{
-}
-
-SmallSceneryPlaceActionResult::SmallSceneryPlaceActionResult(GameActions::Status error, rct_string_id message)
-    : GameActions::Result(error, STR_CANT_POSITION_THIS_HERE, message)
-{
-}
-
-SmallSceneryPlaceActionResult::SmallSceneryPlaceActionResult(GameActions::Status error, rct_string_id message, uint8_t* args)
-    : GameActions::Result(error, STR_CANT_POSITION_THIS_HERE, message, args)
-{
-}
-
 SmallSceneryPlaceAction::SmallSceneryPlaceAction(
-    const CoordsXYZD& loc, uint8_t quadrant, ObjectEntryIndex sceneryType, uint8_t primaryColour, uint8_t secondaryColour)
+    const CoordsXYZD& loc, uint8_t quadrant, ObjectEntryIndex sceneryType, uint8_t primaryColour, uint8_t secondaryColour,
+    uint8_t tertiaryColour)
     : _loc(loc)
     , _quadrant(quadrant)
     , _sceneryType(sceneryType)
     , _primaryColour(primaryColour)
     , _secondaryColour(secondaryColour)
+    , _tertiaryColour(tertiaryColour)
 {
 }
 
@@ -84,7 +66,7 @@ void SmallSceneryPlaceAction::Serialise(DataSerialiser& stream)
     stream << DS_TAG(_loc) << DS_TAG(_quadrant) << DS_TAG(_sceneryType) << DS_TAG(_primaryColour) << DS_TAG(_secondaryColour);
 }
 
-GameActions::Result::Ptr SmallSceneryPlaceAction::Query() const
+GameActions::Result SmallSceneryPlaceAction::Query() const
 {
     bool isOnWater = false;
     bool supportsRequired = false;
@@ -101,44 +83,45 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Query() const
     {
         surfaceHeight = waterHeight;
     }
-    auto res = std::make_unique<SmallSceneryPlaceActionResult>();
+    auto res = GameActions::Result();
     auto centre = _loc.ToTileCentre();
-    res->Position.x = centre.x;
-    res->Position.y = centre.y;
-    res->Position.z = surfaceHeight;
+    res.Position.x = centre.x;
+    res.Position.y = centre.y;
+    res.Position.z = surfaceHeight;
     if (_loc.z != 0)
     {
         surfaceHeight = _loc.z;
-        res->Position.z = surfaceHeight;
-    }
-
-    if (!map_check_free_elements_and_reorganise(1))
-    {
-        return std::make_unique<SmallSceneryPlaceActionResult>(GameActions::Status::NoFreeElements);
+        res.Position.z = surfaceHeight;
     }
 
     if (!LocationValid(_loc))
     {
-        return MakeResult(GameActions::Status::InvalidParameters);
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_POSITION_THIS_HERE, STR_NONE);
     }
 
-    if (!byte_9D8150 && (_loc.x > gMapSizeMaxXY || _loc.y > gMapSizeMaxXY))
+    if (!MapCheckCapacityAndReorganise(_loc))
     {
-        return std::make_unique<SmallSceneryPlaceActionResult>(GameActions::Status::InvalidParameters);
+        return GameActions::Result(
+            GameActions::Status::NoFreeElements, STR_CANT_POSITION_THIS_HERE, STR_TILE_ELEMENT_LIMIT_REACHED);
     }
 
-    rct_scenery_entry* sceneryEntry = get_small_scenery_entry(_sceneryType);
+    auto maxSizeMax = GetMapSizeMaxXY();
+    if (!_trackDesignDrawingPreview && (_loc.x > maxSizeMax.x || _loc.y > maxSizeMax.y))
+    {
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_POSITION_THIS_HERE, STR_NONE);
+    }
+
+    auto* sceneryEntry = get_small_scenery_entry(_sceneryType);
     if (sceneryEntry == nullptr)
     {
-        return std::make_unique<SmallSceneryPlaceActionResult>(GameActions::Status::InvalidParameters);
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_POSITION_THIS_HERE, STR_NONE);
     }
 
     auto quadrant = _quadrant;
-    if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_FULL_TILE)
-        || !scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_DIAGONAL))
+    if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE) || !sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_DIAGONAL))
     {
-        if (scenery_small_entry_has_flag(
-                sceneryEntry, SMALL_SCENERY_FLAG_DIAGONAL | SMALL_SCENERY_FLAG_HALF_SPACE | SMALL_SCENERY_FLAG_THREE_QUARTERS))
+        if (sceneryEntry->HasFlag(
+                SMALL_SCENERY_FLAG_DIAGONAL | SMALL_SCENERY_FLAG_HALF_SPACE | SMALL_SCENERY_FLAG_THREE_QUARTERS))
         {
             quadrant = 0;
         }
@@ -146,7 +129,7 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Query() const
 
     // Check if sub tile height is any different compared to actual surface tile height
     auto loc2 = _loc;
-    if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_FULL_TILE))
+    if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE))
     {
         loc2 = loc2.ToTileCentre();
     }
@@ -178,7 +161,7 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Query() const
     if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !gCheatsSandboxMode
         && !map_is_location_owned({ _loc.x, _loc.y, targetHeight }))
     {
-        return std::make_unique<SmallSceneryPlaceActionResult>(GameActions::Status::NotOwned, STR_LAND_NOT_OWNED_BY_PARK);
+        return GameActions::Result(GameActions::Status::NotOwned, STR_CANT_POSITION_THIS_HERE, STR_LAND_NOT_OWNED_BY_PARK);
     }
 
     auto* surfaceElement = map_get_surface_element_at(_loc);
@@ -188,38 +171,36 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Query() const
         int32_t water_height = surfaceElement->GetWaterHeight() - 1;
         if (water_height > targetHeight)
         {
-            return std::make_unique<SmallSceneryPlaceActionResult>(
-                GameActions::Status::Disallowed, STR_CANT_BUILD_THIS_UNDERWATER);
+            return GameActions::Result(
+                GameActions::Status::Disallowed, STR_CANT_POSITION_THIS_HERE, STR_CANT_BUILD_THIS_UNDERWATER);
         }
     }
 
-    if (!gCheatsDisableClearanceChecks && !(scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_STACKABLE)))
+    if (!gCheatsDisableClearanceChecks && !(sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_STACKABLE)))
     {
         if (isOnWater)
         {
-            return std::make_unique<SmallSceneryPlaceActionResult>(
-                GameActions::Status::Disallowed, STR_CAN_ONLY_BUILD_THIS_ON_LAND);
+            return GameActions::Result(
+                GameActions::Status::Disallowed, STR_CANT_POSITION_THIS_HERE, STR_CAN_ONLY_BUILD_THIS_ON_LAND);
         }
 
         if (surfaceElement != nullptr && surfaceElement->GetWaterHeight() > 0)
         {
             if (surfaceElement->GetWaterHeight() > targetHeight)
             {
-                return std::make_unique<SmallSceneryPlaceActionResult>(
-                    GameActions::Status::Disallowed, STR_CAN_ONLY_BUILD_THIS_ON_LAND);
+                return GameActions::Result(
+                    GameActions::Status::Disallowed, STR_CANT_POSITION_THIS_HERE, STR_CAN_ONLY_BUILD_THIS_ON_LAND);
             }
         }
     }
 
-    if (!gCheatsDisableClearanceChecks && (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_REQUIRE_FLAT_SURFACE))
-        && !supportsRequired && !isOnWater && surfaceElement != nullptr
-        && (surfaceElement->GetSlope() != TILE_ELEMENT_SLOPE_FLAT))
+    if (!gCheatsDisableClearanceChecks && (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_REQUIRE_FLAT_SURFACE)) && !supportsRequired
+        && !isOnWater && surfaceElement != nullptr && (surfaceElement->GetSlope() != TILE_ELEMENT_SLOPE_FLAT))
     {
-        return std::make_unique<SmallSceneryPlaceActionResult>(GameActions::Status::Disallowed, STR_LEVEL_LAND_REQUIRED);
+        return GameActions::Result(GameActions::Status::Disallowed, STR_CANT_POSITION_THIS_HERE, STR_LEVEL_LAND_REQUIRED);
     }
 
-    if (!gCheatsDisableSupportLimits && !(scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_STACKABLE))
-        && supportsRequired)
+    if (!gCheatsDisableSupportLimits && !(sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_STACKABLE)) && supportsRequired)
     {
         if (!isOnWater)
         {
@@ -227,33 +208,32 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Query() const
             {
                 if (surfaceElement->GetWaterHeight() > 0 || (surfaceElement->GetBaseZ()) != targetHeight)
                 {
-                    return std::make_unique<SmallSceneryPlaceActionResult>(
-                        GameActions::Status::Disallowed, STR_LEVEL_LAND_REQUIRED);
+                    return GameActions::Result(
+                        GameActions::Status::Disallowed, STR_CANT_POSITION_THIS_HERE, STR_LEVEL_LAND_REQUIRED);
                 }
             }
         }
         else
         {
-            return std::make_unique<SmallSceneryPlaceActionResult>(
-                GameActions::Status::Disallowed, STR_CAN_ONLY_BUILD_THIS_ON_LAND);
+            return GameActions::Result(
+                GameActions::Status::Disallowed, STR_CANT_POSITION_THIS_HERE, STR_CAN_ONLY_BUILD_THIS_ON_LAND);
         }
     }
 
     int32_t zLow = targetHeight;
-    int32_t zHigh = zLow + ceil2(sceneryEntry->small_scenery.height, COORDS_Z_STEP);
+    int32_t zHigh = zLow + ceil2(sceneryEntry->height, COORDS_Z_STEP);
     uint8_t collisionQuadrants = 0b1111;
     auto quadRotation{ 0 };
-    if (!(scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_FULL_TILE)))
+    if (!(sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE)))
     {
         quadRotation = (quadrant ^ 2);
         collisionQuadrants = 0b0001;
     }
-    if (!(scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_HALF_SPACE)))
+    if (!(sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_HALF_SPACE)))
     {
-        if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_DIAGONAL)
-            && scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_FULL_TILE))
+        if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_DIAGONAL) && sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE))
         {
-            if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_THREE_QUARTERS))
+            if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_THREE_QUARTERS))
             {
                 quadRotation = ((quadrant ^ 2) + _loc.direction) & 3;
                 collisionQuadrants = 0b1011;
@@ -277,25 +257,26 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Query() const
     }
 
     QuarterTile quarterTile = QuarterTile{ collisionQuadrants, supports }.Rotate(quadRotation);
-    money32 clearCost = 0;
-
-    if (!map_can_construct_with_clear_at(
-            { _loc, zLow, zHigh }, &map_place_scenery_clear_func, quarterTile, GetFlags(), &clearCost,
-            CREATE_CROSSING_MODE_NONE))
+    const auto isTree = sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_IS_TREE);
+    auto canBuild = MapCanConstructWithClearAt(
+        { _loc, zLow, zHigh }, &map_place_scenery_clear_func, quarterTile, GetFlags(), CREATE_CROSSING_MODE_NONE, isTree);
+    if (canBuild.Error != GameActions::Status::Ok)
     {
-        return std::make_unique<SmallSceneryPlaceActionResult>(
-            GameActions::Status::Disallowed, gGameCommandErrorText, gCommonFormatArgs);
+        canBuild.ErrorTitle = STR_CANT_POSITION_THIS_HERE;
+        return canBuild;
     }
 
-    res->GroundFlags = gMapGroundFlags & (ELEMENT_IS_ABOVE_GROUND | ELEMENT_IS_UNDERGROUND);
+    const auto clearanceData = canBuild.GetData<ConstructClearResult>();
+    const uint8_t groundFlags = clearanceData.GroundFlags & (ELEMENT_IS_ABOVE_GROUND | ELEMENT_IS_UNDERGROUND);
+    res.SetData(SmallSceneryPlaceActionResult{ groundFlags, 0, 0 });
 
-    res->Expenditure = ExpenditureType::Landscaping;
-    res->Cost = (sceneryEntry->small_scenery.price * 10) + clearCost;
+    res.Expenditure = ExpenditureType::Landscaping;
+    res.Cost = sceneryEntry->price + canBuild.Cost;
 
     return res;
 }
 
-GameActions::Result::Ptr SmallSceneryPlaceAction::Execute() const
+GameActions::Result SmallSceneryPlaceAction::Execute() const
 {
     bool supportsRequired = false;
     if (_loc.z != 0)
@@ -311,29 +292,28 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Execute() const
     {
         surfaceHeight = waterHeight;
     }
-    auto res = std::make_unique<SmallSceneryPlaceActionResult>();
+    auto res = GameActions::Result();
     auto centre = _loc.ToTileCentre();
-    res->Position.x = centre.x;
-    res->Position.y = centre.y;
-    res->Position.z = surfaceHeight;
+    res.Position.x = centre.x;
+    res.Position.y = centre.y;
+    res.Position.z = surfaceHeight;
     if (_loc.z != 0)
     {
         surfaceHeight = _loc.z;
-        res->Position.z = surfaceHeight;
+        res.Position.z = surfaceHeight;
     }
 
-    rct_scenery_entry* sceneryEntry = get_small_scenery_entry(_sceneryType);
+    auto* sceneryEntry = get_small_scenery_entry(_sceneryType);
     if (sceneryEntry == nullptr)
     {
-        return std::make_unique<SmallSceneryPlaceActionResult>(GameActions::Status::InvalidParameters);
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_POSITION_THIS_HERE, STR_NONE);
     }
 
     auto quadrant = _quadrant;
-    if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_FULL_TILE)
-        || !scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_DIAGONAL))
+    if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE) || !sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_DIAGONAL))
     {
-        if (scenery_small_entry_has_flag(
-                sceneryEntry, SMALL_SCENERY_FLAG_DIAGONAL | SMALL_SCENERY_FLAG_HALF_SPACE | SMALL_SCENERY_FLAG_THREE_QUARTERS))
+        if (sceneryEntry->HasFlag(
+                SMALL_SCENERY_FLAG_DIAGONAL | SMALL_SCENERY_FLAG_HALF_SPACE | SMALL_SCENERY_FLAG_THREE_QUARTERS))
         {
             quadrant = 0;
         }
@@ -342,7 +322,7 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Execute() const
     // Check if sub tile height is any different compared to actual surface tile height
     int32_t x2 = _loc.x;
     int32_t y2 = _loc.y;
-    if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_FULL_TILE))
+    if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE))
     {
         x2 += 16;
         y2 += 16;
@@ -371,27 +351,26 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Execute() const
     if (!(GetFlags() & GAME_COMMAND_FLAG_GHOST))
     {
         footpath_remove_litter({ _loc, targetHeight });
-        if (!gCheatsDisableClearanceChecks && (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_NO_WALLS)))
+        if (!gCheatsDisableClearanceChecks && (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_NO_WALLS)))
         {
-            wall_remove_at({ _loc, targetHeight, targetHeight + sceneryEntry->small_scenery.height });
+            wall_remove_at({ _loc, targetHeight, targetHeight + sceneryEntry->height });
         }
     }
 
     int32_t zLow = targetHeight;
-    int32_t zHigh = zLow + ceil2(sceneryEntry->small_scenery.height, 8);
+    int32_t zHigh = zLow + ceil2(sceneryEntry->height, 8);
     uint8_t collisionQuadrants = 0b1111;
     auto quadRotation{ 0 };
-    if (!(scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_FULL_TILE)))
+    if (!(sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE)))
     {
         quadRotation = (quadrant ^ 2);
         collisionQuadrants = 0b0001;
     }
-    if (!(scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_HALF_SPACE)))
+    if (!(sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_HALF_SPACE)))
     {
-        if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_DIAGONAL)
-            && scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_FULL_TILE))
+        if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_DIAGONAL) && sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE))
         {
-            if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_THREE_QUARTERS))
+            if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_THREE_QUARTERS))
             {
                 quadRotation = ((quadrant ^ 2) + _loc.direction) & 3;
                 collisionQuadrants = 0b1011;
@@ -415,24 +394,26 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Execute() const
     }
 
     QuarterTile quarterTile = QuarterTile{ collisionQuadrants, supports }.Rotate(quadRotation);
-    money32 clearCost = 0;
-
-    if (!map_can_construct_with_clear_at(
-            { _loc, zLow, zHigh }, &map_place_scenery_clear_func, quarterTile, GetFlags() | GAME_COMMAND_FLAG_APPLY, &clearCost,
-            CREATE_CROSSING_MODE_NONE))
+    const auto isTree = sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_IS_TREE);
+    auto canBuild = MapCanConstructWithClearAt(
+        { _loc, zLow, zHigh }, &map_place_scenery_clear_func, quarterTile, GetFlags() | GAME_COMMAND_FLAG_APPLY,
+        CREATE_CROSSING_MODE_NONE, isTree);
+    if (canBuild.Error != GameActions::Status::Ok)
     {
-        return std::make_unique<SmallSceneryPlaceActionResult>(
-            GameActions::Status::Disallowed, gGameCommandErrorText, gCommonFormatArgs);
+        canBuild.ErrorTitle = STR_CANT_POSITION_THIS_HERE;
+        return canBuild;
     }
 
-    res->GroundFlags = gMapGroundFlags & (ELEMENT_IS_ABOVE_GROUND | ELEMENT_IS_UNDERGROUND);
-
-    res->Expenditure = ExpenditureType::Landscaping;
-    res->Cost = (sceneryEntry->small_scenery.price * 10) + clearCost;
+    res.Expenditure = ExpenditureType::Landscaping;
+    res.Cost = sceneryEntry->price + canBuild.Cost;
 
     auto* sceneryElement = TileElementInsert<SmallSceneryElement>(
         CoordsXYZ{ _loc, zLow }, quarterTile.GetBaseQuarterOccupied());
-    Guard::Assert(sceneryElement != nullptr);
+    if (sceneryElement == nullptr)
+    {
+        return GameActions::Result(
+            GameActions::Status::NoFreeElements, STR_CANT_POSITION_THIS_HERE, STR_TILE_ELEMENT_LIMIT_REACHED);
+    }
 
     sceneryElement->SetDirection(_loc.direction);
     sceneryElement->SetSceneryQuadrant(quadrant);
@@ -440,17 +421,20 @@ GameActions::Result::Ptr SmallSceneryPlaceAction::Execute() const
     sceneryElement->SetAge(0);
     sceneryElement->SetPrimaryColour(_primaryColour);
     sceneryElement->SetSecondaryColour(_secondaryColour);
-    sceneryElement->SetClearanceZ(sceneryElement->GetBaseZ() + sceneryEntry->small_scenery.height + 7);
+    sceneryElement->SetTertiaryColour(_tertiaryColour);
+    sceneryElement->SetClearanceZ(sceneryElement->GetBaseZ() + sceneryEntry->height + 7);
     sceneryElement->SetGhost(GetFlags() & GAME_COMMAND_FLAG_GHOST);
     if (supportsRequired)
     {
         sceneryElement->SetNeedsSupports();
     }
 
-    res->tileElement = sceneryElement->as<TileElement>();
+    const auto clearanceData = canBuild.GetData<ConstructClearResult>();
+    const uint8_t groundFlags = clearanceData.GroundFlags & (ELEMENT_IS_ABOVE_GROUND | ELEMENT_IS_UNDERGROUND);
+    res.SetData(SmallSceneryPlaceActionResult{ groundFlags, sceneryElement->GetBaseZ(), sceneryElement->GetSceneryQuadrant() });
 
     map_invalidate_tile_full(_loc);
-    if (scenery_small_entry_has_flag(sceneryEntry, SMALL_SCENERY_FLAG_ANIMATED))
+    if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_ANIMATED))
     {
         map_animation_create(MAP_ANIMATION_TYPE_SMALL_SCENERY, CoordsXYZ{ _loc, sceneryElement->GetBaseZ() });
     }

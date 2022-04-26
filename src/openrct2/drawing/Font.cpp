@@ -17,9 +17,14 @@
 #include "TTF.h"
 
 #include <iterator>
+#include <limits>
 #include <unordered_map>
 
-static constexpr const int32_t SpriteFontLineHeight[FONT_SIZE_COUNT] = { 6, 10, 10 };
+static constexpr const int32_t SpriteFontLineHeight[FONT_SIZE_COUNT] = {
+    6,
+    10,
+    10,
+};
 
 static uint8_t _spriteFontCharacterWidths[FONT_SIZE_COUNT][FONT_SPRITE_GLYPH_COUNT];
 static uint8_t _additionalSpriteFontCharacterWidth[FONT_SIZE_COUNT][SPR_G2_GLYPH_COUNT] = {};
@@ -64,6 +69,8 @@ static const std::unordered_map<char32_t, int32_t> codepointOffsetMap = {
     { UnicodeChar::o_macron, CSChar::o_circumflex - CS_SPRITE_FONT_OFFSET }, // No visual difference
     { UnicodeChar::o_double_acute_uc, SPR_G2_O_DOUBLE_ACUTE_UPPER - SPR_CHAR_START },
     { UnicodeChar::o_double_acute, SPR_G2_O_DOUBLE_ACUTE_LOWER - SPR_CHAR_START },
+    { UnicodeChar::oe_uc, SPR_G2_OE_UPPER - SPR_CHAR_START },
+    { UnicodeChar::oe, SPR_G2_OE_LOWER - SPR_CHAR_START },
     { UnicodeChar::r_caron_uc, SPR_G2_R_CARON_UPPER - SPR_CHAR_START },
     { UnicodeChar::r_caron, SPR_G2_R_CARON_LOWER - SPR_CHAR_START },
     { UnicodeChar::s_acute_uc, CSChar::s_acute_uc - CS_SPRITE_FONT_OFFSET },
@@ -173,10 +180,15 @@ static const std::unordered_map<char32_t, int32_t> codepointOffsetMap = {
     { UnicodeChar::cyrillic_io, 235 - CS_SPRITE_FONT_OFFSET }, // Looks just like ë
 
     // Punctuation
+    { UnicodeChar::left_brace, SPR_G2_LEFT_BRACE - SPR_CHAR_START },
+    { UnicodeChar::vertical_bar, SPR_G2_VERTICAL_BAR - SPR_CHAR_START },
+    { UnicodeChar::right_brace, SPR_G2_RIGHT_BRACE - SPR_CHAR_START },
+    { UnicodeChar::tilde, SPR_G2_TILDE - SPR_CHAR_START },
     { UnicodeChar::non_breaking_space, ' ' - CS_SPRITE_FONT_OFFSET },
     { UnicodeChar::interpunct, SPR_G2_INTERPUNCT - SPR_CHAR_START },
     { UnicodeChar::multiplication_sign, CSChar::cross - CS_SPRITE_FONT_OFFSET },
     { UnicodeChar::en_dash, '-' - CS_SPRITE_FONT_OFFSET },
+    { UnicodeChar::em_dash, '-' - CS_SPRITE_FONT_OFFSET },
     { UnicodeChar::single_quote_open, '`' - CS_SPRITE_FONT_OFFSET },
     { UnicodeChar::single_quote_end, '\'' - CS_SPRITE_FONT_OFFSET },
     { UnicodeChar::single_german_quote_open, ',' - CS_SPRITE_FONT_OFFSET },
@@ -303,7 +315,8 @@ int32_t font_sprite_get_codepoint_width(FontSpriteBase fontSpriteBase, int32_t c
         }
         return _additionalSpriteFontCharacterWidth[baseFontIndex][glyphIndex];
     }
-    else if (glyphIndex < 0 || glyphIndex >= static_cast<int32_t>(FONT_SPRITE_GLYPH_COUNT))
+
+    if (glyphIndex < 0 || glyphIndex >= static_cast<int32_t>(FONT_SPRITE_GLYPH_COUNT))
     {
         log_warning("Invalid glyph index %u", glyphIndex);
         glyphIndex = 0;
@@ -359,13 +372,8 @@ int32_t font_get_line_height(FontSpriteBase fontSpriteBase)
     {
         return gCurrentTTFFontSet->size[fontSize].line_height;
     }
-    else
-    {
 #endif // NO_TTF
-        return SpriteFontLineHeight[fontSize];
-#ifndef NO_TTF
-    }
-#endif // NO_TTF
+    return SpriteFontLineHeight[fontSize];
 }
 
 int32_t font_get_line_height_small(FontSpriteBase fontSpriteBase)
@@ -431,8 +439,6 @@ bool font_supports_string(const utf8* text, int32_t fontSize)
     {
         return font_supports_string_ttf(text, fontSize);
     }
-    else
-    {
-        return font_supports_string_sprite(text);
-    }
+
+    return font_supports_string_sprite(text);
 }

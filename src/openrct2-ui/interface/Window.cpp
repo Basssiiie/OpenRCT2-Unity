@@ -13,17 +13,19 @@
 
 #include <SDL.h>
 #include <algorithm>
+#include <openrct2-ui/windows/Window.h>
 #include <openrct2/Context.h>
 #include <openrct2/Input.h>
 #include <openrct2/OpenRCT2.h>
 #include <openrct2/audio/audio.h>
 #include <openrct2/config/Config.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/entity/EntityRegistry.h>
 #include <openrct2/interface/Widget.h>
+#include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/StringIds.h>
 #include <openrct2/sprites.h>
 #include <openrct2/ui/UiContext.h>
-#include <openrct2/world/Sprite.h>
 
 using namespace OpenRCT2;
 
@@ -86,13 +88,20 @@ static bool WindowFitsOnScreen(const ScreenCoordsXY& loc, int32_t width, int32_t
     return WindowFitsBetweenOthers(loc, width, height);
 }
 
-static ScreenCoordsXY ClampWindowToScreen(const ScreenCoordsXY& pos, const int32_t screenWidth, const int32_t width)
+static ScreenCoordsXY ClampWindowToScreen(
+    const ScreenCoordsXY& pos, const int32_t screenWidth, const int32_t screenHeight, const int32_t width, const int32_t height)
 {
     auto screenPos = pos;
-    if (screenPos.x < 0)
+    if (width > screenWidth || screenPos.x < 0)
         screenPos.x = 0;
-    if (screenPos.x + width > screenWidth)
+    else if (screenPos.x + width > screenWidth)
         screenPos.x = screenWidth - width;
+
+    auto toolbarAllowance = (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO) ? 0 : (TOP_TOOLBAR_HEIGHT + 1);
+    if (height - toolbarAllowance > screenHeight || screenPos.y < toolbarAllowance)
+        screenPos.y = toolbarAllowance;
+    else if (screenPos.y + height - toolbarAllowance > screenHeight)
+        screenPos.y = screenHeight + toolbarAllowance - height;
 
     return screenPos;
 }
@@ -105,17 +114,17 @@ static ScreenCoordsXY GetAutoPositionForNewWindow(int32_t width, int32_t height)
 
     // Place window in an empty corner of the screen
     const ScreenCoordsXY cornerPositions[] = {
-        { 0, 30 },                                          // topLeft
-        { screenWidth - width, 30 },                        // topRight
-        { 0, screenHeight - 34 - height },                  // bottomLeft
-        { screenWidth - width, screenHeight - 34 - height } // bottomRight
+        { 0, 30 },                                           // topLeft
+        { screenWidth - width, 30 },                         // topRight
+        { 0, screenHeight - 34 - height },                   // bottomLeft
+        { screenWidth - width, screenHeight - 34 - height }, // bottomRight
     };
 
     for (const auto& cornerPos : cornerPositions)
     {
         if (WindowFitsWithinSpace(cornerPos, width, height))
         {
-            return ClampWindowToScreen(cornerPos, screenWidth, width);
+            return ClampWindowToScreen(cornerPos, screenWidth, screenHeight, width, height);
         }
     }
 
@@ -125,21 +134,23 @@ static ScreenCoordsXY GetAutoPositionForNewWindow(int32_t width, int32_t height)
         if (w->flags & WF_STICK_TO_BACK)
             continue;
 
-        const ScreenCoordsXY offsets[] = { { w->width + 2, 0 },
-                                           { -w->width - 2, 0 },
-                                           { 0, w->height + 2 },
-                                           { 0, -w->height - 2 },
-                                           { w->width + 2, -w->height - 2 },
-                                           { -w->width - 2, -w->height - 2 },
-                                           { w->width + 2, w->height + 2 },
-                                           { -w->width - 2, w->height + 2 } };
+        const ScreenCoordsXY offsets[] = {
+            { w->width + 2, 0 },
+            { -w->width - 2, 0 },
+            { 0, w->height + 2 },
+            { 0, -w->height - 2 },
+            { w->width + 2, -w->height - 2 },
+            { -w->width - 2, -w->height - 2 },
+            { w->width + 2, w->height + 2 },
+            { -w->width - 2, w->height + 2 },
+        };
 
         for (const auto& offset : offsets)
         {
             auto screenPos = w->windowPos + offset;
             if (WindowFitsWithinSpace(screenPos, width, height))
             {
-                return ClampWindowToScreen(screenPos, screenWidth, width);
+                return ClampWindowToScreen(screenPos, screenWidth, screenHeight, width, height);
             }
         }
     }
@@ -150,21 +161,19 @@ static ScreenCoordsXY GetAutoPositionForNewWindow(int32_t width, int32_t height)
         if (w->flags & WF_STICK_TO_BACK)
             continue;
 
-        // clang-format off
         const ScreenCoordsXY offsets[] = {
             { w->width + 2, 0 },
             { -w->width - 2, 0 },
             { 0, w->height + 2 },
-            { 0, -w->height - 2 }
+            { 0, -w->height - 2 },
         };
-        // clang-format on
 
         for (const auto& offset : offsets)
         {
             auto screenPos = w->windowPos + offset;
             if (WindowFitsOnScreen(screenPos, width, height))
             {
-                return ClampWindowToScreen(screenPos, screenWidth, width);
+                return ClampWindowToScreen(screenPos, screenWidth, screenHeight, width, height);
             }
         }
     }
@@ -180,7 +189,7 @@ static ScreenCoordsXY GetAutoPositionForNewWindow(int32_t width, int32_t height)
         }
     }
 
-    return ClampWindowToScreen(screenPos, screenWidth, width);
+    return ClampWindowToScreen(screenPos, screenWidth, screenHeight, width, height);
 }
 
 static ScreenCoordsXY GetCentrePositionForNewWindow(int32_t width, int32_t height)
@@ -267,11 +276,7 @@ rct_window* WindowCreate(
     w->min_height = height;
     w->max_height = height;
 
-    w->viewport_focus_coordinates.var_480 = 0;
-    w->viewport_focus_coordinates.x = 0;
-    w->viewport_focus_coordinates.y = 0;
-    w->viewport_focus_coordinates.z = 0;
-    w->viewport_focus_coordinates.rotation = 0;
+    w->focus = std::nullopt;
     w->page = 0;
     w->var_48C = 0;
     w->var_492 = 0;
@@ -353,25 +358,25 @@ static rct_widget* WindowGetScrollWidget(rct_window* w, int32_t scrollIndex)
  */
 static void WindowScrollWheelInput(rct_window* w, int32_t scrollIndex, int32_t wheel)
 {
-    rct_scroll* scroll = &w->scrolls[scrollIndex];
+    auto& scroll = w->scrolls[scrollIndex];
     rct_widget* widget = WindowGetScrollWidget(w, scrollIndex);
     rct_widgetindex widgetIndex = WindowGetWidgetIndex(w, widget);
 
-    if (scroll->flags & VSCROLLBAR_VISIBLE)
+    if (scroll.flags & VSCROLLBAR_VISIBLE)
     {
         int32_t size = widget->height() - 1;
-        if (scroll->flags & HSCROLLBAR_VISIBLE)
+        if (scroll.flags & HSCROLLBAR_VISIBLE)
             size -= 11;
-        size = std::max(0, scroll->v_bottom - size);
-        scroll->v_top = std::min(std::max(0, scroll->v_top + wheel), size);
+        size = std::max(0, scroll.v_bottom - size);
+        scroll.v_top = std::min(std::max(0, scroll.v_top + wheel), size);
     }
     else
     {
         int32_t size = widget->width() - 1;
-        if (scroll->flags & VSCROLLBAR_VISIBLE)
+        if (scroll.flags & VSCROLLBAR_VISIBLE)
             size -= 11;
-        size = std::max(0, scroll->h_right - size);
-        scroll->h_left = std::min(std::max(0, scroll->h_left + wheel), size);
+        size = std::max(0, scroll.h_right - size);
+        scroll.h_left = std::min(std::max(0, scroll.h_left + wheel), size);
     }
 
     WidgetScrollUpdateThumbs(w, widgetIndex);
@@ -391,8 +396,8 @@ static int32_t WindowWheelInput(rct_window* w, int32_t wheel)
             continue;
 
         // Originally always checked first scroll view, bug maybe?
-        rct_scroll* scroll = &w->scrolls[i];
-        if (scroll->flags & (HSCROLLBAR_VISIBLE | VSCROLLBAR_VISIBLE))
+        const auto& scroll = w->scrolls[i];
+        if (scroll.flags & (HSCROLLBAR_VISIBLE | VSCROLLBAR_VISIBLE))
         {
             WindowScrollWheelInput(w, i, wheel);
             return 1;
@@ -535,12 +540,12 @@ void WindowAllWheelInput()
             rct_widgetindex widgetIndex = window_find_widget_from_point(w, cursorState->position);
             if (widgetIndex != -1)
             {
-                rct_widget* widget = &w->widgets[widgetIndex];
-                if (widget->type == WindowWidgetType::Scroll)
+                const auto& widget = w->widgets[widgetIndex];
+                if (widget.type == WindowWidgetType::Scroll)
                 {
                     int32_t scrollIndex = WindowGetScrollIndex(w, widgetIndex);
-                    rct_scroll* scroll = &w->scrolls[scrollIndex];
-                    if (scroll->flags & (HSCROLLBAR_VISIBLE | VSCROLLBAR_VISIBLE))
+                    const auto& scroll = w->scrolls[scrollIndex];
+                    if (scroll.flags & (HSCROLLBAR_VISIBLE | VSCROLLBAR_VISIBLE))
                     {
                         WindowScrollWheelInput(w, WindowGetScrollIndex(w, widgetIndex), pixel_scroll);
                         return;
@@ -574,7 +579,6 @@ void ApplyScreenSaverLockSetting()
 void WindowInitScrollWidgets(rct_window* w)
 {
     rct_widget* widget;
-    rct_scroll* scroll;
     int32_t widget_index, scroll_index;
     int32_t width, height;
 
@@ -588,20 +592,20 @@ void WindowInitScrollWidgets(rct_window* w)
             continue;
         }
 
-        scroll = &w->scrolls[scroll_index];
-        scroll->flags = 0;
+        auto& scroll = w->scrolls[scroll_index];
+        scroll.flags = 0;
         width = 0;
         height = 0;
         window_get_scroll_size(w, scroll_index, &width, &height);
-        scroll->h_left = 0;
-        scroll->h_right = width + 1;
-        scroll->v_top = 0;
-        scroll->v_bottom = height + 1;
+        scroll.h_left = 0;
+        scroll.h_right = width + 1;
+        scroll.v_top = 0;
+        scroll.v_bottom = height + 1;
 
         if (widget->content & SCROLL_HORIZONTAL)
-            scroll->flags |= HSCROLLBAR_VISIBLE;
+            scroll.flags |= HSCROLLBAR_VISIBLE;
         if (widget->content & SCROLL_VERTICAL)
-            scroll->flags |= VSCROLLBAR_VISIBLE;
+            scroll.flags |= VSCROLLBAR_VISIBLE;
 
         WidgetScrollUpdateThumbs(w, widget_index);
 
@@ -650,7 +654,7 @@ void WindowDrawWidgets(rct_window* w, rct_drawpixelinfo* dpi)
     if (w->flags & WF_WHITE_BORDER_MASK)
     {
         gfx_fill_rect_inset(
-            dpi, w->windowPos.x, w->windowPos.y, w->windowPos.x + w->width - 1, w->windowPos.y + w->height - 1, COLOUR_WHITE,
+            dpi, { w->windowPos, w->windowPos + ScreenCoordsXY{ w->width - 1, w->height - 1 } }, COLOUR_WHITE,
             INSET_RECT_FLAG_FILL_NONE);
     }
 }
@@ -703,6 +707,11 @@ void Window::OnDrawWidget(rct_widgetindex widgetIndex, rct_drawpixelinfo& dpi)
     WidgetDraw(&dpi, this, widgetIndex);
 }
 
+void Window::InitScrollWidgets()
+{
+    WindowInitScrollWidgets(this);
+}
+
 void Window::InvalidateWidget(rct_widgetindex widgetIndex)
 {
     widget_invalidate(this, widgetIndex);
@@ -710,28 +719,22 @@ void Window::InvalidateWidget(rct_widgetindex widgetIndex)
 
 bool Window::IsWidgetDisabled(rct_widgetindex widgetIndex) const
 {
-    return (disabled_widgets & (1LL << widgetIndex)) != 0;
+    return WidgetIsDisabled(this, widgetIndex);
 }
 
 bool Window::IsWidgetPressed(rct_widgetindex widgetIndex) const
 {
-    return (pressed_widgets & (1LL << widgetIndex)) != 0;
+    return WidgetIsPressed(this, widgetIndex);
 }
 
 void Window::SetWidgetDisabled(rct_widgetindex widgetIndex, bool value)
 {
-    if (value)
-        disabled_widgets |= (1ULL << widgetIndex);
-    else
-        disabled_widgets &= ~(1ULL << widgetIndex);
+    WidgetSetDisabled(this, widgetIndex, value);
 }
 
 void Window::SetWidgetPressed(rct_widgetindex widgetIndex, bool value)
 {
-    if (value)
-        pressed_widgets |= (1ULL << widgetIndex);
-    else
-        pressed_widgets &= ~(1ULL << widgetIndex);
+    WidgetSetPressed(this, widgetIndex, value);
 }
 
 void Window::SetCheckboxValue(rct_widgetindex widgetIndex, bool value)
@@ -747,4 +750,28 @@ void Window::DrawWidgets(rct_drawpixelinfo& dpi)
 void Window::Close()
 {
     window_close(this);
+}
+
+void Window::TextInputOpen(
+    rct_widgetindex callWidget, rct_string_id title, rct_string_id description, const Formatter& descriptionArgs,
+    rct_string_id existingText, uintptr_t existingArgs, int32_t maxLength)
+{
+    WindowTextInputOpen(this, callWidget, title, description, descriptionArgs, existingText, existingArgs, maxLength);
+}
+
+void window_align_tabs(rct_window* w, rct_widgetindex start_tab_id, rct_widgetindex end_tab_id)
+{
+    int32_t i, x = w->widgets[start_tab_id].left;
+    int32_t tab_width = w->widgets[start_tab_id].width();
+
+    for (i = start_tab_id; i <= end_tab_id; i++)
+    {
+        if (!WidgetIsDisabled(w, i))
+        {
+            auto& widget = w->widgets[i];
+            widget.left = x;
+            widget.right = x + tab_width;
+            x += tab_width + 1;
+        }
+    }
 }

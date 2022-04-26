@@ -9,16 +9,16 @@
 
 #pragma once
 
+#include "../Identifiers.h"
 #include "../object/Object.h"
 
 #include <cstdint>
 #include <limits>
+#include <type_traits>
 
-using ride_id_t = uint16_t;
 struct Ride;
 
-constexpr const ride_id_t RIDE_ID_NULL = 0xFF; // std::numeric_limits<ride_id_t>::max();
-constexpr const ride_id_t RideIdNewNull = std::numeric_limits<ride_id_t>::max();
+using ride_type_t = uint16_t;
 
 /**
  * Couples a ride type and subtype together.

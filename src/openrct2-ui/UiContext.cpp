@@ -39,7 +39,7 @@
 #include <openrct2/interface/Chat.h>
 #include <openrct2/interface/InteractiveConsole.h>
 #include <openrct2/localisation/StringIds.h>
-#include <openrct2/platform/Platform2.h>
+#include <openrct2/platform/Platform.h>
 #include <openrct2/scripting/ScriptEngine.h>
 #include <openrct2/title/TitleSequencePlayer.h>
 #include <openrct2/ui/UiContext.h>
@@ -123,7 +123,7 @@ public:
 
     ~UiContext() override
     {
-        CloseWindow();
+        UiContext::CloseWindow();
         delete _windowManager;
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
         delete _platformUiContext;
@@ -137,7 +137,7 @@ public:
 #endif
     }
 
-    void Update() override
+    void Tick() override
     {
         _inGameConsole.Update();
     }
@@ -172,18 +172,19 @@ public:
 
     void SetFullscreenMode(FULLSCREEN_MODE mode) override
     {
-        static constexpr const int32_t SDLFSFlags[] = { 0, SDL_WINDOW_FULLSCREEN, SDL_WINDOW_FULLSCREEN_DESKTOP };
-        uint32_t windowFlags = SDLFSFlags[static_cast<int32_t>(mode)];
+        static constexpr const int32_t _sdlFullscreenFlags[] = {
+            0,
+            SDL_WINDOW_FULLSCREEN,
+            SDL_WINDOW_FULLSCREEN_DESKTOP,
+        };
+        uint32_t windowFlags = _sdlFullscreenFlags[static_cast<int32_t>(mode)];
 
         // HACK Changing window size when in fullscreen usually has no effect
         if (mode == FULLSCREEN_MODE::FULLSCREEN)
         {
             SDL_SetWindowFullscreen(_window, 0);
-        }
 
-        // Set window size
-        if (mode == FULLSCREEN_MODE::FULLSCREEN)
-        {
+            // Set window size
             UpdateFullscreenResolutions();
             Resolution resolution = GetClosestResolution(gConfigGeneral.fullscreen_width, gConfigGeneral.fullscreen_height);
             SDL_SetWindowSize(_window, resolution.Width, resolution.Height);
@@ -299,7 +300,7 @@ public:
 
         for (auto& w : g_window_list)
         {
-            DrawWeatherWindow(weatherDrawer, w.get(), left, right, top, bottom, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, w.get(), left, right, top, bottom, drawFunc);
         }
     }
 
@@ -526,6 +527,15 @@ public:
 #endif
                 case SDL_KEYDOWN:
                 {
+#ifndef __MACOSX__
+                    // Ignore winkey keydowns. Handles edge case where tiling
+                    // window managers don't eat the keypresses when changing
+                    // workspaces.
+                    if (SDL_GetModState() & KMOD_GUI)
+                    {
+                        break;
+                    }
+#endif
                     _textComposition.HandleMessage(&e);
                     auto ie = GetInputEventFromSDLEvent(e);
                     ie.State = InputEventState::Down;
@@ -587,7 +597,7 @@ public:
     void TriggerResize() override
     {
         char scaleQualityBuffer[4];
-        _scaleQuality = gConfigGeneral.scale_quality;
+        _scaleQuality = ScaleQuality::SmoothNearestNeighbour;
         if (gConfigGeneral.window_scale == std::floor(gConfigGeneral.window_scale))
         {
             _scaleQuality = ScaleQuality::NearestNeighbour;
@@ -598,7 +608,7 @@ public:
         {
             scaleQuality = ScaleQuality::Linear;
         }
-        snprintf(scaleQualityBuffer, sizeof(scaleQualityBuffer), "%u", static_cast<int32_t>(scaleQuality));
+        snprintf(scaleQualityBuffer, sizeof(scaleQualityBuffer), "%d", static_cast<int32_t>(scaleQuality));
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, scaleQualityBuffer);
 
         int32_t width, height;
@@ -863,8 +873,8 @@ private:
     }
 
     static void DrawWeatherWindow(
-        IWeatherDrawer* weatherDrawer, rct_window* original_w, int16_t left, int16_t right, int16_t top, int16_t bottom,
-        DrawWeatherFunc drawFunc)
+        rct_drawpixelinfo* dpi, IWeatherDrawer* weatherDrawer, rct_window* original_w, int16_t left, int16_t right, int16_t top,
+        int16_t bottom, DrawWeatherFunc drawFunc)
     {
         rct_window* w{};
         auto itStart = window_get_iterator(original_w);
@@ -884,7 +894,7 @@ private:
                     {
                         auto width = right - left;
                         auto height = bottom - top;
-                        drawFunc(weatherDrawer, left, top, width, height);
+                        drawFunc(dpi, weatherDrawer, left, top, width, height);
                     }
                 }
                 return;
@@ -906,39 +916,39 @@ private:
                 break;
             }
 
-            DrawWeatherWindow(weatherDrawer, original_w, left, w->windowPos.x, top, bottom, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, original_w, left, w->windowPos.x, top, bottom, drawFunc);
 
             left = w->windowPos.x;
-            DrawWeatherWindow(weatherDrawer, original_w, left, right, top, bottom, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, original_w, left, right, top, bottom, drawFunc);
             return;
         }
 
         int16_t w_right = RCT_WINDOW_RIGHT(w);
         if (right > w_right)
         {
-            DrawWeatherWindow(weatherDrawer, original_w, left, w_right, top, bottom, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, original_w, left, w_right, top, bottom, drawFunc);
 
             left = w_right;
-            DrawWeatherWindow(weatherDrawer, original_w, left, right, top, bottom, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, original_w, left, right, top, bottom, drawFunc);
             return;
         }
 
         if (top < w->windowPos.y)
         {
-            DrawWeatherWindow(weatherDrawer, original_w, left, right, top, w->windowPos.y, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, original_w, left, right, top, w->windowPos.y, drawFunc);
 
             top = w->windowPos.y;
-            DrawWeatherWindow(weatherDrawer, original_w, left, right, top, bottom, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, original_w, left, right, top, bottom, drawFunc);
             return;
         }
 
         int16_t w_bottom = RCT_WINDOW_BOTTOM(w);
         if (bottom > w_bottom)
         {
-            DrawWeatherWindow(weatherDrawer, original_w, left, right, top, w_bottom, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, original_w, left, right, top, w_bottom, drawFunc);
 
             top = w_bottom;
-            DrawWeatherWindow(weatherDrawer, original_w, left, right, top, bottom, drawFunc);
+            DrawWeatherWindow(dpi, weatherDrawer, original_w, left, right, top, bottom, drawFunc);
             return;
         }
     }

@@ -19,10 +19,11 @@
 
 #    include "../OpenRCT2.h"
 #    include "../config/Config.h"
+#    include "../core/Numerics.hpp"
 #    include "../core/String.hpp"
 #    include "../localisation/Localisation.h"
 #    include "../localisation/LocalisationService.h"
-#    include "../platform/platform.h"
+#    include "../platform/Platform.h"
 #    include "TTF.h"
 
 static bool _ttfInitialised = false;
@@ -124,17 +125,17 @@ bool ttf_initialise()
     {
         TTFFontDescriptor* fontDesc = &(gCurrentTTFFontSet->size[i]);
 
-        utf8 fontPath[MAX_PATH];
-        if (!platform_get_font_path(fontDesc, fontPath, sizeof(fontPath)))
+        auto fontPath = Platform::GetFontPath(*fontDesc);
+        if (fontPath.empty())
         {
             log_verbose("Unable to load font '%s'", fontDesc->font_name);
             return false;
         }
 
-        fontDesc->font = ttf_open_font(fontPath, fontDesc->ptSize);
+        fontDesc->font = ttf_open_font(fontPath.c_str(), fontDesc->ptSize);
         if (fontDesc->font == nullptr)
         {
-            log_verbose("Unable to load '%s'", fontPath);
+            log_verbose("Unable to load '%s'", fontPath.c_str());
             return false;
         }
     }
@@ -186,7 +187,7 @@ static uint32_t ttf_surface_cache_hash(TTF_Font* font, std::string_view text)
     uint32_t hash = static_cast<uint32_t>(((reinterpret_cast<uintptr_t>(font) * 23) ^ 0xAAAAAAAA) & 0xFFFFFFFF);
     for (auto c : text)
     {
-        hash = ror32(hash, 3) ^ (c * 13);
+        hash = Numerics::ror32(hash, 3) ^ (c * 13);
     }
     return hash;
 }
@@ -372,10 +373,8 @@ static TTFSurface* ttf_render(TTF_Font* font, std::string_view text)
     {
         return TTF_RenderUTF8_Shaded(font, buffer.c_str(), 0x000000FF, 0x000000FF);
     }
-    else
-    {
-        return TTF_RenderUTF8_Solid(font, buffer.c_str(), 0x000000FF);
-    }
+
+    return TTF_RenderUTF8_Solid(font, buffer.c_str(), 0x000000FF);
 }
 
 void ttf_free_surface(TTFSurface* surface)
