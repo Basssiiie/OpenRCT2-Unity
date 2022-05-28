@@ -7,7 +7,7 @@
 #include <openrct2/platform/platform.h>
 #include <openrct2/world/Park.h>
 
-#include "OpenRCT2-DLL.h"
+#include "openrct2-bindings.h"
 
 
 std::unique_ptr<IContext> unityContext;

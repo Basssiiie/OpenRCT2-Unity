@@ -7,7 +7,7 @@ namespace Lib
 {
     public partial class OpenRCT2 : MonoBehaviour
     {
-        const string PluginFile = "openrct2-dll";
+        const string PluginFile = "openrct2-bindings";
 
 
         // The relative path to the selected park file.

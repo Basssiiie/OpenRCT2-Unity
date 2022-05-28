@@ -1,7 +1,7 @@
 #include <openrct2/sprites.h>
 #include <openrct2/world/SmallScenery.h>
 
-#include "OpenRCT2-DLL.h"
+#include "openrct2-bindings.h"
 #include <openrct2/drawing/Drawing.h>
 
 

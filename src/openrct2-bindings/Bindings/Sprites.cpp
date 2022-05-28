@@ -1,6 +1,6 @@
 #include <openrct2/entity/EntityList.h>
 
-#include "OpenRCT2-DLL.h"
+#include "openrct2-bindings.h"
 
 
 extern "C"

@@ -1,7 +1,7 @@
 #include <openrct2/world/TileElement.h>
 #include <openrct2/world/SmallScenery.h>
 
-#include "..\OpenRCT2-DLL.h"
+#include "..\openrct2-bindings.h"
 
 
 extern "C"

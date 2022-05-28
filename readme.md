@@ -29,7 +29,7 @@ To get it running inside of Unity, you need the following prerequisites:
     - Make sure to set the target platform to x64 if you have a 64-bit OS! (As explained in the paragraph after step 4 in the linked chapter.)    
     - It is not necessary to run OpenRCT2.
 2. Open openrct2.sln in Visual Studio 2022.
-3. Find the `openrct2-dll` project in the Solution Explorer and build it. (If it doesn't build, you messed something up in the previous steps.)
+3. Find the `openrct2-bindings` project in the Solution Explorer and build it. (If it doesn't build, you messed something up in the previous steps.)
 4. Start the Unity Editor and navigate to wherever you cloned the repository.
 5. Open the project in this directory: [`/src/openrct2-unity/`](https://github.com/Basssiiie/OpenRCT2-Unity/tree/develop/src/openrct2-unity)
 6. Once Unity has launched with the project, go to the 'Scenes' folder in the Project window and open ParkScene.
@@ -55,9 +55,9 @@ When the Unity editor is in playmode, the controls for the camera are as follows
 
 OpenRCT2 is an open source C++ project, which allows easy forking and extending the project. Internally this project is seperated into a few different subprojects, all found in the [`/src/`](https://github.com/Basssiiie/OpenRCT2-Unity/tree/develop/src) folder. The interesting one of the bunch is the static library project called `libopenrct2`, because it contains all the code to run logic of the game.
 
-This fork adds two more projects to the mix: `openrct2-dll` and `openrct2-unity`:
+This fork adds two more projects to the mix: `openrct2-bindings` and `openrct2-unity`:
 
-- `openrct2-dll` imports `libopenrct2` and adds  bindings for useful functions within OpenRCT2. These functions together with the static library are then exported as a C++ Dynamicly Linked Library (DLL) for use elsewhere.
+- `openrct2-bindings` imports `libopenrct2` and adds  bindings for useful functions within OpenRCT2. These functions together with the static library are then exported as a C++ Dynamicly Linked Library (DLL) for use elsewhere.
 - `openrct2-unity` is the Unity C# project. The DLL is imported into this project and its C++ functions are then [marshalled through Platform Invoke](https://docs.microsoft.com/en-us/dotnet/framework/interop/marshaling-data-with-platform-invoke), which is a technology which allows me to call unmanaged C++ libraries from managed C# .NET Framework code. 
 
 From there on, the C# code can call the right functions to start the game, load any park and retrieve information about said park, like where it's scenery, rides and peeps are. All this information is then displayed in Unity in real-time, while `libopenrct2` runs doing all the logic of the game in the background.

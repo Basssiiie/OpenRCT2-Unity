@@ -4,7 +4,7 @@
 #include <openrct2/ride/Vehicle.h>
 #include <openrct2/ride/VehicleSubpositionData.h>
 
-#include "OpenRCT2-DLL.h"
+#include "openrct2-bindings.h"
 
 
 // Rounds a number to the nearest multiple of 'multiple'.

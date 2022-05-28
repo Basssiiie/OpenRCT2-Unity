@@ -4,7 +4,7 @@
 #include <openrct2/paint/tile_element/Paint.Surface.h>
 #include <openrct2/world/TileElement.h>
 
-#include "..\OpenRCT2-DLL.h"
+#include "..\openrct2-bindings.h"
 
 
 extern "C"

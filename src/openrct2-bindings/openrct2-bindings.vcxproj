@@ -1,7 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <SolutionDir Condition="'$(SolutionDir)'==''">..\..\</SolutionDir>
+      <SolutionDir Condition="'$(SolutionDir)'==''">..\..\</SolutionDir>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -23,8 +23,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{449AD0FF-15AA-42E3-B51B-B6E9BC0AB1ED}</ProjectGuid>
-    <RootNamespace>openrct2-dll</RootNamespace>
-    <ProjectName>openrct2-dll</ProjectName>
+    <RootNamespace>openrct2-bindings</RootNamespace>
+    <ProjectName>openrct2-bindings</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
@@ -32,11 +32,11 @@
   </PropertyGroup>
   <Import Project="..\..\openrct2.common.props" />
   <PropertyGroup>
-    <TargetName>openrct2-dll</TargetName>
+    <TargetName>openrct2-bindings</TargetName>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)bin\dll-export\</OutDir>
+    <OutDir>$(SolutionDir)bin\bindings\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -44,7 +44,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>libopenrct2.lib;libopenrct2ui.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ProgramDatabaseFile>$(OutDir)openrct2-dll.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)openrct2-bindings.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <Lib>
@@ -52,18 +52,17 @@
       <TargetMachine Condition="'$(Platform)'=='x64'">MachineX64</TargetMachine>
     </Lib>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">del /f /s /q "$(SolutionDir)src\openrct2-unity\Assets\Plugins\$(PlatformTarget)\"
-
-xcopy /i /y /f "$(SolutionDir)bin\dll-export\*" "$(SolutionDir)src\openrct2-unity\Assets\Plugins\$(PlatformTarget)\"
-
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+del /f /s /q "$(SolutionDir)src\openrct2-unity\Assets\Plugins\$(PlatformTarget)\"
+xcopy /i /y /f "$(SolutionDir)bin\bindings\*" "$(SolutionDir)src\openrct2-unity\Assets\Plugins\$(PlatformTarget)\"
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\resources\OpenRCT2.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Bindings\OpenRCT2-DLL.cpp" />
+    <ClCompile Include="Bindings\openrct2-bindings.cpp" />
     <ClCompile Include="Bindings\Graphics.cpp" />
     <ClCompile Include="Bindings\Game.cpp" />
     <ClCompile Include="Bindings\Map.cpp" />
@@ -77,7 +76,7 @@ xcopy /i /y /f "$(SolutionDir)bin\dll-export\*" "$(SolutionDir)src\openrct2-unit
     <ClCompile Include="Bindings\Vehicles.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Bindings\OpenRCT2-DLL.h" />
+    <ClInclude Include="Bindings\openrct2-bindings.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

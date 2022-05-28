@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <cstdarg>
 
-#include "OpenRCT2-DLL.h"
+#include "openrct2-bindings.h"
 
 
 // Write to output log with a custom prefix and line ending.
