@@ -278,7 +278,7 @@ static void ride_race_init_vehicle_speeds(Ride* ride)
         if (vehicle == nullptr)
             continue;
 
-        vehicle->ClearUpdateFlag(VEHICLE_UPDATE_FLAG_6);
+        vehicle->ClearUpdateFlag(VEHICLE_UPDATE_FLAG_HAS_COLLIDED);
 
         rct_ride_entry* rideEntry = vehicle->GetRideEntry();
 
