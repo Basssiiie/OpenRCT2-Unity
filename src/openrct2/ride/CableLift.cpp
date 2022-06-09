@@ -372,7 +372,7 @@ int32_t Vehicle::CableLiftUpdateTrackMotion()
     _vehicleStationIndex = StationIndex::GetNull();
 
     velocity += acceleration;
-    _vehicleVelocityF64E08 = velocity;
+    _vehicleNextVelocity = velocity;
     _vehicleVelocityF64E0C = (velocity / 1024) * 42;
 
     Vehicle* frontVehicle = this;
@@ -425,7 +425,7 @@ int32_t Vehicle::CableLiftUpdateTrackMotion()
             vehicle->MoveTo(_vehicleCurPosition);
         }
         vehicle->acceleration /= _vehicleUnkF64E10;
-        if (_vehicleVelocityF64E08 >= 0)
+        if (_vehicleNextVelocity >= 0)
         {
             vehicle = GetEntity<Vehicle>(vehicle->next_vehicle_on_train);
         }

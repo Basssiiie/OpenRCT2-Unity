@@ -525,7 +525,7 @@ void vehicle_sounds_update();
 extern Vehicle* gCurrentVehicle;
 extern StationIndex _vehicleStationIndex;
 extern uint32_t _vehicleMotionTrackFlags;
-extern int32_t _vehicleVelocityF64E08;
+extern int32_t _vehicleNextVelocity;
 extern int32_t _vehicleVelocityF64E0C;
 extern int32_t _vehicleUnkF64E10;
 extern uint8_t _vehicleF64E2C;

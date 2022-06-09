@@ -132,9 +132,9 @@ int32_t Vehicle::CalculateRiderBraking() const
 
     // Brake if close to the vehicle in front
     Vehicle* prevVehicle = GetEntity<Vehicle>(prev_vehicle_on_ride);
-    if (prevVehicle != nullptr && this != prevVehicle && _vehicleVelocityF64E08 > minFollowVelocity)
+    if (prevVehicle != nullptr && this != prevVehicle && _vehicleNextVelocity > minFollowVelocity)
     {
-        int32_t followDistance = std::max(minFollowDistance, (riderSettings.followDistance * _vehicleVelocityF64E08) >> 15);
+        int32_t followDistance = std::max(minFollowDistance, (riderSettings.followDistance * _vehicleNextVelocity) >> 15);
         int32_t distance = std::max(abs(x - prevVehicle->x), abs(y - prevVehicle->y));
         int32_t relativeVelocity = velocity - prevVehicle->velocity;
         int32_t z_diff = abs(z - prevVehicle->z);
@@ -213,11 +213,11 @@ int32_t Vehicle::CalculateRiderBraking() const
     }
 
     // Brake if car exceeds rider's preferred max speed
-    if (_vehicleVelocityF64E08 > targetSpeed + brakeThreshold)
+    if (_vehicleNextVelocity > targetSpeed + brakeThreshold)
     {
         return -maxBrake;
     }
-    else if (_vehicleVelocityF64E08 > targetSpeed)
+    else if (_vehicleNextVelocity > targetSpeed)
     {
         return -minBrake;
     }
