@@ -71,7 +71,7 @@ uint32_t _vehicleMotionTrackFlags;
 int32_t _vehicleNextVelocity;
 int32_t _vehicleVelocityF64E0C;
 int32_t _vehicleStepsThisTick;
-uint8_t _vehicleF64E2C;
+uint8_t _vehicleBrakeSoundHasPlayed;
 Vehicle* _vehicleFrontVehicle;
 CoordsXYZ _vehicleCurPosition;
 
@@ -7577,9 +7577,9 @@ loc_6DAEB9:
             }
             else if (!(gCurrentTicks & 0x0F))
             {
-                if (_vehicleF64E2C == 0)
+                if (_vehicleBrakeSoundHasPlayed == 0)
                 {
-                    _vehicleF64E2C++;
+                    _vehicleBrakeSoundHasPlayed++;
                     OpenRCT2::Audio::Play3D(OpenRCT2::Audio::SoundId::BrakeRelease, { x, y, z });
                 }
             }
@@ -8880,7 +8880,7 @@ int32_t Vehicle::UpdateTrackMotion(int32_t* outStation)
         return UpdateTrackMotionMiniGolf(outStation);
     }
 
-    _vehicleF64E2C = 0;
+    _vehicleBrakeSoundHasPlayed = 0;
     gCurrentVehicle = this;
     _vehicleMotionTrackFlags = 0;
     _vehicleStationIndex = StationIndex::GetNull();

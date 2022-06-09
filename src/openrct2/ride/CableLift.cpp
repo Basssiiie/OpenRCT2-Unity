@@ -366,7 +366,7 @@ bool Vehicle::CableLiftUpdateTrackMotionBackwards()
  */
 int32_t Vehicle::CableLiftUpdateTrackMotion()
 {
-    _vehicleF64E2C = 0;
+    _vehicleBrakeSoundHasPlayed = 0;
     gCurrentVehicle = this;
     _vehicleMotionTrackFlags = 0;
     _vehicleStationIndex = StationIndex::GetNull();

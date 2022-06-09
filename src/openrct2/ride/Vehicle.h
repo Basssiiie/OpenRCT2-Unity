@@ -528,6 +528,6 @@ extern uint32_t _vehicleMotionTrackFlags;
 extern int32_t _vehicleNextVelocity;
 extern int32_t _vehicleVelocityF64E0C;
 extern int32_t _vehicleStepsThisTick;
-extern uint8_t _vehicleF64E2C;
+extern uint8_t _vehicleBrakeSoundHasPlayed;
 extern Vehicle* _vehicleFrontVehicle;
 extern CoordsXYZ _vehicleCurPosition;
