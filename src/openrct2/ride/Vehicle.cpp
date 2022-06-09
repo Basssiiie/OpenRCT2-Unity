@@ -4171,7 +4171,7 @@ void Vehicle::UpdateTravellingCableLift()
     }
     int32_t curFlags = UpdateTrackMotion(nullptr);
 
-    if (curFlags & VEHICLE_UPDATE_MOTION_TRACK_FLAG_11)
+    if (curFlags & VEHICLE_UPDATE_MOTION_TRACK_FLAG_CABLE_LIFT_RETURN_TO_STATION)
     {
         SetState(Vehicle::Status::Travelling, 1);
         lost_time_out = 0;
@@ -7377,7 +7377,7 @@ bool Vehicle::UpdateTrackMotionForwardsGetNewTrack(uint16_t trackType, Ride* cur
 
     if (trackType == TrackElemType::CableLiftHill && this == gCurrentVehicle)
     {
-        _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_11;
+        _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_CABLE_LIFT_RETURN_TO_STATION;
     }
 
     if (tileElement->AsTrack()->IsBlockStart())
