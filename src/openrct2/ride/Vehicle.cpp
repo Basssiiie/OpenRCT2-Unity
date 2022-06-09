@@ -70,7 +70,7 @@ StationIndex _vehicleStationIndex;
 uint32_t _vehicleMotionTrackFlags;
 int32_t _vehicleNextVelocity;
 int32_t _vehicleVelocityF64E0C;
-int32_t _vehicleUnkF64E10;
+int32_t _vehicleStepsThisTick;
 uint8_t _vehicleF64E2C;
 Vehicle* _vehicleFrontVehicle;
 CoordsXYZ _vehicleCurPosition;
@@ -4258,7 +4258,7 @@ void Vehicle::UpdateMotionBoatHire()
         UpdateAdditionalAnimation();
     }
 
-    _vehicleUnkF64E10 = 1;
+    _vehicleStepsThisTick = 1;
     acceleration = 0;
     remaining_distance += _vehicleVelocityF64E0C;
     if (remaining_distance >= 0x368A)
@@ -4480,7 +4480,7 @@ void Vehicle::UpdateMotionBoatHire()
             {
                 break;
             }
-            _vehicleUnkF64E10++;
+            _vehicleStepsThisTick++;
         }
 
         MoveTo(_vehicleCurPosition);
@@ -5743,7 +5743,7 @@ int32_t Vehicle::UpdateMotionDodgems()
 
     _vehicleNextVelocity = nextVelocity;
     _vehicleVelocityF64E0C = (nextVelocity / 1024) * 42;
-    _vehicleUnkF64E10 = 1;
+    _vehicleStepsThisTick = 1;
 
     acceleration = 0;
     if (!(curRide->lifecycle_flags & (RIDE_LIFECYCLE_BREAKDOWN_PENDING | RIDE_LIFECYCLE_BROKEN_DOWN))
@@ -5825,7 +5825,7 @@ int32_t Vehicle::UpdateMotionDodgems()
             {
                 break;
             }
-            _vehicleUnkF64E10++;
+            _vehicleStepsThisTick++;
         }
 
         if (remaining_distance >= 13962)
@@ -7274,7 +7274,7 @@ void Vehicle::Sub6DBF3E()
 {
     CarEntry* vehicleEntry = Entry();
 
-    acceleration /= _vehicleUnkF64E10;
+    acceleration /= _vehicleStepsThisTick;
     if (TrackSubposition == VehicleTrackSubposition::ChairliftGoingBack)
     {
         return;
@@ -7771,7 +7771,7 @@ loc_6DAEB9:
     }
 
     acceleration += AccelerationFromPitch[moveInfovehicleSpriteType];
-    _vehicleUnkF64E10++;
+    _vehicleStepsThisTick++;
     goto loc_6DAEB9;
 }
 
@@ -8079,7 +8079,7 @@ bool Vehicle::UpdateTrackMotionBackwards(CarEntry* vehicleEntry, Ride* curRide, 
             return true;
         }
         acceleration += AccelerationFromPitch[moveInfoVehicleSpriteType];
-        _vehicleUnkF64E10++;
+        _vehicleStepsThisTick++;
     }
 }
 
@@ -8095,7 +8095,7 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicle(Ride* curRide, rct_ride_entry* ri
     CoordsXYZ trackPos;
     int32_t direction{};
 
-    _vehicleUnkF64E10 = 1;
+    _vehicleStepsThisTick = 1;
     acceleration = AccelerationFromPitch[Pitch];
     if (!HasUpdateFlag(VEHICLE_UPDATE_FLAG_SINGLE_CAR_POSITION))
     {
@@ -8408,7 +8408,7 @@ loc_6DC99A:
         goto loc_6DCDE4;
     }
     acceleration = AccelerationFromPitch[Pitch];
-    _vehicleUnkF64E10++;
+    _vehicleStepsThisTick++;
     goto loc_6DC462;
 
 loc_6DC9BC:
@@ -8519,7 +8519,7 @@ loc_6DCD2B:
         goto loc_6DCDE4;
     }
     acceleration += AccelerationFromPitch[Pitch];
-    _vehicleUnkF64E10++;
+    _vehicleStepsThisTick++;
     goto loc_6DCA9A;
 
 loc_6DCD4A:
@@ -8555,7 +8555,7 @@ loc_6DCDE4:
     MoveTo(_vehicleCurPosition);
 
 loc_6DCE02:
-    acceleration /= _vehicleUnkF64E10;
+    acceleration /= _vehicleStepsThisTick;
     if (TrackSubposition == VehicleTrackSubposition::ChairliftGoingBack)
     {
         return;
@@ -8928,7 +8928,7 @@ int32_t Vehicle::UpdateTrackMotion(int32_t* outStation)
             car->UpdateAdditionalAnimation();
         }
         car->acceleration = AccelerationFromPitch[car->Pitch];
-        _vehicleUnkF64E10 = 1;
+        _vehicleStepsThisTick = 1;
 
         if (!car->HasUpdateFlag(VEHICLE_UPDATE_FLAG_SINGLE_CAR_POSITION))
         {
@@ -8956,7 +8956,7 @@ int32_t Vehicle::UpdateTrackMotion(int32_t* outStation)
                     break;
                 }
                 car->acceleration += AccelerationFromPitch[car->Pitch];
-                _vehicleUnkF64E10++;
+                _vehicleStepsThisTick++;
                 continue;
             }
             if (car->remaining_distance < 0x368A)
@@ -8974,7 +8974,7 @@ int32_t Vehicle::UpdateTrackMotion(int32_t* outStation)
                 break;
             }
             car->acceleration = AccelerationFromPitch[car->Pitch];
-            _vehicleUnkF64E10++;
+            _vehicleStepsThisTick++;
             continue;
         }
         // loc_6DBF20

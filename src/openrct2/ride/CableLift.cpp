@@ -231,7 +231,7 @@ bool Vehicle::CableLiftUpdateTrackMotionForwards()
     if (curRide == nullptr)
         return false;
 
-    for (; remaining_distance >= 13962; _vehicleUnkF64E10++)
+    for (; remaining_distance >= 13962; _vehicleStepsThisTick++)
     {
         auto trackType = GetTrackType();
         if (trackType == TrackElemType::CableLiftHill && track_progress == 160)
@@ -300,7 +300,7 @@ bool Vehicle::CableLiftUpdateTrackMotionBackwards()
     if (curRide == nullptr)
         return false;
 
-    for (; remaining_distance < 0; _vehicleUnkF64E10++)
+    for (; remaining_distance < 0; _vehicleStepsThisTick++)
     {
         uint16_t trackProgress = track_progress - 1;
 
@@ -386,7 +386,7 @@ int32_t Vehicle::CableLiftUpdateTrackMotion()
     for (Vehicle* vehicle = frontVehicle; vehicle != nullptr;)
     {
         vehicle->acceleration = AccelerationFromPitch[vehicle->Pitch];
-        _vehicleUnkF64E10 = 1;
+        _vehicleStepsThisTick = 1;
         vehicle->remaining_distance += _vehicleVelocityF64E0C;
 
         if (vehicle->remaining_distance < 0 || vehicle->remaining_distance >= 13962)
@@ -407,7 +407,7 @@ int32_t Vehicle::CableLiftUpdateTrackMotion()
                     _vehicleVelocityF64E0C -= vehicle->remaining_distance - 13962;
                     vehicle->remaining_distance = 13962;
                     vehicle->acceleration += AccelerationFromPitch[vehicle->Pitch];
-                    _vehicleUnkF64E10++;
+                    _vehicleStepsThisTick++;
                     continue;
                 }
 
@@ -420,11 +420,11 @@ int32_t Vehicle::CableLiftUpdateTrackMotion()
                 _vehicleVelocityF64E0C -= vehicle->remaining_distance + 1;
                 vehicle->remaining_distance = -1;
                 vehicle->acceleration += AccelerationFromPitch[vehicle->Pitch];
-                _vehicleUnkF64E10++;
+                _vehicleStepsThisTick++;
             }
             vehicle->MoveTo(_vehicleCurPosition);
         }
-        vehicle->acceleration /= _vehicleUnkF64E10;
+        vehicle->acceleration /= _vehicleStepsThisTick;
         if (_vehicleNextVelocity >= 0)
         {
             vehicle = GetEntity<Vehicle>(vehicle->next_vehicle_on_train);
