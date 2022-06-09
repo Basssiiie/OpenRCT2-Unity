@@ -1987,7 +1987,7 @@ void Vehicle::UpdateMovingToEndOfStation()
                 acceleration = 0;
             }
             curFlags = UpdateTrackMotion(&station);
-            if (!(curFlags & VEHICLE_UPDATE_MOTION_TRACK_FLAG_5))
+            if (!(curFlags & VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK))
                 break;
             [[fallthrough]];
         case RideMode::Dodgems:
@@ -3205,7 +3205,7 @@ void Vehicle::UpdateDeparting()
         }
     }
 
-    if (curFlags & (VEHICLE_UPDATE_MOTION_TRACK_FLAG_5 | VEHICLE_UPDATE_MOTION_TRACK_FLAG_12))
+    if (curFlags & (VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK | VEHICLE_UPDATE_MOTION_TRACK_FLAG_12))
     {
         if (curRide->mode == RideMode::BoatHire)
         {
@@ -3290,7 +3290,7 @@ void Vehicle::UpdateDeparting()
                 return;
             }
 
-            if (!(curFlags & VEHICLE_UPDATE_MOTION_TRACK_FLAG_5))
+            if (!(curFlags & VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK))
                 return;
             if (curRide->mode == RideMode::BoatHire || curRide->mode == RideMode::RotatingLift
                 || curRide->mode == RideMode::Shuttle)
@@ -3648,7 +3648,7 @@ void Vehicle::UpdateTravelling()
             return;
         }
 
-        if (curFlags & (VEHICLE_UPDATE_MOTION_TRACK_FLAG_5 | VEHICLE_UPDATE_MOTION_TRACK_FLAG_12))
+        if (curFlags & (VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK | VEHICLE_UPDATE_MOTION_TRACK_FLAG_12))
         {
             if (curRide->mode == RideMode::RotatingLift)
             {
@@ -3925,7 +3925,7 @@ void Vehicle::UpdateArriving()
 
     if (!(curFlags
           & (VEHICLE_UPDATE_MOTION_TRACK_FLAG_VEHICLE_AT_STATION | VEHICLE_UPDATE_MOTION_TRACK_FLAG_1
-             | VEHICLE_UPDATE_MOTION_TRACK_FLAG_5)))
+             | VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK)))
     {
         if (velocity > 98955)
             var_C0 = 0;
@@ -7648,7 +7648,7 @@ loc_6DAEB9:
 
         if (!UpdateTrackMotionForwardsGetNewTrack(trackType, curRide, rideEntry))
         {
-            _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+            _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK;
             _vehicleVelocityF64E0C -= remaining_distance + 1;
             remaining_distance = -1;
             return false;
@@ -7982,7 +7982,7 @@ bool Vehicle::UpdateTrackMotionBackwards(CarEntry* vehicleEntry, Ride* curRide, 
 
             if (!UpdateTrackMotionBackwardsGetNewTrack(trackType, curRide, &newTrackProgress))
             {
-                _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+                _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK;
                 _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
                 remaining_distance = 0x368A;
                 return false;
@@ -8412,7 +8412,7 @@ loc_6DC99A:
     goto loc_6DC462;
 
 loc_6DC9BC:
-    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK;
     _vehicleVelocityF64E0C -= remaining_distance + 1;
     remaining_distance = -1;
     goto loc_6DCD2B;
@@ -8523,7 +8523,7 @@ loc_6DCD2B:
     goto loc_6DCA9A;
 
 loc_6DCD4A:
-    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK;
     _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
     remaining_distance = 0x368A;
     goto loc_6DC99A;

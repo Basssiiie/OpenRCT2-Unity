@@ -403,7 +403,7 @@ int32_t Vehicle::CableLiftUpdateTrackMotion()
                         break;
                     }
 
-                    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+                    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK;
                     _vehicleVelocityF64E0C -= vehicle->remaining_distance - 13962;
                     vehicle->remaining_distance = 13962;
                     vehicle->acceleration += AccelerationFromPitch[vehicle->Pitch];
@@ -416,7 +416,7 @@ int32_t Vehicle::CableLiftUpdateTrackMotion()
                     break;
                 }
 
-                _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+                _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_END_OF_TRACK;
                 _vehicleVelocityF64E0C -= vehicle->remaining_distance + 1;
                 vehicle->remaining_distance = -1;
                 vehicle->acceleration += AccelerationFromPitch[vehicle->Pitch];
