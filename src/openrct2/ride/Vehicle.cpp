@@ -7330,30 +7330,29 @@ void Vehicle::Sub6DBF3E()
         return;
     }
 
-    uint16_t ax = track_progress;
     if (_vehicleVelocityF64E08 < 0)
     {
-        if (ax <= 22)
+        if (track_progress <= 22)
         {
             _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_VEHICLE_AT_STATION;
         }
     }
     else
     {
-        uint16_t cx = 17;
+        uint16_t stopPosition = 17;
         if (vehicleEntry->flags & CAR_ENTRY_FLAG_CHAIRLIFT)
         {
-            cx = 6;
+            stopPosition = 6;
         }
         if (vehicleEntry->flags & CAR_ENTRY_FLAG_GO_KART)
         {
             // Determine the stop positions for the karts. If in left lane it's further along the track than the right lane.
             // Since it's not possible to overtake when the race has ended, this does not check for overtake states (7 and
             // 8).
-            cx = TrackSubposition == VehicleTrackSubposition::GoKartsRightLane ? 18 : 20;
+            stopPosition = TrackSubposition == VehicleTrackSubposition::GoKartsRightLane ? 18 : 20;
         }
 
-        if (ax > cx)
+        if (track_progress > stopPosition)
         {
             _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_VEHICLE_AT_STATION;
         }
