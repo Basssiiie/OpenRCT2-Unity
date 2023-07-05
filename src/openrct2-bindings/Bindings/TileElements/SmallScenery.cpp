@@ -1,9 +1,11 @@
+#include <iostream>
 #include <openrct2/object/ObjectManager.h>
+#include <openrct2/object/SmallSceneryEntry.h>
 #include <openrct2/world/TileElement.h>
+#include <openrct2/world/Scenery.h>
 #include <openrct2/world/SmallScenery.h>
 
-#include "..\openrct2-bindings.h"
-#include <iostream>
+#include "../../openrct2-bindings.h"
 
 
 extern "C"
@@ -27,19 +29,21 @@ extern "C"
         }
 
         // Scenery colours
+        ImageId imageId = ImageId(imageIndex);
         if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_PRIMARY_COLOUR))
         {
+            imageId = imageId.WithPrimary(sceneryElement->GetPrimaryColour());
+
             if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_SECONDARY_COLOUR))
             {
-                imageIndex |= SPRITE_ID_PALETTE_COLOUR_2(
-                    sceneryElement->GetPrimaryColour(), sceneryElement->GetSecondaryColour());
-            }
-            else
-            {
-                imageIndex |= SPRITE_ID_PALETTE_COLOUR_1(sceneryElement->GetPrimaryColour());
+                imageId = imageId.WithSecondary(sceneryElement->GetSecondaryColour());
             }
         }
-        return imageIndex;
+        if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_TERTIARY_COLOUR))
+        {
+            imageId = imageId.WithTertiary(sceneryElement->GetTertiaryColour());
+        }
+        return imageId.ToUInt32();
     }
 
 
@@ -117,7 +121,7 @@ extern "C"
     }
 
 
-    const uint8_t IdentifierSize = sizeof(rct_object_entry::name);
+    const uint8_t IdentifierSize = sizeof(RCTObjectEntry::name);
 
     struct SmallSceneryEntryInfo
     {
@@ -147,7 +151,7 @@ extern "C"
         entry->animationDelay = sceneryEntry->animation_delay;
         entry->animationFrameCount = sceneryEntry->num_frames;
 
-        const rct_object_entry objectEntry = obj->GetObjectEntry();
+        const RCTObjectEntry objectEntry = obj->GetObjectEntry();
         std::memcpy(entry->identifier, objectEntry.name, IdentifierSize);
     }
 }

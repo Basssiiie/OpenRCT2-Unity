@@ -1,11 +1,10 @@
+#include "../openrct2-bindings.h"
+
 #include <openrct2/ride/RideData.h>
 #include <openrct2/ride/Track.h>
 #include <openrct2/ride/TrackData.h>
 #include <openrct2/ride/Vehicle.h>
 #include <openrct2/ride/VehicleSubpositionData.h>
-
-#include "openrct2-bindings.h"
-
 
 // Rounds a number to the nearest multiple of 'multiple'.
 int RoundToMultiple(int value, int multiple)
@@ -16,10 +15,9 @@ int RoundToMultiple(int value, int multiple)
     return (retval) / multiple * multiple;
 }
 
-
-// Hack: manually fix the gaps. 
+// Hack: manually fix the gaps.
 // (please tell me if you know a better way to fix there gaps, without any bumps!)
-void FixTrackPiecePosition(rct_vehicle_info* target, uint32_t trackType, uint8_t slope)
+void FixTrackPiecePosition(VehicleInfo* target, uint32_t trackType, uint8_t slope)
 {
     switch (slope)
     {
@@ -45,7 +43,6 @@ void FixTrackPiecePosition(rct_vehicle_info* target, uint32_t trackType, uint8_t
     }
 }
 
-    
 extern "C"
 {
     // Returns the amount of path nodes in the pathing route for the specified track type.
@@ -54,21 +51,19 @@ extern "C"
         return gTrackVehicleInfo[trackVariant][typeAndDirection]->size;
     }
 
-
     // Returns the pathing route for the specified track element.
-    EXPORT void GetTrackElementRoute(uint8_t trackVariant, int32_t typeAndDirection, rct_vehicle_info* nodes, int32_t arraySize)
+    EXPORT void GetTrackElementRoute(uint8_t trackVariant, int32_t typeAndDirection, VehicleInfo* nodes, int32_t arraySize)
     {
-        const rct_vehicle_info_list* list = gTrackVehicleInfo[trackVariant][typeAndDirection];
+        const VehicleInfoList* list = gTrackVehicleInfo[trackVariant][typeAndDirection];
 
-        std::memcpy(nodes, list->info, sizeof(rct_vehicle_info) * arraySize);
+        std::memcpy(nodes, list->info, sizeof(VehicleInfo) * arraySize);
 
         const int32_t trackType = (typeAndDirection >> 2);
-        const rct_trackdefinition definition = TrackMetaData::GetTrackElementDescriptor(trackType).Definition;
+        const TrackDefinition definition = TrackMetaData::GetTrackElementDescriptor(trackType).Definition;
 
         FixTrackPiecePosition(&nodes[0], trackType, definition.vangle_start);
         FixTrackPiecePosition(&nodes[arraySize - 1], trackType, definition.vangle_end);
     }
-
 
     // (Temporary?) Returns the flags for the specified track type.
     EXPORT uint16_t GetTrackTypeFlags(int32_t trackType)
@@ -76,11 +71,10 @@ extern "C"
         return TrackMetaData::GetTrackElementDescriptor(trackType).Flags;
     }
 
-
     // (Temporary?) Returns the track height offset for this ride index.
     EXPORT int8_t GetTrackHeightOffset(uint16_t rideIndex)
     {
-        auto ride = get_ride(RideId::FromUnderlying(rideIndex));
+        auto ride = GetRide(RideId::FromUnderlying(rideIndex));
         if (ride == nullptr)
         {
             dll_log("GetTrackHeightOffset: ride %i not found.", rideIndex);
@@ -90,11 +84,10 @@ extern "C"
         return RideTypeDescriptors[ride->type].Heights.VehicleZOffset;
     }
 
-
     // (Temporary?) Returns the ride colours for this ride.
     EXPORT void GetRideTrackColours(uint16_t rideIndex, TrackColour* colours)
     {
-        auto ride = get_ride(RideId::FromUnderlying(rideIndex));
+        auto ride = GetRide(RideId::FromUnderlying(rideIndex));
         if (ride == nullptr)
         {
             dll_log("GetRideTrackColours: ride %i not found.", rideIndex);

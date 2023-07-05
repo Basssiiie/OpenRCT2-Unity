@@ -1,40 +1,38 @@
-#include <openrct2/world/TileElement.h>
+#include "../../openrct2-bindings.h"
+
+#include <openrct2/object/WallSceneryEntry.h>
 #include <openrct2/world/SmallScenery.h>
-
-#include "..\openrct2-bindings.h"
-
+#include <openrct2/world/TileElement.h>
 
 extern "C"
 {
     // Returns the sprite image index for a small scenery tile element.
-    //  Inspired by: fence_paint
+    //  Inspired by: PaintWall(), PaintWallWall()
     EXPORT uint32_t GetWallImageIndex(const TileElement* tileElement, uint8_t direction)
     {
         const WallElement* wallElement = tileElement->AsWall();
-        const WallSceneryEntry* sceneryEntry = wallElement->GetEntry();
+        const WallSceneryEntry* wallEntry = wallElement->GetEntry();
 
-        if (sceneryEntry == nullptr)
+        if (wallEntry == nullptr)
         {
             dll_log("Wall sprite entry = null");
             return 0;
         }
 
         // Colours
-        int32_t primaryColour = wallElement->GetPrimaryColour();
-        uint32_t imageColourFlags = SPRITE_ID_PALETTE_COLOUR_1(primaryColour);
-        //uint32_t dword_141F718 = imageColourFlags + 0x23800006;
-
-        if (sceneryEntry->flags & WALL_SCENERY_HAS_SECONDARY_COLOUR)
+        uint8_t wallFlags = wallEntry->flags;
+        ImageId imageId;
+        if (wallFlags & WALL_SCENERY_HAS_PRIMARY_COLOUR)
         {
-            uint8_t secondaryColour = wallElement->GetSecondaryColour();
-            imageColourFlags |= secondaryColour << 24 | IMAGE_TYPE_REMAP_2_PLUS;
+            imageId = imageId.WithPrimary(wallElement->GetPrimaryColour());
         }
-
-        uint32_t tertiaryColour = 0;
-        if (sceneryEntry->flags & WALL_SCENERY_HAS_TERTIARY_COLOUR)
+        if (wallFlags & WALL_SCENERY_HAS_SECONDARY_COLOUR)
         {
-            tertiaryColour = wallElement->GetTertiaryColour();
-            imageColourFlags &= 0x0DFFFFFFF;
+            imageId = imageId.WithSecondary(wallElement->GetSecondaryColour());
+        }
+        if (wallFlags & WALL_SCENERY_HAS_TERTIARY_COLOUR)
+        {
+            imageId = imageId.WithTertiary(wallElement->GetTertiaryColour());
         }
 
         // Slopes
@@ -54,22 +52,20 @@ extern "C"
             imageOffset = 0;
         }
 
-        uint32_t imageId = sceneryEntry->image + imageOffset;
-
-        if (sceneryEntry->flags & WALL_SCENERY_HAS_GLASS)
+        if (wallFlags & WALL_SCENERY_HAS_GLASS)
         {
-            if (sceneryEntry->flags & WALL_SCENERY_HAS_PRIMARY_COLOUR)
+            if (wallFlags & WALL_SCENERY_IS_DOUBLE_SIDED)
             {
-                imageId |= imageColourFlags;
+                imageOffset += 12;
             }
         }
         else
         {
-            if (sceneryEntry->flags & WALL_SCENERY_HAS_PRIMARY_COLOUR)
+            if (wallFlags & WALL_SCENERY_IS_DOUBLE_SIDED)
             {
-                imageId |= imageColourFlags;
+                imageOffset += 6;
             }
         }
-        return imageId;
+        return imageId.WithIndex(wallEntry->image + imageOffset).ToUInt32();
     }
 }

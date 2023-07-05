@@ -24,6 +24,7 @@ BraceWrapping:
   AfterClass:      true
   AfterControlStatement: true
   AfterEnum:       true
+  AfterExternBlock: true
   AfterFunction:   true
   AfterNamespace:  true
   AfterStruct:     true
@@ -62,6 +63,7 @@ IncludeCategories:
   - Regex:           '^<'
     Priority:        2
 IndentCaseLabels: true
+IndentExternBlock: true
 IndentPPDirectives: AfterHash
 IndentWidth:     4
 IndentWrappedFunctionNames: true

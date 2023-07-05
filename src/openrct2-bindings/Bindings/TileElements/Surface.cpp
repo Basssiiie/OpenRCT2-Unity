@@ -1,23 +1,21 @@
-#include <openrct2/object/TerrainSurfaceObject.h>
-#include <openrct2/object/TerrainEdgeObject.h>
+#include "../../openrct2-bindings.h"
+
 #include <openrct2/object/ObjectManager.h>
+#include <openrct2/object/TerrainEdgeObject.h>
+#include <openrct2/object/TerrainSurfaceObject.h>
 #include <openrct2/paint/tile_element/Paint.Surface.h>
 #include <openrct2/world/TileElement.h>
 
-#include "..\openrct2-bindings.h"
-
-
 extern "C"
-{    
+{
     // Returns the sprite image index for a surface sprite.
-    //  Inspired by: get_surface_object(), get_surface_image()
+    //  Inspired by: GetSurfaceObject(), GetSurfaceImage()
     EXPORT uint32_t GetSurfaceImageIndex(const TileElement* tileElement, int32_t tileX, int32_t tileY, uint8_t direction)
     {
         const SurfaceElement* surface = tileElement->AsSurface();
         uint32_t surfaceIndex = surface->GetSurfaceStyle();
         uint8_t grassLength = surface->GetGrassLength();
-
-        uint32_t imageId = (uint32_t)SPR_NONE;
+        ImageId imageId;
 
         IObjectManager& objMgr = OpenRCT2::GetContext()->GetObjectManager();
         Object* obj = objMgr.GetLoadedObject(ObjectType::TerrainSurface, surfaceIndex);
@@ -30,18 +28,17 @@ extern "C"
         {
             TerrainSurfaceObject* result = static_cast<TerrainSurfaceObject*>(obj);
 
-            imageId = result->GetImageId({ tileX, tileY }, grassLength, direction, 0, false, false);
+            imageId = ImageId(result->GetImageId({ tileX, tileY }, grassLength, direction, 0, false, false));
             if (result->Colour != 255)
             {
-                imageId |= SPRITE_ID_PALETTE_COLOUR_1(result->Colour);
+                imageId = imageId.WithPrimary(result->Colour);
             }
         }
-        return imageId;
+        return imageId.ToUInt32();
     }
 
-
     // Returns the sprite image for a surface edge sprite.
-    //  Inspired by: get_edge_image_with_offset()
+    //  Inspired by: GetEdgeImageWithOffset()
     EXPORT uint32_t GetSurfaceEdgeImageIndex(const TileElement* tileElement)
     {
         const SurfaceElement* surface = tileElement->AsSurface();
@@ -62,14 +59,12 @@ extern "C"
         return 0;
     }
 
-
     // Returns the sprite image for a regular water tile.
-    //  Inspired by: surface_paint()
+    //  Inspired by: PaintSurface()
     EXPORT uint32_t GetWaterImageIndex()
     {
         // SPR_WATER_OVERLAY = overlay for water
-        const int32_t imageId
-            = (SPR_WATER_MASK | IMAGE_TYPE_REMAP | IMAGE_TYPE_TRANSPARENT | EnumValue(FilterPaletteID::PaletteWater) << 19);
-        return imageId;
+        const auto imageId = ImageId(SPR_WATER_MASK, FilterPaletteID::PaletteWater).WithBlended(true);
+        return imageId.ToUInt32();
     }
 }

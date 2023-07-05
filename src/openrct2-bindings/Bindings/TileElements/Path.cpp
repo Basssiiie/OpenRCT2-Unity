@@ -1,8 +1,7 @@
+#include "../../openrct2-bindings.h"
+
 #include <openrct2/object/FootpathSurfaceObject.h>
 #include <openrct2/world/TileElement.h>
-
-#include "..\openrct2-bindings.h"
-
 
 extern "C"
 {
@@ -17,7 +16,6 @@ extern "C"
         0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 12, 32, 14, 47, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 48,
         0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 12, 13, 14, 49, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 50
     };
-
 
     // Returns the sprite image index for a small scenery tile element.
     //  Inspired by: path_paint()
@@ -39,7 +37,6 @@ extern "C"
 
         return (imageId + footpathEntry->BaseImageId);
     }
-
 
     // Returns the sprite image index for a small scenery tile element.
     //  Inspired by: path_paint()

@@ -1,4 +1,5 @@
 #include "../../openrct2/core/Path.hpp"
+#include "../openrct2-bindings.h"
 
 #include <openrct2/Context.h>
 #include <openrct2/Game.h>
@@ -6,9 +7,6 @@
 #include <openrct2/OpenRCT2.h>
 #include <openrct2/platform/platform.h>
 #include <openrct2/world/Park.h>
-
-#include "openrct2-bindings.h"
-
 
 std::unique_ptr<IContext> unityContext;
 
@@ -35,9 +33,8 @@ extern "C"
         }
 
         dll_log(
-            "gCustomOpenrctDataPath = %s\n(me) gCustomRCT1DataPath = %s\n(me) gCustomRCT2DataPath = %s",
-            datapath, rct1path, rct2path
-        );
+            "gCustomOpenrctDataPath = %s\n(me) gCustomRCT1DataPath = %s\n(me) gCustomRCT2DataPath = %s", datapath, rct1path,
+            rct2path);
 
         // Create a plain context
         Platform::CoreInit();
@@ -47,12 +44,10 @@ extern "C"
         dll_log("Initialise = %i", result);
     }
 
-
     EXPORT void PerformGameUpdate()
     {
         unityContext->GetGameState()->Tick();
     }
-
 
     EXPORT void StopGame()
     {
@@ -61,7 +56,6 @@ extern "C"
         unityContext->Finish();
         unityContext = nullptr;
     }
-
 
     EXPORT void LoadPark(const char* filepath)
     {
@@ -74,7 +68,6 @@ extern "C"
 
         dll_log("LoadPark() = %s", name);
     }
-
 
     EXPORT const char* GetParkNamePtr()
     {

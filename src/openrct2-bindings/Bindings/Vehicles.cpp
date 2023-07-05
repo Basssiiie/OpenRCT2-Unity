@@ -1,8 +1,7 @@
-#include <openrct2/ride/Vehicle.h>
+#include "../openrct2-bindings.h"
+
 #include <openrct2/entity/EntityList.h>
-
-#include "openrct2-bindings.h"
-
+#include <openrct2/ride/Vehicle.h>
 
 extern "C"
 {
@@ -21,7 +20,6 @@ extern "C"
         uint16_t trackProgress;
     };
 
-
     // Loads all the vehicles into the specified buffer, returns the total amount of vehicles loaded.
     EXPORT int32_t GetAllVehicles(VehicleEntity* vehicles, int32_t arraySize)
     {
@@ -30,13 +28,13 @@ extern "C"
         for (Vehicle* vehicle : EntityList<Vehicle>())
         {
             VehicleEntity* target = &vehicles[vehicleCount];
-            target->idx = vehicle->sprite_index.ToUnderlying();
+            target->idx = vehicle->Id.ToUnderlying();
 
             target->x = vehicle->x;
             target->y = vehicle->y;
             target->z = vehicle->z;
 
-            target->direction = vehicle->sprite_direction;
+            target->direction = vehicle->Orientation;
             target->bankRotation = vehicle->bank_rotation;
             target->pitchRotation = vehicle->Pitch;
 

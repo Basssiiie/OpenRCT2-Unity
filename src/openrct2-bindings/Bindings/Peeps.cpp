@@ -1,9 +1,9 @@
+#include "../openrct2-bindings.h"
+
 #include <openrct2/entity/EntityList.h>
 #include <openrct2/entity/Guest.h>
 #include <openrct2/entity/Peep.h>
 #include <openrct2/entity/Staff.h>
-
-#include "openrct2-bindings.h"
 
 extern "C"
 {
@@ -17,46 +17,46 @@ extern "C"
         uint8_t direction;
         uint32_t imageId;
 
-        //uint8_t tshirt_colour;
-        //uint8_t trousers_colour;
+        // uint8_t tshirt_colour;
+        // uint8_t trousers_colour;
     };
-
 
     // Gets the current sprite image id of this peep, excluding rotation.
     uint32_t GetCurrentImageId(Peep* peep)
     {
         // Borrowed from Paint.Peep.cpp/peep_paint()
-        rct_peep_animation_entry sprite = g_peep_animation_entries[EnumValue(peep->SpriteType)];
+        PeepAnimationEntry sprite = g_peep_animation_entries[EnumValue(peep->SpriteType)];
 
-        PeepActionSpriteType spriteType = peep->ActionSpriteType;
+        PeepSpriteType spriteType = peep->SpriteType;
+        PeepActionSpriteType actionSpriteType = peep->ActionSpriteType;
         uint8_t imageOffset = peep->ActionSpriteImageOffset;
 
         if (peep->Action == PeepActionType::Idle)
         {
-            spriteType = peep->NextActionSpriteType;
+            actionSpriteType = peep->NextActionSpriteType;
             imageOffset = 0;
         }
 
-        uint32_t baseImageId = (sprite.sprite_animation[EnumValue(spriteType)].base_image + imageOffset * 4);
-        /* + (imageDirection >> 3)*/
-        uint32_t imageId = baseImageId | peep->TshirtColour << 19 | peep->TrousersColour << 24 | IMAGE_TYPE_REMAP | IMAGE_TYPE_REMAP_2_PLUS;
-        return imageId;
-    }
+        uint32_t baseImageId = (GetPeepAnimation(spriteType, actionSpriteType).base_image + imageOffset * 4); // +
+                                                                                                              // (imageDirection
+                                                                                                              // >> 3)
+        ImageId imageId = ImageId(baseImageId, peep->TshirtColour, peep->TrousersColour);
 
+        return imageId.ToUInt32();
+    }
 
     void SetPeepInfo(PeepEntity* entity, Peep* peep)
     {
-        entity->idx = peep->sprite_index.ToUnderlying();
+        entity->idx = peep->Id.ToUnderlying();
         entity->x = peep->x;
         entity->y = peep->y;
         entity->z = peep->z;
-        entity->direction = peep->sprite_direction;
+        entity->direction = peep->PeepDirection;
         entity->imageId = GetCurrentImageId(peep);
 
         // entity->tshirt_colour = peep->TshirtColour;
         // entity->trousers_colour = peep->TrousersColour;
     }
-
 
     // Loads all the peeps into the specified buffer, returns the total amount of peeps loaded.
     EXPORT int32_t GetAllPeeps(PeepEntity* peeps, int32_t arraySize)
@@ -78,11 +78,9 @@ extern "C"
 
             SetPeepInfo(&peeps[peepCount], staff);
             peepCount++;
-
         }
         return peepCount;
     }
-
 
     struct PeepStats
     {
@@ -95,7 +93,6 @@ extern "C"
         uint8_t toilet;
         uint8_t intensity;
     };
-
 
     // Writes statistics about the specified peep to the specified struct, returns true
     // or false depending on whether the peep existed or not.

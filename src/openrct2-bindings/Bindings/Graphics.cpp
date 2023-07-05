@@ -1,9 +1,8 @@
+#include "../openrct2-bindings.h"
+
+#include <openrct2/drawing/Drawing.h>
 #include <openrct2/sprites.h>
 #include <openrct2/world/SmallScenery.h>
-
-#include "openrct2-bindings.h"
-#include <openrct2/drawing/Drawing.h>
-
 
 extern "C"
 {
@@ -17,13 +16,11 @@ extern "C"
         }
     }
 
-
     // Converts any of the colour ids (0-31) to the corresponding palette index (0-255).
     EXPORT uint8_t GetPaletteIndexForColourId(uint8_t colourId)
     {
         return ColourMapA[colourId].mid_light;
     }
-
 
     // Struct containing information about the sprite.
     struct sprite_data
@@ -34,12 +31,11 @@ extern "C"
         int16_t y_offset;
     };
 
-
     // Returns the image index of the tile element and its texture size.
     EXPORT void GetTextureData(uint32_t imageIndex, sprite_data* data)
     {
         const int32_t maskedImageId = imageIndex & 0x7FFFF;
-        const rct_g1_element* g1 = gfx_get_g1_element(maskedImageId);
+        const G1Element* g1 = GfxGetG1Element(maskedImageId);
 
         if (g1 == nullptr)
         {
@@ -53,12 +49,11 @@ extern "C"
         data->y_offset = g1->y_offset;
     }
 
-
     // Returns the actual texture data based on the image index.
     EXPORT void GetTexturePixels(uint32_t imageIndex, uint8_t* pixels, int arraySize)
     {
         const int32_t maskedImageId = imageIndex & 0x7FFFF;
-        const rct_g1_element* g1 = gfx_get_g1_element(maskedImageId);
+        const G1Element* g1 = GfxGetG1Element(maskedImageId);
 
         if (g1 == nullptr)
         {
@@ -73,7 +68,7 @@ extern "C"
         auto bits = new uint8_t[numPixels];
         std::fill_n(bits, numPixels, 0);
 
-        rct_drawpixelinfo dpi;
+        DrawPixelInfo dpi;
         dpi.bits = bits;
         dpi.x = g1->x_offset;
         dpi.y = g1->y_offset;
@@ -82,7 +77,7 @@ extern "C"
         dpi.pitch = 0;
         dpi.zoom_level = ZoomLevel(0);
 
-        gfx_draw_sprite_software(&dpi, ImageId::FromUInt32(imageIndex), { 0, 0 });
+        GfxDrawSpriteSoftware(dpi, ImageId::FromUInt32(imageIndex), { 0, 0 });
 
         for (int i = 0; i < numPixels; i++)
         {
