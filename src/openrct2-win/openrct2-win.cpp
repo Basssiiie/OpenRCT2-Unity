@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2020 OpenRCT2 developers
+ * Copyright (c) 2014-2023 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -34,14 +34,16 @@ int wmain(int argc, wchar_t** argvW, [[maybe_unused]] wchar_t* envp)
 {
     auto argvStrings = GetCommandLineArgs(argc, argvW);
 
-    SetConsoleCP(CODE_PAGE::CP_UTF8);
-    SetConsoleOutputCP(CODE_PAGE::CP_UTF8);
+    SetConsoleCP(OpenRCT2::CodePage::UTF8);
+    SetConsoleOutputCP(OpenRCT2::CodePage::UTF8);
 
     std::vector<const char*> argv;
     std::transform(
         argvStrings.begin(), argvStrings.end(), std::back_inserter(argv), [](const auto& string) { return string.c_str(); });
-    auto exitCode = NormalisedMain(argc, argv.data());
-    return exitCode;
+
+    // Ensure that argv[argc] == nullptr, as mandated by the standard
+    argv.push_back(nullptr);
+    return NormalisedMain(argc, argv.data());
 }
 
 static std::vector<std::string> GetCommandLineArgs(int argc, wchar_t** argvW)

@@ -1,16 +1,11 @@
 /*****************************************************************************
- * Copyright (c) 2014-2020 OpenRCT2 developers
+ * Copyright (c) 2014-2023 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
  *
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
-
-// Ignore isatty warning on WIN32
-#ifndef _CRT_NONSTDC_NO_WARNINGS
-#    define _CRT_NONSTDC_NO_WARNINGS
-#endif
 
 #include "../Context.h"
 #include "../OpenRCT2.h"
@@ -47,7 +42,7 @@ void StdInOutConsole::Start()
             {
                 if (lastPromptQuit)
                 {
-                    openrct2_finish();
+                    OpenRCT2Finish();
                     break;
                 }
 
@@ -105,7 +100,7 @@ void StdInOutConsole::Clear()
 
 void StdInOutConsole::Close()
 {
-    openrct2_finish();
+    OpenRCT2Finish();
 }
 
 void StdInOutConsole::WriteLine(const std::string& s, FormatToken colourFormat)

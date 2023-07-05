@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2018 OpenRCT2 developers
+ * Copyright (c) 2014-2023 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -27,7 +27,7 @@ class StringTest : public testing::TestWithParam<TCase>
 // Tests for String::Trim
 ///////////////////////////////////////////////////////////////////////////////
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TrimData, StringTest,
     testing::Values(
         // input                      after Trim       after TrimStart
@@ -86,15 +86,7 @@ TEST_F(StringTest, Convert_950_to_UTF8)
 {
     auto input = StringFromHex("a7d6b374aabab4c4a6e2aab0af57");
     auto expected = u8"快速的棕色狐狸";
-    auto actual = String::Convert(input, CODE_PAGE::CP_950, CODE_PAGE::CP_UTF8);
-    ASSERT_EQ(expected, actual);
-}
-
-TEST_F(StringTest, Convert_UTF8_to_932)
-{
-    auto input = u8"ファストブラウンフォックス";
-    auto expected = StringFromHex("83748340835883678375838983458393837483488362834e8358");
-    auto actual = String::Convert(input, CODE_PAGE::CP_UTF8, CODE_PAGE::CP_932);
+    auto actual = String::ConvertToUtf8(input, OpenRCT2::CodePage::CP_950);
     ASSERT_EQ(expected, actual);
 }
 
@@ -102,7 +94,7 @@ TEST_F(StringTest, Convert_UTF8_to_UTF8)
 {
     auto input = u8"سريع|brown|ثعلب";
     auto expected = input;
-    auto actual = String::Convert(input, CODE_PAGE::CP_UTF8, CODE_PAGE::CP_UTF8);
+    auto actual = String::ConvertToUtf8(input, OpenRCT2::CodePage::UTF8);
     ASSERT_EQ(expected, actual);
 }
 
@@ -110,7 +102,7 @@ TEST_F(StringTest, Convert_Empty)
 {
     auto input = "";
     auto expected = input;
-    auto actual = String::Convert(input, CODE_PAGE::CP_1252, CODE_PAGE::CP_UTF8);
+    auto actual = String::ConvertToUtf8(input, OpenRCT2::CodePage::CP_1252);
     ASSERT_EQ(expected, actual);
 }
 
@@ -149,10 +141,10 @@ TEST_F(StringTest, ToUpper_Japanese)
     ASSERT_STREQ(actual.c_str(), u8"日本語で大文字がなし");
 }
 
-TEST_F(StringTest, strlogicalcmp)
+TEST_F(StringTest, StrLogicalCmp)
 {
-    auto res_logical_1 = strlogicalcmp("foo1", "foo1_2");
-    auto res_logical_2 = strlogicalcmp("foo1_2", "foo1");
+    auto res_logical_1 = StrLogicalCmp("foo1", "foo1_2");
+    auto res_logical_2 = StrLogicalCmp("foo1_2", "foo1");
     auto res_1 = strcmp("foo1", "foo1_2");
     auto res_2 = strcmp("foo1_2", "foo1");
     // We only care if sign is correct, actual values might not be.
@@ -160,22 +152,22 @@ TEST_F(StringTest, strlogicalcmp)
     EXPECT_GE(res_2 * res_logical_2, 1);
     EXPECT_NE(res_logical_1, res_logical_2);
 
-    EXPECT_GT(strlogicalcmp("foo12", "foo1"), 0);
-    EXPECT_LT(strlogicalcmp("foo12", "foo13"), 0);
-    EXPECT_EQ(strlogicalcmp("foo13", "foo13"), 0);
+    EXPECT_GT(StrLogicalCmp("foo12", "foo1"), 0);
+    EXPECT_LT(StrLogicalCmp("foo12", "foo13"), 0);
+    EXPECT_EQ(StrLogicalCmp("foo13", "foo13"), 0);
 
-    EXPECT_EQ(strlogicalcmp("foo13", "FOO13"), 0);
+    EXPECT_EQ(StrLogicalCmp("foo13", "FOO13"), 0);
 
-    EXPECT_LT(strlogicalcmp("A", "b"), 0);
-    EXPECT_LT(strlogicalcmp("a", "B"), 0);
-    EXPECT_GT(strlogicalcmp("B", "a"), 0);
-    EXPECT_GT(strlogicalcmp("b", "A"), 0);
+    EXPECT_LT(StrLogicalCmp("A", "b"), 0);
+    EXPECT_LT(StrLogicalCmp("a", "B"), 0);
+    EXPECT_GT(StrLogicalCmp("B", "a"), 0);
+    EXPECT_GT(StrLogicalCmp("b", "A"), 0);
 
     // ^ is used at the start of a ride name to move it to the end of the list
-    EXPECT_LT(strlogicalcmp("A", "^"), 0);
-    EXPECT_LT(strlogicalcmp("a", "^"), 0);
-    EXPECT_LT(strlogicalcmp("!", "A"), 0);
-    EXPECT_LT(strlogicalcmp("!", "a"), 0);
+    EXPECT_LT(StrLogicalCmp("A", "^"), 0);
+    EXPECT_LT(StrLogicalCmp("a", "^"), 0);
+    EXPECT_LT(StrLogicalCmp("!", "A"), 0);
+    EXPECT_LT(StrLogicalCmp("!", "a"), 0);
 }
 
 class CodepointViewTest : public testing::Test

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2020 OpenRCT2 developers
+ * Copyright (c) 2014-2023 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,9 +14,15 @@
 #include <cstdlib>
 #include <iterator>
 
-// clang-format off
-const encoding_convert_entry RCT2ToUnicodeTable[] =
+struct EncodingConvertEntry
 {
+    uint16_t code;
+    uint32_t unicode;
+};
+
+extern const EncodingConvertEntry RCT2ToUnicodeTable[];
+
+const EncodingConvertEntry RCT2ToUnicodeTable[] = {
     // { 1, FORMAT_MOVE_X },
     // { 2, FORMAT_ADJUST_PALETTE },
     // { 5, FORMAT_NEWLINE },
@@ -80,7 +86,7 @@ const encoding_convert_entry RCT2ToUnicodeTable[] =
     { CSChar::road, UnicodeChar::road },
     { CSChar::air, UnicodeChar::air },
     { CSChar::water, UnicodeChar::water },
-    { CSChar::superscript_minus_one, UnicodeChar::superscript_minus_one},
+    { CSChar::superscript_minus_one, UnicodeChar::superscript_minus_one },
     { CSChar::bullet, UnicodeChar::bullet },
     { CSChar::small_up, UnicodeChar::small_up },
     { CSChar::small_down, UnicodeChar::small_down },
@@ -99,37 +105,22 @@ const encoding_convert_entry RCT2ToUnicodeTable[] =
     { CSChar::z_acute, UnicodeChar::z_acute },
 };
 
-static int32_t encoding_search_compare(const void *pKey, const void *pEntry)
+static int32_t EncodingSearchCompare(const void* pKey, const void* pEntry)
 {
     const uint16_t key = *reinterpret_cast<const uint16_t*>(pKey);
-    const encoding_convert_entry *entry = static_cast<const encoding_convert_entry*>(pEntry);
-    if (key < entry->code) return -1;
-    if (key > entry->code) return 1;
+    const EncodingConvertEntry* entry = static_cast<const EncodingConvertEntry*>(pEntry);
+    if (key < entry->code)
+        return -1;
+    if (key > entry->code)
+        return 1;
     return 0;
 }
 
-static wchar_t encoding_convert_x_to_unicode(wchar_t code, const encoding_convert_entry *table, size_t count)
+wchar_t EncodingConvertRCT2ToUnicode(wchar_t rct2str)
 {
-    encoding_convert_entry * entry = static_cast<encoding_convert_entry *>(std::bsearch(&code, table, count, sizeof(encoding_convert_entry), encoding_search_compare));
+    EncodingConvertEntry* entry = static_cast<EncodingConvertEntry*>(std::bsearch(
+        &rct2str, RCT2ToUnicodeTable, std::size(RCT2ToUnicodeTable), sizeof(EncodingConvertEntry), EncodingSearchCompare));
     if (entry == nullptr)
-        return code;
+        return rct2str;
     return entry->unicode;
-}
-
-wchar_t encoding_convert_rct2_to_unicode(wchar_t rct2str)
-{
-    return encoding_convert_x_to_unicode(rct2str, RCT2ToUnicodeTable, std::size(RCT2ToUnicodeTable));
-}
-
-uint32_t encoding_convert_unicode_to_rct2(uint32_t unicode)
-{
-    // Can't do a binary search as it's sorted by RCT2 code, not unicode
-    for (const auto& entry : RCT2ToUnicodeTable)
-    {
-        if (entry.unicode == unicode)
-        {
-            return entry.code;
-        }
-    }
-    return unicode;
 }

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2020 OpenRCT2 developers
+ * Copyright (c) 2014-2023 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -287,7 +287,7 @@ private:
         }
     }
 
-    void ParseSectionValues(LineRange range)
+    void ParseSectionValues(const LineRange& range)
     {
         for (size_t i = range.Start + 1; i <= range.End; i++)
         {
@@ -313,7 +313,7 @@ private:
 
         value = UnquoteValue(value);
         value = UnescapeValue(value);
-        _values[key] = value;
+        _values[key] = std::move(value);
     }
 
     std::string TrimComment(const std::string& s)
@@ -426,17 +426,6 @@ public:
         return false;
     }
 };
-
-utf8* IIniReader::GetCString(const std::string& name, const utf8* defaultValue) const
-{
-    std::string szValue;
-    if (!TryGetString(name, &szValue))
-    {
-        return String::Duplicate(defaultValue);
-    }
-
-    return String::Duplicate(szValue.c_str());
-}
 
 std::unique_ptr<IIniReader> CreateIniReader(OpenRCT2::IStream* stream)
 {

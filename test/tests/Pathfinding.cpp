@@ -6,6 +6,7 @@
 #include "openrct2/scenario/Scenario.h"
 
 #include <gtest/gtest.h>
+#include <memory>
 #include <openrct2/Context.h>
 #include <openrct2/Game.h>
 #include <openrct2/OpenRCT2.h>
@@ -13,6 +14,8 @@
 #include <openrct2/platform/Platform.h>
 #include <openrct2/world/Footpath.h>
 #include <openrct2/world/Map.h>
+#include <ostream>
+#include <string>
 
 using namespace OpenRCT2;
 
@@ -35,14 +38,14 @@ public:
         ASSERT_TRUE(initialised);
 
         std::string parkPath = TestData::GetParkPath("pathfinding-tests.sv6");
-        load_from_sv6(parkPath.c_str());
-        game_load_init();
+        GetContext()->LoadParkFromFile(parkPath);
+        GameLoadInit();
     }
 
     void SetUp() override
     {
         // Use a consistent random seed in every test
-        scenario_rand_seed(0x12345678, 0x87654321);
+        ScenarioRandSeed(0x12345678, 0x87654321);
     }
 
     static void TearDownTestCase()
@@ -84,7 +87,7 @@ protected:
         // Pick the direction the peep should initially move in, given the goal position.
         // This will also store the goal position and initialize pathfinding data for the peep.
         gPeepPathFindGoalPosition = goal;
-        const Direction moveDir = peep_pathfind_choose_direction(*pos, peep);
+        const Direction moveDir = gGuestPathfinder->ChooseDirection(*pos, *peep);
         if (moveDir == INVALID_DIRECTION)
         {
             // Couldn't determine a direction to move off in
@@ -115,11 +118,11 @@ protected:
 
             // Check that the peep is still on a footpath. Use next_z instead of pos->z here because pos->z will change
             // when the peep is halfway up a slope, but next_z will not change until they move to the next tile.
-            EXPECT_NE(map_get_footpath_element({ pos->ToCoordsXY(), peep->NextLoc.z }), nullptr);
+            EXPECT_NE(MapGetFootpathElement({ pos->ToCoordsXY(), peep->NextLoc.z }), nullptr);
         }
 
         // Clean up the peep, because we're reusing this loaded context for all tests.
-        peep_sprite_remove(peep);
+        PeepEntityRemove(peep);
 
         // Require that the number of steps taken is exactly what we expected. The pathfinder is supposed to be
         // deterministic, and we reset the RNG seed for each test, everything should be entirely repeatable; as
@@ -134,7 +137,7 @@ protected:
     static ::testing::AssertionResult AssertIsStartPosition(const char*, const TileCoordsXYZ& location)
     {
         const uint32_t expectedSurfaceStyle = 11u;
-        const uint32_t style = map_get_surface_element_at(location.ToCoordsXYZ())->GetSurfaceStyle();
+        const uint32_t style = MapGetSurfaceElementAt(location.ToCoordsXYZ())->GetSurfaceStyle();
 
         if (style != expectedSurfaceStyle)
             return ::testing::AssertionFailure()
@@ -149,7 +152,7 @@ protected:
     {
         const uint32_t forbiddenSurfaceStyle = 8u;
 
-        const uint32_t style = map_get_surface_element_at(location.ToCoordsXYZ())->GetSurfaceStyle();
+        const uint32_t style = MapGetSurfaceElementAt(location.ToCoordsXYZ())->GetSurfaceStyle();
 
         if (style == forbiddenSurfaceStyle)
             return ::testing::AssertionFailure()
@@ -211,7 +214,7 @@ TEST_P(SimplePathfindingTest, CanFindPathFromStartToGoal)
     EXPECT_TRUE(succeeded);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ForScenario, SimplePathfindingTest,
     ::testing::Values(
         SimplePathfindingScenario("StraightFlat", { 19, 15, 14 }, 24), SimplePathfindingScenario("SBend", { 15, 12, 14 }, 87),
@@ -244,7 +247,7 @@ TEST_P(ImpossiblePathfindingTest, CannotFindPathFromStartToGoal)
     EXPECT_FALSE(FindPath(&pos, goal, 10000, ride->id));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ForScenario, ImpossiblePathfindingTest,
     ::testing::Values(
         SimplePathfindingScenario("PathWithGap", { 1, 6, 14 }, 10000),
