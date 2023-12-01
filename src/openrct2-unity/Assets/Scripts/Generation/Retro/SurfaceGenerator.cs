@@ -16,124 +16,135 @@ namespace Generation.Retro
     {
         // For now we only use these two water sprites.
         static readonly uint _waterImageIndex = OpenRCT2.GetWaterImageIndex();
-        const uint WaterRefractionImageIndex = 5053;
+        const uint _waterRefractionImageIndex = 5053;
+        const byte _noWater = 0;
 
         [SerializeField] int _chunkSize = 64;
 
-        const byte NoWater = 0;
-
-        List<Chunk>? _chunks;
-
-
-        class Chunk
-        {
-            public int x;
-            public int y;
-
-            public MeshBuilder builder = new MeshBuilder();
-            public List<int> materialIndices = new List<int>();
-
-
-            /// <summary>
-            /// Adds a material from the generator-wide material stack, and returns its
-            /// local index for use in submeshes.
-            /// </summary>
-            public int AddMaterialIndex(int materialIndex)
-            {
-                int position = materialIndices.IndexOf(materialIndex);
-                if (position == -1)
-                {
-                    position = materialIndices.Count;
-                    materialIndices.Add(materialIndex);
-                }
-                return position; // == submesh index
-            }
-        }
+        MapSize _size;
+        TileCache[,]? _tiles;
 
 
         /// <inheritdoc/>
         protected override void Startup(Map map)
         {
-            _chunks = new List<Chunk>();
+            _size = map.Size;
             _images = new List<RequestedImage>();
+            _tiles = new TileCache[_size.width, _size.height];
         }
 
 
         /// <inheritdoc/>
         protected override void Finish(Map map)
         {
-            Assert.IsNotNull(_chunks, nameof(_chunks));
+            Assert.IsNotNull(_tiles, nameof(_tiles));
+
+            int width = _tiles.GetLength(0);
+            int height = _tiles.GetLength(1);
+            int chunkWidth = (width - 1) / _chunkSize + 1;
+            int chunkHeight = (height - 1) / _chunkSize + 1;
+
+            var builder = new MeshBuilder();
+            var chunks = new List<(GameObject, List<int>)>();
+
+            for (int chunkX = 0; chunkX < chunkWidth; chunkX++)
+            {
+                for (int chunkY = 0; chunkY < chunkHeight; chunkY++)
+                {
+                    CreateChunk(builder, chunks, map.transform, chunkX, chunkY);
+                }
+            }
 
             Material[] materials = GenerateSurfaceMaterials();
-
-            foreach (Chunk chunk in _chunks)
+            foreach (var (obj, materialIndices) in chunks)
             {
-                Mesh mesh = chunk.builder.ToMesh();
-
-                if (mesh.vertexCount == 0)
-                    continue;
-
-                mesh.name = $"Chunk ({chunk.x}, {chunk.y})";
-                mesh.RecalculateNormals();
-
-                GameObject chunkObj = new GameObject($"Mapchunk ({chunk.x}, {chunk.y})");
-                chunkObj.transform.parent = map.transform;
-                chunkObj.transform.localPosition = new Vector3(chunk.x * _chunkSize, 0, chunk.y * _chunkSize);
-
-                MeshFilter filter = chunkObj.AddComponent<MeshFilter>();
-                MeshRenderer renderer = chunkObj.AddComponent<MeshRenderer>();
-
-                filter.sharedMesh = mesh;
-
                 // Apply all used materials in this chunk.
-                int materialCount = chunk.materialIndices.Count;
+                int materialCount = materialIndices.Count;
                 Material[] chunkMaterials = new Material[materialCount];
 
                 for (int i = 0; i < materialCount; i++)
                 {
-                    int matIdx = chunk.materialIndices[i];
+                    int matIdx = materialIndices[i];
                     chunkMaterials[i] = materials[matIdx];
                 }
 
+                MeshRenderer renderer = obj.AddComponent<MeshRenderer>();
                 renderer.sharedMaterials = chunkMaterials;
             }
 
-            _chunks = null;
+            _tiles = null;
             _images = null;
         }
 
 
         /// <inheritdoc/>
-        public override void CreateElement(Map map, int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, int index, in TileElementInfo tile)
         {
-            Assert.IsNotNull(_chunks, nameof(_chunks));
+            Assert.IsNotNull(_tiles, nameof(_tiles));
 
-            int chunkX = (x / _chunkSize);
-            int chunkY = (y / _chunkSize);
+            SurfaceInfo surface = OpenRCT2.GetSurfaceElementAt(x, y, index);
+            _tiles[x, y] = new TileCache((ushort)index, tile.baseHeight, surface);
+        }
 
-            Chunk chunk = _chunks.Find(c => c.x == chunkX && c.y == chunkY);
-            if (chunk == null)
+
+        /// <summary>
+        /// Creates a map chunk for the specified area.
+        /// </summary>
+        void CreateChunk(MeshBuilder builder, List<(GameObject, List<int>)> chunks, Transform parent, int chunkX, int chunkY)
+        {
+            builder.Clear();
+            var materialIndices = new List<int>();
+
+            int startX = (chunkX * _chunkSize);
+            int startY = (chunkY * _chunkSize);
+            int endX = Mathf.Min(startX + _chunkSize, _size.width);
+            int endY = Mathf.Min(startY + _chunkSize, _size.height);
+
+            for (int x = startX; x < endX; x++)
             {
-                chunk = new Chunk
+                for (int y = startY; y < endY; y++)
                 {
-                    x = chunkX,
-                    y = chunkY,
-                };
-                _chunks.Add(chunk);
+                    CreateSurfaceElement(builder, materialIndices, x, y, startX, startY);
+                }
             }
 
-            CreateSurfaceElement(map, chunk, x, y, tile);
+            Mesh mesh = builder.ToMesh();
+
+            if (mesh.vertexCount <= 0)
+            {
+                return;
+            }
+
+            mesh.name = $"Chunk ({chunkX}, {chunkY})";
+            mesh.RecalculateNormals();
+
+            var obj = new GameObject($"SurfaceChunk ({chunkX}, {chunkY})");
+            obj.transform.parent = parent;
+            obj.transform.localPosition = new Vector3(chunkX * _chunkSize, 0, chunkY * _chunkSize);
+
+            MeshFilter filter = obj.AddComponent<MeshFilter>();
+            filter.sharedMesh = mesh;
+
+            chunks.Add((obj, materialIndices));
         }
 
 
         /// <summary>
         /// Adds triangles for terrain surface and edges to the specified chunk.
         /// </summary>
-        void CreateSurfaceElement(Map map, Chunk chunk, int x, int y, in TileElement tile)
+        void CreateSurfaceElement(MeshBuilder builder, List<int> materialIndices, int x, int y, int chunkOffsetX, int chunkOffsetY)
         {
+            Assert.IsNotNull(_tiles, nameof(_tiles));
+
+            TileCache tile = _tiles[x, y];
+            if (tile.baseHeight == 0)
+            {
+                return;
+            }
+
             // Convert to local chunk space.
-            int localX = x - (chunk.x * _chunkSize);
-            int localY = y - (chunk.y * _chunkSize);
+            int localX = x - chunkOffsetX;
+            int localY = y - chunkOffsetY;
 
             /* Surface coords to Unity:
                  * 
@@ -143,17 +154,10 @@ namespace Generation.Retro
                  *    x -->
                  */
 
-            uint surfaceImage = OpenRCT2.GetSurfaceImageIndex(tile, x, y, 0);
-            if (surfaceImage == uint.MaxValue)
-            {
-                Debug.LogWarning($"Invalid surface image at ({x}, {y}).");
-                return; // empty tile can happen?
-            }
+            SurfaceInfo surface = tile.surface;
+            int surfaceSubmesh = AddMaterialIndex(materialIndices, PushImageIndex(surface.surfaceIndex, TextureType.Surface));
 
-            int surfaceSubmesh = chunk.AddMaterialIndex(PushImageIndex(surfaceImage, TextureType.Surface));
-
-            SurfaceElement surface = tile.AsSurface();
-            SurfaceSlope slope = surface.Slope;
+            SurfaceSlope slope = surface.slope;
             int baseHeight = tile.baseHeight;
 
             int northHeight = GetSurfaceCorner(localX + 1, localY + 1, baseHeight, slope, SurfaceSlope.NorthUp, out Vertex north);
@@ -165,57 +169,51 @@ namespace Generation.Retro
             if (rotatedSlope == 0 || rotatedSlope == SurfaceSlope.WestEastValley)
             {
                 // In these cases the quad has to be rotated to show the correct kind of slope
-                chunk.builder.AddTriangle(west, north, east, surfaceSubmesh);
-                chunk.builder.AddTriangle(east, south, west, surfaceSubmesh);
+                builder.AddTriangle(west, north, east, surfaceSubmesh);
+                builder.AddTriangle(east, south, west, surfaceSubmesh);
             }
             else
             {
-                chunk.builder.AddQuad(north, east, south, west, surfaceSubmesh);
+                builder.AddQuad(north, east, south, west, surfaceSubmesh);
             }
 
             // Water
-            int waterHeight = surface.WaterHeight;
-            if (waterHeight != NoWater)
+            int waterHeight = surface.waterHeight;
+            if (waterHeight != _noWater)
             {
-                float waterVertexHeight = (waterHeight * Map.TileCoordsZMultiplier * Map.TileHeightStep);
+                float waterVertexHeight = (waterHeight * Map.CoordsZMultiplier);
 
-                Vertex waterNorth = new Vertex(north.position.x, waterVertexHeight, north.position.z, Vector3.up, north.uv);
-                Vertex waterEast =  new Vertex(east.position.x,  waterVertexHeight, east.position.z,  Vector3.up, east.uv);
-                Vertex waterSouth = new Vertex(south.position.x, waterVertexHeight, south.position.z, Vector3.up, south.uv);
-                Vertex waterWest =  new Vertex(west.position.x,  waterVertexHeight, west.position.z,  Vector3.up, west.uv);
+                var waterNorth = new Vertex(north.position.x, waterVertexHeight, north.position.z, Vector3.up, north.uv);
+                var waterEast =  new Vertex(east.position.x,  waterVertexHeight, east.position.z,  Vector3.up, east.uv);
+                var waterSouth = new Vertex(south.position.x, waterVertexHeight, south.position.z, Vector3.up, south.uv);
+                var waterWest =  new Vertex(west.position.x,  waterVertexHeight, west.position.z,  Vector3.up, west.uv);
 
-                int waterSubmesh = chunk.AddMaterialIndex(PushImageIndex(_waterImageIndex, TextureType.Water));
-                chunk.builder.AddQuad(waterNorth, waterEast, waterSouth, waterWest, waterSubmesh);
+                int waterSubmesh = AddMaterialIndex(materialIndices, PushImageIndex(_waterImageIndex, TextureType.Water));
+                builder.AddQuad(waterNorth, waterEast, waterSouth, waterWest, waterSubmesh);
             }
 
             // Edges
-            uint edgeImage = OpenRCT2.GetSurfaceEdgeImageIndex(tile);
-            if (edgeImage == uint.MaxValue)
-            {
-                Debug.LogWarning($"Invalid surface edge image at ({x}, {y}).");
-                return; // empty tile can happen?
-            }
-
+            uint edgeImage = surface.edgeIndex;
             // HACK: only add the material stack index when any of the add-edges succeed.
             // Otherwise it will create inconsistency in materials, because some may not be used.
             int materialStackIndex = PushImageIndex(edgeImage, TextureType.Edge);
-            int edgeSubmesh = chunk.materialIndices.IndexOf(materialStackIndex);
+            int edgeSubmesh = materialIndices.IndexOf(materialStackIndex);
             bool addIndexOnSuccess = false;
             if (edgeSubmesh == -1)
             {
-                edgeSubmesh = chunk.materialIndices.Count;
+                edgeSubmesh = materialIndices.Count;
                 addIndexOnSuccess = true;
             }
 
             bool anyEdge = 
-                  TryAddSurfaceEdge(map, chunk, x, y,  0,  1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh)  // Edge northwest
-                | TryAddSurfaceEdge(map, chunk, x, y,  1,  0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh)  // Edge northeast
-                | TryAddSurfaceEdge(map, chunk, x, y,  0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh)  // Edge southeast
-                | TryAddSurfaceEdge(map, chunk, x, y, -1,  0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
+                  TryAddSurfaceEdge(builder, x, y,  0,  1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh)  // Edge northwest
+                | TryAddSurfaceEdge(builder, x, y,  1,  0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh)  // Edge northeast
+                | TryAddSurfaceEdge(builder, x, y,  0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh)  // Edge southeast
+                | TryAddSurfaceEdge(builder, x, y, -1,  0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
 
             if (anyEdge && addIndexOnSuccess)
             {
-                chunk.materialIndices.Add(materialStackIndex);
+                materialIndices.Add(materialStackIndex);
             }
         }
 
@@ -223,17 +221,20 @@ namespace Generation.Retro
         /// <summary>
         /// Tries to add an surface edge to the specified offset.
         /// </summary>
-        bool TryAddSurfaceEdge(Map map, Chunk chunk, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
+        bool TryAddSurfaceEdge(MeshBuilder builder, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
         {
-            SurfaceElement other = map.Tiles[x + offsetX, y + offsetY].Surface;
+            Assert.IsNotNull(_tiles, nameof(_tiles));
 
-            int baseHeight = other.BaseHeight;
-            SurfaceSlope otherSlope = other.Slope;
+            TileCache otherTile = _tiles[x + offsetX, y + offsetY];
+            SurfaceInfo otherSurface = otherTile.surface;
 
-            if (waterHeight != NoWater && other.WaterHeight != waterHeight)
+            int baseHeight = otherTile.baseHeight;
+            SurfaceSlope otherSlope = otherSurface.slope;
+
+            if (waterHeight != _noWater && otherSurface.waterHeight != waterHeight)
             {
                 // Render water edge at different height
-                float waterY = (waterHeight * Map.TileCoordsZMultiplier * Map.TileHeightStep);
+                float waterY = (waterHeight * Map.CoordsZMultiplier);
                 leftTop.position.y = waterY;
                 rightTop.position.y = waterY;
             }
@@ -248,19 +249,35 @@ namespace Generation.Retro
                 const float VsPerHeightUnit = 4f;
                 int u = (offsetX == 0) ? x : y; // pick u based on direction
 
-                Vector3 normal = new Vector3(offsetX, 0, offsetY);
+                var normal = new Vector3(offsetX, 0, offsetY);
                 leftTop.normal = normal;
                 leftTop.uv = new Vector2(u + offsetY, leftTopHeight / VsPerHeightUnit);
                 rightTop.normal = normal;
                 rightTop.uv = new Vector2(u + offsetX, rightTopHeight / VsPerHeightUnit);
 
-                Vertex leftBottom = new Vertex(leftTop.position.x, leftBottomY, leftTop.position.z, normal, u + offsetY, leftBottomHeight / VsPerHeightUnit);
-                Vertex rightBottom = new Vertex(rightTop.position.x, rightBottomY, rightTop.position.z, normal, u + offsetX, rightBottomHeight / VsPerHeightUnit);
+                var leftBottom = new Vertex(leftTop.position.x, leftBottomY, leftTop.position.z, normal, u + offsetY, leftBottomHeight / VsPerHeightUnit);
+                var rightBottom = new Vertex(rightTop.position.x, rightBottomY, rightTop.position.z, normal, u + offsetX, rightBottomHeight / VsPerHeightUnit);
 
-                chunk.builder.AddQuad(leftTop, rightTop, rightBottom, leftBottom, submesh);
+                builder.AddQuad(leftTop, rightTop, rightBottom, leftBottom, submesh);
                 return true;
             }
             return false;
+        }
+
+
+        /// <summary>
+        /// Adds a material from the generator-wide material stack, and returns its
+        /// local index for use in submeshes.
+        /// </summary>
+        int AddMaterialIndex(List<int> materialIndices, int materialIndex)
+        {
+            int position = materialIndices.IndexOf(materialIndex);
+            if (position == -1)
+            {
+                position = materialIndices.Count;
+                materialIndices.Add(materialIndex);
+            }
+            return position; // == submesh index
         }
 
 
@@ -271,7 +288,7 @@ namespace Generation.Retro
         {
             int height = GetSurfaceCornerHeight(startHeight, surfaceSlope, surfaceCorner);
 
-            Vector3 position = new Vector3(
+            var position = new Vector3(
                 localX * Map.TileCoordsXYMultiplier,
                 height * Map.TileCoordsZMultiplier,
                 localY * Map.TileCoordsXYMultiplier
@@ -317,5 +334,22 @@ namespace Generation.Retro
             return (x << 16) | (int)y;
         }
 
+
+        /// <summary>
+        /// Cached data for a surface position
+        /// </summary>
+        readonly struct TileCache
+        {
+            public readonly ushort index;
+            public readonly int baseHeight;
+            public readonly SurfaceInfo surface;
+
+            public TileCache(ushort index, int baseHeight, SurfaceInfo surface)
+            {
+                this.index = index;
+                this.baseHeight = baseHeight;
+                this.surface = surface;
+            }
+        }
     }
 }

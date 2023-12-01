@@ -24,92 +24,61 @@ namespace Generation.Retro
         [SerializeField, Required] Material _pathMaterial = null!;
         [SerializeField, Required] string _pathTextureName = null!;
 
-        MeshBuilder? _pathMeshBuilder;
+
+        Mesh? _mesh;
 
 
-        /// <inheritdoc/>
         protected override void Startup(Map map)
         {
-            _pathMeshBuilder = new MeshBuilder();
+            _mesh = GeneratePathMesh();
         }
 
 
         /// <inheritdoc/>
-        protected override void Finish(Map map)
+        public override void CreateElement(Map map, int x, int y, int index, in TileElementInfo tile)
         {
-            _pathMeshBuilder = null;
-        }
+            PathInfo path = OpenRCT2.GetPathElementAt(x, y, index);
 
-
-        /// <inheritdoc/>
-        public override void CreateElement(Map map, int x, int y, in TileElement tile)
-        {
-            PathElement path = tile.AsPath();
-            uint imageIndex = OpenRCT2.GetPathSurfaceImageIndex(tile);
-            int cacheKey = GetCacheKey(path);
-
-            if (!_pathMeshCache.TryGetValue(cacheKey, out Mesh mesh))
-            {
-                mesh = GeneratePathMesh(x, y, path);
-                _pathMeshCache.Add(cacheKey, mesh);
-            }
-
+            uint surfaceIndex = path.surfaceIndex;
             GameObject pathObject = new GameObject
             {
-                name = $"Path (index: {imageIndex})",
+                name = $"Path (index: {surfaceIndex})",
                 isStatic = true
             };
             Transform pathTF = pathObject.transform;
             pathTF.parent = map.transform;
-            pathTF.localPosition = Map.TileCoordsToUnity(x, tile.baseHeight, y);
+            pathTF.localPosition = Map.TileCoordsToUnity(x, y, tile.baseHeight);
             pathTF.localRotation = Quaternion.Euler(0, 180, 0);
 
             MeshFilter filter = pathObject.AddComponent<MeshFilter>();
-            filter.sharedMesh = mesh;
+            filter.sharedMesh = _mesh;
 
             MeshRenderer renderer = pathObject.AddComponent<MeshRenderer>();
             renderer.material = _pathMaterial;
 
-            Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
+            Graphic graphic = GraphicsFactory.ForImageIndex(surfaceIndex);
             Material material = renderer.material;
             material.SetTexture(_pathTextureName, graphic.GetTexture());
 
-            SpriteData data = OpenRCT2.GetTextureData(imageIndex);
+            SpriteData data = OpenRCT2.GetTextureData(surfaceIndex);
             material.SetVector("ImageOffset", new Vector2(data.offsetX, data.offsetY));
         }
-
 
 
         /// <summary>
         /// Generates a new mesh for the specified path element.
         /// </summary>
-        Mesh GeneratePathMesh(int x, int y, in PathElement path)
+        Mesh GeneratePathMesh()
         {
-            Assert.IsNotNull(_pathMeshBuilder, nameof(_pathMeshBuilder));
-
-            _pathMeshBuilder.Clear();
+            var pathMeshBuilder = new MeshBuilder();
 
             Vertex a = new Vertex(SurfaceExtents, SurfaceHeight, SurfaceExtents, Vector3.up, Vector2.one);
             Vertex b = new Vertex(SurfaceExtents, SurfaceHeight, -SurfaceExtents, Vector3.up, Vector2.right);
             Vertex c = new Vertex(-SurfaceExtents, SurfaceHeight, -SurfaceExtents, Vector3.up, Vector2.zero);
             Vertex d = new Vertex(-SurfaceExtents, SurfaceHeight, SurfaceExtents, Vector3.up, Vector2.up);
 
-            _pathMeshBuilder.AddQuad(a, b, c, d);
-            return _pathMeshBuilder.ToMesh();
-        }
-
-
-        /// <summary>
-        /// Returns the cache key for this path element.
-        /// </summary>
-        int GetCacheKey(in PathElement path)
-        {
-            // 0b1_0000_0000 for sloped pieces.
-            // 0b0_####_#### for whatever the edges and corners are.
-            if (path.IsSloped)
-                return (1 << 8); 
-
-            return (path.EdgesAndCorners);
+            pathMeshBuilder.AddQuad(a, b, c, d);
+            return pathMeshBuilder.ToMesh();
         }
     }
 }

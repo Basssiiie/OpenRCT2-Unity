@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 using Generation;
 using UnityEngine;
 using UnityEngine.Events;
@@ -68,33 +69,17 @@ namespace Lib
         /// </summary>
         IEnumerator GenerateMap()
         {
-            // Remove all children
-            foreach (Transform child in transform)
-                Destroy(child.gameObject);
-
-            // Load the map
             Size = OpenRCT2.GetMapSize();
-            Tiles = new Tile[Size, Size];
-
             if (_loader != null)
             {
-                _loader.SetText($"Loading tiles...");
-                _loader.SetMaximumProgress(Size * Size);
+                _loader.SetText($"Initializing map...");
+                _loader.SetMaximumProgress(Size.width * Size.height);
             }
             yield return null;
 
-            TileElement[] buffer = new TileElement[MaxElementsPerTile];
-
-            for (int x = 0; x < Size; x++)
-            {
-                for (int y = 0; y < Size; y++)
-                {
-                    int amount = OpenRCT2.GetMapElementsAt(x, y, buffer);
-
-                    Tiles[x, y] = new Tile(buffer, amount);
-                    yield return null;
-                }
-            }
+            // Remove all children
+            foreach (Transform child in transform)
+                Destroy(child.gameObject);
 
             // Start the generators
             TileElementGenerator?[] generators = GetGenerators();
@@ -116,23 +101,25 @@ namespace Lib
             }
 
             // Create the tile objects
-            int end = (Size - 1);
+            int width = (Size.width - 1);
+            int height = (Size.height - 1);
+            TileElementInfo[] buffer = new TileElementInfo[MaxElementsPerTile];
 
             if (_loader != null)
             {
                 _loader.SetText("Creating tiles...");
-                _loader.SetMaximumProgress(end * end);
+                _loader.SetMaximumProgress(width * height);
             }
             yield return null;
 
-            for (int x = 1; x < end; x++)
+            for (int x = 1; x < width; x++)
             {
-                for (int y = 1; y < end; y++)
+                for (int y = 1; y < width; y++)
                 {
-                    Tile tile = Tiles[x, y];
-                    for (int e = 0; e < tile.Count; e++)
+                    int count = OpenRCT2.GetMapElementsAt(x, y, buffer);
+                    for (int e = 0; e < count; e++)
                     {
-                        GenerateTileElement(x, y, in tile.Elements[e]);
+                        GenerateTileElement(x, y, e, buffer[e]);
                     }
                     yield return null;
                 }
@@ -163,48 +150,48 @@ namespace Lib
         /// <summary>
         /// Generates a tile element based on the type of the given tile.
         /// </summary>
-        void GenerateTileElement(int x, int y, in TileElement tile)
+        void GenerateTileElement(int x, int y, int index, in TileElementInfo tile)
         {
-            switch (tile.Type)
+            switch (tile.type)
             {
                 case TileElementType.Surface:
                     if ((_generationFlags & TileElementFlags.Surface) != 0 && _surfaceGenerator != null)
-                        _surfaceGenerator.CreateElement(this, x, y, in tile);
+                        _surfaceGenerator.CreateElement(this, x, y, index, in tile);
                     break;
 
                 case TileElementType.Path:
                     if ((_generationFlags & TileElementFlags.Path) != 0 && _pathGenerator != null)
-                        _pathGenerator.CreateElement(this, x, y, in tile);
+                        _pathGenerator.CreateElement(this, x, y, index, in tile);
                     break;
 
                 case TileElementType.Track:
                     if ((_generationFlags & TileElementFlags.Track) != 0 && _trackGenerator != null)
-                        _trackGenerator.CreateElement(this, x, y, in tile);
+                        _trackGenerator.CreateElement(this, x, y, index, in tile);
                     break;
 
                 case TileElementType.SmallScenery:
                     if ((_generationFlags & TileElementFlags.SmallScenery) != 0 && _smallSceneryGenerator != null)
-                        _smallSceneryGenerator.CreateElement(this, x, y, in tile);
+                        _smallSceneryGenerator.CreateElement(this, x, y, index, in tile);
                     break;
 
                 case TileElementType.Entrance:
                     if ((_generationFlags & TileElementFlags.Entrance) != 0 && _entranceGenerator != null)
-                        _entranceGenerator.CreateElement(this, x, y, in tile);
+                        _entranceGenerator.CreateElement(this, x, y, index, in tile);
                     break;
 
                 case TileElementType.Wall:
                     if ((_generationFlags & TileElementFlags.Wall) != 0 && _wallGenerator != null)
-                        _wallGenerator.CreateElement(this, x, y, in tile);
+                        _wallGenerator.CreateElement(this, x, y, index, in tile);
                     break;
 
                 case TileElementType.LargeScenery:
                     if ((_generationFlags & TileElementFlags.LargeScenery) != 0 && _largeSceneryGenerator != null)
-                        _largeSceneryGenerator.CreateElement(this, x, y, in tile);
+                        _largeSceneryGenerator.CreateElement(this, x, y, index, in tile);
                     break;
 
                 case TileElementType.Banner:
                     if ((_generationFlags & TileElementFlags.Banner) != 0 && _bannerGenerator != null)
-                        _bannerGenerator.CreateElement(this, x, y, in tile);
+                        _bannerGenerator.CreateElement(this, x, y, index, in tile);
                     break;
             }
         }

@@ -1,8 +1,8 @@
-#include "../openrct2-bindings.h"
+#include "../OpenRCT2.Bindings.h"
+#include "../Utilities/Logging.h"
 
 #include <openrct2/drawing/Drawing.h>
-#include <openrct2/sprites.h>
-#include <openrct2/world/SmallScenery.h>
+
 
 extern "C"
 {

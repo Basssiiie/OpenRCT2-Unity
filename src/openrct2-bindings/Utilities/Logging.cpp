@@ -1,7 +1,8 @@
-#include "openrct2-bindings.h"
+#include "Logging.h"
 
 #include <cstdarg>
 #include <stdio.h>
+
 
 // Write to output log with a custom prefix and line ending.
 void dll_log(const char* format, ...)

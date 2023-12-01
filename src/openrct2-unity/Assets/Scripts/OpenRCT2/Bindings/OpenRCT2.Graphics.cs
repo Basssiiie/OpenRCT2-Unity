@@ -33,20 +33,6 @@ namespace Lib
 
 
         /// <summary>
-        /// Gets the surface image entry for the specified surface tile.
-        /// </summary>
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        public static extern uint GetSurfaceImageIndex(TileElement tileElement, int tileX, int tileY, byte direction);
-
-
-        /// <summary>
-        /// Gets the surface edge image entry for the specified surface tile.
-        /// </summary>
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        public static extern uint GetSurfaceEdgeImageIndex(TileElement tileElement);
-
-
-        /// <summary>
         /// Gets the image entry for a water tile.
         /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
@@ -54,31 +40,17 @@ namespace Lib
 
 
         /// <summary>
-        /// Gets the image entry for the specified small scenery tile.
-        /// </summary>
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        public static extern uint GetPathSurfaceImageIndex(TileElement tileElement);
-
-
-        /// <summary>
-        /// Gets the image entry for the specified small scenery tile.
-        /// </summary>
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        public static extern uint GetSmallSceneryImageIndex(TileElement tileElement, byte direction);
-
-
-        /// <summary>
         /// Gets all image entries in the animation for the specified small scenery tile.
         /// </summary>
-        [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetSmallSceneryAnimationIndices(TileElement tileElement, byte direction, [Out] uint[] indices, int arraySize);
+        public static uint[] GetSmallSceneryAnimationIndices(int x, int y, int index, int count)
+        {
+            var indices = new uint[count];
+            GetSmallSceneryAnimationIndices(x, y, index, indices, count);
+            return indices;
+        }
 
-
-        /// <summary>
-        /// Gets the image entry for the specified small scenery tile.
-        /// </summary>
         [DllImport(PluginFile, CallingConvention = CallingConvention.Cdecl)]
-        public static extern uint GetWallImageIndex(TileElement tileElement, byte direction);
+        static extern int GetSmallSceneryAnimationIndices(int x, int y, int index, [Out] uint[] indices, int arraySize);
 
 
         /// <summary>

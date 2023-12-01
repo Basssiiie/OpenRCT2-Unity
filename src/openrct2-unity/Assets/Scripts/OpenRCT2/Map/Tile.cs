@@ -12,22 +12,16 @@ namespace Lib
         /// <summary>
         /// All the elements on this tile.
         /// </summary>
-        public TileElement[] Elements { get; }
-
-
-        // The index at which the surface tile element is located.
-        readonly int surfaceIndex;
+        public TileElementInfo[] Elements { get; }
 
 
         /// <summary>
         /// Creates a new tile from the specified buffer.
         /// </summary>
-        public Tile(TileElement[] buffer, int size)
+        public Tile(TileElementInfo[] buffer, int size)
         {
-            Elements = new TileElement[size];
+            Elements = new TileElementInfo[size];
             Array.Copy(buffer, Elements, size);
-
-            surfaceIndex = Array.FindIndex(Elements, t => t.Type == TileElementType.Surface);
         }
 
 
@@ -36,13 +30,6 @@ namespace Lib
         /// </summary>
         public int Count
             => Elements.Length;
-
-
-        /// <summary>
-        /// Returns the surface element on this tile.
-        /// </summary>
-        public SurfaceElement Surface
-            => ((surfaceIndex != -1) ? Elements[surfaceIndex].AsSurface() : default);
 
 
         #region Equals override

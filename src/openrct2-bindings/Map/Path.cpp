@@ -1,4 +1,6 @@
-#include "../../openrct2-bindings.h"
+#include "../OpenRCT2.Bindings.h"
+#include "../Utilities/Logging.h"
+#include "../Utilities/TileElementHelper.h"
 
 #include <openrct2/object/FootpathSurfaceObject.h>
 #include <openrct2/world/TileElement.h>
@@ -17,21 +19,29 @@ extern "C"
         0, 1, 2, 3, 4, 5, 6,  7,  8, 9,  10, 11, 12, 13, 14, 49, 0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11, 12, 13, 14, 50
     };
 
+    struct PathInfo
+    {
+        uint32_t surfaceIndex;
+        uint32_t railingIndex;
+        bool sloped;
+        uint8_t slopeDirection;
+    };
+
+
     // Returns the sprite image index for a small scenery tile element.
     //  Inspired by: path_paint()
-    EXPORT uint32_t GetPathSurfaceImageIndex(const TileElement* tileElement)
+    uint32_t GetPathSurfaceImageIndex(const PathElement* path)
     {
-        const PathElement* pathElement = tileElement->AsPath();
-        const FootpathSurfaceObject* footpathEntry = pathElement->GetSurfaceEntry();
+        const FootpathSurfaceObject* footpathEntry = path->GetSurfaceEntry();
 
         uint32_t imageId;
-        if (tileElement->AsPath()->IsSloped())
+        if (path->IsSloped())
         {
             imageId = 16; // We just take rotation 0. Always.
         }
         else
         {
-            uint8_t edges = (pathElement->GetEdgesAndCorners());
+            uint8_t edges = (path->GetEdgesAndCorners());
             imageId = byte_98D6E0[edges];
         }
 
@@ -40,8 +50,25 @@ extern "C"
 
     // Returns the sprite image index for a small scenery tile element.
     //  Inspired by: path_paint()
-    EXPORT uint32_t GetPathRailingImageIndex(const TileElement* tileElement)
+    uint32_t GetPathRailingImageIndex(const TileElement* tileElement)
     {
         return 0;
+    }
+
+    // Writes the path element details to the specified buffer.
+    EXPORT void GetPathElementAt(int x, int y, int index, PathInfo* element)
+    {
+        const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Path);
+        const PathElement* path = source->AsPath();
+
+        if (path == nullptr)
+        {
+            dll_log("Could not find path element at %i, %i, index %i", x, y, index);
+            return;
+        }
+
+        element->surfaceIndex = GetPathSurfaceImageIndex(path);
+        element->sloped = path->IsSloped();
+        element->slopeDirection = path->GetSlopeDirection();
     }
 }

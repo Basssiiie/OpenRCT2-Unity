@@ -1,4 +1,5 @@
-#include "../openrct2-bindings.h"
+#include "../OpenRCT2.Bindings.h"
+#include "../Utilities/Logging.h"
 
 #include <openrct2/entity/EntityList.h>
 #include <openrct2/entity/Guest.h>

@@ -42,7 +42,7 @@ namespace Generation
         /// <summary>
         /// Creates a tile element at the specified tile position.
         /// </summary>
-        public abstract void CreateElement(Map map, int x, int y, in TileElement tile);
+        public abstract void CreateElement(Map map, int x, int y, int index, in TileElementInfo tile);
 
 
         /// <summary>

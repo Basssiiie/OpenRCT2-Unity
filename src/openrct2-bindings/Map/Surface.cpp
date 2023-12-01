@@ -1,4 +1,6 @@
-#include "../../openrct2-bindings.h"
+#include "../OpenRCT2.Bindings.h"
+#include "../Utilities/Logging.h"
+#include "../Utilities/TileElementHelper.h"
 
 #include <openrct2/object/ObjectManager.h>
 #include <openrct2/object/TerrainEdgeObject.h>
@@ -8,11 +10,19 @@
 
 extern "C"
 {
+    struct SurfaceInfo
+    {
+        uint32_t surfaceIndex;
+        uint32_t edgeIndex;
+        uint8_t slope;
+        int32_t waterHeight;
+    };
+
+
     // Returns the sprite image index for a surface sprite.
     //  Inspired by: GetSurfaceObject(), GetSurfaceImage()
-    EXPORT uint32_t GetSurfaceImageIndex(const TileElement* tileElement, int32_t tileX, int32_t tileY, uint8_t direction)
+    uint32_t GetSurfaceImageIndex(const TileElement* element, const SurfaceElement* surface, int32_t x, int32_t y)
     {
-        const SurfaceElement* surface = tileElement->AsSurface();
         uint32_t surfaceIndex = surface->GetSurfaceStyle();
         uint8_t grassLength = surface->GetGrassLength();
         ImageId imageId;
@@ -26,9 +36,9 @@ extern "C"
         }
         else
         {
-            TerrainSurfaceObject* result = static_cast<TerrainSurfaceObject*>(obj);
+            const TerrainSurfaceObject* result = static_cast<TerrainSurfaceObject*>(obj);
 
-            imageId = ImageId(result->GetImageId({ tileX, tileY }, grassLength, direction, 0, false, false));
+            imageId = ImageId(result->GetImageId({ x, y }, grassLength, element->GetDirection(), 0, false, false));
             if (result->Colour != 255)
             {
                 imageId = imageId.WithPrimary(result->Colour);
@@ -39,9 +49,8 @@ extern "C"
 
     // Returns the sprite image for a surface edge sprite.
     //  Inspired by: GetEdgeImageWithOffset()
-    EXPORT uint32_t GetSurfaceEdgeImageIndex(const TileElement* tileElement)
+    uint32_t GetSurfaceEdgeImageIndex(const SurfaceElement* surface)
     {
-        const SurfaceElement* surface = tileElement->AsSurface();
         uint32_t edgeIndex = surface->GetEdgeStyle();
 
         IObjectManager& objMgr = OpenRCT2::GetContext()->GetObjectManager();
@@ -50,13 +59,29 @@ extern "C"
         if (obj == nullptr)
         {
             dll_log("Could not find surface edge object: %i", edgeIndex);
+            return 0;
         }
-        else
+
+        auto tobj = static_cast<TerrainEdgeObject*>(obj);
+        return tobj->BaseImageId + 5; // EDGE_BOTTOMRIGHT = +5
+    }
+
+    // Writes the surface element details to the specified buffer.
+    EXPORT void GetSurfaceElementAt(int x, int y, int index, SurfaceInfo* element)
+    {
+        const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Surface);
+        const SurfaceElement* surface = source->AsSurface();
+
+        if (surface == nullptr)
         {
-            auto tobj = static_cast<TerrainEdgeObject*>(obj);
-            return tobj->BaseImageId + 5; // EDGE_BOTTOMRIGHT = +5
+            dll_log("Could not find surface element at %i, %i, index %i", x, y, index);
+            return;
         }
-        return 0;
+
+        element->surfaceIndex = GetSurfaceImageIndex(source, surface, x, y);
+        element->edgeIndex = GetSurfaceEdgeImageIndex(surface);
+        element->slope = surface->GetSlope();
+        element->waterHeight = surface->GetWaterHeight();
     }
 
     // Returns the sprite image for a regular water tile.

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using Utilities;
 
@@ -14,20 +15,14 @@ namespace Lib
         /// <summary>
         /// Gets the size of one side of the map in tiles.
         /// </summary>
-        public int Size { get; private set; }
-
-
-        /// <summary>
-        /// Gets all tiles of the map as a 2-dimensional array.
-        /// </summary>
-        public Tile[,] Tiles { get; private set; } = new Tile[0, 0];
+        public MapSize Size { get; private set; }
 
 
         const int MaxElementsPerTile = 128;
 
 
 		void Start()
-		{
+        {
             if (_loader != null)
             {
                 _loader.RunCoroutine(GenerateMap());

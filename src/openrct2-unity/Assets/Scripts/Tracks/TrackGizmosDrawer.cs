@@ -33,7 +33,7 @@ namespace Tracks
         [SerializeField] Color _rotationZones = Color.red;
 
 
-        TrackNode[]? _tracknodes;
+        TrackSubposition[]? _tracknodes;
         TrackPiece _piece;
         int _selectedTrackType;
 
@@ -48,8 +48,8 @@ namespace Tracks
 
             _selectedTrackType = trackType;
 
-            _tracknodes = OpenRCT2.GetTrackElementRoute(trackType);
             _piece = TrackFactory.GetTrackPiece(trackType);
+            _tracknodes = OpenRCT2.GetTrackSubpositions((ushort)trackType, (ushort)_piece.Points.Length);
         }
 
 
@@ -97,7 +97,7 @@ namespace Tracks
             List<int> lerpNodes = new List<int> { 0 };
             for (int idx = 0; idx < len; idx++)
             {
-                if (TrackNode.HasEqualRotation(_tracknodes[chunkStart], _tracknodes[idx]))
+                if (TrackSubposition.HasEqualRotation(_tracknodes[chunkStart], _tracknodes[idx]))
                     continue;
 
                 Gizmos.DrawRay(_tracknodes[idx].LocalPosition, _tracknodes[idx].LocalRotation * Vector3.up * 0.3f);
@@ -112,7 +112,7 @@ namespace Tracks
 
             foreach (int index in lerpNodes)
             {
-                TrackNode current = _tracknodes[index];
+                TrackSubposition current = _tracknodes[index];
 
                 Gizmos.DrawRay(current.LocalPosition, current.LocalRotation * Vector3.up * 0.3f);
             }

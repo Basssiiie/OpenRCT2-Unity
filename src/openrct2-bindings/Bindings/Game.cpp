@@ -1,12 +1,13 @@
-#include "../../openrct2/core/Path.hpp"
-#include "../openrct2-bindings.h"
+#include "../OpenRCT2.Bindings.h"
+#include "../Utilities/Logging.h"
 
-#include <openrct2/Context.h>
-#include <openrct2/Game.h>
-#include <openrct2/GameState.h>
 #include <openrct2/OpenRCT2.h>
-#include <openrct2/platform/platform.h>
+#include <openrct2/Context.h>
+#include <openrct2/GameState.h>
+#include <openrct2/platform/Platform.h>
 #include <openrct2/world/Park.h>
+#include <openrct2/core/Path.hpp>
+
 
 std::unique_ptr<IContext> unityContext;
 
@@ -53,8 +54,11 @@ extern "C"
     {
         dll_log("StopGame()");
 
-        unityContext->Finish();
-        unityContext = nullptr;
+        if (unityContext != nullptr)
+        {
+            unityContext->Finish();
+            unityContext = nullptr;
+        }
     }
 
     EXPORT void LoadPark(const char* filepath)
@@ -63,7 +67,7 @@ extern "C"
 
         unityContext->LoadParkFromFile(std::string(filepath));
 
-        Park& park = unityContext->GetGameState()->GetPark();
+        const Park& park = unityContext->GetGameState()->GetPark();
         const char* name = park.Name.c_str();
 
         dll_log("LoadPark() = %s", name);
@@ -71,7 +75,7 @@ extern "C"
 
     EXPORT const char* GetParkNamePtr()
     {
-        Park& park = unityContext->GetGameState()->GetPark();
+        const Park& park = unityContext->GetGameState()->GetPark();
         const char* name = park.Name.c_str();
 
         dll_log("GetParkName() = %s", name);

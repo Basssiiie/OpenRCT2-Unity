@@ -18,19 +18,19 @@ namespace Generation.Retro
 
 
         /// <inheritdoc/>
-        public override void CreateElement(Map map, int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, int index, in TileElementInfo tile)
         {
             Assert.IsNotNull(_prefab, nameof(_prefab));
             Assert.IsNotNull(_textureField, nameof(_textureField));
 
-            Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
-            Quaternion rotation = Quaternion.Euler(0, (90 * tile.Rotation + 90), 0);           
+            Vector3 position = Map.TileCoordsToUnity(x, y, tile.baseHeight);
+            Quaternion rotation = Quaternion.Euler(0, (90 * tile.rotation + 90), 0);           
 
             GameObject obj = GameObject.Instantiate(_prefab, position, rotation, map.transform);
 
             // Apply the wall sprite
-            uint imageIndex = OpenRCT2.GetWallImageIndex(tile, 0);
-            Graphic graphic = GraphicsFactory.ForImageIndex(imageIndex);
+            WallInfo wall = OpenRCT2.GetWallElementAt(x, y, index);
+            Graphic graphic = GraphicsFactory.ForImageIndex(wall.imageIndex);
 
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
             renderer.material.SetTexture(_textureField, graphic.GetTexture(TextureWrapMode.Repeat));

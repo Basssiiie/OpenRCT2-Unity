@@ -16,12 +16,12 @@ namespace Generation
 
 
         /// <inheritdoc/>
-        public override void CreateElement(Map map, int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, int index, in TileElementInfo tile)
         {
             Assert.IsNotNull(_prefab, nameof(_prefab));
 
-            Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
-            Quaternion rotation = Quaternion.Euler(0, 90 * tile.Rotation + 90, 0);
+            Vector3 position = Map.TileCoordsToUnity(x, y, tile.baseHeight);
+            Quaternion rotation = Quaternion.Euler(0, 90 * tile.rotation + 90, 0);
 
             GameObject.Instantiate(_prefab, position, rotation, map.transform);
         }

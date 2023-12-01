@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Graphics;
 using Lib;
@@ -14,7 +15,6 @@ namespace Generation.Retro
     public class TrackGenerator : TileElementGenerator
     {
         static readonly Dictionary<int, Mesh> _trackMeshCache = new Dictionary<int, Mesh>();
-        static readonly Dictionary<ushort, TrackColour[]> _trackColoursCache = new Dictionary<ushort, TrackColour[]>();
 
 
         [SerializeField, Required] GameObject _prefab = null!;
@@ -43,22 +43,24 @@ namespace Generation.Retro
 
 
         /// <inheritdoc/>
-        public override void CreateElement(Map map, int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, int index, in TileElementInfo tile)
         {
             Assert.IsNotNull(_meshExtruder, nameof(_meshExtruder));
 
-            TrackElement track = tile.AsTrack();
+            TrackInfo track = OpenRCT2.GetTrackElementAt(x, y, index);
 
-            if (track.PartIndex != 0)
+            if (track.sequenceIndex != 0)
                 return;
 
-            short trackType = track.TrackType;
-            int meshKey = (trackType << 3) | ((byte)track.Flags2 & KeyFlagsMask);
+            ushort trackType = track.trackType;
+            int invertedBit = Convert.ToInt32(track.inverted);
+            int chainliftBit = Convert.ToInt32(track.chainlift);
+            int cableliftBit = Convert.ToInt32(track.cablelift);
+            int meshKey = (trackType << 3) | (cableliftBit << 2) | (chainliftBit << 1) | (invertedBit);
 
             if (!_trackMeshCache.TryGetValue(meshKey, out Mesh trackMesh))
             {
-                TrackPiece piece = TrackFactory.GetTrackPiece(trackType);
-                TrackTypeFlags flags = OpenRCT2.GetTrackTypeFlags(trackType);
+                TrackPiece piece = TrackFactory.GetOrCreateTrackPiece(track);
                 _meshExtruder.Clear();
 
                 float offset = 0;
@@ -72,7 +74,7 @@ namespace Generation.Retro
 
                     // If the track is inverted, and its not an inversion, rotate
                     // TODO: still not perfect; some inverted inversions still mess up. Also performance could be better.
-                    if (track.IsInverted && (flags & (TrackTypeFlags.NormalToInversion | TrackTypeFlags.InversionToNormal)) == 0)
+                    if (track.inverted && (track.normalToInverted || track.invertedToNormal))
                     {
                         Quaternion inversionAngle = Quaternion.AngleAxis(180, Vector3.forward);
                         nodeA = new TransformPoint(nodeA.Position, nodeA.Rotation * inversionAngle);
@@ -92,29 +94,21 @@ namespace Generation.Retro
                 _trackMeshCache.Add(meshKey, trackMesh);
             }
 
-            float trackOffset = (OpenRCT2.GetTrackHeightOffset(track.RideIndex) * Map.CoordsXYMultiplier);
-            if (track.IsInverted)
+            float trackOffset = (track.trackHeight * Map.CoordsZMultiplier);
+            if (track.inverted)
                 trackOffset *= 2;
 
-            Vector3 position = Map.TileCoordsToUnity(x, tile.baseHeight, y);
+            Vector3 position = Map.TileCoordsToUnity(x, y, tile.baseHeight);
             position.y += trackOffset;
 
-            GameObject obj = GameObject.Instantiate(_prefab, position, Quaternion.Euler(0, tile.Rotation * 90f, 0), map.transform);
+            GameObject obj = GameObject.Instantiate(_prefab, position, Quaternion.Euler(0, tile.rotation * 90f, 0), map.transform);
 
-            obj.name = $"[{x}, {y}] scheme: {track.ColourScheme}, rot: {tile.Rotation}, type: {trackType}, inv: {track.IsInverted}";
+            obj.name = $"[{x}, {y}] colours: ({track.mainColour}, {track.additionalColour}, {track.supportsColour}), rot: {tile.rotation}, type: {trackType}, inv: {track.inverted}";
             MeshFilter filter = obj.GetComponent<MeshFilter>();
             filter.sharedMesh = trackMesh;
 
-            ushort rideIndex = track.RideIndex;
-            if (!_trackColoursCache.TryGetValue(rideIndex, out TrackColour[] colours))
-            {
-                colours = OpenRCT2.GetRideTrackColours(rideIndex);
-                _trackColoursCache.Add(rideIndex, colours);
-            }
-
             MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
-            renderer.material.color = GraphicsFactory.PaletteToColor(OpenRCT2.GetPaletteIndexForColourId(colours[0].main));
-            return; 
+            renderer.material.color = GraphicsFactory.PaletteToColor(OpenRCT2.GetPaletteIndexForColourId(track.mainColour));
         }
     }
 }

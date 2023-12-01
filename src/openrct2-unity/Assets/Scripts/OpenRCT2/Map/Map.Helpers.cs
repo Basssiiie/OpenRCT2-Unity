@@ -57,23 +57,16 @@ namespace Lib
         /// Transforms a OpenRCT2 TileCoords to the Unity coordinate system. Returns a
         /// position at the center of the tile.
         /// </summary>
-        public static Vector3 TileCoordsToUnity(float x, float y, float z)
+        public static Vector3 TileCoordsToUnity(float x, float y, float height)
         {
             float halftile = TileCoordsXYMultiplier / 2f;
 
             return new Vector3(
                 (x * TileCoordsXYMultiplier) + halftile,
-                (y * TileCoordsZMultiplier),
-                (z * TileCoordsXYMultiplier) + halftile
+                (height * TileCoordsZMultiplier),
+                (y * TileCoordsXYMultiplier) + halftile
             );
         }
-
-
-        /// <summary>
-        /// Transforms a OpenRCT2 TileCoords to the Unity coordinate system.
-        /// </summary>
-        public static Vector3 TileCoordsToUnity(Vector3 position)
-            => TileCoordsToUnity(position.x, position.y, position.z);
 
 
         /// <summary>

@@ -81,7 +81,7 @@ namespace Generation.Retro
                         material.SetTexture(_waterTextureField, texture);
 
                         // HACK: injection of the refraction sprite shouldnt be here.
-                        Graphic refraction = GraphicsFactory.ForImageIndex(WaterRefractionImageIndex);
+                        Graphic refraction = GraphicsFactory.ForImageIndex(_waterRefractionImageIndex);
                         material.SetTexture(_waterRefractionField, refraction.GetTexture(TextureWrapMode.Repeat));
                         break;
 

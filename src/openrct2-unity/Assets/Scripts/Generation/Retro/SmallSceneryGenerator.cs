@@ -21,32 +21,31 @@ namespace Generation.Retro
 
 
         /// <inheritdoc/>
-        public override void CreateElement(Map map, int x, int y, in TileElement tile)
+        public override void CreateElement(Map map, int x, int y, int index, in TileElementInfo tile)
         {
             float pos_x = x;
-            float pos_y = tile.baseHeight;
-            float pos_z = y;
+            float pos_y = y;
+            float height = tile.baseHeight;
 
-            SmallSceneryElement smallScenery = tile.AsSmallScenery();
-            SmallSceneryEntry entry = OpenRCT2.GetSmallSceneryEntry(smallScenery.EntryIndex);
+            SmallSceneryInfo scenery = OpenRCT2.GetSmallSceneryElementAt(x, y, index);
 
             // If not a full tile, move small scenery to the correct quadrant.
-            if ((entry.Flags & SmallSceneryFlags.FullTile) == 0)
+            if (!scenery.fullTile)
             {
                 const float distanceToQuadrant = (Map.TileCoordsXYMultiplier / 4);
-                byte quadrant = smallScenery.Quadrant;
+                byte quadrant = scenery.quadrant;
 
                 switch (quadrant)
                 {
-                    case 0: pos_x -= distanceToQuadrant; pos_z -= distanceToQuadrant; break;
-                    case 1: pos_x -= distanceToQuadrant; pos_z += distanceToQuadrant; break;
-                    case 2: pos_x += distanceToQuadrant; pos_z += distanceToQuadrant; break;
-                    case 3: pos_x += distanceToQuadrant; pos_z -= distanceToQuadrant; break;
+                    case 0: pos_x -= distanceToQuadrant; pos_y -= distanceToQuadrant; break;
+                    case 1: pos_x -= distanceToQuadrant; pos_y += distanceToQuadrant; break;
+                    case 2: pos_x += distanceToQuadrant; pos_y += distanceToQuadrant; break;
+                    case 3: pos_x += distanceToQuadrant; pos_y -= distanceToQuadrant; break;
                 }
             }
 
             // Instantiate the element.
-            string identifier = entry.Identifier.Trim();
+            string identifier = scenery.identifier.Trim();
             ObjectEntry? objectEntry = FindObjectEntry(identifier);
 
             GameObject prefab;
@@ -62,25 +61,23 @@ namespace Generation.Retro
                 scaleMode = _defaultScaleMode;
             }
 
-            Vector3 position = Map.TileCoordsToUnity(pos_x, pos_y, pos_z);
-            Quaternion quatRot = Quaternion.Euler(0, (90 * tile.Rotation + 90), 0);
+            Vector3 position = Map.TileCoordsToUnity(pos_x, pos_y, height);
+            Quaternion quatRot = Quaternion.Euler(0, (90 * tile.rotation + 90), 0);
 
             GameObject obj = GameObject.Instantiate(prefab, position, quatRot, map.transform);
 
             // Apply the sprites
             bool spriteApplied = false;
-            if ((entry.Flags & SmallSceneryFlags.Animated) != 0)
+            if (scenery.animated)
             {
                 // Animate if possible
-                spriteApplied = TryApplyAnimation(obj, scaleMode, tile, entry, identifier);
+                spriteApplied = TryApplyAnimation(obj, scaleMode, x, y, index, scenery, identifier);
             }
 
             if (!spriteApplied)
             {
-                ApplySprite(obj, scaleMode, tile, identifier);
+                ApplySprite(obj, scaleMode, scenery.imageIndex, identifier);
             }
-
-
         }
 
 
@@ -106,7 +103,7 @@ namespace Generation.Retro
         /// <summary>
         /// Gets the sprite of the tile element and applies it to the gameobject.
         /// </summary>
-        static void ApplySprite(GameObject obj, ObjectScaleMode scaleMode, in TileElement tile, string identifier)
+        static void ApplySprite(GameObject obj, ObjectScaleMode scaleMode, uint imageIndex, string identifier)
         {
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
             Material[] materials = renderer.materials;
@@ -118,7 +115,6 @@ namespace Generation.Retro
                 materialCount = 4;
             }
 
-            uint imageIndex = OpenRCT2.GetSmallSceneryImageIndex(tile, 0);
             uint maskedImageIndex = (imageIndex & 0x7FFFF);
             Graphic? graphicForScaling = null; // TODO: refactor this file
 
@@ -148,27 +144,13 @@ namespace Generation.Retro
         /// <summary>
         /// Applies a sprite animation to the specified gameobject.
         /// </summary>
-        bool TryApplyAnimation(GameObject obj, ObjectScaleMode scaleMode, in TileElement tile, in SmallSceneryEntry entry, string identifier)
+        bool TryApplyAnimation(GameObject obj, ObjectScaleMode scaleMode, int x, int y, int index, in SmallSceneryInfo scenery, string identifier)
         {
-            int numberOfSupposedFrames = entry.AnimationFrameCount;
-            if (numberOfSupposedFrames == 0)
-            {
-                // Some entries do not use this property, they use a default of 0xF (15) instead.
-                numberOfSupposedFrames = 0xF;
-            }
+            int animationDelay = scenery.animationFrameDelay;
+            int animationFrameCount = scenery.animationFrameCount;
+            uint[] imageIndices = OpenRCT2.GetSmallSceneryAnimationIndices(x, y, index, animationFrameCount);
 
-            int animationDelay = entry.AnimationDelay;
-
-            uint[] imageIndices = new uint[numberOfSupposedFrames];
-            int actualFrameCount = OpenRCT2.GetSmallSceneryAnimationIndices(tile, 0, imageIndices, numberOfSupposedFrames);
-
-            obj.name = $"SmallScenery (ID: {identifier}, frames: {actualFrameCount}, delay: {animationDelay & 0xFF})";
-
-            if (actualFrameCount == 0)
-            {
-                Debug.LogWarning($"Applying animation failed for {entry.Identifier.Trim()}.", obj);
-                return false;
-            }
+            obj.name = $"SmallScenery (ID: {identifier}, frames: {animationFrameCount}, delay: {animationDelay})";
 
             Graphic[] graphics = GraphicsFactory.ForAnimationIndices(imageIndices);
             Graphic flipbook = FlipbookFactory.CreateFlipbookGraphic(graphics);
@@ -183,7 +165,7 @@ namespace Generation.Retro
             // Fps => delay;  40 => 0;  20 => 1;  10 => 2;  5 => 3.
             int framerate = (40 / Mathf.FloorToInt(Mathf.Pow(2, animationDelay)));
             material.SetInt("_FrameRate", framerate);
-            material.SetInt("_FrameCount", actualFrameCount);
+            material.SetInt("_FrameCount", animationFrameCount);
 
             ApplyScaleMode(obj, scaleMode, graphics[0]);
             return true;

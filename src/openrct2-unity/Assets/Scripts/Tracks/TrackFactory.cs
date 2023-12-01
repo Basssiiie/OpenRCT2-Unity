@@ -17,15 +17,25 @@ namespace Tracks
 
 
         /// <summary>
-        /// Gets a track piece by track type, from cache or newly generated.
+        /// Gets a track piece by track type or throws if not found.
         /// </summary>
         public static TrackPiece GetTrackPiece(int trackType)
         {
-            if (!_trackPiecesCache.TryGetValue(trackType, out TrackPiece trackPiece))
+            return _trackPiecesCache[trackType];
+        }
+
+        /// <summary>
+        /// Gets a track piece by track type, from cache or newly generated.
+        /// </summary>
+        public static TrackPiece GetOrCreateTrackPiece(in TrackInfo track)
+        {
+            ushort type = track.trackType;
+
+            if (!_trackPiecesCache.TryGetValue(type, out TrackPiece trackPiece))
             {
-                TrackNode[] nodes = OpenRCT2.GetTrackElementRoute(trackType);
+                TrackSubposition[] nodes = OpenRCT2.GetTrackSubpositions(type, track.trackLength);
                 trackPiece = CreateTrackPiece(nodes);
-                _trackPiecesCache.Add(trackType, trackPiece);
+                _trackPiecesCache.Add(type, trackPiece);
             }
             return trackPiece;
         }
@@ -36,7 +46,7 @@ namespace Tracks
         /// <summary>
         /// Creates a track piece based on the specified RCT2 nodes.
         /// </summary>
-        public static TrackPiece CreateTrackPiece(TrackNode[] nodes)
+        static TrackPiece CreateTrackPiece(TrackSubposition[] nodes)
         {
             int len = nodes.Length;
 
@@ -63,7 +73,7 @@ namespace Tracks
         /// Gets a smoothend position at the specified index in the nodes array.
         /// This method smoothes the position by averaging it with neighbouring nodes.
         /// </summary>
-        static Vector3 GetSmoothPosition(TrackNode[] nodes, int index, int smoothRate)
+        static Vector3 GetSmoothPosition(TrackSubposition[] nodes, int index, int smoothRate)
         {
             // First and last nodes do not need smoothing.
             if (index == 0)
@@ -106,7 +116,7 @@ namespace Tracks
         /// This method smoothes the rotation by lerping between the next and
         /// previous 'rotation' sections.
         /// </summary>
-        static Quaternion GetSmoothRotation(TrackNode[] nodes, int index, List<int> lerpNodes)
+        static Quaternion GetSmoothRotation(TrackSubposition[] nodes, int index, List<int> lerpNodes)
         {
             int result = lerpNodes.BinarySearch(index);
 
@@ -128,14 +138,14 @@ namespace Tracks
         /// Gets all nodes indices which can be used for lerping rotations.
         /// Each index will be the center node of each 'rotation chunk'.
         /// </summary>
-        static List<int> GetLerpNodes(TrackNode[] nodes)
+        static List<int> GetLerpNodes(TrackSubposition[] nodes)
         {
             List<int> lerpNodes = new List<int> { 0 };
             int chunkStart = 0, len = nodes.Length;
 
             for (int idx = 0; idx < len; idx++)
             {
-                if (TrackNode.HasEqualRotation(nodes[chunkStart], nodes[idx]))
+                if (TrackSubposition.HasEqualRotation(nodes[chunkStart], nodes[idx]))
                     continue;
 
                 lerpNodes.Add(chunkStart + (idx - chunkStart) / 2);
