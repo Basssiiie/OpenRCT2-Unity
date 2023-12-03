@@ -12,7 +12,6 @@ extern "C"
     struct TrackInfo
     {
         uint16_t trackType;
-        uint16_t trackLength;
         int8_t trackHeight;
         uint8_t sequenceIndex;
         uint8_t mainColour;
@@ -33,10 +32,8 @@ extern "C"
         const Ride* ride = GetRide(track->GetRideIndex());
         const RideTypeDescriptor& rtd = GetRideTypeDescriptor(track->GetRideType());
         uint16_t trackType = track->GetTrackType();
-        uint16_t typeAndDirection = static_cast<uint16_t>((trackType << 2) | (source->GetDirection() & 3));
 
         element->trackType = trackType;
-        element->trackLength = gTrackVehicleInfo[0][typeAndDirection]->size;
         element->trackHeight = rtd.Heights.VehicleZOffset;
         element->sequenceIndex = track->GetSequenceIndex();
         element->chainlift = track->HasChain();
@@ -64,7 +61,7 @@ extern "C"
     };
 
     // Rounds a number to the nearest multiple of 'multiple'.
-    int16_t RoundToMultiple(int value, int multiple)
+    static int16_t RoundToMultiple(int value, int multiple)
     {
         int half = multiple / 2;
         int retval = (value < 0) ? (value - half) : (value + half);
@@ -74,7 +71,7 @@ extern "C"
 
     // Hack: manually fix the gaps.
     // (please tell me if you know a better way to fix there gaps, without any bumps!)
-    void FixTrackPiecePosition(TrackSubposition* target, uint32_t trackType, uint8_t slope)
+    static void FixTrackPiecePosition(TrackSubposition* target, uint32_t trackType, uint8_t slope)
     {
         switch (slope)
         {
@@ -91,23 +88,34 @@ extern "C"
         }
 
         // Custom hacks for specific track types.
-        switch (trackType)
+        if (trackType == TrackElemType::LeftCurvedLiftHill || trackType == TrackElemType::RightCurvedLiftHill)
         {
-            case TrackElemType::LeftCurvedLiftHill:
-            case TrackElemType::RightCurvedLiftHill:
-                target->pitch = 0;
-                break;
+            target->pitch = 0;
         }
     }
 
+    // Returns the upper bound of the track types array.
+    EXPORT int32_t GetTrackTypesCount()
+    {
+        return static_cast<int32_t>(TrackElemType::Count);
+    }
+
+    // Returns the length of the pathing route for the specified track element.
+    EXPORT uint16_t GetTrackSubpositionsLength(VehicleTrackSubposition subposition, uint16_t trackType, uint8_t direction)
+    {
+        return VehicleGetMoveInfoSize(subposition, trackType, direction);
+    }
+
     // Returns the pathing route for the specified track element.
-    EXPORT void GetTrackSubpositions(uint16_t trackType, uint8_t direction, TrackSubposition* nodes, int32_t arraySize)
+    EXPORT void GetTrackSubpositions(
+        VehicleTrackSubposition subposition, uint16_t trackType, uint8_t direction, TrackSubposition* nodes, int32_t arraySize)
     {
         static_assert(sizeof(TrackSubposition) == sizeof(VehicleInfo), "Size is not correct");
 
-        uint16_t typeAndDirection = static_cast<uint16_t>((trackType << 2) | (direction & 3));
-        const VehicleInfoList* list = gTrackVehicleInfo[0][typeAndDirection];
+        auto typeAndDirection = static_cast<uint16_t>((trackType << 2) | (direction & 3));
+        auto trackSubposition = static_cast<uint8_t>(subposition);
 
+        const VehicleInfoList* list = gTrackVehicleInfo[trackSubposition][typeAndDirection];
         std::memcpy(nodes, list->info, sizeof(VehicleInfo) * arraySize);
 
         const TrackDefinition definition = TrackMetaData::GetTrackElementDescriptor(trackType).Definition;

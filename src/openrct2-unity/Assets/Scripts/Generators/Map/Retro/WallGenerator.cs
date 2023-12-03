@@ -34,6 +34,7 @@ namespace OpenRCT2.Generators.Map.Retro
             Quaternion rotation = Quaternion.Euler(0, 90 * element.rotation + 90, 0);
 
             GameObject obj = Object.Instantiate(_prefab, position, rotation, map.transform);
+            obj.isStatic = true;
 
             // Apply the wall sprite
             WallInfo wall = Park.GetWallElementAt(x, y, index);

@@ -7,7 +7,6 @@ namespace OpenRCT2.Bindings.TileElements
     public readonly struct TrackInfo
     {
         public readonly ushort trackType;
-        public readonly ushort trackLength;
         public readonly sbyte trackHeight;
         public readonly byte sequenceIndex;
         public readonly byte mainColour;

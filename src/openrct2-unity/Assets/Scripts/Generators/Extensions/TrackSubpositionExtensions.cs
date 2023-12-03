@@ -23,6 +23,6 @@ namespace OpenRCT2.Generators.Extensions
         /// The local rotation of the track node in Unity degrees.
         /// </summary>
         public static Quaternion GetLocalRotation(this in TrackSubposition track)
-            => TrackFactory.ConvertRotation(track.direction, track.banking, track.pitch);
+            => TrackDataFactory.ConvertRotation(track.direction, track.banking, track.pitch);
     }
 }

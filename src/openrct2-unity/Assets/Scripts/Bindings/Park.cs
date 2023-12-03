@@ -38,8 +38,7 @@ namespace OpenRCT2.Bindings
         /// </summary>
         public static SmallSceneryInfo GetSmallSceneryElementAt(int x, int y, int index)
         {
-            var element = new SmallSceneryInfo();
-            GetSmallSceneryElementAt(x, y, index, ref element);
+            GetSmallSceneryElementAt(x, y, index, out SmallSceneryInfo element);
             return element;
         }
 
@@ -49,8 +48,7 @@ namespace OpenRCT2.Bindings
         /// </summary>
         public static SurfaceInfo GetSurfaceElementAt(int x, int y, int index)
         {
-            var element = new SurfaceInfo();
-            GetSurfaceElementAt(x, y, index, ref element);
+            GetSurfaceElementAt(x, y, index, out SurfaceInfo element);
             return element;
         }
 
@@ -60,8 +58,7 @@ namespace OpenRCT2.Bindings
         /// </summary>
         public static TrackInfo GetTrackElementAt(int x, int y, int index)
         {
-            var element = new TrackInfo();
-            GetTrackElementAt(x, y, index, ref element);
+            GetTrackElementAt(x, y, index, out TrackInfo element);
             return element;
         }
 
@@ -71,8 +68,7 @@ namespace OpenRCT2.Bindings
         /// </summary>
         public static PathInfo GetPathElementAt(int x, int y, int index)
         {
-            var element = new PathInfo();
-            GetPathElementAt(x, y, index, ref element);
+            GetPathElementAt(x, y, index, out PathInfo element);
             return element;
         }
 
@@ -82,8 +78,7 @@ namespace OpenRCT2.Bindings
         /// </summary>
         public static WallInfo GetWallElementAt(int x, int y, int index)
         {
-            var element = new WallInfo();
-            GetWallElementAt(x, y, index, ref element);
+            GetWallElementAt(x, y, index, out WallInfo element);
             return element;
         }
 
@@ -101,22 +96,22 @@ namespace OpenRCT2.Bindings
 
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        static extern void GetSmallSceneryElementAt(int x, int y, int index, ref SmallSceneryInfo element);
+        static extern void GetSmallSceneryElementAt(int x, int y, int index, out SmallSceneryInfo element);
 
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        static extern void GetSurfaceElementAt(int x, int y, int index, ref SurfaceInfo element);
+        static extern void GetSurfaceElementAt(int x, int y, int index, out SurfaceInfo element);
 
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        static extern void GetTrackElementAt(int x, int y, int index, ref TrackInfo element);
+        static extern void GetTrackElementAt(int x, int y, int index, out TrackInfo element);
 
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        static extern void GetPathElementAt(int x, int y, int index, ref PathInfo element);
+        static extern void GetPathElementAt(int x, int y, int index, out PathInfo element);
 
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        static extern void GetWallElementAt(int x, int y, int index, ref WallInfo element);
+        static extern void GetWallElementAt(int x, int y, int index, out WallInfo element);
     }
 }

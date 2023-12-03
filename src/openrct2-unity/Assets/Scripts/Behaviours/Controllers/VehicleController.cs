@@ -49,7 +49,7 @@ namespace OpenRCT2.Behaviours.Controllers
         /// Gets the vehicles rotation as a quaternion.
         /// </summary>
         Quaternion GetRotation(in Vehicle vehicle)
-            => TrackFactory
+            => TrackDataFactory
                 .GetTrackPiece(vehicle.trackType)
                 .GetVehicleRotation(vehicle.trackDirection, vehicle.trackProgress);
     }

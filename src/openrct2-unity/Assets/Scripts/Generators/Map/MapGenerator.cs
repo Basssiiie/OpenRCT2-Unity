@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
-using OpenRCT2.Unity.Utilities;
 using UnityEngine;
 
 #nullable enable
@@ -47,8 +46,6 @@ namespace OpenRCT2.Generators.Map
             int totalTiles = width * height;
             TileElementInfo[] buffer = new TileElementInfo[_maxElementsPerTile];
 
-            TypeHelper.Describe<TileElementInfo>();
-
             for (int x = 1; x < width; x++)
             {
                 for (int y = 1; y < width; y++)
@@ -59,7 +56,7 @@ namespace OpenRCT2.Generators.Map
                     for (int idx = 0; idx < count; idx++)
                     {
                         TileElementInfo element = buffer[idx];
-                        if (_generators.TryGetValue(element.type, out ITileElementGenerator generator))
+                        if (!element.invisible && _generators.TryGetValue(element.type, out ITileElementGenerator generator))
                         {
                             generator.CreateElement(map, x, y, idx, in element);
                         }

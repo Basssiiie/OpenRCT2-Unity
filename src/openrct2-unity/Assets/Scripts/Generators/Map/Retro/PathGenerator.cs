@@ -49,6 +49,7 @@ namespace OpenRCT2.Generators.Map.Retro
             filter.sharedMesh = _mesh;
 
             MeshRenderer renderer = pathObject.AddComponent<MeshRenderer>();
+            renderer.staticShadowCaster = true;
             renderer.material = _pathMaterial;
 
             SpriteTexture graphic = SpriteFactory.ForImageIndex(surfaceIndex);

@@ -74,6 +74,7 @@ namespace OpenRCT2.Generators.Map.Retro
             Quaternion quatRot = Quaternion.Euler(0, 90 * element.rotation + 90, 0);
 
             GameObject obj = Object.Instantiate(prefab, position, quatRot, map.transform);
+            obj.isStatic = true;
 
             // Apply the sprites
             bool spriteApplied = false;

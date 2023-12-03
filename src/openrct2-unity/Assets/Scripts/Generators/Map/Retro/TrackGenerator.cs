@@ -14,8 +14,7 @@ namespace OpenRCT2.Generators.Map.Retro
 {
     public class TrackGenerator : ITileElementGenerator
     {
-        static readonly Dictionary<int, Mesh> _trackMeshCache = new Dictionary<int, Mesh>();
-
+        readonly Dictionary<int, Mesh> _trackMeshCache = new Dictionary<int, Mesh>();
         readonly GameObject _prefab;
         readonly MeshExtruder _meshExtruder;
 
@@ -43,37 +42,7 @@ namespace OpenRCT2.Generators.Map.Retro
 
             if (!_trackMeshCache.TryGetValue(meshKey, out Mesh trackMesh))
             {
-                TrackPiece piece = TrackFactory.GetOrCreateTrackPiece(track);
-                _meshExtruder.Clear();
-
-                float offset = 0;
-                int len = piece.Points.Length - 1;
-                for (int i = 0, j; i < len; i = j)
-                {
-                    j = i + 1;
-
-                    TransformPoint nodeA = piece.Points[i];
-                    TransformPoint nodeB = piece.Points[j];
-
-                    // If the track is inverted, and its not an inversion, rotate
-                    // TODO: still not perfect; some inverted inversions still mess up. Also performance could be better.
-                    if (track.inverted && (track.normalToInverted || track.invertedToNormal))
-                    {
-                        Quaternion inversionAngle = Quaternion.AngleAxis(180, Vector3.forward);
-                        nodeA = new TransformPoint(nodeA.Position, nodeA.Rotation * inversionAngle);
-                        nodeB = new TransformPoint(nodeB.Position, nodeB.Rotation * inversionAngle);
-                    }
-
-                    Vector3 start = nodeA.Position;
-                    Vector3 end = nodeB.Position;
-                    float length = Vector3.Distance(start, end);
-
-                    _meshExtruder.AddSegment(nodeA, nodeB, offset, 1, 0);
-
-                    offset += length;
-                }
-
-                trackMesh = _meshExtruder.ToMesh();
+                trackMesh = CreateNewMesh(track);
                 _trackMeshCache.Add(meshKey, trackMesh);
             }
 
@@ -86,14 +55,50 @@ namespace OpenRCT2.Generators.Map.Retro
             position.y += trackOffset;
 
             GameObject obj = UnityEngine.Object.Instantiate(_prefab, position, Quaternion.Euler(0, element.rotation * 90f, 0), map.transform);
+            obj.name = $"Track [{x}, {y}] type: {trackType}, key: {meshKey:x}, colours: ({track.mainColour}, {track.additionalColour}, {track.supportsColour}), rot: {element.rotation}, inv: {track.inverted}";
+            obj.isStatic = true;
 
-            obj.name = $"Track [{x}, {y}] colours: ({track.mainColour}, {track.additionalColour}, {track.supportsColour}), rot: {element.rotation}, type: {trackType}, inv: {track.inverted}";
             MeshFilter filter = obj.GetComponent<MeshFilter>();
             filter.sharedMesh = trackMesh;
 
             MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
             byte paletteIndex = GraphicsDataFactory.GetPaletteIndexForColourId(track.mainColour);
             renderer.material.color = SpriteFactory.PaletteToColor(paletteIndex);
+        }
+
+        Mesh CreateNewMesh(in TrackInfo track)
+        {
+            TrackPiece piece = TrackDataFactory.GetTrackPiece(track.trackType);
+            _meshExtruder.Clear();
+
+            float offset = 0;
+            int len = piece.Points.Length - 1;
+            for (int i = 0, j; i < len; i = j)
+            {
+                j = i + 1;
+
+                TransformPoint nodeA = piece.Points[i];
+                TransformPoint nodeB = piece.Points[j];
+
+                // If the track is inverted, and its not an inversion, rotate
+                // TODO: still not perfect; some inverted inversions still mess up. Also performance could be better.
+                if (track.inverted && (track.normalToInverted || track.invertedToNormal))
+                {
+                    Quaternion inversionAngle = Quaternion.AngleAxis(180, Vector3.forward);
+                    nodeA = new TransformPoint(nodeA.Position, nodeA.Rotation * inversionAngle);
+                    nodeB = new TransformPoint(nodeB.Position, nodeB.Rotation * inversionAngle);
+                }
+
+                Vector3 start = nodeA.Position;
+                Vector3 end = nodeB.Position;
+                float length = Vector3.Distance(start, end);
+
+                _meshExtruder.AddSegment(nodeA, nodeB, offset, 1, 0);
+
+                offset += length;
+            }
+
+            return _meshExtruder.ToMesh();
         }
     }
 }

@@ -91,6 +91,7 @@ namespace OpenRCT2.Generators.Map.Retro
                 }
 
                 MeshRenderer renderer = obj.AddComponent<MeshRenderer>();
+                renderer.staticShadowCaster = true;
                 renderer.sharedMaterials = chunkMaterials;
             }
 
@@ -142,6 +143,7 @@ namespace OpenRCT2.Generators.Map.Retro
             mesh.RecalculateNormals();
 
             var obj = new GameObject($"SurfaceChunk ({chunkX}, {chunkY})");
+            obj.isStatic = true;
             obj.transform.parent = map.transform;
             obj.transform.localPosition = new Vector3(chunkX * _chunkSize, 0, chunkY * _chunkSize);
 

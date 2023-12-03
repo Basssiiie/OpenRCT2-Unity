@@ -41,7 +41,8 @@ namespace OpenRCT2.Generators.Map.Utilities
 
             if (!_trackNodesCache.TryGetValue(trackType, out TrackSubposition[] nodes))
             {
-                nodes = TrackDataRegistry.GetSubpositions(trackType, track.trackLength);
+                var trackLength = TrackDataRegistry.GetSubpositionsLength(trackType);
+                nodes = TrackDataRegistry.GetSubpositions(trackType, trackLength);
                 _trackNodesCache.Add(trackType, nodes);
             }
 

@@ -16,7 +16,7 @@ namespace OpenRCT2.Generators.Tracks
     public class TrackGizmosDrawer : MonoBehaviour
     {
         // The track type to render.
-        public int trackType;
+        public ushort trackType;
 
         [SerializeField] bool _selectOnly = true;
 
@@ -35,7 +35,7 @@ namespace OpenRCT2.Generators.Tracks
 
         TrackSubposition[]? _tracknodes;
         TrackPiece _piece;
-        int _selectedTrackType;
+        ushort _selectedTrackType;
 
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace OpenRCT2.Generators.Tracks
 
             _selectedTrackType = trackType;
 
-            _piece = TrackFactory.GetTrackPiece(trackType);
-            _tracknodes = TrackDataRegistry.GetSubpositions((ushort)trackType, (ushort)_piece.Points.Length);
+            _piece = TrackDataFactory.GetTrackPiece(trackType);
+            _tracknodes = TrackDataRegistry.GetSubpositions(trackType, (ushort)_piece.Points.Length);
         }
 
 
@@ -96,7 +96,7 @@ namespace OpenRCT2.Generators.Tracks
             Gizmos.color = _rotationLerpPoints;
 
             int chunkStart = 0, len = _tracknodes.Length;
-            List<int> lerpNodes = new List<int> { 0 };
+            var lerpNodes = new List<int> { 0 };
             for (int idx = 0; idx < len; idx++)
             {
                 if (TrackSubposition.HasEqualRotation(_tracknodes[chunkStart], _tracknodes[idx]))
