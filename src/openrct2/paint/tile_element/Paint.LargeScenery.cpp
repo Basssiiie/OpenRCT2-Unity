@@ -31,7 +31,7 @@
 #include "Paint.TileElement.h"
 
 // clang-format off
-static constexpr const BoundBoxXY LargeSceneryBoundBoxes[] = {
+static constexpr BoundBoxXY LargeSceneryBoundBoxes[] = {
     { { 3, 3 }, { 26, 26 } },
     { { 17, 17 }, { 12, 12 } },
     { { 17, 3 }, { 12, 12 } },
@@ -61,15 +61,16 @@ static void PaintLargeScenerySupports(
     if (tile.flags & LARGE_SCENERY_TILE_FLAG_NO_SUPPORTS)
         return;
 
-    auto special = 0;
+    auto transitionType = WoodenSupportTransitionType::None;
     auto supportHeight = height;
     if (supportHeight & 0xF)
     {
         supportHeight &= ~0xF;
-        special = 49;
+        transitionType = WoodenSupportTransitionType::Scenery;
     }
 
-    WoodenBSupportsPaintSetup(session, (direction & 1), special, supportHeight, imageTemplate);
+    WoodenBSupportsPaintSetupRotated(
+        session, WoodenSupportType::Truss, WoodenSupportSubType::NeSw, direction, supportHeight, imageTemplate, transitionType);
 
     int32_t clearanceHeight = Ceil2(tileElement.GetClearanceZ() + 15, 16);
     if (tile.flags & LARGE_SCENERY_TILE_FLAG_ALLOW_SUPPORTS_ABOVE)
@@ -362,7 +363,7 @@ void PaintLargeScenery(PaintSession& session, uint8_t direction, uint16_t height
         imageTemplate = ImageId().WithRemap(FilterPaletteID::PaletteGhost);
         isGhost = true;
     }
-    else if (OpenRCT2::TileInspector::IsElementSelected(reinterpret_cast<const TileElement*>(&tileElement)))
+    else if (session.SelectedElement == reinterpret_cast<const TileElement*>(&tileElement))
     {
         imageTemplate = ImageId().WithRemap(FilterPaletteID::PaletteGhost);
         isGhost = true;

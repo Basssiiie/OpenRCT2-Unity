@@ -675,18 +675,26 @@ template<> struct DataSerializerTraitsT<TrackDesignTrackElement>
 {
     static void encode(OpenRCT2::IStream* stream, const TrackDesignTrackElement& val)
     {
-        stream->Write(&val.flags);
-        stream->Write(&val.type);
+        stream->Write(&val.Type);
+        stream->Write(&val.Flags);
+        stream->Write(&val.ColourScheme);
+        stream->Write(&val.StationIndex);
+        stream->Write(&val.BrakeBoosterSpeed);
+        stream->Write(&val.SeatRotation);
     }
     static void decode(OpenRCT2::IStream* stream, TrackDesignTrackElement& val)
     {
-        stream->Read(&val.flags);
-        stream->Read(&val.type);
+        stream->Read(&val.Type);
+        stream->Read(&val.Flags);
+        stream->Read(&val.ColourScheme);
+        stream->Read(&val.StationIndex);
+        stream->Read(&val.BrakeBoosterSpeed);
+        stream->Read(&val.SeatRotation);
     }
     static void log(OpenRCT2::IStream* stream, const TrackDesignTrackElement& val)
     {
         char msg[128] = {};
-        snprintf(msg, sizeof(msg), "TrackDesignTrackElement(type = %d, flags = %d)", val.type, val.flags);
+        snprintf(msg, sizeof(msg), "TrackDesignTrackElement(type = %d, flags = %d)", val.Type, val.Flags);
         stream->Write(msg, strlen(msg));
     }
 };
@@ -887,6 +895,41 @@ template<typename T, T TNull, typename TTag> struct DataSerializerTraitsT<TIdent
     {
         char msg[128] = {};
         snprintf(msg, sizeof(msg), "Id(%u)", static_cast<uint32_t>(id.ToUnderlying()));
+        stream->Write(msg, strlen(msg));
+    }
+};
+
+template<> struct DataSerializerTraitsT<Banner>
+{
+    static void encode(OpenRCT2::IStream* stream, const Banner& banner)
+    {
+        DataSerializerTraits<BannerIndex>().encode(stream, banner.id);
+        DataSerializerTraits<ObjectEntryIndex>().encode(stream, banner.type);
+        stream->WriteValue(banner.flags);
+        stream->WriteString(banner.text);
+        stream->WriteValue(banner.colour);
+        DataSerializerTraits<RideId>().encode(stream, banner.ride_index);
+        stream->WriteValue(banner.text_colour);
+        DataSerializerTraits<TileCoordsXY>().encode(stream, banner.position);
+    }
+
+    static void decode(OpenRCT2::IStream* stream, Banner& banner)
+    {
+        DataSerializerTraits<BannerIndex>().decode(stream, banner.id);
+        DataSerializerTraits<ObjectEntryIndex>().decode(stream, banner.type);
+        stream->Read(&banner.flags);
+        banner.text = stream->ReadStdString();
+        stream->Read(&banner.colour);
+        DataSerializerTraits<RideId>().decode(stream, banner.ride_index);
+        stream->Read(&banner.text_colour);
+        DataSerializerTraits<TileCoordsXY>().decode(stream, banner.position);
+    }
+
+    static void log(OpenRCT2::IStream* stream, const Banner& banner)
+    {
+        char msg[128] = {};
+        snprintf(
+            msg, sizeof(msg), "Banner(x = %d, y = %d, text = %s)", banner.position.x, banner.position.y, banner.text.c_str());
         stream->Write(msg, strlen(msg));
     }
 };

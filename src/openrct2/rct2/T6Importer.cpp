@@ -44,7 +44,7 @@ namespace RCT2
         bool Load(const utf8* path) override
         {
             const auto extension = Path::GetExtension(path);
-            if (String::Equals(extension, ".td6", true))
+            if (String::IEquals(extension, ".td6"))
             {
                 _name = GetNameFromTrackPath(path);
                 auto fs = OpenRCT2::FileStream(path, OpenRCT2::FILE_MODE_OPEN);
@@ -171,8 +171,8 @@ namespace RCT2
                         trackType = TrackElemType::MultiDimInvertedUp90ToFlatQuarterLoop;
                     }
 
-                    trackElement.type = trackType;
-                    trackElement.flags = t6TrackElement.Flags;
+                    trackElement.Type = trackType;
+                    ConvertFromTD46Flags(trackElement, t6TrackElement.Flags);
                     td->track_elements.push_back(trackElement);
                 }
 

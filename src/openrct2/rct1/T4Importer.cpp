@@ -40,7 +40,7 @@ namespace RCT1
         bool Load(const utf8* path) override
         {
             const auto extension = Path::GetExtension(path);
-            if (String::Equals(extension, ".td4", true))
+            if (String::IEquals(extension, ".td4"))
             {
                 _name = GetNameFromTrackPath(path);
                 auto fs = OpenRCT2::FileStream(path, OpenRCT2::FILE_MODE_OPEN);
@@ -266,8 +266,8 @@ namespace RCT1
                     _stream.SetPosition(_stream.GetPosition() - 1);
                     _stream.Read(&t4TrackElement, sizeof(TD46TrackElement));
                     TrackDesignTrackElement trackElement{};
-                    trackElement.type = RCT1TrackTypeToOpenRCT2(t4TrackElement.Type, td->type);
-                    trackElement.flags = t4TrackElement.Flags;
+                    trackElement.Type = RCT1TrackTypeToOpenRCT2(t4TrackElement.Type, td->type);
+                    ConvertFromTD46Flags(trackElement, t4TrackElement.Flags);
                     td->track_elements.push_back(trackElement);
                 }
             }
