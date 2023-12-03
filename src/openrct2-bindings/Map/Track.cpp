@@ -24,7 +24,7 @@ extern "C"
         bool normalToInverted;
         bool invertedToNormal;
     };
-    
+
     // Writes the track element details to the specified buffer.
     EXPORT void GetTrackElementAt(int x, int y, int index, TrackInfo* element)
     {

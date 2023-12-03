@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace Utilities
+namespace OpenRCT2.Utilities
 {
     /// <summary>
     /// Put this attribute on properties alongside the <see cref="SerializeReference"/>-attribute

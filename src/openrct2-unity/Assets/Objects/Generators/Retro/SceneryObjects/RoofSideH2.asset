@@ -9,17 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d6632b5999eef4045bf0c131706f65ab, type: 3}
+  m_Script: {fileID: 11500000, guid: 400ccd377ed0b7746b3c567d74b00408, type: 3}
   m_Name: RoofSideH2
   m_EditorClassIdentifier: 
-  prefab: {fileID: 6135319879212020766, guid: 7cc5bdbf00434d64f9262b8c98536bcd, type: 3}
-  scaleMode: 0
+  _prefab: {fileID: 6135319879212020766, guid: 7cc5bdbf00434d64f9262b8c98536bcd, type: 3}
+  _scaleMode: 0
   _objectIds:
-  - ROOF1
-  - ROOF2
-  - ROOF5
-  - ROOF6
-  - ROOF9
-  - ROOF10
-  - ROOF13
-  - ROOF14
+  - rct2.scenery_small.roof1
+  - rct2.scenery_small.roof2
+  - rct2.scenery_small.roof5
+  - rct2.scenery_small.roof6
+  - rct2.scenery_small.roof9
+  - rct2.scenery_small.roof10
+  - rct2.scenery_small.roof13
+  - rct2.scenery_small.roof14

@@ -1,7 +1,8 @@
-#include "./Logging.h"
 #include "./TileElementHelper.h"
-#include <openrct2/world/Map.h>
 
+#include "./Logging.h"
+
+#include <openrct2/world/Map.h>
 
 // Get a tile element at a specified x, y, and index.
 const TileElement* GetTileElementAt(int x, int y, int index)

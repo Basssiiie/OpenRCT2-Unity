@@ -1,13 +1,12 @@
 #include "../OpenRCT2.Bindings.h"
 #include "../Utilities/Logging.h"
 
-#include <openrct2/OpenRCT2.h>
 #include <openrct2/Context.h>
 #include <openrct2/GameState.h>
+#include <openrct2/OpenRCT2.h>
+#include <openrct2/core/Path.hpp>
 #include <openrct2/platform/Platform.h>
 #include <openrct2/world/Park.h>
-#include <openrct2/core/Path.hpp>
-
 
 std::unique_ptr<IContext> unityContext;
 
@@ -22,15 +21,15 @@ extern "C"
         _log_levels[static_cast<uint8_t>(DiagnosticLevel::Verbose)] = true;
 
         gOpenRCT2Headless = true;
-        gCustomOpenRCT2DataPath = Path::GetAbsolute(u8string(datapath));
+        gCustomOpenRCT2DataPath = Path::GetAbsolute(datapath);
 
         if (rct1path != nullptr)
         {
-            gCustomRCT1DataPath = Path::GetAbsolute(u8string(rct1path));
+            gCustomRCT1DataPath = Path::GetAbsolute(rct1path);
         }
         if (rct2path != nullptr)
         {
-            gCustomRCT2DataPath = Path::GetAbsolute(u8string(rct2path));
+            gCustomRCT2DataPath = Path::GetAbsolute(rct2path);
         }
 
         dll_log(
@@ -73,7 +72,7 @@ extern "C"
         dll_log("LoadPark() = %s", name);
     }
 
-    EXPORT const char* GetParkNamePtr()
+    EXPORT const char* GetParkName()
     {
         const Park& park = unityContext->GetGameState()->GetPark();
         const char* name = park.Name.c_str();

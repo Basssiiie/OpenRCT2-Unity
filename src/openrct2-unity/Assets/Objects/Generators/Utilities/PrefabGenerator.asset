@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74099863aa18bdc4f9b805afc6f8d7ed, type: 3}
+  m_Script: {fileID: 11500000, guid: 66e77c69fec9682468e5538222977320, type: 3}
   m_Name: PrefabGenerator
   m_EditorClassIdentifier: 
   _prefab: {fileID: 67614980614369834, guid: b3a4fb9191c251d44b6aadea9354fba3, type: 3}

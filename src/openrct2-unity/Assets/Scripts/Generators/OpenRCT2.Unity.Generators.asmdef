@@ -1,0 +1,18 @@
+{
+    "name": "OpenRCT2.Unity.Generators",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d531387a3363c5745b31cef5670619c3",
+        "GUID:a0510d0825aeecd4dbe8da3703264ab8",
+        "GUID:563c6b7e09ab5354e98a031b4cd44951"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

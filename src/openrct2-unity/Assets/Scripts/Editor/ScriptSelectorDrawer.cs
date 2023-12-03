@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using OpenRCT2.Utilities;
 using UnityEditor;
 using UnityEngine;
-using Utilities;
 
 #nullable enable
 

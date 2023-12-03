@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace Utilities
+namespace OpenRCT2.Utilities
 {
     /// <summary>
     /// Marks a property or field as required.

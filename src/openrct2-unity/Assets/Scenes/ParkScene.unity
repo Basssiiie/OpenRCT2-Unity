@@ -797,7 +797,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
+  m_VertexColorAlwaysGammaSpace: 1
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -812,13 +812,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1291969760}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d06da6ea48c00a34baba977cba792a38, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f408d2c2ac9a0d4294abd88a74d5239, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _text: {fileID: 1795787443}
   _counter: {fileID: 1009059565}
   _slider: {fileID: 2052279365}
-  _updateInterval: 500
+  _updateInterval: 100
 --- !u!1 &1294640984
 GameObject:
   m_ObjectHideFlags: 0
@@ -897,51 +897,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1294640984}
   m_CullTransparentMesh: 0
---- !u!1 &1347800241
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1347800243}
-  - component: {fileID: 1347800242}
-  m_Layer: 0
-  m_Name: OpenRCT2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
-  m_IsActive: 1
---- !u!114 &1347800242
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1347800241}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79be679884da2154dacd80be9669d5dc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  selectedPark: Dynamite Dunes.sv6
---- !u!4 &1347800243
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1347800241}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1491562768
 GameObject:
   m_ObjectHideFlags: 0
@@ -952,6 +907,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1491562770}
   - component: {fileID: 1491562774}
+  - component: {fileID: 1491562776}
   - component: {fileID: 1491562769}
   - component: {fileID: 1491562773}
   - component: {fileID: 1491562775}
@@ -971,10 +927,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1491562768}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f4353bcde699fe4dbc7f9641bcd509e, type: 3}
+  m_Script: {fileID: 11500000, guid: 899055a56b830e24d9d738eff25c0df5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _generationFlags: 47
   _surfaceGenerator: {fileID: 11400000, guid: 28ae24c9296970b4f901a213dab9258f, type: 2}
   _pathGenerator: {fileID: 11400000, guid: 36ba65cc92f96584aad699987bab5212, type: 2}
   _trackGenerator: {fileID: 11400000, guid: 242654eafafc85b4b81161aa89b79fcb, type: 2}
@@ -982,37 +937,12 @@ MonoBehaviour:
     type: 2}
   _entranceGenerator: {fileID: 11400000, guid: 05b4787400d2a6d4eb923521f8d11dff, type: 2}
   _wallGenerator: {fileID: 11400000, guid: 92503316c4eff754c9faea59c505ed11, type: 2}
-  _largeSceneryGenerator: {fileID: 11400000, guid: 05b4787400d2a6d4eb923521f8d11dff,
-    type: 2}
-  _bannerGenerator: {fileID: 11400000, guid: 05b4787400d2a6d4eb923521f8d11dff, type: 2}
+  _largeSceneryGenerator: {fileID: 0}
+  _bannerGenerator: {fileID: 0}
   _loader: {fileID: 1291969764}
   _onGenerationComplete:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1491562773}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: set_enabled
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 1491562775}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: set_enabled
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!4 &1491562770
 Transform:
   m_ObjectHideFlags: 0
@@ -1077,6 +1007,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _spritePrefab: {fileID: 3497475327691341381, guid: 93889bcee0f99db4da5b6c078f25b97f,
     type: 3}
+--- !u!114 &1491562776
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1491562768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f58090d8844c91e45a2a0d888eb8d265, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPark: My test park/Test park with house.sv6
 --- !u!1 &1675223600
 GameObject:
   m_ObjectHideFlags: 0
@@ -1497,7 +1440,6 @@ MonoBehaviour:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1347800243}
   - {fileID: 1491562770}
   - {fileID: 440946298}
   - {fileID: 1675223602}

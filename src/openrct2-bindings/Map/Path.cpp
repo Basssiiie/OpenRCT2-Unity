@@ -27,7 +27,6 @@ extern "C"
         uint8_t slopeDirection;
     };
 
-
     // Returns the sprite image index for a small scenery tile element.
     //  Inspired by: path_paint()
     uint32_t GetPathSurfaceImageIndex(const PathElement* path)

@@ -14,10 +14,9 @@ extern "C"
     {
         uint32_t surfaceIndex;
         uint32_t edgeIndex;
-        uint8_t slope;
         int32_t waterHeight;
+        uint8_t slope;
     };
-
 
     // Returns the sprite image index for a surface sprite.
     //  Inspired by: GetSurfaceObject(), GetSurfaceImage()

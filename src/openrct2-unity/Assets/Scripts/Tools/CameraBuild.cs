@@ -1,5 +1,5 @@
+using OpenRCT2.Utilities;
 using UnityEngine;
-using Utilities;
 
 
 // Old look around script

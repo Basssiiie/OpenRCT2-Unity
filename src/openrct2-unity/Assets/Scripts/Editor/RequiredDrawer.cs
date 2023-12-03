@@ -1,6 +1,6 @@
+using OpenRCT2.Utilities;
 using UnityEditor;
 using UnityEngine;
-using Utilities;
 
 #nullable enable
 

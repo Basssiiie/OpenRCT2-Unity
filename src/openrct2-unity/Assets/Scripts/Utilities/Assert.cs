@@ -4,7 +4,7 @@ using UnityEngine.Assertions;
 
 #nullable enable
 
-namespace Utilities
+namespace OpenRCT2.Utilities
 {
     /// <summary>
     /// Small class to check if something is true or false

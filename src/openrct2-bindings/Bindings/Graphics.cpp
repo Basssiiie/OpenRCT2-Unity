@@ -3,7 +3,6 @@
 
 #include <openrct2/drawing/Drawing.h>
 
-
 extern "C"
 {
     // Gets the full colour palette currently in use.
@@ -78,11 +77,7 @@ extern "C"
         dpi.zoom_level = ZoomLevel(0);
 
         GfxDrawSpriteSoftware(dpi, ImageId::FromUInt32(imageIndex), { 0, 0 });
-
-        for (int i = 0; i < numPixels; i++)
-        {
-            pixels[i] = dpi.bits[i];
-        }
+        memcpy(pixels, dpi.bits, std::min(numPixels, (size_t)arraySize));
 
         delete[] dpi.bits;
     }

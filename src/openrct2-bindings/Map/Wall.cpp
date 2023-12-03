@@ -17,7 +17,6 @@ extern "C"
         uint16_t animationFrameDelay;
     };
 
-
     // Returns the sprite image index for a small scenery tile element.
     //  Inspired by: PaintWall(), PaintWallWall()
     uint32_t GetWallImageIndex(const WallElement* element, const WallSceneryEntry* entry)

@@ -69,12 +69,12 @@ xcopy /i /y /f "$(SolutionDir)bin\bindings\*" "$(SolutionDir)src\openrct2-unity\
     <ClCompile Include="Bindings\Graphics.cpp" />
     <ClCompile Include="Bindings\Game.cpp" />
     <ClCompile Include="Map\Map.cpp" />
-    <ClCompile Include="Bindings\Peeps.cpp" />
-    <ClCompile Include="Bindings\Sprites.cpp" />
+    <ClCompile Include="Entities\Peeps.cpp" />
+    <ClCompile Include="Entities\Sprites.cpp" />
     <ClCompile Include="Map\Wall.cpp" />
     <ClCompile Include="Map\Path.cpp" />
     <ClCompile Include="Map\Surface.cpp" />
-    <ClCompile Include="Bindings\Vehicles.cpp" />
+    <ClCompile Include="Entities\Vehicles.cpp" />
     <ClCompile Include="Utilities\TileElementHelper.cpp" />
   </ItemGroup>
   <ItemGroup>

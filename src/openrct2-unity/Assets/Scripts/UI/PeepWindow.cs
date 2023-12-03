@@ -1,8 +1,7 @@
-using Lib;
-using Sprites;
+using OpenRCT2.Bindings.Entities;
+using OpenRCT2.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-using Utilities;
 
 #nullable enable
 
@@ -32,9 +31,9 @@ namespace UI
 
         void UpdateData()
         {
-            PeepStats stats = new PeepStats();
+            GuestStats stats = new GuestStats();
 
-            if (!OpenRCT2.GetPeepStats(_peepId, ref stats))
+            if (!EntityRegistry.GetGuestStats(_peepId, ref stats))
             {
                 Destroy(gameObject);
                 return;

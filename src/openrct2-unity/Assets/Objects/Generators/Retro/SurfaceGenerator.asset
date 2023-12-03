@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb755727c9ed637499a59fb3df9d04f5, type: 3}
+  m_Script: {fileID: 11500000, guid: d1f5b145d20ecd64a973b2b1a26b13f0, type: 3}
   m_Name: SurfaceGenerator
   m_EditorClassIdentifier: 
   _surfaceShader: {fileID: -6465566751694194690, guid: c5119169087bdc14bb9a8a4b72cab9e7,

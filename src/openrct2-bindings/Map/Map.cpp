@@ -16,6 +16,6 @@ extern "C"
     {
         dll_log("GetMapSize(%d, %d)", gMapSize.x, gMapSize.y);
         size->width = gMapSize.x;
-        size->height = gMapSize.y; 
+        size->height = gMapSize.y;
     }
 }

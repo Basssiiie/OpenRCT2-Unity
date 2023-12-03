@@ -11,19 +11,14 @@ extern "C"
         TileElementType type;
         uint8_t rotation;
         uint8_t baseHeight;
-        uint8_t clearanceHeight;
         bool invisible;
-
-        uint8_t padding[3]; // todo: test this?
     };
-
 
     void SetTileElementInfo(TileElementInfo* info, const TileElement* element)
     {
         info->type = element->GetType();
         info->rotation = element->GetDirection();
         info->baseHeight = element->BaseHeight;
-        info->clearanceHeight = element->ClearanceHeight;
         info->invisible = element->IsInvisible();
     }
 

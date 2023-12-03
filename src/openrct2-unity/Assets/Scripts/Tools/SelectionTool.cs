@@ -1,7 +1,7 @@
-using Sprites;
+using OpenRCT2.Behaviours.Controllers;
+using OpenRCT2.Utilities;
 using UI;
 using UnityEngine;
-using Utilities;
 
 #nullable enable
 

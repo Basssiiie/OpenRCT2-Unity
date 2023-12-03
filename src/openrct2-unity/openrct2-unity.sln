@@ -1,9 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenRCT2.Bindings", "OpenRCT2.Bindings.csproj", "{E31122AD-F2F5-13F6-0447-CF234E23383E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenRCT2.Unity.Behaviours", "OpenRCT2.Unity.Behaviours.csproj", "{FC328AD9-CEFF-AAEA-DD2F-87BFAFA894A3}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{551E488D-BB59-DD5B-37FB-67932F70A445}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenRCT2.Unity.Generators", "OpenRCT2.Unity.Generators.csproj", "{B32AB13B-0CD3-76C1-9C03-357C2F010FAF}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{35F38F74-42C4-A2CA-EF3C-BAA454D68E79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenRCT2.Unity.Utilities", "OpenRCT2.Unity.Utilities.csproj", "{9C283A2D-BD87-C0EB-38DC-3CC8229FB962}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,14 +19,30 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E31122AD-F2F5-13F6-0447-CF234E23383E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E31122AD-F2F5-13F6-0447-CF234E23383E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E31122AD-F2F5-13F6-0447-CF234E23383E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E31122AD-F2F5-13F6-0447-CF234E23383E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC328AD9-CEFF-AAEA-DD2F-87BFAFA894A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC328AD9-CEFF-AAEA-DD2F-87BFAFA894A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC328AD9-CEFF-AAEA-DD2F-87BFAFA894A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC328AD9-CEFF-AAEA-DD2F-87BFAFA894A3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{551E488D-BB59-DD5B-37FB-67932F70A445}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{551E488D-BB59-DD5B-37FB-67932F70A445}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{551E488D-BB59-DD5B-37FB-67932F70A445}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{551E488D-BB59-DD5B-37FB-67932F70A445}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B32AB13B-0CD3-76C1-9C03-357C2F010FAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B32AB13B-0CD3-76C1-9C03-357C2F010FAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B32AB13B-0CD3-76C1-9C03-357C2F010FAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B32AB13B-0CD3-76C1-9C03-357C2F010FAF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{35F38F74-42C4-A2CA-EF3C-BAA454D68E79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{35F38F74-42C4-A2CA-EF3C-BAA454D68E79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35F38F74-42C4-A2CA-EF3C-BAA454D68E79}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35F38F74-42C4-A2CA-EF3C-BAA454D68E79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C283A2D-BD87-C0EB-38DC-3CC8229FB962}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C283A2D-BD87-C0EB-38DC-3CC8229FB962}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C283A2D-BD87-C0EB-38DC-3CC8229FB962}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C283A2D-BD87-C0EB-38DC-3CC8229FB962}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

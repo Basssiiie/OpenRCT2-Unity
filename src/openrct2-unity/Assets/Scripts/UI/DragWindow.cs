@@ -1,6 +1,6 @@
+using OpenRCT2.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using Utilities;
 
 #nullable enable
 

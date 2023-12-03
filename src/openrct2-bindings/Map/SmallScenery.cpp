@@ -11,23 +11,21 @@
 #include <openrct2/world/SmallScenery.h>
 #include <openrct2/world/TileElement.h>
 
-
 extern "C"
 {
     const uint8_t IdentifierSize = 50;
 
     struct SmallSceneryInfo
     {
-        char identifier[IdentifierSize];
-        ObjectEntryIndex objectIndex;
         uint32_t imageIndex;
+        ObjectEntryIndex objectIndex;
         uint8_t quadrant;
         bool fullTile;
-        bool animated;
         uint16_t animationFrameCount;
         uint16_t animationFrameDelay;
+        bool animated;
+        char identifier[IdentifierSize];
     };
-
 
     // Adjusts the image index if the scenery element has colours or withering.
     uint32_t GetIndexWithColourAndWither(const SmallSceneryElement* element, const SmallSceneryEntry* entry)

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using OpenRCT2.Utilities;
 using UnityEngine;
-using Utilities;
 
 #nullable enable
 

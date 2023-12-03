@@ -1,6 +1,6 @@
 using System.IO;
-using Graphics;
-using Lib;
+using OpenRCT2.Bindings.Graphics;
+using OpenRCT2.Generators.Sprites;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,7 +31,6 @@ namespace EditorExtensions
 
         void OnGUI()
         {
-
             _imageIndexOffset = Mathf.Clamp(EditorGUILayout.IntField("Image index offset", _imageIndexOffset), 0, 0x7FFFE);
             _horizontalCount = EditorGUILayout.IntSlider("Horizontal sprite count", _horizontalCount, 1, 20);
             _verticalCount = EditorGUILayout.IntSlider("Vertical sprite count", _verticalCount, 1, 20);
@@ -54,9 +53,9 @@ namespace EditorExtensions
                 EditorGUILayout.BeginHorizontal();
                 for (int x = 0; x < _horizontalCount; x++)
                 {
-                    Graphic graphic = GraphicsFactory.ForImageIndex(offset);
+                    SpriteTexture graphic = SpriteFactory.ForImageIndex(offset);
 
-                    SpriteData data = OpenRCT2.GetTextureData(offset);
+                    SpriteData data = GraphicsDataFactory.GetTextureData(offset);
                     string information = $"Index:\t{offset}\nSize:\t{data.width}x{data.height} px\nOffset:\t({data.offsetX}, {data.offsetY})";
 
                     GUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.ExpandHeight(true));
@@ -112,7 +111,7 @@ namespace EditorExtensions
         }
 
 
-        void Awake()
+        /*void Awake()
         {
             // Only start if currently not already running OpenRCT2.
             if (!EditorApplication.isPlaying)
@@ -125,6 +124,6 @@ namespace EditorExtensions
             // Only stop if currently not already running OpenRCT2.
             if (!EditorApplication.isPlaying)
                 OpenRCT2.StopGame();
-        }
+        }*/
     }
 }
