@@ -523,17 +523,13 @@ namespace OpenRCT2
 
                 // TODO: preload the title scene in another (parallel) job.
                 preloaderScene->AddJob([this]() { InitialiseRepositories(); });
+                preloaderScene->AddJob([this]() { InitialiseScriptEngine(); });
             }
             else
             {
                 InitialiseRepositories();
+                InitialiseScriptEngine();
             }
-
-#ifdef ENABLE_SCRIPTING
-            _scriptEngine.Initialise();
-#endif
-
-            _uiContext->Initialise();
 
             return true;
         }
@@ -572,6 +568,19 @@ namespace OpenRCT2
             TitleSequenceManager::Scan();
 
             OpenProgress(STR_LOADING_GENERIC);
+        }
+
+        void InitialiseScriptEngine()
+        {
+#ifdef ENABLE_SCRIPTING
+            // TODO: add dedicated string
+            OpenProgress(STR_LOADING_GENERIC);
+            _scriptEngine.Initialise();
+            _uiContext->InitialiseScriptExtensions();
+            _stdInOutConsole.Start();
+
+            OpenProgress(STR_LOADING_GENERIC);
+#endif
         }
 
     public:
@@ -1151,7 +1160,6 @@ namespace OpenRCT2
                 SwitchToStartUpScene();
             }
 
-            _stdInOutConsole.Start();
             RunGameLoop();
         }
 
