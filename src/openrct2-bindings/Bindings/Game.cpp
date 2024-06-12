@@ -37,7 +37,6 @@ extern "C"
             rct2path);
 
         // Create a plain context
-        Platform::CoreInit();
         unityContext = CreateContext(); // OpenRCT2::CreateContext()
         bool result = unityContext->Initialise();
 

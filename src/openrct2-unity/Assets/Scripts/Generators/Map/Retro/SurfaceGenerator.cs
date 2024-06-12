@@ -180,7 +180,7 @@ namespace OpenRCT2.Generators.Map.Retro
                  */
 
             SurfaceInfo surface = tile.surface;
-            int surfaceSubmesh = AddMaterialIndex(materialIndices, PushImageIndex(surface.surfaceIndex, TextureType.Surface));
+            int surfaceSubmesh = AddMaterialIndex(materialIndices, PushImageIndex(surface.surfaceImageIndex, TextureType.Surface));
 
             SurfaceSlope slope = surface.slope;
             int baseHeight = tile.baseHeight;
@@ -218,7 +218,7 @@ namespace OpenRCT2.Generators.Map.Retro
             }
 
             // Edges
-            uint edgeImage = surface.edgeIndex;
+            uint edgeImage = surface.edgeImageIndex;
             // HACK: only add the material stack index when any of the add-edges succeed.
             // Otherwise it will create inconsistency in materials, because some may not be used.
             int materialStackIndex = PushImageIndex(edgeImage, TextureType.Edge);

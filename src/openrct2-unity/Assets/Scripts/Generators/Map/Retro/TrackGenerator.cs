@@ -55,7 +55,7 @@ namespace OpenRCT2.Generators.Map.Retro
             position.y += trackOffset;
 
             GameObject obj = UnityEngine.Object.Instantiate(_prefab, position, Quaternion.Euler(0, element.rotation * 90f, 0), map.transform);
-            obj.name = $"Track [{x}, {y}] type: {trackType}, key: {meshKey:x}, colours: ({track.mainColour}, {track.additionalColour}, {track.supportsColour}), rot: {element.rotation}, inv: {track.inverted}";
+            obj.name = $"Track [{x}, {y}, {element.baseHeight}] type: {trackType}, key: {meshKey:x}, colours: ({track.mainColour}, {track.additionalColour}, {track.supportsColour}), rot: {element.rotation}, inv: {track.inverted}";
             obj.isStatic = true;
 
             MeshFilter filter = obj.GetComponent<MeshFilter>();

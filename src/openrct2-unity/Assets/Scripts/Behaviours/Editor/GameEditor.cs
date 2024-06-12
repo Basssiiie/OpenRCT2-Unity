@@ -18,7 +18,7 @@ namespace OpenRCT2.Behaviours.Editor
         const string _defaultOpenRCT2Path = @"bin\data"; // from repo root
         const string _defaultParkPath = @"Parks"; // from unity project/executable root
 
-        static readonly string[] _validParkExtensions = { ".sv6", ".sc6", ".sv4", ".sc4" };
+        static readonly string[] _validParkExtensions = { ".park", ".sv6", ".sc6", ".sv4", ".sc4" };
 
 
         bool _groupToggleDataPaths = true;

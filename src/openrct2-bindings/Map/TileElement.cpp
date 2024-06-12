@@ -32,8 +32,6 @@ extern "C"
     // Writes all tile-elements at the the specified coordinates to the specified buffer.
     EXPORT int GetMapElementsAt(int x, int y, TileElementInfo* elements, int arraySize)
     {
-        dll_log("Cpp TileElementInfo size: %li", sizeof(TileElementInfo));
-
         const TileElement* source = GetTileElementAt(x, y, 0);
         int elementCount = 0;
 
@@ -41,9 +39,6 @@ extern "C"
         {
             SetTileElementInfo(&elements[i], source);
             elementCount++;
-
-            const uint32_t* ptr = (uint32_t*)&elements[i];
-            dll_log("%i -> %08x %08x\n", 1, ptr[1], ptr[0]);
 
             if (source->IsLastForTile())
                 break;
