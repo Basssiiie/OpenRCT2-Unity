@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -418,12 +417,12 @@ MonoBehaviour:
   m_RequiresColorTexture: 0
   m_Version: 2
   m_TaaSettings:
-    quality: 3
-    frameInfluence: 0.1
-    jitterScale: 1
-    mipBias: 0
-    varianceClampScale: 0.9
-    contrastAdaptiveSharpening: 0
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
 --- !u!114 &440946301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1020,7 +1019,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f58090d8844c91e45a2a0d888eb8d265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Fort Anachronism.sv6
+  selectedPark: My test park/Test park with water towers.sv6
 --- !u!1 &1675223600
 GameObject:
   m_ObjectHideFlags: 0
