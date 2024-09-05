@@ -111,7 +111,7 @@ constexpr RideTypeDescriptor FlyingRollerCoasterAltRTD =
         .extraTrackGroups = {  },
     }),
     .flags = kRtdFlagsHasThreeColours | kRtdFlagsCommonCoaster |
-        RtdFlags(RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation, RtdFlag::startConstructionInverted),
+        RtdFlags(RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation, RtdFlag::startConstructionInverted, RtdFlag::isDummyType),
     .RideModes = EnumsToFlags(RideMode::continuousCircuit, RideMode::continuousCircuitBlockSectioned),
     .DefaultMode = RideMode::continuousCircuit,
     .OperatingSettings = { 10, 27 },
