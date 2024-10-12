@@ -93,7 +93,7 @@ extern "C"
         const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Wall);
         SetWallInfo(x, y, index, source, element);
     }
-        
+
     // Writes all the wall element details to the specified buffer.
     EXPORT int GetAllWallElementsAt(int x, int y, WallInfo* elements, int length)
     {

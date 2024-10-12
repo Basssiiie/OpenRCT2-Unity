@@ -28,7 +28,7 @@ extern "C"
     static void SetTrackInfo(int x, int y, int index, const TileElement* source, TrackInfo* target)
     {
         const TrackElement* track = source->AsTrack();
-                
+
         if (track == nullptr)
         {
             dll_log("Could not find track element at %i, %i, index %i", x, y, index);

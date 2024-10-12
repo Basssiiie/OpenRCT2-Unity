@@ -1,0 +1,6 @@
+---
+BasedOnStyle: InheritParentConfig
+BraceWrapping:
+  AfterExternBlock: true
+IndentExternBlock: true
+...

@@ -73,7 +73,7 @@ extern "C"
     EXPORT void GetPathElementAt(int x, int y, int index, PathInfo* element)
     {
         const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Path);
-        SetPathInfo(x, y, index, source, element);        
+        SetPathInfo(x, y, index, source, element);
     }
 
     // Writes all the path element details to the specified buffer.

@@ -2,11 +2,9 @@
 #include "../Utilities/Logging.h"
 #include "../Utilities/TileElementHelper.h"
 
-#include <openrct2/object/ObjectManager.h>
 #include <openrct2/object/TerrainEdgeObject.h>
 #include <openrct2/object/TerrainSurfaceObject.h>
 #include <openrct2/paint/tile_element/Paint.Surface.h>
-#include <openrct2/paint/tile_element/Paint.Surface.cpp>
 #include <openrct2/world/Map.h>
 
 extern "C"
@@ -32,9 +30,9 @@ extern "C"
         uint8_t grassLength = surface->GetGrassLength();
         auto imageId = ImageId(surfaceObject->GetImageId({ x, y }, grassLength, element->GetDirection(), 0, false, false));
         if (surfaceObject->Colour != 255)
-            {
+        {
             imageId = imageId.WithPrimary(surfaceObject->Colour);
-            }
+        }
         return imageId.ToUInt32();
     }
 
