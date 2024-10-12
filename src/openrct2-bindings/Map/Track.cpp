@@ -1,4 +1,5 @@
 #include "../OpenRCT2.Bindings.h"
+#include "../Utilities/Logging.h"
 #include "../Utilities/TileElementHelper.h"
 
 #include <openrct2/ride/Ride.h>
@@ -24,30 +25,66 @@ extern "C"
         bool invertedToNormal;
     };
 
-    // Writes the track element details to the specified buffer.
-    EXPORT void GetTrackElementAt(int x, int y, int index, TrackInfo* element)
+    static void SetTrackInfo(int x, int y, int index, const TileElement* source, TrackInfo* target)
     {
-        const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Track);
         const TrackElement* track = source->AsTrack();
+                
+        if (track == nullptr)
+        {
+            dll_log("Could not find track element at %i, %i, index %i", x, y, index);
+            return;
+        }
+
         const Ride* ride = GetRide(track->GetRideIndex());
         const RideTypeDescriptor& rtd = GetRideTypeDescriptor(track->GetRideType());
         uint16_t trackType = track->GetTrackType();
 
-        element->trackType = trackType;
-        element->trackHeight = rtd.Heights.VehicleZOffset;
-        element->sequenceIndex = track->GetSequenceIndex();
-        element->chainlift = track->HasChain();
-        element->cablelift = track->HasCableLift();
-        element->inverted = track->IsInverted();
+        target->trackType = trackType;
+        target->trackHeight = rtd.Heights.VehicleZOffset;
+        target->sequenceIndex = track->GetSequenceIndex();
+        target->chainlift = track->HasChain();
+        target->cablelift = track->HasCableLift();
+        target->inverted = track->IsInverted();
 
         const TrackColour scheme = ride->track_colour[track->GetColourScheme()];
-        element->mainColour = scheme.main;
-        element->additionalColour = scheme.additional;
-        element->supportsColour = scheme.supports;
+        target->mainColour = scheme.main;
+        target->additionalColour = scheme.additional;
+        target->supportsColour = scheme.supports;
 
         const TrackElementDescriptor& ted = GetTrackElementDescriptor(track->GetTrackType());
-        element->normalToInverted = (ted.flags & TRACK_ELEM_FLAG_NORMAL_TO_INVERSION);
-        element->invertedToNormal = (ted.flags & TRACK_ELEM_FLAG_INVERSION_TO_NORMAL);
+        target->normalToInverted = (ted.flags & TRACK_ELEM_FLAG_NORMAL_TO_INVERSION);
+        target->invertedToNormal = (ted.flags & TRACK_ELEM_FLAG_INVERSION_TO_NORMAL);
+    }
+
+    // Writes the track element details to the specified buffer.
+    EXPORT void GetTrackElementAt(int x, int y, int index, TrackInfo* element)
+    {
+        const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Track);
+        SetTrackInfo(x, y, index, source, element);
+    }
+
+    // Writes all the track element details to the specified buffer.
+    EXPORT int GetAllTrackElementsAt(int x, int y, TrackInfo* elements, int length)
+    {
+        const TileElement* source = MapGetFirstElementAt(TileCoordsXY{ x, y });
+        auto index = 0;
+
+        do
+        {
+            if (source == nullptr)
+                break;
+
+            const TileElementType type = source->GetType();
+            if (type != TileElementType::Track)
+                continue;
+
+            SetTrackInfo(x, y, index, source, elements);
+            index++;
+            elements++;
+
+        } while (!(source++)->IsLastForTile() && index < length);
+
+        return index;
     }
 
     struct TrackSubposition

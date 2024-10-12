@@ -6,7 +6,8 @@
 #include <openrct2/object/TerrainEdgeObject.h>
 #include <openrct2/object/TerrainSurfaceObject.h>
 #include <openrct2/paint/tile_element/Paint.Surface.h>
-#include <openrct2/world/TileElement.h>
+#include <openrct2/paint/tile_element/Paint.Surface.cpp>
+#include <openrct2/world/Map.h>
 
 extern "C"
 {
@@ -40,7 +41,7 @@ extern "C"
     // Returns the sprite image for a surface edge sprite.
     //  Inspired by: GetEdgeImageWithOffset()
     static uint32_t GetSurfaceEdgeImageIndex(const SurfaceElement* surface)
-        {
+    {
         const TerrainEdgeObject* edgeObject = surface->GetEdgeObject();
         if (edgeObject == nullptr)
         {
@@ -50,10 +51,8 @@ extern "C"
         return edgeObject->BaseImageId + 5; // EDGE_BOTTOMRIGHT = +5
     }
 
-    // Writes the surface element details to the specified buffer.
-    EXPORT void GetSurfaceElementAt(int x, int y, int index, SurfaceInfo* element)
+    static void SetSurfaceInfo(int x, int y, int index, const TileElement* source, SurfaceInfo* target)
     {
-        const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Surface);
         const SurfaceElement* surface = source->AsSurface();
 
         if (surface == nullptr)
@@ -62,10 +61,41 @@ extern "C"
             return;
         }
 
-        element->surfaceImageIndex = GetSurfaceImageIndex(source, surface, x, y);
-        element->edgeImageIndex = GetSurfaceEdgeImageIndex(surface);
-        element->slope = surface->GetSlope();
-        element->waterHeight = surface->GetWaterHeight();
+        target->surfaceImageIndex = GetSurfaceImageIndex(source, surface, x, y);
+        target->edgeImageIndex = GetSurfaceEdgeImageIndex(surface);
+        target->slope = surface->GetSlope();
+        target->waterHeight = surface->GetWaterHeight();
+    }
+
+    // Writes the surface element details to the specified buffer.
+    EXPORT void GetSurfaceElementAt(int x, int y, int index, SurfaceInfo* element)
+    {
+        const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Surface);
+        SetSurfaceInfo(x, y, index, source, element);
+    }
+
+    // Writes all the surface element details to the specified buffer.
+    EXPORT int GetAllSurfaceElementsAt(int x, int y, SurfaceInfo* elements, int length)
+    {
+        const TileElement* source = MapGetFirstElementAt(TileCoordsXY{ x, y });
+        auto index = 0;
+
+        do
+        {
+            if (source == nullptr)
+                break;
+
+            const TileElementType type = source->GetType();
+            if (type != TileElementType::Surface)
+                continue;
+
+            SetSurfaceInfo(x, y, index, source, elements);
+            index++;
+            elements++;
+
+        } while (!(source++)->IsLastForTile() && index < length);
+
+        return index;
     }
 
     // Returns the sprite image for a regular water tile.

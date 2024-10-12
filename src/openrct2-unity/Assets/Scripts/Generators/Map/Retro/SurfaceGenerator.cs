@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
+using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Generators.MeshBuilding;
 using OpenRCT2.Generators.Sprites;
-using OpenRCT2.Utilities;
 using UnityEngine;
 
 #nullable enable
@@ -30,10 +30,6 @@ namespace OpenRCT2.Generators.Map.Retro
         readonly string _waterTextureField;
         readonly string _waterRefractionField;
 
-        List<RequestedImage>? _images;
-        TileCache[,]? _tiles;
-
-
         public SurfaceGenerator(int chunkSize, Shader? surfaceShader, string surfaceTextureField, Shader? edgeShader, string edgeTextureField, Shader? waterShader, string waterTextureField, string waterRefractionField)
         {
             _chunkSize = chunkSize;
@@ -44,27 +40,19 @@ namespace OpenRCT2.Generators.Map.Retro
             _waterShader = waterShader;
             _waterTextureField = waterTextureField;
             _waterRefractionField = waterRefractionField;
-            _images = new List<RequestedImage>();
         }
 
-
-
         /// <inheritdoc/>
-        public void Start(in MapData map)
+        public IEnumerator<LoadStatus> Run(Map map, Transform transform)
         {
-            _tiles = new TileCache[map.width, map.height];
-        }
+            var images = new List<RequestedImage>();
 
-
-        /// <inheritdoc/>
-        public void Finish(in MapData map)
-        {
-            Assert.IsNotNull(_tiles, nameof(_tiles));
-
-            int width = _tiles.GetLength(0);
-            int height = _tiles.GetLength(1);
+            int width = map.width;
+            int height = map.height;
             int chunkWidth = (width - 1) / _chunkSize + 1;
             int chunkHeight = (height - 1) / _chunkSize + 1;
+            int chunkCount = chunkWidth * chunkHeight;
+            int counter = 0;
 
             var builder = new MeshBuilder();
             var chunks = new List<(GameObject, List<int>)>();
@@ -73,11 +61,13 @@ namespace OpenRCT2.Generators.Map.Retro
             {
                 for (int chunkY = 0; chunkY < chunkHeight; chunkY++)
                 {
-                    CreateChunk(builder, chunks, map, chunkX, chunkY);
+                    yield return new LoadStatus("Generating chunks...", counter++, chunkCount);
+
+                    CreateChunk(builder, map, transform, chunks, chunkX, chunkY, images);
                 }
             }
 
-            Material[] materials = GenerateSurfaceMaterials();
+            Material[] materials = GenerateSurfaceMaterials(images);
             foreach (var (obj, materialIndices) in chunks)
             {
                 // Apply all used materials in this chunk.
@@ -94,27 +84,13 @@ namespace OpenRCT2.Generators.Map.Retro
                 renderer.staticShadowCaster = true;
                 renderer.sharedMaterials = chunkMaterials;
             }
-
-            _tiles = null;
-            _images = null;
-        }
-
-
-        /// <inheritdoc/>
-        public void CreateElement(in MapData map, int x, int y, int index, in TileElementInfo element)
-        {
-            Assert.IsNotNull(_tiles, nameof(_tiles));
-
-            SurfaceInfo surface = Park.GetSurfaceElementAt(x, y, index);
-            // TODO: support multiple surface elements on the same tile
-            _tiles[x, y] = new TileCache((ushort)index, element.baseHeight, surface);
         }
 
 
         /// <summary>
         /// Creates a map chunk for the specified area.
         /// </summary>
-        void CreateChunk(MeshBuilder builder, List<(GameObject, List<int>)> chunks, in MapData map, int chunkX, int chunkY)
+        void CreateChunk(MeshBuilder builder, Map map, Transform transform, List<(GameObject, List<int>)> chunks, int chunkX, int chunkY, List<RequestedImage> images)
         {
             builder.Clear();
             var materialIndices = new List<int>();
@@ -128,7 +104,7 @@ namespace OpenRCT2.Generators.Map.Retro
             {
                 for (int y = startY; y < endY; y++)
                 {
-                    CreateSurfaceElement(builder, materialIndices, x, y, startX, startY);
+                    CreateSurfaceElement(builder, map, materialIndices, x, y, startX, startY, images);
                 }
             }
 
@@ -144,8 +120,8 @@ namespace OpenRCT2.Generators.Map.Retro
 
             var obj = new GameObject($"SurfaceChunk ({chunkX}, {chunkY})");
             obj.isStatic = true;
-            obj.transform.parent = map.transform;
-            obj.transform.localPosition = new Vector3(chunkX * _chunkSize, 0, chunkY * _chunkSize);
+            obj.transform.parent = transform;
+            obj.transform.localPosition = new Vector3(chunkX * _chunkSize + 1, 0, chunkY * _chunkSize + 1); // add 1 to account for missing border
 
             MeshFilter filter = obj.AddComponent<MeshFilter>();
             filter.sharedMesh = mesh;
@@ -157,12 +133,13 @@ namespace OpenRCT2.Generators.Map.Retro
         /// <summary>
         /// Adds triangles for terrain surface and edges to the specified chunk.
         /// </summary>
-        void CreateSurfaceElement(MeshBuilder builder, List<int> materialIndices, int x, int y, int chunkOffsetX, int chunkOffsetY)
+        void CreateSurfaceElement(MeshBuilder builder, Map map, List<int> materialIndices, int x, int y, int chunkOffsetX, int chunkOffsetY, List<RequestedImage> images)
         {
-            Assert.IsNotNull(_tiles, nameof(_tiles));
+            // todo: support multiple surface elements on a single tile
+            var tile = map.tiles[x, y];
 
-            TileCache tile = _tiles[x, y];
-            if (tile.baseHeight == 0)
+            if (!tile.TryGetFirst(TileElementType.Surface, out var element)
+                || element.baseHeight == 0)
             {
                 return;
             }
@@ -179,11 +156,11 @@ namespace OpenRCT2.Generators.Map.Retro
                  *    x -->
                  */
 
-            SurfaceInfo surface = tile.surface;
-            int surfaceSubmesh = AddMaterialIndex(materialIndices, PushImageIndex(surface.surfaceImageIndex, TextureType.Surface));
+            SurfaceInfo surface = tile.surfaces[0];
+            int surfaceSubmesh = AddMaterialIndex(materialIndices, PushImageIndex(images, surface.surfaceImageIndex, TextureType.Surface));
 
             SurfaceSlope slope = surface.slope;
-            int baseHeight = tile.baseHeight;
+            int baseHeight = element.baseHeight;
 
             int northHeight = GetSurfaceCorner(localX + 1, localY + 1, baseHeight, slope, SurfaceSlope.NorthUp, out Vertex north);
             int eastHeight = GetSurfaceCorner(localX + 1, localY, baseHeight, slope, SurfaceSlope.EastUp, out Vertex east);
@@ -213,7 +190,7 @@ namespace OpenRCT2.Generators.Map.Retro
                 var waterSouth = new Vertex(south.position.x, waterVertexHeight, south.position.z, Vector3.up, south.uv);
                 var waterWest = new Vertex(west.position.x, waterVertexHeight, west.position.z, Vector3.up, west.uv);
 
-                int waterSubmesh = AddMaterialIndex(materialIndices, PushImageIndex(_waterImageIndex, TextureType.Water));
+                int waterSubmesh = AddMaterialIndex(materialIndices, PushImageIndex(images, _waterImageIndex, TextureType.Water));
                 builder.AddQuad(waterNorth, waterEast, waterSouth, waterWest, waterSubmesh);
             }
 
@@ -221,7 +198,7 @@ namespace OpenRCT2.Generators.Map.Retro
             uint edgeImage = surface.edgeImageIndex;
             // HACK: only add the material stack index when any of the add-edges succeed.
             // Otherwise it will create inconsistency in materials, because some may not be used.
-            int materialStackIndex = PushImageIndex(edgeImage, TextureType.Edge);
+            int materialStackIndex = PushImageIndex(images, edgeImage, TextureType.Edge);
             int edgeSubmesh = materialIndices.IndexOf(materialStackIndex);
             bool addIndexOnSuccess = false;
             if (edgeSubmesh == -1)
@@ -231,10 +208,10 @@ namespace OpenRCT2.Generators.Map.Retro
             }
 
             bool anyEdge =
-                  TryAddSurfaceEdge(builder, x, y, 0, 1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh)  // Edge northwest
-                | TryAddSurfaceEdge(builder, x, y, 1, 0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh)  // Edge northeast
-                | TryAddSurfaceEdge(builder, x, y, 0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh)  // Edge southeast
-                | TryAddSurfaceEdge(builder, x, y, -1, 0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
+                  TryAddSurfaceEdge(builder, map, x, y, 0, 1, north, west, northHeight, westHeight, waterHeight, SurfaceSlope.EastUp, SurfaceSlope.SouthUp, edgeSubmesh)  // Edge northwest
+                | TryAddSurfaceEdge(builder, map, x, y, 1, 0, east, north, eastHeight, northHeight, waterHeight, SurfaceSlope.SouthUp, SurfaceSlope.WestUp, edgeSubmesh)  // Edge northeast
+                | TryAddSurfaceEdge(builder, map, x, y, 0, -1, south, east, southHeight, eastHeight, waterHeight, SurfaceSlope.WestUp, SurfaceSlope.NorthUp, edgeSubmesh)  // Edge southeast
+                | TryAddSurfaceEdge(builder, map, x, y, -1, 0, west, south, westHeight, southHeight, waterHeight, SurfaceSlope.NorthUp, SurfaceSlope.EastUp, edgeSubmesh); // Edge southwest
 
             if (anyEdge && addIndexOnSuccess)
             {
@@ -246,14 +223,19 @@ namespace OpenRCT2.Generators.Map.Retro
         /// <summary>
         /// Tries to add an surface edge to the specified offset.
         /// </summary>
-        bool TryAddSurfaceEdge(MeshBuilder builder, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
+        bool TryAddSurfaceEdge(MeshBuilder builder, Map map, int x, int y, int offsetX, int offsetY, Vertex leftTop, Vertex rightTop, int leftTopHeight, int rightTopHeight, int waterHeight, SurfaceSlope leftOtherCorner, SurfaceSlope rightOtherCorner, int submesh)
         {
-            Assert.IsNotNull(_tiles, nameof(_tiles));
+            int baseHeight = 0;
+            SurfaceInfo otherSurface = default;
 
-            TileCache otherTile = _tiles[x + offsetX, y + offsetY];
-            SurfaceInfo otherSurface = otherTile.surface;
+            if (TryGetTile(map, x + offsetX, y + offsetY, out var tile)
+                && tile is not null // todo: nullable attribute?
+                && tile.TryGetFirst(TileElementType.Surface, out var element))
+            {
+                baseHeight = element.baseHeight;
+                otherSurface = tile.surfaces[0];
+            }
 
-            int baseHeight = otherTile.baseHeight;
             SurfaceSlope otherSlope = otherSurface.slope;
 
             if (waterHeight != _noWater && otherSurface.waterHeight != waterHeight)
@@ -354,15 +336,13 @@ namespace OpenRCT2.Generators.Map.Retro
         /// <summary>
         /// Pushes a image index to the materials stack and returns its list index.
         /// </summary>
-        int PushImageIndex(uint imageIndex, TextureType type)
+        int PushImageIndex(List<RequestedImage> images, uint imageIndex, TextureType type)
         {
-            Assert.IsNotNull(_images, nameof(_images));
-
-            int position = _images.FindIndex(i => i.ImageIndex == imageIndex);
+            int position = images.FindIndex(i => i.ImageIndex == imageIndex);
             if (position == -1)
             {
-                position = _images.Count;
-                _images.Add(new RequestedImage(imageIndex, type));
+                position = images.Count;
+                images.Add(new RequestedImage(imageIndex, type));
             }
             return position;
         }
@@ -371,16 +351,14 @@ namespace OpenRCT2.Generators.Map.Retro
         /// <summary>
         /// Generates the required materials for the surface mesh.
         /// </summary>
-        Material[] GenerateSurfaceMaterials()
+        Material[] GenerateSurfaceMaterials(List<RequestedImage> images)
         {
-            Assert.IsNotNull(_images, nameof(_images));
-
-            int count = _images.Count;
+            int count = images.Count;
             Material[] materials = new Material[count];
 
             for (int i = 0; i < count; i++)
             {
-                RequestedImage image = _images[i];
+                RequestedImage image = images[i];
 
                 SpriteTexture sprite = SpriteFactory.ForImageIndex(image.ImageIndex);
                 Texture2D texture = sprite.GetTexture(TextureWrapMode.Repeat);
@@ -416,6 +394,18 @@ namespace OpenRCT2.Generators.Map.Retro
             }
 
             return materials;
+        }
+
+        bool TryGetTile(Map map, int x, int y, out Tile? tile)
+        {
+            if (x < 0 || y < 0 || x >= map.width || y >= map.height)
+            {
+                tile = null;
+                return false;
+            }
+
+            tile = map.tiles[x, y];
+            return true;
         }
 
 

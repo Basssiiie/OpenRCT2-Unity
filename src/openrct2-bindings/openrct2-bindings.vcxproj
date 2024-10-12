@@ -62,6 +62,7 @@ xcopy /i /y /f "$(SolutionDir)bin\bindings\*" "$(SolutionDir)src\openrct2-unity\
     <ResourceCompile Include="..\..\resources\OpenRCT2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Map\Tile.cpp" />
     <ClCompile Include="Map\Track.cpp" />
     <ClCompile Include="Utilities\Logging.cpp" />
     <ClCompile Include="Map\SmallScenery.cpp" />

@@ -1,3 +1,3 @@
 -nullable:enable
 -langversion:9.0
--nowarn:649,1401,2235
+-nowarn:649,1401,2235,S2368,S3887

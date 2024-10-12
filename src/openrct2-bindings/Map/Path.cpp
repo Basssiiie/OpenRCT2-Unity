@@ -3,7 +3,7 @@
 #include "../Utilities/TileElementHelper.h"
 
 #include <openrct2/object/FootpathSurfaceObject.h>
-#include <openrct2/world/TileElement.h>
+#include <openrct2/world/Map.h>
 
 extern "C"
 {
@@ -54,10 +54,8 @@ extern "C"
         return 0;
     }
 
-    // Writes the path element details to the specified buffer.
-    EXPORT void GetPathElementAt(int x, int y, int index, PathInfo* element)
+    static void SetPathInfo(int x, int y, int index, const TileElement* source, PathInfo* target)
     {
-        const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Path);
         const PathElement* path = source->AsPath();
 
         if (path == nullptr)
@@ -66,8 +64,39 @@ extern "C"
             return;
         }
 
-        element->surfaceIndex = GetPathSurfaceImageIndex(path);
-        element->sloped = path->IsSloped();
-        element->slopeDirection = path->GetSlopeDirection();
+        target->surfaceIndex = GetPathSurfaceImageIndex(path);
+        target->sloped = path->IsSloped();
+        target->slopeDirection = path->GetSlopeDirection();
+    }
+
+    // Writes the path element details to the specified buffer.
+    EXPORT void GetPathElementAt(int x, int y, int index, PathInfo* element)
+    {
+        const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Path);
+        SetPathInfo(x, y, index, source, element);        
+    }
+
+    // Writes all the path element details to the specified buffer.
+    EXPORT int GetAllPathElementsAt(int x, int y, PathInfo* elements, int length)
+    {
+        const TileElement* source = MapGetFirstElementAt(TileCoordsXY{ x, y });
+        auto index = 0;
+
+        do
+        {
+            if (source == nullptr)
+                break;
+
+            const TileElementType type = source->GetType();
+            if (type != TileElementType::Path)
+                continue;
+
+            SetPathInfo(x, y, index, source, elements);
+            index++;
+            elements++;
+
+        } while (!(source++)->IsLastForTile() && index < length);
+
+        return index;
     }
 }

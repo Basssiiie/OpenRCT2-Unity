@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
+using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Generators.MeshBuilding;
 using OpenRCT2.Generators.Sprites;
 using OpenRCT2.Generators.Tracks;
@@ -25,12 +26,17 @@ namespace OpenRCT2.Generators.Map.Retro
             _meshExtruder = new MeshExtruder(trackMesh);
         }
 
-
         /// <inheritdoc/>
-        public void CreateElement(in MapData map, int x, int y, int index, in TileElementInfo element)
+        public IEnumerator<LoadStatus> Run(Map map, Transform transform)
         {
-            TrackInfo track = Park.GetTrackElementAt(x, y, index);
+            return map.ForEach("Creating tracks...", (Tile tile, int index, in TileElementInfo element, in TrackInfo track) =>
+            {
+                CreateElement(transform, tile.x, tile.y, element, track);
+            });
+        }
 
+        void CreateElement(Transform transform, int x, int y, in TileElementInfo element, in TrackInfo track)
+        {
             if (track.sequenceIndex != 0)
                 return;
 
@@ -54,7 +60,7 @@ namespace OpenRCT2.Generators.Map.Retro
             Vector3 position = World.TileCoordsToUnity(x, y, element.baseHeight);
             position.y += trackOffset;
 
-            GameObject obj = UnityEngine.Object.Instantiate(_prefab, position, Quaternion.Euler(0, element.rotation * 90f, 0), map.transform);
+            GameObject obj = UnityEngine.Object.Instantiate(_prefab, position, Quaternion.Euler(0, element.rotation * 90f, 0), transform);
             obj.name = $"Track [{x}, {y}, {element.baseHeight}] type: {trackType}, key: {meshKey:x}, colours: ({track.mainColour}, {track.additionalColour}, {track.supportsColour}), rot: {element.rotation}, inv: {track.inverted}";
             obj.isStatic = true;
 

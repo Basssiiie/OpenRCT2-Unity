@@ -1019,7 +1019,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f58090d8844c91e45a2a0d888eb8d265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: My test park/Test park with water towers.sv6
+  selectedPark: Evergreen Gardens.sv6
 --- !u!1 &1675223600
 GameObject:
   m_ObjectHideFlags: 0

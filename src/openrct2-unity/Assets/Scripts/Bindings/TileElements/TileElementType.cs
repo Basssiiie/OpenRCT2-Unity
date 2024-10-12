@@ -14,7 +14,6 @@ namespace OpenRCT2.Bindings.TileElements
         Entrance,
         Wall,
         LargeScenery,
-        Banner,
-        Corrupt,
+        Banner
     }
 }

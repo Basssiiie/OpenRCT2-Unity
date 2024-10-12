@@ -30,12 +30,12 @@ extern "C"
     }
 
     // Writes all tile-elements at the the specified coordinates to the specified buffer.
-    EXPORT int GetMapElementsAt(int x, int y, TileElementInfo* elements, int arraySize)
+    EXPORT int GetMapElementsAt(int x, int y, TileElementInfo* elements, int length)
     {
         const TileElement* source = GetTileElementAt(x, y, 0);
         int elementCount = 0;
 
-        for (int i = 0; i < arraySize; i++)
+        for (int i = 0; i < length; i++)
         {
             SetTileElementInfo(&elements[i], source);
             elementCount++;
@@ -45,6 +45,7 @@ extern "C"
 
             source++;
         }
+
         return elementCount;
     }
 }

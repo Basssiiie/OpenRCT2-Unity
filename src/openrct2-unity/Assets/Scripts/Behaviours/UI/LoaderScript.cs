@@ -24,7 +24,7 @@ namespace OpenRCT2.Utilities
 
 
         /// <summary>
-        /// Gets or sets the text and progress for the loader.
+        /// Sets the text and progress for the loader.
         /// </summary>
         public void SetLoader(string text, int progress, int maximumProgress)
         {

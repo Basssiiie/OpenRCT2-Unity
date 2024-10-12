@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
+using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Generators.Sprites;
 using OpenRCT2.Utilities;
 using UnityEngine;
@@ -23,21 +25,27 @@ namespace OpenRCT2.Generators.Map.Retro
             _textureField = textureField;
         }
 
-
         /// <inheritdoc/>
-        public void CreateElement(in MapData map, int x, int y, int index, in TileElementInfo element)
+        public IEnumerator<LoadStatus> Run(Map map, Transform transform)
         {
             Assert.IsNotNull(_prefab, nameof(_prefab));
             Assert.IsNotNull(_textureField, nameof(_textureField));
 
+            return map.ForEach("Creating walls...", (Tile tile, int index, in TileElementInfo element, in WallInfo wall) =>
+            {
+                CreateElement(transform, tile.x, tile.y, element, wall);
+            });
+        }
+
+        void CreateElement(Transform transform, int x, int y, in TileElementInfo element, in WallInfo wall)
+        {
             Vector3 position = World.TileCoordsToUnity(x, y, element.baseHeight);
             Quaternion rotation = Quaternion.Euler(0, 90 * element.rotation + 90, 0);
 
-            GameObject obj = Object.Instantiate(_prefab, position, rotation, map.transform);
+            GameObject obj = Object.Instantiate(_prefab, position, rotation, transform)!;
             obj.isStatic = true;
 
             // Apply the wall sprite
-            WallInfo wall = Park.GetWallElementAt(x, y, index);
             SpriteTexture sprite = SpriteFactory.ForImageIndex(wall.imageIndex);
 
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();

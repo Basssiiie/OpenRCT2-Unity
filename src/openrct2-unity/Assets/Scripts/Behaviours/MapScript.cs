@@ -48,14 +48,24 @@ namespace OpenRCT2.Behaviours
         {
             yield return new WaitForFixedUpdate();
 
-            var enumerable = map.GenerateMap(transform);
+            var enumerator = map.GenerateMap(transform);
+            var nextUpdate = 0;
 
-            foreach (var status in enumerable)
+            while (enumerator.MoveNext())
             {
+                var status = enumerator.Current;
                 if (_loader != null)
                 {
                     _loader.SetLoader(status.text, status.progress, status.maximum);
                 }
+
+                var currentTick = Environment.TickCount;
+                if (nextUpdate > currentTick)
+                {
+                    continue;
+                }
+
+                nextUpdate = currentTick + 250;
                 yield return null;
             }
 

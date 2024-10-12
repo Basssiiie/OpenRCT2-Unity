@@ -26,14 +26,19 @@ namespace OpenRCT2.Generators.Map.Utilities
             _prefab = prefab;
         }
 
-
         /// <inheritdoc/>
-        public void CreateElement(in MapData map, int x, int y, int index, in TileElementInfo element)
+        public IEnumerator<LoadStatus> Run(Map map, Transform transform)
         {
             Assert.IsNotNull(_prefab, nameof(_prefab));
 
+            return map.ForEach("Creating subpositions...", (Tile tile, int index, in TileElementInfo element, in TrackInfo track) =>
+            {
+                CreateElement(transform, tile.x, tile.y, element, track);
+            });
+        }
 
-            TrackInfo track = Park.GetTrackElementAt(x, y, index);
+        void CreateElement(Transform transform, int x, int y, in TileElementInfo element, in TrackInfo track)
+        {
             if (track.sequenceIndex != 0)
                 return;
 
@@ -56,15 +61,14 @@ namespace OpenRCT2.Generators.Map.Utilities
             Vector3 position = World.TileCoordsToUnity(x, y, height);
 
             Transform tfParent = parent.transform;
-            tfParent.parent = map.transform;
-            tfParent.localPosition = position;
-            tfParent.localRotation = Quaternion.Euler(0, element.rotation * 90f, 0);
+            tfParent.parent = transform;
+            tfParent.SetLocalPositionAndRotation(position, Quaternion.Euler(0, element.rotation * 90f, 0));
 
             for (int i = 0; i < nodes.Length; i++)
             {
                 TrackSubposition node = nodes[i];
 
-                GameObject obj = Object.Instantiate(_prefab, Vector3.zero, Quaternion.identity, tfParent);
+                GameObject obj = Object.Instantiate(_prefab, Vector3.zero, Quaternion.identity, tfParent)!;
                 obj.name = $"#{i} = ({node.x}, {node.y}, {node.z}) dir: {node.direction}, bank: {node.banking}, sprite: {node.pitch}";
 
                 Transform tf = obj.transform;

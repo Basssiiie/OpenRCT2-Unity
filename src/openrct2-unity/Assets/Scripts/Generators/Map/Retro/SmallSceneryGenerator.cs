@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
+using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Generators.Map.Retro.Data;
 using OpenRCT2.Generators.Sprites;
 using UnityEngine;
@@ -28,15 +30,20 @@ namespace OpenRCT2.Generators.Map.Retro
             _prefabOverrides = prefabOverrides;
         }
 
-
         /// <inheritdoc/>
-        public void CreateElement(in MapData map, int x, int y, int index, in TileElementInfo element)
+        public IEnumerator<LoadStatus> Run(Map map, Transform transform)
+        {
+            return map.ForEach("Creating small scenery...", (Tile tile, int index, in TileElementInfo element, in SmallSceneryInfo scenery) =>
+            {
+                CreateElement(transform, tile.x, tile.y, index, element, scenery);
+            });
+        }
+
+        void CreateElement(Transform transform, int x, int y, int index, in TileElementInfo element, in SmallSceneryInfo scenery)
         {
             float pos_x = x;
             float pos_y = y;
             float height = element.baseHeight;
-
-            SmallSceneryInfo scenery = Park.GetSmallSceneryElementAt(x, y, index);
 
             // If not a full tile, move small scenery to the correct quadrant.
             if (!scenery.fullTile)
@@ -73,7 +80,7 @@ namespace OpenRCT2.Generators.Map.Retro
             Vector3 position = World.TileCoordsToUnity(pos_x, pos_y, height);
             Quaternion quatRot = Quaternion.Euler(0, 90 * element.rotation + 90, 0);
 
-            GameObject obj = Object.Instantiate(prefab, position, quatRot, map.transform);
+            GameObject obj = Object.Instantiate(prefab, position, quatRot, transform);
             obj.isStatic = true;
 
             // Apply the sprites

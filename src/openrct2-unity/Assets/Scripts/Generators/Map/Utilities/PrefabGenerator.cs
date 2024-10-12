@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
+using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Utilities;
 using UnityEngine;
 
@@ -19,16 +22,25 @@ namespace OpenRCT2.Generators.Map.Utilities
             _prefab = prefab;
         }
 
-
         /// <inheritdoc/>
-        public void CreateElement(in MapData map, int x, int y, int index, in TileElementInfo element)
+        public IEnumerator<LoadStatus> Run(Map map, Transform transform)
+        {
+            Assert.IsNotNull(_prefab, nameof(_prefab));
+
+            return map.ForEach("Creating prefabs...", (Tile tile, int index, in TileElementInfo element) =>
+            {
+                CreateElement(transform, tile.x, tile.y, element);
+            });
+        }
+
+        void CreateElement(Transform transform, int x, int y, in TileElementInfo element)
         {
             Assert.IsNotNull(_prefab, nameof(_prefab));
 
             Vector3 position = World.TileCoordsToUnity(x, y, element.baseHeight);
             Quaternion rotation = Quaternion.Euler(0, 90 * element.rotation + 90, 0);
 
-            Object.Instantiate(_prefab, position, rotation, map.transform);
+            Object.Instantiate(_prefab, position, rotation, transform);
         }
     }
 }

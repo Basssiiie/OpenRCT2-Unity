@@ -3,8 +3,7 @@
 #include "../Utilities/TileElementHelper.h"
 
 #include <openrct2/object/WallSceneryEntry.h>
-#include <openrct2/world/SmallScenery.h>
-#include <openrct2/world/TileElement.h>
+#include <openrct2/world/Map.h>
 
 extern "C"
 {
@@ -71,15 +70,51 @@ extern "C"
         return imageId.WithIndex(entry->image + imageOffset).ToUInt32();
     }
 
+    static void SetWallInfo(int x, int y, int index, const TileElement* source, WallInfo* target)
+    {
+        const WallElement* wall = source->AsWall();
+
+        if (wall == nullptr)
+        {
+            dll_log("Could not find wall element at %i, %i, index %i", x, y, index);
+            return;
+        }
+
+        const WallSceneryEntry* entry = wall->GetEntry();
+
+        target->imageIndex = GetWallImageIndex(wall, entry);
+        target->slope = wall->GetSlope();
+        target->animated = (entry->flags2 & WALL_SCENERY_2_ANIMATED);
+    }
+
     // Writes the wall element details to the specified buffer.
     EXPORT void GetWallElementAt(int x, int y, int index, WallInfo* element)
     {
         const TileElement* source = GetTileElementAt(x, y, index, TileElementType::Wall);
-        const WallElement* wall = source->AsWall();
-        const WallSceneryEntry* entry = wall->GetEntry();
+        SetWallInfo(x, y, index, source, element);
+    }
+        
+    // Writes all the wall element details to the specified buffer.
+    EXPORT int GetAllWallElementsAt(int x, int y, WallInfo* elements, int length)
+    {
+        const TileElement* source = MapGetFirstElementAt(TileCoordsXY{ x, y });
+        auto index = 0;
 
-        element->imageIndex = GetWallImageIndex(wall, entry);
-        element->slope = wall->GetSlope();
-        element->animated = (entry->flags2 & WALL_SCENERY_2_ANIMATED);
+        do
+        {
+            if (source == nullptr)
+                break;
+
+            const TileElementType type = source->GetType();
+            if (type != TileElementType::Wall)
+                continue;
+
+            SetWallInfo(x, y, index, source, elements);
+            index++;
+            elements++;
+
+        } while (!(source++)->IsLastForTile() && index < length);
+
+        return index;
     }
 }

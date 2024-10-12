@@ -20,8 +20,7 @@ namespace OpenRCT2.Bindings
         /// </summary>
         public static MapSize GetMapSize()
         {
-            var size = new MapSize();
-            GetMapSize(ref size);
+            GetMapSize(out MapSize size);
             return size;
         }
 
@@ -30,7 +29,7 @@ namespace OpenRCT2.Bindings
         /// Loads all the tile elements on the specified tile coordinate into the buffer.
         /// </summary>
         public static int GetMapElementsAt(int x, int y, TileElementInfo[] elements)
-            => GetMapElementsAt(x, y, elements, elements.Length);
+            => Tile.GetMapElementsAt(x, y, elements, elements.Length);
 
 
         /// <summary>
@@ -88,11 +87,7 @@ namespace OpenRCT2.Bindings
 
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl)]
-        static extern int GetMapSize(ref MapSize size);
-
-
-        [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl)]
-        static extern int GetMapElementsAt(int x, int y, [Out] TileElementInfo[] elements, int arraySize);
+        static extern int GetMapSize(out MapSize size);
 
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]

@@ -1,14 +1,14 @@
 #nullable enable
 
-namespace OpenRCT2.Generators.Map
+namespace OpenRCT2.Generators
 {
-    public readonly struct MapLoadStatus
+    public class LoadStatus
     {
         public readonly string text;
         public readonly int progress;
         public readonly int maximum;
 
-        public MapLoadStatus(string message, int progress, int maximum)
+        public LoadStatus(string message, int progress, int maximum)
         {
             this.text = message;
             this.progress = progress;

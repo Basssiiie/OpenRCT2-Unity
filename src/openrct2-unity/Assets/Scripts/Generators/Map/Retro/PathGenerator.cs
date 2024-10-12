@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
+using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Generators.MeshBuilding;
 using OpenRCT2.Generators.Sprites;
 using UnityEngine;
@@ -11,8 +13,6 @@ namespace OpenRCT2.Generators.Map.Retro
 {
     public class PathGenerator : ITileElementGenerator
     {
-        //readonly static Dictionary<int, Mesh> _pathMeshCache = new Dictionary<int, Mesh>();
-
         const float _surfaceExtents = World.TileCoordsXYMultiplier / 2f;
         const float _surfaceHeight = 0.01f;
         const float _railingHeight = 0.4f;
@@ -30,11 +30,17 @@ namespace OpenRCT2.Generators.Map.Retro
             _mesh = GeneratePathMesh();
         }
 
-
-        public void CreateElement(in MapData map, int x, int y, int index, in TileElementInfo element)
+        /// <inheritdoc/>
+        public IEnumerator<LoadStatus> Run(Map map, Transform transform)
         {
-            PathInfo path = Park.GetPathElementAt(x, y, index);
+            return map.ForEach("Creating paths...", (Tile tile, int index, in TileElementInfo element, in PathInfo path) =>
+            {
+                CreateElement(transform, tile.x, tile.y, element, path);
+            });
+        }
 
+        public void CreateElement(Transform transform, int x, int y, in TileElementInfo element, in PathInfo path)
+        {
             uint surfaceIndex = path.surfaceIndex;
             var pathObject = new GameObject
             {
@@ -42,7 +48,7 @@ namespace OpenRCT2.Generators.Map.Retro
                 isStatic = true
             };
             Transform pathTF = pathObject.transform;
-            pathTF.parent = map.transform;
+            pathTF.parent = transform;
             pathTF.SetLocalPositionAndRotation(World.TileCoordsToUnity(x, y, element.baseHeight), Quaternion.Euler(0, 180, 0));
 
             MeshFilter filter = pathObject.AddComponent<MeshFilter>();

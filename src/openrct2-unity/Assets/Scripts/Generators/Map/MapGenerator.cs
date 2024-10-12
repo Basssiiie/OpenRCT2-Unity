@@ -14,8 +14,6 @@ namespace OpenRCT2.Generators.Map
     {
         readonly IReadOnlyDictionary<TileElementType, ITileElementGenerator> _generators;
 
-        const int _maxElementsPerTile = 128;
-
 
         public MapGenerator(IReadOnlyDictionary<TileElementType, ITileElementGenerator> generators)
         {
@@ -26,54 +24,45 @@ namespace OpenRCT2.Generators.Map
         /// <summary>
         /// Generates the map. 
         /// </summary>
-        public IEnumerable<MapLoadStatus> GenerateMap(Transform parent)
+        public IEnumerator<LoadStatus> GenerateMap(Transform parent)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             var size = Park.GetMapSize();
-            var map = new MapData(size.width, size.height, parent);
 
-            // Start the generators
-            int generatorCount = 1;
-            foreach (ITileElementGenerator generator in _generators.Values)
+            // Remove map border
+            var width = size.width - 2;
+            var height = size.height - 2;
+            var total = width * height;
+            var tiles = new Tile[width, height];
+
+            // Load in all tiles for the map
+            for (var x = 0; x < width; x++)
             {
-                yield return new MapLoadStatus($"Starting {generator.name}...", generatorCount, _generators.Count);
-                generator.Start(map);
-                generatorCount++;
-            }
-
-            // Create the tile objects
-            int width = size.width - 1;
-            int height = size.height - 1;
-            int totalTiles = width * height;
-            TileElementInfo[] buffer = new TileElementInfo[_maxElementsPerTile];
-
-            for (int x = 1; x < width; x++)
-            {
-                for (int y = 1; y < width; y++)
+                for (var y = 0; y < width; y++)
                 {
-                    yield return new MapLoadStatus("Creating tiles...", x * width + y, totalTiles);
+                    yield return new LoadStatus("Loading tiles...", x * width + y, total);
 
-                    int count = Park.GetMapElementsAt(x, y, buffer);
-                    for (int idx = 0; idx < count; idx++)
-                    {
-                        TileElementInfo element = buffer[idx];
-                        if (!element.invisible && _generators.TryGetValue(element.type, out ITileElementGenerator generator))
-                        {
-                            generator.CreateElement(map, x, y, idx, in element);
-                        }
-                    }
+                    tiles[x, y] = Tile.GetAt(x + 1, y + 1); // skip border
                 }
             }
 
-            // Finish up the generators
-            generatorCount = 0;
+            // Create the map and run the object generators
+            var map = new Map(tiles);
+
+            int generatorCount = 1;
             foreach (ITileElementGenerator generator in _generators.Values)
             {
-                yield return new MapLoadStatus($"Finalizing {generator.name}...", generatorCount, _generators.Count);
-                generator.Finish(map);
+                yield return new LoadStatus($"Running {generator.name}...", generatorCount, _generators.Count);
+
+                var runner = generator.Run(map, parent);
+                while (runner.MoveNext())
+                {
+                    yield return runner.Current;
+                }
                 generatorCount++;
             }
 
-            Debug.Log($"Map load complete!");
+            Debug.Log($"Map load complete in {watch.Elapsed}!");
         }
     }
 }
