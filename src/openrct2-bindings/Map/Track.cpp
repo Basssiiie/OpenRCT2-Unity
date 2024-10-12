@@ -46,8 +46,8 @@ extern "C"
         element->supportsColour = scheme.supports;
 
         const TrackElementDescriptor& ted = GetTrackElementDescriptor(track->GetTrackType());
-        element->normalToInverted = (ted.Flags & TRACK_ELEM_FLAG_NORMAL_TO_INVERSION);
-        element->invertedToNormal = (ted.Flags & TRACK_ELEM_FLAG_INVERSION_TO_NORMAL);
+        element->normalToInverted = (ted.flags & TRACK_ELEM_FLAG_NORMAL_TO_INVERSION);
+        element->invertedToNormal = (ted.flags & TRACK_ELEM_FLAG_INVERSION_TO_NORMAL);
     }
 
     struct TrackSubposition
@@ -71,12 +71,12 @@ extern "C"
 
     // Hack: manually fix the gaps.
     // (please tell me if you know a better way to fix there gaps, without any bumps!)
-    static void FixTrackPiecePosition(TrackSubposition* target, uint32_t trackType, uint8_t slope)
+    static void FixTrackPiecePosition(TrackSubposition* target, uint32_t trackType, TrackPitch slope)
     {
         switch (slope)
         {
-            case TRACK_SLOPE_UP_90:
-            case TRACK_SLOPE_DOWN_90:
+            case TrackPitch::Up90:
+            case TrackPitch::Down90:
                 target->z = RoundToMultiple(target->z, 8);
                 break;
 
@@ -118,8 +118,8 @@ extern "C"
         const VehicleInfoList* list = gTrackVehicleInfo[trackSubposition][typeAndDirection];
         std::memcpy(nodes, list->info, sizeof(VehicleInfo) * arraySize);
 
-        const TrackDefinition definition = TrackMetaData::GetTrackElementDescriptor(trackType).Definition;
-        FixTrackPiecePosition(&nodes[0], trackType, definition.vangle_start);
-        FixTrackPiecePosition(&nodes[arraySize - 1], trackType, definition.vangle_end);
+        const TrackDefinition definition = TrackMetaData::GetTrackElementDescriptor(trackType).definition;
+        FixTrackPiecePosition(&nodes[0], trackType, definition.pitchStart);
+        FixTrackPiecePosition(&nodes[arraySize - 1], trackType, definition.pitchEnd);
     }
 }

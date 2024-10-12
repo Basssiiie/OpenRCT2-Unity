@@ -5,6 +5,7 @@
 #include <openrct2/entity/Guest.h>
 #include <openrct2/entity/Peep.h>
 #include <openrct2/entity/Staff.h>
+#include <openrct2/peep/PeepAnimationData.h>
 
 extern "C"
 {
@@ -19,26 +20,28 @@ extern "C"
     };
 
     // Gets the current sprite image id of this peep, excluding rotation.
+    //  Inspired by: Peep.cpp/Peep::Paint()
     uint32_t GetCurrentImageId(const Peep* peep)
     {
-        // Borrowed from Paint.Peep.cpp/peep_paint()
-        // const PeepAnimationEntry sprite = g_peep_animation_entries[EnumValue(peep->SpriteType)];
-
-        PeepSpriteType spriteType = peep->SpriteType;
-        PeepActionSpriteType actionSpriteType = peep->ActionSpriteType;
-        uint8_t imageOffset = peep->ActionSpriteImageOffset;
+        PeepAnimationType actionAnimationGroup = peep->AnimationType;
+        uint8_t imageOffset = peep->AnimationImageIdOffset;
 
         if (peep->Action == PeepActionType::Idle)
         {
-            actionSpriteType = peep->NextActionSpriteType;
+            actionAnimationGroup = peep->NextAnimationType;
             imageOffset = 0;
         }
 
-        uint32_t baseImageId = (GetPeepAnimation(spriteType, actionSpriteType).base_image + imageOffset * 4); // +
-                                                                                                              // (imageDirection
-                                                                                                              // >> 3)
-        auto imageId = ImageId(baseImageId, peep->TshirtColour, peep->TrousersColour);
+        PeepAnimationGroup animationGroup = peep->AnimationGroup;
+        uint32_t baseImageId = GetPeepAnimation(animationGroup, actionAnimationGroup).base_image;
+        // + (imageDirection >> 3)
 
+        if (actionAnimationGroup != PeepAnimationType::Hanging)
+            baseImageId += imageOffset * 4;
+        else
+            baseImageId += imageOffset;
+
+        auto imageId = ImageId(baseImageId, peep->TshirtColour, peep->TrousersColour);
         return imageId.ToUInt32();
     }
 

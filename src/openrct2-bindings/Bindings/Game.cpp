@@ -2,10 +2,11 @@
 #include "../Utilities/Logging.h"
 
 #include <openrct2/Context.h>
+#include <openrct2/Diagnostic.h>
 #include <openrct2/GameState.h>
 #include <openrct2/OpenRCT2.h>
 #include <openrct2/core/Path.hpp>
-#include <openrct2/platform/Platform.h>
+#include <openrct2/scenes/Scene.h>
 #include <openrct2/world/Park.h>
 
 std::unique_ptr<IContext> unityContext;
@@ -18,7 +19,7 @@ extern "C"
             return;
 
         dll_log("StartGame( %s )", datapath);
-        _log_levels[static_cast<uint8_t>(DiagnosticLevel::Verbose)] = true;
+        _log_levels[EnumValue(DiagnosticLevel::Verbose)] = true;
 
         gOpenRCT2Headless = true;
         gCustomOpenRCT2DataPath = Path::GetAbsolute(datapath);
@@ -45,7 +46,7 @@ extern "C"
 
     EXPORT void PerformGameUpdate()
     {
-        unityContext->GetGameState()->Tick();
+        unityContext->GetActiveScene()->Tick();
     }
 
     EXPORT void StopGame()
@@ -59,23 +60,26 @@ extern "C"
         }
     }
 
+    static const char* GetActiveParkName()
+    {
+        const Park::ParkData& park = unityContext->GetActiveScene()->GetGameState().Park;
+        const char* name = park.Name.c_str();
+        return name;
+    }
+
     EXPORT void LoadPark(const char* filepath)
     {
         dll_log("LoadPark( %s )", filepath);
 
         unityContext->LoadParkFromFile(std::string(filepath));
+        unityContext->SetActiveScene(unityContext->GetGameScene());
 
-        const Park& park = unityContext->GetGameState()->GetPark();
-        const char* name = park.Name.c_str();
-
-        dll_log("LoadPark() = %s", name);
+        dll_log("LoadPark() = %s", GetActiveParkName());
     }
 
     EXPORT const char* GetParkName()
     {
-        const Park& park = unityContext->GetGameState()->GetPark();
-        const char* name = park.Name.c_str();
-
+        const char* name = GetActiveParkName();
         dll_log("GetParkName() = %s", name);
         return name;
     }

@@ -7,7 +7,7 @@
 // Get a tile element at a specified x, y, and index.
 const TileElement* GetTileElementAt(int x, int y, int index)
 {
-    const CoordsXY coords = CoordsXY(x * COORDS_XY_STEP, y * COORDS_XY_STEP).ToTileStart();
+    const CoordsXY coords = CoordsXY(x * kCoordsXYStep, y * kCoordsXYStep).ToTileStart();
     const TileElement* target = MapGetFirstElementAt(coords);
 
     return &target[index];

@@ -1,7 +1,7 @@
 #include "../OpenRCT2.Bindings.h"
 #include "../Utilities/Logging.h"
 
-#include <openrct2/world/Park.h>
+#include <openrct2/GameState.h>
 
 extern "C"
 {
@@ -14,8 +14,9 @@ extern "C"
     // Gets the amount of tiles on both edges of the map.
     EXPORT void GetMapSize(MapSize* size)
     {
-        dll_log("GetMapSize(%d, %d)", gMapSize.x, gMapSize.y);
-        size->width = gMapSize.x;
-        size->height = gMapSize.y;
+        const auto& mapSize = GetGameState().MapSize;
+        dll_log("GetMapSize(%d, %d)", mapSize.x, mapSize.y);
+        size->width = mapSize.x;
+        size->height = mapSize.y;
     }
 }

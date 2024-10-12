@@ -37,11 +37,11 @@ extern "C"
         {
             uint8_t age = element->GetAge();
 
-            if (age >= SCENERY_WITHER_AGE_THRESHOLD_1)
+            if (age >= kSceneryWitherAgeThreshold1)
             {
                 imageIndex += 4;
             }
-            if (age >= SCENERY_WITHER_AGE_THRESHOLD_2)
+            if (age >= kSceneryWitherAgeThreshold2)
             {
                 imageIndex += 4;
             }
