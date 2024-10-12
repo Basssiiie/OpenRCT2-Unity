@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,13 +10,13 @@
 #include "LandSmoothAction.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../OpenRCT2.h"
 #include "../actions/LandLowerAction.h"
 #include "../actions/LandRaiseAction.h"
 #include "../actions/LandSetHeightAction.h"
 #include "../audio/audio.h"
 #include "../interface/Window.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
 #include "../ride/RideData.h"
@@ -25,6 +25,11 @@
 #include "../world/Scenery.h"
 #include "../world/Surface.h"
 #include "../world/SurfaceData.h"
+#include "../world/tile_element/Slope.h"
+
+#include <algorithm>
+
+using namespace OpenRCT2;
 
 LandSmoothAction::LandSmoothAction(const CoordsXY& coords, MapRange range, uint8_t selectionType, bool isLowering)
     : _coords(coords)
@@ -72,19 +77,19 @@ GameActions::Result LandSmoothAction::SmoothLandTile(
     if (_isLowering)
     {
         slope = LowerSurfaceCornerFlags(direction, slope);
-        if (slope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT)
+        if (slope & kTileSlopeRaiseOrLowerBaseHeight)
         {
             targetBaseZ -= 2;
-            slope &= ~SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+            slope &= ~kTileSlopeRaiseOrLowerBaseHeight;
         }
     }
     else
     {
         slope = RaiseSurfaceCornerFlags(direction, slope);
-        if (slope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT)
+        if (slope & kTileSlopeRaiseOrLowerBaseHeight)
         {
             targetBaseZ += 2;
-            slope &= ~SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+            slope &= ~kTileSlopeRaiseOrLowerBaseHeight;
         }
     }
 
@@ -186,10 +191,10 @@ money64 LandSmoothAction::SmoothLandRowByEdge(
             if (shouldContinue & 0x4)
             {
                 slope = LowerSurfaceCornerFlags(direction1, slope);
-                if (slope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT)
+                if (slope & kTileSlopeRaiseOrLowerBaseHeight)
                 {
                     targetBaseZ -= 2;
-                    slope &= ~SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+                    slope &= ~kTileSlopeRaiseOrLowerBaseHeight;
                 }
             }
             if ((shouldContinue & 0x8)
@@ -197,10 +202,10 @@ money64 LandSmoothAction::SmoothLandRowByEdge(
                     == MapGetCornerHeight(targetBaseZ, slope, direction2))
             {
                 slope = LowerSurfaceCornerFlags(direction2, slope);
-                if (slope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT)
+                if (slope & kTileSlopeRaiseOrLowerBaseHeight)
                 {
                     targetBaseZ -= 2;
-                    slope &= ~SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+                    slope &= ~kTileSlopeRaiseOrLowerBaseHeight;
                 }
             }
         }
@@ -209,10 +214,10 @@ money64 LandSmoothAction::SmoothLandRowByEdge(
             if (shouldContinue & 0x4)
             {
                 slope = RaiseSurfaceCornerFlags(direction1, slope);
-                if (slope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT)
+                if (slope & kTileSlopeRaiseOrLowerBaseHeight)
                 {
                     targetBaseZ += 2;
-                    slope &= ~SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+                    slope &= ~kTileSlopeRaiseOrLowerBaseHeight;
                 }
             }
             if ((shouldContinue & 0x8)
@@ -220,10 +225,10 @@ money64 LandSmoothAction::SmoothLandRowByEdge(
                     == MapGetCornerHeight(targetBaseZ, slope, direction2))
             {
                 slope = RaiseSurfaceCornerFlags(direction2, slope);
-                if (slope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT)
+                if (slope & kTileSlopeRaiseOrLowerBaseHeight)
                 {
                     targetBaseZ += 2;
-                    slope &= ~SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+                    slope &= ~kTileSlopeRaiseOrLowerBaseHeight;
                 }
             }
         }
@@ -397,7 +402,7 @@ GameActions::Result LandSmoothAction::SmoothLand(bool isExecuting) const
 
             // Smooth the edges
             int32_t z1, z2;
-            for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += COORDS_XY_STEP)
+            for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += kCoordsXYStep)
             {
                 auto surfaceElement = MapGetSurfaceElementAt(CoordsXY{ validRange.GetLeft(), y });
                 if (surfaceElement != nullptr)
@@ -416,7 +421,7 @@ GameActions::Result LandSmoothAction::SmoothLand(bool isExecuting) const
                 }
             }
 
-            for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += COORDS_XY_STEP)
+            for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += kCoordsXYStep)
             {
                 auto surfaceElement = MapGetSurfaceElementAt(CoordsXY{ x, validRange.GetTop() });
                 if (surfaceElement != nullptr)
@@ -456,10 +461,10 @@ GameActions::Result LandSmoothAction::SmoothLand(bool isExecuting) const
                 newSlope = LowerSurfaceCornerFlags(selectionType, newSlope);
             }
 
-            if (newSlope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT)
+            if (newSlope & kTileSlopeRaiseOrLowerBaseHeight)
             {
                 newBaseZ += heightOffset;
-                newSlope &= ~SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+                newSlope &= ~kTileSlopeRaiseOrLowerBaseHeight;
             }
 
             // Smooth the corners
@@ -546,11 +551,11 @@ GameActions::Result LandSmoothAction::SmoothLand(bool isExecuting) const
             uint8_t newSlope = raiseLand ? RaiseSurfaceCornerFlags(rowIndex, oldSlope)
                                          : LowerSurfaceCornerFlags(rowIndex, oldSlope);
 
-            const bool changeBaseHeight = newSlope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+            const bool changeBaseHeight = newSlope & kTileSlopeRaiseOrLowerBaseHeight;
             if (changeBaseHeight)
             {
                 newBaseZ += heightOffset;
-                newSlope &= ~SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT;
+                newSlope &= ~kTileSlopeRaiseOrLowerBaseHeight;
             }
 
             const uint8_t edge = selectionType - MAP_SELECT_TYPE_EDGE_0;
@@ -607,8 +612,9 @@ GameActions::Result LandSmoothAction::SmoothLand(bool isExecuting) const
             break;
         }
         default:
-            LOG_ERROR("Invalid map selection %u", _selectionType);
-            return GameActions::Result(GameActions::Status::InvalidParameters, std::get<StringId>(res.ErrorTitle), STR_NONE);
+            LOG_ERROR("Invalid map selection type %u", _selectionType);
+            return GameActions::Result(
+                GameActions::Status::InvalidParameters, std::get<StringId>(res.ErrorTitle), STR_ERR_VALUE_OUT_OF_RANGE);
     } // switch selectionType
 
     // Raise / lower the land tool selection area

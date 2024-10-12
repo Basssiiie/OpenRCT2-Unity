@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,26 +9,25 @@
 
 #pragma once
 
-#define NETWORK_DEFAULT_PORT 11753
-#define NETWORK_LAN_BROADCAST_PORT 11754
-#define NETWORK_LAN_BROADCAST_MSG "openrct2.server.query"
-#define MAX_SERVER_DESCRIPTION_LENGTH 256
-
 #include "../Game.h"
-#include "../common.h"
 #include "../core/JsonFwd.hpp"
 #include "../localisation/StringIds.h"
 #include "NetworkTypes.h"
 
-#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
 
+constexpr uint16_t kNetworkDefaultPort = 11753;
+constexpr uint16_t kNetworkLanBroadcastPort = 11754;
+constexpr const char* kNetworkLanBroadcastMsg = "openrct2.server.query";
+constexpr const char* kMasterServerURL = "https://servers.openrct2.io";
+constexpr uint16_t kMaxServerDescriptionLength = 256;
+
 class GameAction;
 struct Peep;
 struct CoordsXYZ;
-namespace GameActions
+namespace OpenRCT2::GameActions
 {
     class Result;
 }
@@ -79,12 +78,12 @@ void NetworkSetPlayerGroup(uint32_t index, uint32_t groupindex);
 [[nodiscard]] uint8_t NetworkGetGroupID(uint32_t index);
 [[nodiscard]] int32_t NetworkGetNumGroups();
 [[nodiscard]] const char* NetworkGetGroupName(uint32_t index);
-[[nodiscard]] GameActions::Result NetworkSetPlayerGroup(
+[[nodiscard]] OpenRCT2::GameActions::Result NetworkSetPlayerGroup(
     NetworkPlayerId_t actionPlayerId, NetworkPlayerId_t playerId, uint8_t groupId, bool isExecuting);
-[[nodiscard]] GameActions::Result NetworkModifyGroups(
+[[nodiscard]] OpenRCT2::GameActions::Result NetworkModifyGroups(
     NetworkPlayerId_t actionPlayerId, ModifyGroupType type, uint8_t groupId, const std::string& name, uint32_t permissionIndex,
     PermissionState permissionState, bool isExecuting);
-[[nodiscard]] GameActions::Result NetworkKickPlayer(NetworkPlayerId_t playerId, bool isExecuting);
+[[nodiscard]] OpenRCT2::GameActions::Result NetworkKickPlayer(NetworkPlayerId_t playerId, bool isExecuting);
 [[nodiscard]] uint8_t NetworkGetDefaultGroup();
 [[nodiscard]] int32_t NetworkGetNumActions();
 [[nodiscard]] StringId NetworkGetActionNameStringID(uint32_t index);

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -38,7 +38,9 @@ static const char* TryLoadAllProcAddresses()
 
 #    endif /* #if OPENGL_NO_LINK */
 
-namespace OpenGLState
+using namespace OpenRCT2::Ui;
+
+namespace OpenRCT2::Ui::OpenGLState
 {
     uint16_t ActiveTexture;
     GLuint CurrentProgram;
@@ -48,7 +50,7 @@ namespace OpenGLState
         ActiveTexture = UINT16_MAX;
         CurrentProgram = UINT32_MAX;
     }
-} // namespace OpenGLState
+} // namespace OpenRCT2::Ui::OpenGLState
 
 void OpenGLAPI::SetTexture(uint16_t index, GLenum type, GLuint texture)
 {

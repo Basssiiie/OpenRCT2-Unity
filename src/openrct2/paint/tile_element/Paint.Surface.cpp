@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,10 +10,9 @@
 #include "Paint.Surface.h"
 
 #include "../../Cheats.h"
-#include "../../Context.h"
+#include "../../GameState.h"
 #include "../../OpenRCT2.h"
 #include "../../config/Config.h"
-#include "../../core/Guard.hpp"
 #include "../../core/Numerics.hpp"
 #include "../../drawing/Drawing.h"
 #include "../../entity/EntityRegistry.h"
@@ -22,7 +21,6 @@
 #include "../../entity/Staff.h"
 #include "../../interface/Colour.h"
 #include "../../interface/Viewport.h"
-#include "../../object/ObjectManager.h"
 #include "../../object/TerrainEdgeObject.h"
 #include "../../object/TerrainSurfaceObject.h"
 #include "../../paint/Paint.h"
@@ -30,14 +28,20 @@
 #include "../../ride/TrackDesign.h"
 #include "../../sprites.h"
 #include "../../world/Surface.h"
-#include "../../world/TileInspector.h"
+#include "../../world/tile_element/Slope.h"
 #include "../Boundbox.h"
 #include "../Paint.SessionFlags.h"
 #include "Paint.TileElement.h"
+#include "Segment.h"
 
-#include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <iterator>
+
+using namespace OpenRCT2;
+
+// Needed to make the sign appear above footpaths.
+static constexpr int16_t ForSaleSignZOffset = 3;
 
 static constexpr uint8_t Byte97B444[] = {
     0, 2, 1, 3, 8, 10, 9, 11, 4, 6, 5, 7, 12, 14, 13, 15, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 16, 0, 18, 15, 0,
@@ -151,63 +155,42 @@ static constexpr uint8_t Byte97B55D[] = {
     1, 5, 1, 3, 2, 3, 1, 5, 0,
 };
 
-static constexpr uint8_t _tunnelHeights[TUNNEL_TYPE_COUNT][2] = {
-    { 2, 2 },
-    { 3, 3 },
-    { 3, 5 },
-    { 3, 3 },
-    { 4, 4 },
-    { 4, 6 },
-    { 2, 2 },
-    { 3, 3 },
-    { 3, 5 },
-    { 3, 3 },
-    { 2, 3 },
-    { 2, 3 },
-    { 2, 3 },
-    { 3, 4 },
-    { 2, 3 },
-    { 3, 4 },
-    { 2, 2 },
-    { 2, 2 },
-    { 2, 2 },
-    { 2, 2 },
-    { 2, 2 },
-    { 2, 2 },
-    { 2, 2 },
+struct TunnelDescriptor
+{
+    uint8_t height;
+    uint8_t boundBoxLength;
+    int16_t boundBoxZOffset;
+    TunnelType lowClearanceAlternative;
+    uint8_t imageOffset;
 };
-
-static constexpr int16_t _boundBoxZOffsets[TUNNEL_TYPE_COUNT] = {
-    0,
-    0,
-    -32,
-    0,
-    0,
-    -48,
-    0,
-    0,
-    -32,
-    0,
-    -16,
-    -16,
-    -16,
-    -16,
-    -16,
-    -16,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+static constexpr TunnelDescriptor kTunnels[] = {
+    { 2, 2, 0,   TunnelType::StandardFlat,        36 },  // TunnelType::StandardFlat
+    { 3, 3, 0,   TunnelType::StandardFlat,        40 },  // TunnelType::StandardSlopeStart
+    { 3, 5, -32, TunnelType::StandardFlat,        44 },  // TunnelType::StandardSlopeEnd
+    { 3, 3, 0,   TunnelType::InvertedFlat,        48 },  // TunnelType::InvertedFlat
+    { 4, 4, 0,   TunnelType::InvertedFlat,        52 },  // TunnelType::InvertedSlopeStart
+    { 4, 6, -48, TunnelType::InvertedFlat,        56 },  // TunnelType::InvertedSlopeEnd
+    { 2, 2, 0,   TunnelType::SquareFlat,          60 },  // TunnelType::SquareFlat
+    { 3, 3, 0,   TunnelType::SquareFlat,          64 },  // TunnelType::SquareSlopeStart
+    { 3, 5, -32, TunnelType::SquareFlat,          68 },  // TunnelType::SquareSlopeEnd
+    { 3, 3, 0,   TunnelType::SquareFlat,          72 },  // TunnelType::InvertedSquare
+    { 2, 3, -16, TunnelType::PathAndMiniGolf,     76 },  // TunnelType::PathAndMiniGolf
+    { 2, 3, -16, TunnelType::Path11,              80 },  // TunnelType::Path11
+    { 2, 3, -16, TunnelType::StandardFlatTo25Deg, 36 },  // TunnelType::StandardFlatTo25Deg
+    { 3, 4, -16, TunnelType::InvertedFlatTo25Deg, 48 },  // TunnelType::InvertedFlatTo25Deg
+    { 2, 3, -16, TunnelType::SquareFlatTo25Deg,   60 },  // TunnelType::SquareFlatTo25Deg
+    { 3, 4, -16, TunnelType::SquareFlatTo25Deg,   72 },  // TunnelType::InvertedSquareFlatTo25Deg
+    { 2, 2, 0,   TunnelType::Doors0,              76 },  // TunnelType::Doors0
+    { 2, 2, 0,   TunnelType::Doors1,              80 },  // TunnelType::Doors1
+    { 2, 2, 0,   TunnelType::Doors2,              84 },  // TunnelType::Doors2
+    { 2, 2, 0,   TunnelType::Doors3,              88 },  // TunnelType::Doors3
+    { 2, 2, 0,   TunnelType::Doors4,              92 },  // TunnelType::Doors4
+    { 2, 2, 0,   TunnelType::Doors5,              96 },  // TunnelType::Doors5
+    { 2, 2, 0,   TunnelType::Doors6,              100 }, // TunnelType::Doors6
 };
 
 // clang-format on
 // tunnel offset
-static constexpr uint8_t Byte97B5B0[TUNNEL_TYPE_COUNT] = {
-    0, 0, 0, 3, 3, 3, 6, 6, 6, 6, 10, 11, 12, 13, 14, 14, 16, 17, 18, 19, 20, 21, 22,
-};
 
 static constexpr uint8_t Byte97B740[] = {
     0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 3, 0, 1, 4, 0,
@@ -300,30 +283,13 @@ static constexpr TileSurfaceBoundaryData _tileSurfaceBoundaries[4] = {
     },
 };
 
-static ImageId GetSurfaceImage(
-    const PaintSession& session, const TerrainSurfaceObject* surfaceObject, int32_t offset, uint8_t rotation,
-    int32_t grassLength, bool grid, bool underground)
-{
-    ImageId image;
-    if (surfaceObject != nullptr)
-    {
-        image = ImageId(surfaceObject->GetImageId(
-            { session.MapPosition.x >> 5, session.MapPosition.y >> 5 }, grassLength, rotation, offset, grid, underground));
-        if (surfaceObject->Colour != 255)
-        {
-            image = image.WithPrimary(surfaceObject->Colour);
-        }
-    }
-    return image;
-}
-
 static ImageId GetSurfacePattern(const TerrainSurfaceObject* surfaceObject, int32_t offset)
 {
     ImageId image;
     if (surfaceObject != nullptr)
     {
         image = ImageId(surfaceObject->PatternBaseImageId + offset);
-        if (surfaceObject->Colour != 255)
+        if (surfaceObject->Colour != TerrainSurfaceObject::kNoValue)
         {
             image = image.WithPrimary(surfaceObject->Colour);
         }
@@ -374,33 +340,28 @@ static ImageId GetEdgeImage(const TerrainEdgeObject* edgeObject, uint8_t type)
     return result;
 }
 
-static ImageId GetTunnelImage(const TerrainEdgeObject* edgeObject, uint8_t type, edge_t edge)
+static ImageId GetTunnelImage(const TerrainEdgeObject* edgeObject, TunnelType type, edge_t edge)
 {
-    static constexpr uint32_t offsets[TUNNEL_TYPE_COUNT] = { 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80,
-                                                             36, 48, 60, 72, 76, 80, 84, 88, 92, 96, 100 };
-
     bool hasDoors = false;
     if (edgeObject != nullptr)
     {
         hasDoors = edgeObject->HasDoors && !edgeObject->UsesFallbackImages();
     }
 
-    if (!hasDoors && type >= REGULAR_TUNNEL_TYPE_COUNT && type < std::size(offsets))
-        type = TUNNEL_0;
+    if (!hasDoors && EnumValue(type) >= kRegularTunnelTypeCount)
+        type = TunnelType::StandardFlat;
 
-    ImageId result;
-    if (type < std::size(offsets))
-    {
-        result = GetEdgeImageWithOffset(edgeObject, offsets[type]).WithIndexOffset(edge == EDGE_BOTTOMRIGHT ? 2 : 0);
-    }
+    ImageId result = GetEdgeImageWithOffset(edgeObject, kTunnels[EnumValue(type)].imageOffset)
+                         .WithIndexOffset(edge == EDGE_BOTTOMRIGHT ? 2 : 0);
+
     return result;
 }
 
 static uint8_t ViewportSurfacePaintSetupGetRelativeSlope(const SurfaceElement& surfaceElement, int32_t rotation)
 {
     const uint8_t slope = surfaceElement.GetSlope();
-    const uint8_t slopeHeight = slope & TILE_ELEMENT_SLOPE_DOUBLE_HEIGHT;
-    uint16_t slopeCorners = (slope & TILE_ELEMENT_SLOPE_ALL_CORNERS_UP) << rotation;
+    const uint8_t slopeHeight = slope & kTileSlopeDiagonalFlag;
+    uint16_t slopeCorners = (slope & kTileSlopeRaisedCornersMask) << rotation;
     slopeCorners = ((slopeCorners >> 4) | slopeCorners) & 0x0F;
     return slopeHeight | slopeCorners;
 }
@@ -520,7 +481,7 @@ static bool TileIsInsideClipView(const TileDescriptor& tile)
     if (tile.tile_element == nullptr)
         return false;
 
-    if (tile.tile_element->GetBaseZ() > gClipHeight * COORDS_Z_STEP)
+    if (tile.tile_element->GetBaseZ() > gClipHeight * kCoordsZStep)
         return false;
 
     auto coords = tile.tile_coords.ToCoordsXY();
@@ -533,13 +494,13 @@ static bool TileIsInsideClipView(const TileDescriptor& tile)
 }
 
 static void ViewportSurfaceDrawTileSideBottom(
-    PaintSession& session, enum edge_t edge, uint16_t height, const TerrainEdgeObject* edgeObject, struct TileDescriptor self,
-    struct TileDescriptor neighbour, bool isWater)
+    PaintSession& session, enum edge_t edge, uint16_t height, const TerrainEdgeObject* edgeObject, const TileDescriptor& self,
+    const TileDescriptor& neighbour, bool isWater)
 {
     PROFILED_FUNCTION();
 
     // From big Z to tiny Z
-    height /= COORDS_Z_PER_TINY_Z;
+    height /= kCoordsZPerTinyZ;
     int16_t cornerHeight1, neighbourCornerHeight1, cornerHeight2, neighbourCornerHeight2;
 
     CoordsXY offset = { 0, 0 };
@@ -589,13 +550,13 @@ static void ViewportSurfaceDrawTileSideBottom(
     if (neighbour.tile_element == nullptr || neighbourIsClippedAway)
     {
         // The neighbour tile doesn't exist or isn't drawn - assume minimum height to draw full edges
-        neighbourCornerHeight2 = MINIMUM_LAND_HEIGHT / 2;
-        neighbourCornerHeight1 = MINIMUM_LAND_HEIGHT / 2;
+        neighbourCornerHeight2 = kMinimumLandHeight / 2;
+        neighbourCornerHeight1 = kMinimumLandHeight / 2;
     }
 
     if (isWater && neighbour.tile_element != nullptr)
     {
-        auto waterHeight = neighbour.tile_element->AsSurface()->GetWaterHeight() / (COORDS_Z_STEP * 2);
+        auto waterHeight = neighbour.tile_element->AsSurface()->GetWaterHeight() / (kCoordsZStep * 2);
         if (waterHeight == height && !neighbourIsClippedAway)
         {
             // Don't draw the edge when the neighbour's water level is the same
@@ -637,14 +598,14 @@ static void ViewportSurfaceDrawTileSideBottom(
         if (curHeight != cornerHeight1 && curHeight != cornerHeight2)
         {
             auto imageId = baseImageId.WithIndexOffset(image_offset);
-            PaintAddImageAsParent(session, imageId, { offset, curHeight * COORDS_Z_PER_TINY_Z }, { bounds, 15 });
+            PaintAddImageAsParent(session, imageId, { offset, curHeight * kCoordsZPerTinyZ }, { bounds, 15 });
             curHeight++;
         }
     }
 
     neighbourCornerHeight1 = cornerHeight2;
 
-    for (uint32_t tunnelIndex = 0; tunnelIndex < TUNNEL_MAX_COUNT;)
+    for (auto tunnelIndex = 0; tunnelIndex < kTunnelMaxCount;)
     {
         if (curHeight >= cornerHeight1 || curHeight >= cornerHeight2)
         {
@@ -661,7 +622,7 @@ static void ViewportSurfaceDrawTileSideBottom(
             }
 
             auto imageId = baseImageId.WithIndexOffset(image_offset);
-            PaintAddImageAsParent(session, imageId, { offset, curHeight * COORDS_Z_PER_TINY_Z }, { bounds, 15 });
+            PaintAddImageAsParent(session, imageId, { offset, curHeight * kCoordsZPerTinyZ }, { bounds, 15 });
 
             return;
         }
@@ -676,7 +637,7 @@ static void ViewportSurfaceDrawTileSideBottom(
 
             if (isWater || curHeight != tunnelArray[tunnelIndex].height)
             {
-                PaintAddImageAsParent(session, baseImageId, { offset, curHeight * COORDS_Z_PER_TINY_Z }, { bounds, 15 });
+                PaintAddImageAsParent(session, baseImageId, { offset, curHeight * kCoordsZPerTinyZ }, { bounds, 15 });
 
                 curHeight++;
                 continue;
@@ -684,19 +645,22 @@ static void ViewportSurfaceDrawTileSideBottom(
         }
 
         // Tunnels
-        uint8_t tunnelType = tunnelArray[tunnelIndex].type;
-        uint8_t tunnelHeight = _tunnelHeights[tunnelType][0];
+        auto tunnelType = tunnelArray[tunnelIndex].type;
+        auto td = kTunnels[EnumValue(tunnelType)];
+        uint8_t tunnelHeight = td.height;
         int16_t zOffset = curHeight;
 
+        // When dealing with flat land but a sloped track, we fall back to the non-sloped variant.
         if ((zOffset + tunnelHeight) > neighbourCornerHeight1 || (zOffset + tunnelHeight) > cornerHeight1)
         {
-            tunnelType = Byte97B5B0[tunnelType];
+            tunnelType = td.lowClearanceAlternative;
+            td = kTunnels[EnumValue(tunnelType)];
         }
 
         zOffset *= 16;
 
-        int16_t boundBoxOffsetZ = zOffset + _boundBoxZOffsets[tunnelType];
-        int8_t boundBoxLength = _tunnelHeights[tunnelType][1] * 16;
+        int16_t boundBoxOffsetZ = zOffset + td.boundBoxZOffset;
+        int8_t boundBoxLength = td.boundBoxLength * 16;
         if (boundBoxOffsetZ < 16)
         {
             boundBoxOffsetZ += 16;
@@ -705,12 +669,11 @@ static void ViewportSurfaceDrawTileSideBottom(
 
         auto imageId = GetTunnelImage(edgeObject, tunnelType, edge);
         PaintAddImageAsParent(
-            session, imageId, { offset, zOffset },
-            { { 0, 0, boundBoxOffsetZ }, { tunnelBounds.x, tunnelBounds.y, boundBoxLength - 1 } });
+            session, imageId, { offset, zOffset }, { { 0, 0, boundBoxOffsetZ }, { tunnelBounds, boundBoxLength - 1 } });
 
-        boundBoxOffsetZ = curHeight * COORDS_Z_PER_TINY_Z;
-        boundBoxLength = _tunnelHeights[tunnelType][1] * 16;
-        boundBoxOffsetZ += _boundBoxZOffsets[tunnelType];
+        boundBoxOffsetZ = curHeight * kCoordsZPerTinyZ;
+        boundBoxLength = td.boundBoxLength * 16;
+        boundBoxOffsetZ += td.boundBoxZOffset;
         if (boundBoxOffsetZ == 0)
         {
             boundBoxOffsetZ += 16;
@@ -719,43 +682,22 @@ static void ViewportSurfaceDrawTileSideBottom(
 
         imageId = GetTunnelImage(edgeObject, tunnelType, edge).WithIndexOffset(1);
         PaintAddImageAsParent(
-            session, imageId, { offset, curHeight * COORDS_Z_PER_TINY_Z },
-            { { tunnelTopBoundBoxOffset.x, tunnelTopBoundBoxOffset.y, boundBoxOffsetZ },
-              { tunnelBounds.x, tunnelBounds.y, boundBoxLength - 1 } });
+            session, imageId, { offset, curHeight * kCoordsZPerTinyZ },
+            { { tunnelTopBoundBoxOffset, boundBoxOffsetZ }, { tunnelBounds, boundBoxLength - 1 } });
 
-        curHeight += _tunnelHeights[tunnelType][0];
+        curHeight += td.height;
         tunnelIndex++;
     }
 }
 
-/**
- *  rct2: 0x0065EB7D, 0x0065F0D8
- */
-static void ViewportSurfaceDrawLandSideBottom(
-    PaintSession& session, enum edge_t edge, uint16_t height, const TerrainEdgeObject* edgeObject, struct TileDescriptor self,
-    struct TileDescriptor neighbour)
-{
-    ViewportSurfaceDrawTileSideBottom(session, edge, height, edgeObject, self, neighbour, false);
-}
-
-/**
- *  rct2: 0x0065F8B9, 0x0065FE26
- */
-static void ViewportSurfaceDrawWaterSideBottom(
-    PaintSession& session, enum edge_t edge, uint16_t height, const TerrainEdgeObject* edgeObject, struct TileDescriptor self,
-    struct TileDescriptor neighbour)
-{
-    ViewportSurfaceDrawTileSideBottom(session, edge, height, edgeObject, self, neighbour, true);
-}
-
 static void ViewportSurfaceDrawTileSideTop(
-    PaintSession& session, enum edge_t edge, uint16_t height, const TerrainEdgeObject* edgeObject, struct TileDescriptor self,
-    struct TileDescriptor neighbour, bool isWater)
+    PaintSession& session, enum edge_t edge, uint16_t height, const TerrainEdgeObject* edgeObject, const TileDescriptor& self,
+    const TileDescriptor& neighbour, bool isWater)
 {
     PROFILED_FUNCTION();
 
     // From big Z to tiny Z
-    height /= COORDS_Z_PER_TINY_Z;
+    height /= kCoordsZPerTinyZ;
 
     int16_t cornerHeight1, neighbourCornerHeight1, cornerHeight2, neighbourCornerHeight2;
 
@@ -800,7 +742,7 @@ static void ViewportSurfaceDrawTileSideTop(
     {
         if (isWater)
         {
-            auto waterHeight = neighbour.tile_element->AsSurface()->GetWaterHeight() / (COORDS_Z_STEP * 2);
+            auto waterHeight = neighbour.tile_element->AsSurface()->GetWaterHeight() / (kCoordsZStep * 2);
             if (height == waterHeight)
             {
                 return;
@@ -832,7 +774,7 @@ static void ViewportSurfaceDrawTileSideTop(
         {
             const uint8_t incline = (cornerHeight2 - cornerHeight1) + 1;
             const auto imageId = GetEdgeImage(edgeObject, 3).WithIndexOffset((edge == EDGE_TOPLEFT ? 3 : 0) + incline);
-            const int16_t y = (height - cornerHeight1) * COORDS_Z_PER_TINY_Z;
+            const int16_t y = (height - cornerHeight1) * kCoordsZPerTinyZ;
             PaintAttachToPreviousPS(session, imageId, 0, y);
             return;
         }
@@ -853,7 +795,7 @@ static void ViewportSurfaceDrawTileSideTop(
         {
             auto imageId = baseImageId.WithIndexOffset(image_offset);
             PaintAddImageAsParent(
-                session, imageId, { offset.x, offset.y, cur_height * COORDS_Z_PER_TINY_Z }, { bounds.x, bounds.y, 15 });
+                session, imageId, { offset.x, offset.y, cur_height * kCoordsZPerTinyZ }, { bounds.x, bounds.y, 15 });
             cur_height++;
         }
     }
@@ -868,7 +810,7 @@ static void ViewportSurfaceDrawTileSideTop(
 
     while (cur_height < cornerHeight1 && cur_height < neighbourCornerHeight1)
     {
-        PaintAddImageAsParent(session, baseImageId, { offset, cur_height * COORDS_Z_PER_TINY_Z }, { bounds, 15 });
+        PaintAddImageAsParent(session, baseImageId, { offset, cur_height * kCoordsZPerTinyZ }, { bounds, 15 });
         cur_height++;
     }
 
@@ -884,27 +826,7 @@ static void ViewportSurfaceDrawTileSideTop(
     }
 
     auto imageId = baseImageId.WithIndexOffset(image_offset);
-    PaintAddImageAsParent(session, imageId, { offset, cur_height * COORDS_Z_PER_TINY_Z }, { bounds, 15 });
-}
-
-/**
- *  rct2: 0x0065F63B, 0x0065F77D
- */
-static void ViewportSurfaceDrawLandSideTop(
-    PaintSession& session, enum edge_t edge, uint16_t height, const TerrainEdgeObject* edgeObject, struct TileDescriptor self,
-    struct TileDescriptor neighbour)
-{
-    ViewportSurfaceDrawTileSideTop(session, edge, height, edgeObject, self, neighbour, false);
-}
-
-/**
- *  rct2: 0x0066039B, 0x006604F1
- */
-static void ViewportSurfaceDrawWaterSideTop(
-    PaintSession& session, enum edge_t edge, uint16_t height, const TerrainEdgeObject* edgeObject, struct TileDescriptor self,
-    struct TileDescriptor neighbour)
-{
-    ViewportSurfaceDrawTileSideTop(session, edge, height, edgeObject, self, neighbour, true);
+    PaintAddImageAsParent(session, imageId, { offset, cur_height * kCoordsZPerTinyZ }, { bounds, 15 });
 }
 
 static std::pair<int32_t, int32_t> SurfaceGetHeightAboveWater(
@@ -920,14 +842,14 @@ static std::pair<int32_t, int32_t> SurfaceGetHeightAboveWater(
         {
             localHeight += LAND_HEIGHT_STEP;
 
-            if (waterHeight != localHeight || !(localSurfaceShape & TILE_ELEMENT_SURFACE_DIAGONAL_FLAG))
+            if (waterHeight != localHeight || !(localSurfaceShape & static_cast<int32_t>(kTileSlopeDiagonalFlag)))
             {
                 localHeight = waterHeight;
-                localSurfaceShape = TILE_ELEMENT_SLOPE_FLAT;
+                localSurfaceShape = kTileSlopeFlat;
             }
             else
             {
-                localSurfaceShape = Numerics::ror4(surfaceShape ^ TILE_ELEMENT_SURFACE_RAISED_CORNERS_MASK, 2);
+                localSurfaceShape = Numerics::ror4(surfaceShape ^ static_cast<int8_t>(kTileSlopeRaisedCornersMask), 2);
             }
         }
     }
@@ -937,12 +859,16 @@ static std::pair<int32_t, int32_t> SurfaceGetHeightAboveWater(
 
 std::optional<colour_t> GetPatrolAreaTileColour(const CoordsXY& pos)
 {
+    bool selected = gMapSelectFlags & MAP_SELECT_FLAG_ENABLE && gMapSelectType == MAP_SELECT_TYPE_FULL
+        && pos.x >= gMapSelectPositionA.x && pos.x <= gMapSelectPositionB.x && pos.y >= gMapSelectPositionA.y
+        && pos.y <= gMapSelectPositionB.y;
+
     auto patrolAreaToRender = GetPatrolAreaToRender();
     if (const auto* staffType = std::get_if<StaffType>(&patrolAreaToRender))
     {
         if (IsPatrolAreaSetForStaffType(*staffType, pos))
         {
-            return COLOUR_GREY;
+            return selected ? COLOUR_WHITE : COLOUR_GREY;
         }
     }
     else
@@ -953,11 +879,11 @@ std::optional<colour_t> GetPatrolAreaTileColour(const CoordsXY& pos)
         {
             if (staff->IsPatrolAreaSet(pos))
             {
-                return COLOUR_LIGHT_BLUE;
+                return selected ? COLOUR_ICY_BLUE : COLOUR_LIGHT_BLUE;
             }
             else if (IsPatrolAreaSetForStaffType(staff->AssignedStaffType, pos))
             {
-                return COLOUR_GREY;
+                return selected ? COLOUR_WHITE : COLOUR_GREY;
             }
         }
     }
@@ -976,6 +902,75 @@ static void PaintPatrolArea(PaintSession& session, const SurfaceElement& element
 
         auto* backup = session.LastPS;
         PaintAddImageAsParent(session, imageId, { 0, 0, localZ }, { 32, 32, 1 });
+        session.LastPS = backup;
+    }
+}
+
+static void PaintSurfaceLandOwnership(
+    PaintSession& session, const SurfaceElement& tileElement, uint16_t height, uint8_t surfaceShape)
+{
+    auto [aboveWaterHeight, aboveWaterSurfaceShape] = SurfaceGetHeightAboveWater(tileElement, height, surfaceShape);
+
+    // Loc660E9A:
+    if (tileElement.GetOwnership() & OWNERSHIP_OWNED)
+    {
+        assert(static_cast<size_t>(surfaceShape) < std::size(Byte97B444));
+        assert(static_cast<size_t>(aboveWaterSurfaceShape) < std::size(Byte97B444));
+
+        // Paint outline on top of surface (can be underwater)
+        PaintAttachToPreviousPS(session, ImageId(SPR_TERRAIN_SELECTION_SQUARE + Byte97B444[surfaceShape]), 0, 0);
+
+        const auto tileIsUnderWater = height != aboveWaterHeight || surfaceShape != aboveWaterSurfaceShape;
+        if (tileIsUnderWater)
+        {
+            PaintStruct* backup = session.LastPS;
+            PaintAddImageAsParent(
+                session, ImageId(SPR_TERRAIN_SELECTION_SQUARE + Byte97B444[aboveWaterSurfaceShape]), { 0, 0, aboveWaterHeight },
+                { 32, 32, 1 });
+            session.LastPS = backup;
+        }
+    }
+    else if (tileElement.GetOwnership() & OWNERSHIP_AVAILABLE)
+    {
+        const auto pos = CoordsXYZ(session.MapPosition.x + 16, session.MapPosition.y + 16, aboveWaterHeight);
+        const auto height2 = TileElementHeight(pos, aboveWaterSurfaceShape) + ForSaleSignZOffset;
+
+        PaintStruct* backup = session.LastPS;
+        PaintAddImageAsParent(session, ImageId(SPR_LAND_OWNERSHIP_AVAILABLE), { 16, 16, height2 }, { 1, 1, 0 });
+        session.LastPS = backup;
+    }
+}
+
+static void PaintSurfaceConstructionRights(
+    PaintSession& session, const SurfaceElement& tileElement, uint16_t height, uint8_t surfaceShape)
+{
+    auto [aboveWaterHeight, aboveWaterSurfaceShape] = SurfaceGetHeightAboveWater(tileElement, height, surfaceShape);
+
+    if (tileElement.GetOwnership() & OWNERSHIP_CONSTRUCTION_RIGHTS_OWNED)
+    {
+        assert(static_cast<size_t>(surfaceShape) < std::size(Byte97B444));
+        assert(static_cast<size_t>(aboveWaterSurfaceShape) < std::size(Byte97B444));
+
+        // Paint outline on top of surface (can be underwater)
+        PaintAttachToPreviousPS(session, ImageId(SPR_TERRAIN_SELECTION_DOTTED + Byte97B444[surfaceShape]), 0, 0);
+
+        const auto tileIsUnderWater = height != aboveWaterHeight || surfaceShape != aboveWaterSurfaceShape;
+        if (tileIsUnderWater)
+        {
+            PaintStruct* backup = session.LastPS;
+            PaintAddImageAsParent(
+                session, ImageId(SPR_TERRAIN_SELECTION_DOTTED + Byte97B444[aboveWaterSurfaceShape]), { 0, 0, aboveWaterHeight },
+                { 32, 32, 1 });
+            session.LastPS = backup;
+        }
+    }
+    else if (tileElement.GetOwnership() & OWNERSHIP_CONSTRUCTION_RIGHTS_AVAILABLE)
+    {
+        const auto pos = CoordsXYZ(session.MapPosition.x + 16, session.MapPosition.y + 16, aboveWaterHeight);
+        const auto height2 = TileElementHeight(pos, aboveWaterSurfaceShape) + ForSaleSignZOffset;
+
+        PaintStruct* backup = session.LastPS;
+        PaintAddImageAsParent(session, ImageId(SPR_LAND_CONSTRUCTION_RIGHTS_AVAILABLE), { 16, 16, height2 }, { 1, 1, 0 });
         session.LastPS = backup;
     }
 }
@@ -1001,7 +996,7 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
     const auto* surfaceObject = tileElement.GetSurfaceObject();
     const auto* edgeObject = tileElement.GetEdgeObject();
 
-    TileDescriptor selfDescriptor = {
+    const auto selfDescriptor = TileDescriptor{
         TileCoordsXY(base),
         elementPtr,
         surfaceObject,
@@ -1014,15 +1009,14 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
         },
     };
 
-    TileDescriptor tileDescriptors[5];
-    tileDescriptors[0] = selfDescriptor;
+    TileDescriptor tileDescriptors[4];
 
     for (std::size_t i = 0; i < std::size(viewport_surface_paint_data); i++)
     {
         const CoordsXY& offset = viewport_surface_paint_data[i][rotation];
         const CoordsXY position = base + offset;
 
-        TileDescriptor& descriptor = tileDescriptors[i + 1];
+        TileDescriptor& descriptor = tileDescriptors[i];
 
         descriptor.tile_element = nullptr;
         if (!MapIsLocationValid(position))
@@ -1060,13 +1054,13 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
 
         int32_t image_id = (SPR_HEIGHT_MARKER_BASE + dx / 16);
         image_id += GetHeightMarkerOffset();
-        image_id -= gMapBaseZ;
+        image_id -= kMapBaseZ;
 
         PaintAddImageAsParent(session, ImageId(image_id, COLOUR_OLIVE_GREEN), { 16, 16, surfaceHeight }, { 1, 1, 0 });
     }
 
     bool has_surface = false;
-    if (session.VerticalTunnelHeight * COORDS_Z_PER_TINY_Z == height)
+    if (session.VerticalTunnelHeight * kCoordsZPerTinyZ == height)
     {
         // Vertical tunnels
         PaintAddImageAsParent(session, ImageId(1575), { 0, 0, height }, { { -2, 1, height - 40 }, { 1, 30, 39 } });
@@ -1078,15 +1072,6 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
     {
         const bool showGridlines = (session.ViewFlags & VIEWPORT_FLAG_GRIDLINES);
 
-        auto grassLength = -1;
-        if (zoomLevel <= ZoomLevel{ 0 })
-        {
-            if ((session.ViewFlags & (VIEWPORT_FLAG_HIDE_BASE | VIEWPORT_FLAG_UNDERGROUND_INSIDE)) == 0)
-            {
-                grassLength = tileElement.GetGrassLength() & 0x7;
-            }
-        }
-
         assert(surfaceShape < std::size(Byte97B444));
         const uint8_t image_offset = Byte97B444[surfaceShape];
 
@@ -1095,9 +1080,17 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
         {
             imageId = ImageId(SPR_TERRAIN_TRACK_DESIGNER);
         }
-        else
+        else if (surfaceObject != nullptr)
         {
-            imageId = GetSurfaceImage(session, surfaceObject, image_offset, rotation, grassLength, showGridlines, false);
+            uint8_t grassLength = TerrainSurfaceObject::kNoValue;
+            if (zoomLevel <= ZoomLevel{ 0 })
+            {
+                if ((session.ViewFlags & (VIEWPORT_FLAG_HIDE_BASE | VIEWPORT_FLAG_UNDERGROUND_INSIDE)) == 0)
+                {
+                    grassLength = tileElement.GetGrassLength() & 0x7;
+                }
+            }
+            imageId = surfaceObject->GetImageId(session.MapPosition, grassLength, rotation, image_offset, showGridlines, false);
         }
         if (session.ViewFlags & (VIEWPORT_FLAG_UNDERGROUND_INSIDE | VIEWPORT_FLAG_HIDE_BASE))
         {
@@ -1115,12 +1108,13 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
 
     PaintPatrolArea(session, tileElement, height, surfaceShape);
 
+    auto& gameState = GetGameState();
     // Draw Peep Spawns
-    if (((gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gCheatsSandboxMode)
+    if (((gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) || gameState.Cheats.SandboxMode)
         && session.ViewFlags & VIEWPORT_FLAG_LAND_OWNERSHIP)
     {
         const CoordsXY& pos = session.MapPosition;
-        for (auto& spawn : gPeepSpawns)
+        for (auto& spawn : gameState.PeepSpawns)
         {
             if ((spawn.x & 0xFFE0) == pos.x && (spawn.y & 0xFFE0) == pos.y)
             {
@@ -1135,38 +1129,12 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
 
     if (session.ViewFlags & VIEWPORT_FLAG_LAND_OWNERSHIP)
     {
-        // Loc660E9A:
-        if (tileElement.GetOwnership() & OWNERSHIP_OWNED)
-        {
-            assert(surfaceShape < std::size(Byte97B444));
-            PaintAttachToPreviousPS(session, ImageId(SPR_TERRAIN_SELECTION_SQUARE + Byte97B444[surfaceShape]), 0, 0);
-        }
-        else if (tileElement.GetOwnership() & OWNERSHIP_AVAILABLE)
-        {
-            const CoordsXY& pos = session.MapPosition;
-            const int32_t height2 = (TileElementHeight({ pos.x + 16, pos.y + 16 })) + 3;
-            PaintStruct* backup = session.LastPS;
-            PaintAddImageAsParent(session, ImageId(SPR_LAND_OWNERSHIP_AVAILABLE), { 16, 16, height2 }, { 1, 1, 0 });
-            session.LastPS = backup;
-        }
+        PaintSurfaceLandOwnership(session, tileElement, height, surfaceShape);
     }
 
     if (session.ViewFlags & VIEWPORT_FLAG_CONSTRUCTION_RIGHTS && !(tileElement.GetOwnership() & OWNERSHIP_OWNED))
     {
-        if (tileElement.GetOwnership() & OWNERSHIP_CONSTRUCTION_RIGHTS_OWNED)
-        {
-            assert(surfaceShape < std::size(Byte97B444));
-            PaintAttachToPreviousPS(session, ImageId(SPR_TERRAIN_SELECTION_DOTTED + Byte97B444[surfaceShape]), 0, 0);
-        }
-        else if (tileElement.GetOwnership() & OWNERSHIP_CONSTRUCTION_RIGHTS_AVAILABLE)
-        {
-            const CoordsXY& pos = session.MapPosition;
-            const int32_t height2 = TileElementHeight({ pos.x + 16, pos.y + 16 });
-            PaintStruct* backup = session.LastPS;
-            PaintAddImageAsParent(
-                session, ImageId(SPR_LAND_CONSTRUCTION_RIGHTS_AVAILABLE), { 16, 16, height2 + 3 }, { 1, 1, 0 });
-            session.LastPS = backup;
-        }
+        PaintSurfaceConstructionRights(session, tileElement, height, surfaceShape);
     }
 
     // ebx[0] = esi;
@@ -1215,6 +1183,23 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
                 const auto image_id = ImageId(SPR_TERRAIN_SELECTION_CORNER + Byte97B444[surfaceShape], fpId);
                 PaintAttachToPreviousPS(session, image_id, 0, 0);
             }
+            else if (mapSelectionType == MAP_SELECT_TYPE_FULL_LAND_RIGHTS)
+            {
+                auto [waterHeight, waterSurfaceShape] = SurfaceGetHeightAboveWater(tileElement, height, surfaceShape);
+
+                const auto fpId = FilterPaletteID::PaletteGlassLightPurple;
+                const auto imageId1 = ImageId(SPR_TERRAIN_SELECTION_CORNER + Byte97B444[surfaceShape], fpId);
+                PaintAttachToPreviousPS(session, imageId1, 0, 0);
+
+                const bool isUnderWater = (surfaceShape != waterSurfaceShape || height != waterHeight);
+                if (isUnderWater)
+                {
+                    const auto imageId2 = ImageId(SPR_TERRAIN_SELECTION_CORNER + Byte97B444[waterSurfaceShape], fpId);
+                    PaintStruct* backup = session.LastPS;
+                    PaintAddImageAsParent(session, imageId2, { 0, 0, waterHeight }, { 32, 32, 1 });
+                    session.LastPS = backup;
+                }
+            }
             else
             {
                 // The water tool should draw its grid _on_ the water, rather than on the surface under water.
@@ -1249,38 +1234,52 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
 
             const auto image_id = ImageId(SPR_TERRAIN_SELECTION_CORNER + Byte97B444[surfaceShape], fpId);
             PaintAttachToPreviousPS(session, image_id, 0, 0);
+
+            auto [waterHeight, waterSurfaceShape] = SurfaceGetHeightAboveWater(tileElement, height, surfaceShape);
+            const bool isUnderWater = (surfaceShape != waterSurfaceShape || height != waterHeight);
+            if (isUnderWater)
+            {
+                const auto imageId2 = ImageId(SPR_TERRAIN_SELECTION_CORNER + Byte97B444[waterSurfaceShape], fpId);
+                PaintStruct* backup = session.LastPS;
+                PaintAddImageAsParent(session, imageId2, { 0, 0, waterHeight }, { 32, 32, 0 });
+                session.LastPS = backup;
+            }
+
             break;
         }
     }
 
     if (zoomLevel <= ZoomLevel{ 0 } && has_surface && !(session.ViewFlags & VIEWPORT_FLAG_UNDERGROUND_INSIDE)
-        && !(session.ViewFlags & VIEWPORT_FLAG_HIDE_BASE) && gConfigGeneral.LandscapeSmoothing)
+        && !(session.ViewFlags & VIEWPORT_FLAG_HIDE_BASE) && Config::Get().general.LandscapeSmoothing)
     {
-        ViewportSurfaceSmoothenEdge(session, EDGE_TOPLEFT, tileDescriptors[0], tileDescriptors[3]);
-        ViewportSurfaceSmoothenEdge(session, EDGE_TOPRIGHT, tileDescriptors[0], tileDescriptors[4]);
-        ViewportSurfaceSmoothenEdge(session, EDGE_BOTTOMLEFT, tileDescriptors[0], tileDescriptors[1]);
-        ViewportSurfaceSmoothenEdge(session, EDGE_BOTTOMRIGHT, tileDescriptors[0], tileDescriptors[2]);
+        ViewportSurfaceSmoothenEdge(session, EDGE_TOPLEFT, selfDescriptor, tileDescriptors[2]);
+        ViewportSurfaceSmoothenEdge(session, EDGE_TOPRIGHT, selfDescriptor, tileDescriptors[3]);
+        ViewportSurfaceSmoothenEdge(session, EDGE_BOTTOMLEFT, selfDescriptor, tileDescriptors[0]);
+        ViewportSurfaceSmoothenEdge(session, EDGE_BOTTOMRIGHT, selfDescriptor, tileDescriptors[1]);
     }
 
     if ((session.ViewFlags & VIEWPORT_FLAG_UNDERGROUND_INSIDE) && !(session.ViewFlags & VIEWPORT_FLAG_HIDE_BASE)
         && !(gScreenFlags & (SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER)))
     {
         const uint8_t image_offset = Byte97B444[surfaceShape];
-        auto imageId = GetSurfaceImage(session, surfaceObject, image_offset, rotation, 1, false, true);
+        ImageId imageId;
+        if (surfaceObject != nullptr)
+            imageId = surfaceObject->GetImageId(session.MapPosition, 1, rotation, image_offset, false, true);
         PaintAttachToPreviousPS(session, imageId, 0, 0);
     }
 
     if (!(session.ViewFlags & VIEWPORT_FLAG_HIDE_VERTICAL))
     {
-        ViewportSurfaceDrawLandSideTop(session, EDGE_TOPLEFT, height, edgeObject, tileDescriptors[0], tileDescriptors[3]);
-        ViewportSurfaceDrawLandSideTop(session, EDGE_TOPRIGHT, height, edgeObject, tileDescriptors[0], tileDescriptors[4]);
-        ViewportSurfaceDrawLandSideBottom(session, EDGE_BOTTOMLEFT, height, edgeObject, tileDescriptors[0], tileDescriptors[1]);
-        ViewportSurfaceDrawLandSideBottom(
-            session, EDGE_BOTTOMRIGHT, height, edgeObject, tileDescriptors[0], tileDescriptors[2]);
+        ViewportSurfaceDrawTileSideTop(session, EDGE_TOPLEFT, height, edgeObject, selfDescriptor, tileDescriptors[2], false);
+        ViewportSurfaceDrawTileSideTop(session, EDGE_TOPRIGHT, height, edgeObject, selfDescriptor, tileDescriptors[3], false);
+        ViewportSurfaceDrawTileSideBottom(
+            session, EDGE_BOTTOMLEFT, height, edgeObject, selfDescriptor, tileDescriptors[0], false);
+        ViewportSurfaceDrawTileSideBottom(
+            session, EDGE_BOTTOMRIGHT, height, edgeObject, selfDescriptor, tileDescriptors[1], false);
     }
 
     const uint16_t waterHeight = tileElement.GetWaterHeight();
-    const bool waterGetsClipped = (session.ViewFlags & VIEWPORT_FLAG_CLIP_VIEW) && (waterHeight > gClipHeight * COORDS_Z_STEP);
+    const bool waterGetsClipped = (session.ViewFlags & VIEWPORT_FLAG_CLIP_VIEW) && (waterHeight > gClipHeight * kCoordsZStep);
 
     if (waterHeight > 0 && !gTrackDesignSaveMode && !waterGetsClipped)
     {
@@ -1300,20 +1299,21 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
         const auto image_id = ImageId(SPR_WATER_MASK + image_offset, FilterPaletteID::PaletteWater).WithBlended(true);
         PaintAddImageAsParent(session, image_id, { 0, 0, waterHeight }, { 32, 32, -1 });
 
-        const bool transparent = gConfigGeneral.TransparentWater || (session.ViewFlags & VIEWPORT_FLAG_UNDERGROUND_INSIDE);
+        const bool transparent = !IsCsgLoaded() || Config::Get().general.TransparentWater
+            || (session.ViewFlags & VIEWPORT_FLAG_UNDERGROUND_INSIDE);
         const uint32_t overlayStart = transparent ? SPR_WATER_OVERLAY : SPR_RCT1_WATER_OVERLAY;
         PaintAttachToPreviousPS(session, ImageId(overlayStart + image_offset), 0, 0);
 
         if (!(session.ViewFlags & VIEWPORT_FLAG_HIDE_VERTICAL))
         {
-            ViewportSurfaceDrawWaterSideBottom(
-                session, EDGE_BOTTOMLEFT, waterHeight, edgeObject, tileDescriptors[0], tileDescriptors[1]);
-            ViewportSurfaceDrawWaterSideBottom(
-                session, EDGE_BOTTOMRIGHT, waterHeight, edgeObject, tileDescriptors[0], tileDescriptors[2]);
-            ViewportSurfaceDrawWaterSideTop(
-                session, EDGE_TOPLEFT, waterHeight, edgeObject, tileDescriptors[0], tileDescriptors[3]);
-            ViewportSurfaceDrawWaterSideTop(
-                session, EDGE_TOPRIGHT, waterHeight, edgeObject, tileDescriptors[0], tileDescriptors[4]);
+            ViewportSurfaceDrawTileSideBottom(
+                session, EDGE_BOTTOMLEFT, waterHeight, edgeObject, selfDescriptor, tileDescriptors[0], true);
+            ViewportSurfaceDrawTileSideBottom(
+                session, EDGE_BOTTOMRIGHT, waterHeight, edgeObject, selfDescriptor, tileDescriptors[1], true);
+            ViewportSurfaceDrawTileSideTop(
+                session, EDGE_TOPLEFT, waterHeight, edgeObject, selfDescriptor, tileDescriptors[2], true);
+            ViewportSurfaceDrawTileSideTop(
+                session, EDGE_TOPRIGHT, waterHeight, edgeObject, selfDescriptor, tileDescriptors[3], true);
         }
     }
 
@@ -1389,11 +1389,7 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
             // 00  00  00
             //   00  00
             //     00
-            PaintUtilSetSegmentSupportHeight(
-                session,
-                SEGMENT_B4 | SEGMENT_B8 | SEGMENT_BC | SEGMENT_C0 | SEGMENT_C4 | SEGMENT_C8 | SEGMENT_CC | SEGMENT_D0
-                    | SEGMENT_D4,
-                height, 0);
+            PaintUtilSetSegmentSupportHeight(session, kSegmentsAll, height, 0);
             PaintUtilForceSetGeneralSupportHeight(session, height, 0);
             break;
 
@@ -1404,10 +1400,14 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
             // 01  01  01
             //   1B  1B
             //     1B
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C8 | SEGMENT_CC, height, 0);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C4 | SEGMENT_BC, height, 1);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_D0 | SEGMENT_D4, height + 6, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C0, height + 6 + 6, 0x1B);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::topLeftSide, PaintSegment::topRightSide), height,
+                0);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::rightCorner), height, 1);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide), height + 6, 0x1B);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::bottomCorner), height + 6 + 6, 0x1B);
             PaintUtilForceSetGeneralSupportHeight(session, height, 1);
             break;
 
@@ -1418,10 +1418,14 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
             // 17  02  00
             //   17  00
             //     02
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_BC | SEGMENT_CC | SEGMENT_D4, height, 0);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C4 | SEGMENT_C0, height, 2);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_D0, height + 6, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8, height + 6 + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::rightCorner, PaintSegment::topRightSide, PaintSegment::bottomRightSide),
+                height, 0);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::centre, PaintSegment::bottomCorner), height, 2);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::bottomLeftSide), height + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::leftCorner), height + 6 + 6, 0x17);
             PaintUtilForceSetGeneralSupportHeight(session, height, 2);
             break;
 
@@ -1432,9 +1436,15 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
             // 03  03  03
             //   03  03
             //     03
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_CC | SEGMENT_BC, height + 2, 3);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_C4 | SEGMENT_D4, height + 2 + 6, 3);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_D0 | SEGMENT_C0, height + 2 + 6 + 6, 3);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::topRightSide, PaintSegment::rightCorner),
+                height + 2, 3);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide),
+                height + 2 + 6, 3);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::bottomLeftSide, PaintSegment::bottomCorner),
+                height + 2 + 6 + 6, 3);
             PaintUtilForceSetGeneralSupportHeight(session, height, 3);
             break;
 
@@ -1445,10 +1455,14 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
             // 04  04  04
             //   00  00
             //     00
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C0 | SEGMENT_D0 | SEGMENT_D4, height, 0);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C4 | SEGMENT_BC, height, 4);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_CC, height + 6, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4, height + 6 + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomCorner, PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                height, 0);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::rightCorner), height, 4);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::topRightSide), height + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::topCorner), height + 6 + 6, 0x1E);
             PaintUtilForceSetGeneralSupportHeight(session, height, 4);
             break;
 
@@ -1459,11 +1473,14 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
             // 05  05  05  ░░  ░░  ░░
             //   1B  1B      ▒▒  ▒▒
             //     1B          ▓▓
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4, height + 6 + 6, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_CC, height + 6, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C4 | SEGMENT_BC, height, 5);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_D0 | SEGMENT_D4, height + 6, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C0, height + 6 + 6, 0x1B);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::topCorner), height + 6 + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::topRightSide), height + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::rightCorner), height, 5);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide), height + 6, 0x1B);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::bottomCorner), height + 6 + 6, 0x1B);
             PaintUtilForceSetGeneralSupportHeight(session, height, 5);
             break;
 
@@ -1474,9 +1491,15 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
             // 06  06  06  ▓▓  ▒▒  ░░
             //   06  06      ▒▒  ░░
             //     06          ░░
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_BC | SEGMENT_D4 | SEGMENT_C0, height + 2, 6);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_D0 | SEGMENT_C4 | SEGMENT_CC, height + 2 + 6, 6);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C8 | SEGMENT_B4, height + 2 + 6 + 6, 6);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::rightCorner, PaintSegment::bottomRightSide, PaintSegment::bottomCorner),
+                height + 2, 6);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide),
+                height + 2 + 6, 6);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::topCorner),
+                height + 2 + 6 + 6, 6);
             PaintUtilForceSetGeneralSupportHeight(session, height, 6);
             break;
 
@@ -1487,113 +1510,169 @@ void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, con
             // 00  07  17  ▓▓  ▓▓  ░░
             //   00  17      ▓▓  ▒▒
             //     07          ▓▓
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_BC, height + 4, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_CC | SEGMENT_D4, height + 4 + 6, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C4 | SEGMENT_C0, height + 4 + 6 + 6, 7);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_D0 | SEGMENT_B8, height + 4 + 6 + 6, 0);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::rightCorner), height + 4, 0x17);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topRightSide, PaintSegment::bottomRightSide), height + 4 + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::centre, PaintSegment::bottomCorner),
+                height + 4 + 6 + 6, 7);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::bottomLeftSide, PaintSegment::leftCorner),
+                height + 4 + 6 + 6, 0);
             PaintUtilForceSetGeneralSupportHeight(session, height, 7);
             break;
 
         case 8:
             // Loc6620D8
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C8 | SEGMENT_D0, height, 0);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C4 | SEGMENT_C0, height, 8);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_CC | SEGMENT_D4, height + 6, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_BC, height + 6 + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::bottomLeftSide),
+                height, 0);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::centre, PaintSegment::bottomCorner), height, 8);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topRightSide, PaintSegment::bottomRightSide), height + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::rightCorner), height + 6 + 6, 0x1D);
             PaintUtilForceSetGeneralSupportHeight(session, height, 8);
             break;
 
         case 9:
             // Loc66216D
             PaintUtilForceSetGeneralSupportHeight(session, height, 9);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C8 | SEGMENT_B8, height + 2, 9);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_D0 | SEGMENT_C4 | SEGMENT_CC, height + 2 + 6, 9);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C0 | SEGMENT_D4 | SEGMENT_BC, height + 2 + 6 + 6, 9);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::topLeftSide, PaintSegment::leftCorner), height + 2,
+                9);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide),
+                height + 2 + 6, 9);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomCorner, PaintSegment::bottomRightSide, PaintSegment::rightCorner),
+                height + 2 + 6 + 6, 9);
             break;
 
         case 10:
             // Loc662206
             PaintUtilForceSetGeneralSupportHeight(session, height, 0xA);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8, height + 6 + 6, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_D0, height + 6, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C4 | SEGMENT_C0, height, 0xA);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_CC | SEGMENT_D4, height + 6, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_BC, height + 6 + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::leftCorner), height + 6 + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::bottomLeftSide), height + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::centre, PaintSegment::bottomCorner), height, 0xA);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topRightSide, PaintSegment::bottomRightSide), height + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::rightCorner), height + 6 + 6, 0x1D);
             break;
 
         case 11:
             // Loc66229B
             PaintUtilForceSetGeneralSupportHeight(session, height, 0xB);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4, height + 4, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_CC, height + 4 + 6, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C4 | SEGMENT_BC, height + 4 + 6 + 6, 0xB);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_D0 | SEGMENT_D4 | SEGMENT_C0, height + 4 + 6 + 6, 0);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::topCorner), height + 4, 0x1B);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::topRightSide), height + 4 + 6, 0x1B);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::rightCorner),
+                height + 4 + 6 + 6, 0xB);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide, PaintSegment::bottomCorner),
+                height + 4 + 6 + 6, 0);
             break;
 
         case 12:
             // Loc662334
             PaintUtilForceSetGeneralSupportHeight(session, height, 0xC);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_D0 | SEGMENT_C0, height + 2, 0xC);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_C4 | SEGMENT_D4, height + 2 + 6, 0xC);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_CC | SEGMENT_BC, height + 2 + 6 + 6, 0xC);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::bottomLeftSide, PaintSegment::bottomCorner),
+                height + 2, 0xC);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide),
+                height + 2 + 6, 0xC);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::topRightSide, PaintSegment::rightCorner),
+                height + 2 + 6 + 6, 0xC);
             break;
 
         case 13:
             // Loc6623CD
             PaintUtilForceSetGeneralSupportHeight(session, height, 0xD);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8, height + 4, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_D0, height + 4 + 6, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C4 | SEGMENT_C0, height + 4 + 6 + 6, 0xD);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_CC | SEGMENT_D4 | SEGMENT_BC, height + 4 + 6 + 6, 0);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::leftCorner), height + 4, 0x1D);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::bottomLeftSide), height + 4 + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::centre, PaintSegment::bottomCorner),
+                height + 4 + 6 + 6, 0xD);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topRightSide, PaintSegment::bottomRightSide, PaintSegment::rightCorner),
+                height + 4 + 6 + 6, 0);
             break;
 
         case 14:
             // Loc662466
             PaintUtilForceSetGeneralSupportHeight(session, height, 0xE);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C0, height + 4, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_D0 | SEGMENT_D4, height + 4 + 6, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C4 | SEGMENT_BC, height + 4 + 6 + 6, 0xE);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_CC | SEGMENT_B4, height + 4 + 6 + 6, 0);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::bottomCorner), height + 4, 0x1E);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide), height + 4 + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::rightCorner),
+                height + 4 + 6 + 6, 0xE);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::topRightSide, PaintSegment::topCorner),
+                height + 4 + 6 + 6, 0);
             break;
 
         case 23:
             // Loc6624FF
             PaintUtilForceSetGeneralSupportHeight(session, height, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_BC, height + 4, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_CC | SEGMENT_D4, height + 4 + 6, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C4 | SEGMENT_C0, height + 4 + 6 + 6, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_D0, height + 4 + 6 + 6 + 6, 0x17);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8, height + 4 + 6 + 6 + 6 + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::rightCorner), height + 4, 0x17);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topRightSide, PaintSegment::bottomRightSide), height + 4 + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::centre, PaintSegment::bottomCorner),
+                height + 4 + 6 + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::bottomLeftSide), height + 4 + 6 + 6 + 6, 0x17);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::leftCorner), height + 4 + 6 + 6 + 6 + 6, 0x17);
             break;
 
         case 27:
             // Loc6625A0
             PaintUtilForceSetGeneralSupportHeight(session, height, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4, height + 4, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_CC, height + 4 + 6, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C4 | SEGMENT_BC, height + 4 + 6 + 6, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_D0 | SEGMENT_D4, height + 4 + 6 + 6 + 6, 0x1B);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C0, height + 4 + 6 + 6 + 6 + 6, 0x1B);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::topCorner), height + 4, 0x1B);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::topRightSide), height + 4 + 6, 0x1B);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::rightCorner),
+                height + 4 + 6 + 6, 0x1B);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide), height + 4 + 6 + 6 + 6,
+                0x1B);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::bottomCorner), height + 4 + 6 + 6 + 6 + 6, 0x1B);
             break;
 
         case 29:
             // Loc662641
             PaintUtilForceSetGeneralSupportHeight(session, height, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8, height + 4, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_D0, height + 4 + 6, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4 | SEGMENT_C4 | SEGMENT_C0, height + 4 + 6 + 6, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_CC | SEGMENT_D4, height + 4 + 6 + 6 + 6, 0x1D);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_BC, height + 4 + 6 + 6 + 6 + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::leftCorner), height + 4, 0x1D);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::bottomLeftSide), height + 4 + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topCorner, PaintSegment::centre, PaintSegment::bottomCorner),
+                height + 4 + 6 + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topRightSide, PaintSegment::bottomRightSide), height + 4 + 6 + 6 + 6, 0x1D);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::rightCorner), height + 4 + 6 + 6 + 6 + 6, 0x1D);
             break;
 
         case 30:
             // Loc6626E2
             PaintUtilForceSetGeneralSupportHeight(session, height, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C0, height + 4, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_D0 | SEGMENT_D4, height + 4 + 6, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B8 | SEGMENT_C4 | SEGMENT_BC, height + 4 + 6 + 6, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_C8 | SEGMENT_CC, height + 4 + 6 + 6 + 6, 0x1E);
-            PaintUtilSetSegmentSupportHeight(session, SEGMENT_B4, height + 4 + 6 + 6 + 6 + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::bottomCorner), height + 4, 0x1E);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide), height + 4 + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::rightCorner),
+                height + 4 + 6 + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(
+                session, EnumsToFlags(PaintSegment::topLeftSide, PaintSegment::topRightSide), height + 4 + 6 + 6 + 6, 0x1E);
+            PaintUtilSetSegmentSupportHeight(session, EnumToFlag(PaintSegment::topCorner), height + 4 + 6 + 6 + 6 + 6, 0x1E);
             break;
     }
 }

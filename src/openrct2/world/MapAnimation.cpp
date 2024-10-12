@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,7 +10,9 @@
 #include "MapAnimation.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../Game.h"
+#include "../GameState.h"
 #include "../entity/EntityList.h"
 #include "../entity/Peep.h"
 #include "../interface/Viewport.h"
@@ -27,6 +29,9 @@
 #include "Footpath.h"
 #include "Map.h"
 #include "Scenery.h"
+#include "tile_element/EntranceElement.h"
+
+using namespace OpenRCT2;
 
 using map_animation_invalidate_event_handler = bool (*)(const CoordsXYZ& loc);
 
@@ -192,7 +197,7 @@ static bool MapAnimationInvalidateSmallScenery(const CoordsXYZ& loc)
         if (sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_IS_CLOCK))
         {
             // Peep, looking at scenery
-            if (!(gCurrentTicks & 0x3FF) && GameIsNotPaused())
+            if (!(GetGameState().CurrentTicks & 0x3FF) && GameIsNotPaused())
             {
                 int32_t direction = tileElement->GetDirection();
                 auto quad = EntityTileList<Peep>(CoordsXY{ loc } - CoordsDirectionDelta[direction]);
@@ -206,9 +211,9 @@ static bool MapAnimationInvalidateSmallScenery(const CoordsXYZ& loc)
                         continue;
 
                     peep->Action = PeepActionType::CheckTime;
-                    peep->ActionFrame = 0;
-                    peep->ActionSpriteImageOffset = 0;
-                    peep->UpdateCurrentActionSpriteType();
+                    peep->AnimationFrameNum = 0;
+                    peep->AnimationImageIdOffset = 0;
+                    peep->UpdateCurrentAnimationType();
                     peep->Invalidate();
                     break;
                 }
@@ -480,7 +485,7 @@ static bool MapAnimationInvalidateWallDoor(const CoordsXYZ& loc)
     TileCoordsXYZ tileLoc{ loc };
     TileElement* tileElement;
 
-    if (gCurrentTicks & 1)
+    if (GetGameState().CurrentTicks & 1)
         return false;
 
     bool removeAnimation = true;
@@ -597,7 +602,7 @@ const std::vector<MapAnimation>& GetMapAnimations()
     return _mapAnimations;
 }
 
-static void ClearMapAnimations()
+void ClearMapAnimations()
 {
     _mapAnimations.clear();
 }
@@ -616,6 +621,10 @@ void MapAnimationAutoCreate()
 
 void MapAnimationAutoCreateAtTileElement(TileCoordsXY coords, TileElement* el)
 {
+    if (el == nullptr)
+    {
+        return;
+    }
     auto loc = CoordsXYZ{ coords.ToCoordsXY(), el->GetBaseZ() };
     switch (el->GetType())
     {
@@ -700,5 +709,16 @@ void MapAnimationAutoCreateAtTileElement(TileCoordsXY coords, TileElement* el)
         }
         case TileElementType::Surface:
             break;
+    }
+}
+
+void ShiftAllMapAnimations(CoordsXY amount)
+{
+    if (amount.x == 0 && amount.y == 0)
+        return;
+
+    for (auto& a : _mapAnimations)
+    {
+        a.location += amount;
     }
 }

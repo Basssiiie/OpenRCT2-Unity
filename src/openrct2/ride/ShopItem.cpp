@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,18 +9,18 @@
 
 #include "ShopItem.h"
 
-#include "../common.h"
+#include "../GameState.h"
 #include "../entity/Guest.h"
 #include "../localisation/StringIds.h"
 #include "../ride/RideEntry.h"
 #include "../sprites.h"
 
+using namespace OpenRCT2;
+
 ShopItem& operator++(ShopItem& d, int)
 {
     return d = (d == ShopItem::Count) ? ShopItem::Balloon : ShopItem(EnumValue(d) + 1);
 }
-
-uint64_t gSamePriceThroughoutPark;
 
 // clang-format off
 /** rct2: 0x00982164 (cost, base value, hot and cold value); 0x00982358 (default price) */
@@ -141,12 +141,12 @@ money64 ShopItemGetCommonPrice(Ride* forRide, const ShopItem shopItem)
         }
     }
 
-    return MONEY64_UNDEFINED;
+    return kMoney64Undefined;
 }
 
 bool ShopItemHasCommonPrice(const ShopItem shopItem)
 {
-    return (gSamePriceThroughoutPark & EnumToFlag(shopItem)) != 0;
+    return (GetGameState().SamePriceThroughoutPark & EnumToFlag(shopItem)) != 0;
 }
 
 bool ShopItemDescriptor::IsFood() const

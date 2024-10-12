@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,18 +14,20 @@
 #include "../core/Guard.hpp"
 #include "../drawing/Drawing.h"
 #include "../interface/Viewport.h"
+#include "../localisation/Currency.h"
 #include "../localisation/Formatting.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/LocalisationService.h"
 #include "../paint/Painter.h"
 #include "../profiling/Profiling.h"
 #include "../util/Math.hpp"
+#include "../util/Prefetch.h"
 #include "Boundbox.h"
 #include "Paint.Entity.h"
 #include "tile_element/Paint.TileElement.h"
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 
 using namespace OpenRCT2;
 
@@ -55,12 +57,12 @@ bool gPaintBoundingBoxes;
 bool gPaintBlockedTiles;
 
 static void PaintAttachedPS(DrawPixelInfo& dpi, PaintStruct* ps, uint32_t viewFlags);
-static void PaintPSImageWithBoundingBoxes(DrawPixelInfo& dpi, PaintStruct* ps, ImageId imageId, int32_t x, int32_t y);
+static void PaintPSImageWithBoundingBoxes(PaintSession& session, PaintStruct* ps, ImageId imageId, int32_t x, int32_t y);
 static ImageId PaintPSColourifyImage(const PaintStruct* ps, ImageId imageId, uint32_t viewFlags);
 
 static int32_t RemapPositionToQuadrant(const PaintStruct& ps, uint8_t rotation)
 {
-    constexpr auto MapRangeMax = MaxPaintQuadrants * COORDS_XY_STEP;
+    constexpr auto MapRangeMax = MaxPaintQuadrants * kCoordsXYStep;
     constexpr auto MapRangeCenter = MapRangeMax / 2;
 
     const auto x = ps.Bounds.x;
@@ -89,7 +91,7 @@ static void PaintSessionAddPSToQuadrant(PaintSession& session, PaintStruct* ps)
     const auto positionHash = RemapPositionToQuadrant(*ps, session.CurrentRotation);
 
     // Values below zero or above MaxPaintQuadrants are void, corners also share the same quadrant as void.
-    const uint32_t paintQuadrantIndex = std::clamp(positionHash / COORDS_XY_STEP, 0, MaxPaintQuadrants - 1);
+    const uint32_t paintQuadrantIndex = std::clamp(positionHash / kCoordsXYStep, 0, MaxPaintQuadrants - 1);
 
     ps->QuadrantIndex = paintQuadrantIndex;
     ps->NextQuadrantEntry = session.Quadrants[paintQuadrantIndex];
@@ -107,14 +109,32 @@ static constexpr bool ImageWithinDPI(const ScreenCoordsXY& imagePos, const G1Ele
     int32_t right = left + g1.width;
     int32_t top = bottom + g1.height;
 
-    if (right <= dpi.x)
-        return false;
-    if (top <= dpi.y)
-        return false;
-    if (left >= dpi.x + dpi.width)
-        return false;
-    if (bottom >= dpi.y + dpi.height)
-        return false;
+    // mber: It is possible to use only the bottom else block here if you change <= and >= to simply < and >.
+    // However, since this is used to cull paint structs, I'd prefer to keep the condition strict and calculate
+    // the culling differently for minifying and magnifying.
+    auto zoom = dpi.zoom_level;
+    if (zoom > ZoomLevel{ 0 })
+    {
+        if (right <= dpi.WorldX())
+            return false;
+        if (top <= dpi.WorldY())
+            return false;
+        if (left >= dpi.WorldX() + dpi.WorldWidth())
+            return false;
+        if (bottom >= dpi.WorldY() + dpi.WorldHeight())
+            return false;
+    }
+    else
+    {
+        if (zoom.ApplyInversedTo(right) <= dpi.x)
+            return false;
+        if (zoom.ApplyInversedTo(top) <= dpi.y)
+            return false;
+        if (zoom.ApplyInversedTo(left) >= dpi.x + dpi.width)
+            return false;
+        if (zoom.ApplyInversedTo(bottom) >= dpi.y + dpi.height)
+            return false;
+    }
     return true;
 }
 
@@ -198,7 +218,7 @@ static PaintStruct* CreateNormalPaintStruct(
 template<uint8_t direction> void PaintSessionGenerateRotate(PaintSession& session)
 {
     // Optimised modified version of ViewportPosToMapPos
-    ScreenCoordsXY screenCoord = { Floor2(session.DPI.x, 32), Floor2((session.DPI.y - 16), 32) };
+    ScreenCoordsXY screenCoord = { Floor2(session.DPI.WorldX(), 32), Floor2((session.DPI.WorldY() - 16), 32) };
     CoordsXY mapTile = { screenCoord.y - screenCoord.x / 2, screenCoord.y + screenCoord.x / 2 };
     mapTile = mapTile.Rotate(direction);
 
@@ -208,7 +228,7 @@ template<uint8_t direction> void PaintSessionGenerateRotate(PaintSession& sessio
     }
     mapTile = mapTile.ToTileStart();
 
-    uint16_t numVerticalTiles = (session.DPI.height + 2128) >> 5;
+    uint16_t numVerticalTiles = (session.DPI.WorldHeight() + 2128) >> 5;
 
     // Adjacent tiles to also check due to overlapping of sprites
     constexpr CoordsXY adjacentTiles[] = {
@@ -243,7 +263,6 @@ template<uint8_t direction> void PaintSessionGenerateRotate(PaintSession& sessio
  */
 void PaintSessionGenerate(PaintSession& session)
 {
-    session.CurrentRotation = GetCurrentRotation();
     switch (DirectionFlipXAxis(session.CurrentRotation))
     {
         case 0:
@@ -299,13 +318,13 @@ static bool CheckBoundingBox(const PaintStructBoundBox& initialBBox, const Paint
     return false;
 }
 
-namespace PaintSortFlags
+namespace OpenRCT2::PaintSortFlags
 {
     static constexpr uint8_t None = 0;
     static constexpr uint8_t PendingVisit = (1u << 0);
     static constexpr uint8_t Neighbour = (1u << 1);
     static constexpr uint8_t OutsideQuadrant = (1u << 7);
-} // namespace PaintSortFlags
+} // namespace OpenRCT2::PaintSortFlags
 
 static PaintStruct* PaintStructsFirstInQuadrant(PaintStruct* psNext, uint16_t quadrantIndex)
 {
@@ -392,6 +411,10 @@ template<uint8_t TRotation> static void PaintStructsSortQuadrant(PaintStruct* pa
         auto* ps = child;
         child = child->NextQuadrantEntry;
 
+        if (child != nullptr)
+        {
+            PREFETCH(&child->Bounds);
+        }
         if (child == nullptr || child->SortFlags & PaintSortFlags::OutsideQuadrant)
         {
             break;
@@ -531,9 +554,9 @@ static void PaintDrawStruct(PaintSession& session, PaintStruct* ps)
     }
 
     auto imageId = PaintPSColourifyImage(ps, ps->image_id, session.ViewFlags);
-    if (gPaintBoundingBoxes && session.DPI.zoom_level == ZoomLevel{ 0 })
+    if (gPaintBoundingBoxes)
     {
-        PaintPSImageWithBoundingBoxes(session.DPI, ps, imageId, screenPos.x, screenPos.y);
+        PaintPSImageWithBoundingBoxes(session, ps, imageId, screenPos.x, screenPos.y);
     }
     else
     {
@@ -579,7 +602,7 @@ static void PaintAttachedPS(DrawPixelInfo& dpi, PaintStruct* ps, uint32_t viewFl
         auto imageId = PaintPSColourifyImage(ps, attached_ps->image_id, viewFlags);
         if (attached_ps->IsMasked)
         {
-            GfxDrawSpriteRawMasked(&dpi, screenCoords, imageId, attached_ps->ColourImageId);
+            GfxDrawSpriteRawMasked(dpi, screenCoords, imageId, attached_ps->ColourImageId);
         }
         else
         {
@@ -588,10 +611,12 @@ static void PaintAttachedPS(DrawPixelInfo& dpi, PaintStruct* ps, uint32_t viewFl
     }
 }
 
-static void PaintPSImageWithBoundingBoxes(DrawPixelInfo& dpi, PaintStruct* ps, ImageId imageId, int32_t x, int32_t y)
+static void PaintPSImageWithBoundingBoxes(PaintSession& session, PaintStruct* ps, ImageId imageId, int32_t x, int32_t y)
 {
+    auto& dpi = session.DPI;
+
     const uint8_t colour = BoundBoxDebugColours[EnumValue(ps->InteractionItem)];
-    const uint8_t rotation = GetCurrentRotation();
+    const uint8_t rotation = session.CurrentRotation;
 
     const CoordsXYZ frontTop = {
         ps->Bounds.x_end,
@@ -688,9 +713,9 @@ static ImageId PaintPSColourifyImage(const PaintStruct* ps, ImageId imageId, uin
     }
 }
 
-PaintSession* PaintSessionAlloc(DrawPixelInfo& dpi, uint32_t viewFlags)
+PaintSession* PaintSessionAlloc(DrawPixelInfo& dpi, uint32_t viewFlags, uint8_t rotation)
 {
-    return GetContext()->GetPainter()->CreateSession(dpi, viewFlags);
+    return GetContext()->GetPainter()->CreateSession(dpi, viewFlags, rotation);
 }
 
 void PaintSessionFree(PaintSession* session)
@@ -907,14 +932,14 @@ void PaintDrawMoneyStructs(DrawPixelInfo& dpi, PaintStringStruct* ps)
 
         // Use sprite font unless the currency contains characters unsupported by the sprite font
         auto forceSpriteFont = false;
-        const auto& currencyDesc = CurrencyDescriptors[EnumValue(gConfigGeneral.CurrencyFormat)];
+        const auto& currencyDesc = CurrencyDescriptors[EnumValue(Config::Get().general.CurrencyFormat)];
         if (LocalisationService_UseTrueTypeFont() && FontSupportsStringSprite(currencyDesc.symbol_unicode))
         {
             forceSpriteFont = true;
         }
 
         GfxDrawStringWithYOffsets(
-            dpi, buffer, COLOUR_BLACK, ps->ScreenPos, reinterpret_cast<int8_t*>(ps->y_offsets), forceSpriteFont,
+            dpi, buffer, { COLOUR_BLACK }, ps->ScreenPos, reinterpret_cast<int8_t*>(ps->y_offsets), forceSpriteFont,
             FontStyle::Medium);
     } while ((ps = ps->NextEntry) != nullptr);
 }

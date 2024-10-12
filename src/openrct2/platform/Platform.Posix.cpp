@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,6 +12,7 @@
 #    include "Platform.h"
 
 #    include "../Date.h"
+#    include "../Diagnostic.h"
 #    include "../core/Memory.hpp"
 #    include "../core/Path.hpp"
 #    include "../core/String.hpp"
@@ -34,7 +35,7 @@
 // The name of the mutex used to prevent multiple instances of the game from running
 static constexpr const utf8* SINGLE_INSTANCE_MUTEX_NAME = u8"openrct2.lock";
 
-namespace Platform
+namespace OpenRCT2::Platform
 {
     std::string GetEnvironmentVariable(std::string_view name)
     {
@@ -369,17 +370,6 @@ namespace Platform
         datetime64 utcNow = epochAsTicks + utcEpochTicks;
         return utcNow;
     }
-
-    u8string GetRCT1SteamDir()
-    {
-        return u8"app_285310" PATH_SEPARATOR u8"depot_285311";
-    }
-
-    u8string GetRCT2SteamDir()
-    {
-        return u8"app_285330" PATH_SEPARATOR u8"depot_285331";
-    }
-
-} // namespace Platform
+} // namespace OpenRCT2::Platform
 
 #endif

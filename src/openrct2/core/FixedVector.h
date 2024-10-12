@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -91,13 +91,13 @@ public:
 
     constexpr void push_back(const T& val)
     {
-        Guard::Assert(_count < MAX);
+        OpenRCT2::Guard::Assert(_count < MAX);
         _data[_count++] = val;
     }
 
     constexpr void push_back(T&& val)
     {
-        Guard::Assert(_count < MAX);
+        OpenRCT2::Guard::Assert(_count < MAX);
         _data[_count++] = std::move(val);
     }
 
@@ -129,7 +129,7 @@ public:
 
     template<typename... Args> constexpr reference_type emplace_back(Args&&... args)
     {
-        Guard::Assert(_count < MAX);
+        OpenRCT2::Guard::Assert(_count < MAX);
         reference_type res = _data[_count++];
         ::new (&res) T(std::forward<Args&&>(args)...);
         return res;

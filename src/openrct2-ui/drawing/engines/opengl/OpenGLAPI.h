@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <openrct2/common.h>
+#include <openrct2/Diagnostic.h>
 
 #ifdef OPENGL_NO_LINK
 
@@ -113,26 +113,29 @@ using PFNGLGETTEXIMAGEPROC = void(APIENTRYP)(GLenum target, GLint level, GLenum 
 
 #endif /* OPENGL_NO_LINK */
 
-inline void CheckGLError()
+namespace OpenRCT2::Ui
 {
-    GLenum error = glGetError();
-    while (error != GL_NO_ERROR)
+    inline void CheckGLError()
     {
-        LOG_ERROR("OpenGL Error 0x%04X", error);
-        error = glGetError();
+        GLenum error = glGetError();
+        while (error != GL_NO_ERROR)
+        {
+            LOG_ERROR("OpenGL Error 0x%04X", error);
+            error = glGetError();
+        }
     }
-}
 
-namespace OpenGLAPI
-{
-    bool Initialise();
-    void SetTexture(uint16_t index, GLenum type, GLuint texture);
-} // namespace OpenGLAPI
+    namespace OpenGLAPI
+    {
+        bool Initialise();
+        void SetTexture(uint16_t index, GLenum type, GLuint texture);
+    } // namespace OpenGLAPI
 
-namespace OpenGLState
-{
-    extern uint16_t ActiveTexture;
-    extern GLuint CurrentProgram;
+    namespace OpenGLState
+    {
+        extern uint16_t ActiveTexture;
+        extern GLuint CurrentProgram;
 
-    void Reset();
-} // namespace OpenGLState
+        void Reset();
+    } // namespace OpenGLState
+} // namespace OpenRCT2::Ui

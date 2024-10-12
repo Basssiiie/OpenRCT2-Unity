@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,8 @@
 
 #pragma once
 
-#include "../common.h"
+#include <cstddef>
+#include <cstdint>
 
 #pragma pack(push, 1)
 struct SawyerCodingChunkHeader
@@ -17,7 +18,7 @@ struct SawyerCodingChunkHeader
     uint8_t encoding;
     uint32_t length;
 };
-assert_struct_size(SawyerCodingChunkHeader, 5);
+static_assert(sizeof(SawyerCodingChunkHeader) == 5);
 #pragma pack(pop)
 
 enum

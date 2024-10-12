@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,70 +9,186 @@
 
 #pragma once
 
-#include "../common.h"
 #include "../object/Object.h"
 #include "../world/Map.h"
+#include "../world/QuarterTile.h"
 #include "../world/TileElement.h"
 
 #include <optional>
-
-constexpr uint32_t RideConstructionSpecialPieceSelected = 0x10000;
 
 constexpr uint8_t kRCT2DefaultBlockBrakeSpeed = 2;
 constexpr int32_t kBlockBrakeBaseSpeed = 0x20364;
 constexpr int32_t kBlockBrakeSpeedOffset = kBlockBrakeBaseSpeed - (kRCT2DefaultBlockBrakeSpeed << 16);
 
+constexpr uint8_t kMaximumTrackSpeed = 30;
+
 using track_type_t = uint16_t;
-using roll_type_t = uint8_t;
-using pitch_type_t = uint8_t;
 
 struct ResultWithMessage;
 
+enum class TrackRoll : uint8_t
+{
+    None = 0,
+    Left = 2,
+    Right = 4,
+    UpsideDown = 15,
+};
+
+enum class TrackPitch : uint8_t
+{
+    None = 0,
+    Up25 = 2,
+    Up60 = 4,
+    Down25 = 6,
+    Down60 = 8,
+    Up90 = 10,
+    Down90 = 18,
+
+    Tower = 10,
+    ReverseFreefall = 10
+};
+
+// Vehicle sprite groups required by track groups are defined in ride_entry_get_supported_track_pieces
+enum class TrackGroup : uint8_t
+{
+    flat = 0,
+    straight,
+    stationEnd,
+    liftHill,
+    liftHillSteep,
+    liftHillCurve,
+    flatRollBanking,
+    verticalLoop,
+    slope,
+    slopeSteepDown,
+    flatToSteepSlope,
+    slopeCurve,
+    slopeCurveSteep,
+    sBend,
+    curveVerySmall,
+    curveSmall,
+    curve,
+    curveLarge,
+    twist,
+    halfLoop,
+    corkscrew,
+    tower,
+    helixUpBankedHalf,
+    helixDownBankedHalf,
+    helixUpBankedQuarter,
+    helixDownBankedQuarter,
+    helixUpUnbankedQuarter,
+    helixDownUnbankedQuarter,
+    brakes,
+    onridePhoto,
+    waterSplash,
+    slopeVertical,
+    barrelRoll,
+    poweredLift,
+    halfLoopLarge,
+    slopeCurveBanked,
+    logFlumeReverser,
+    heartlineRoll,
+    reverser,
+    reverseFreefall,
+    slopeToFlat,
+    blockBrakes,
+    slopeRollBanking,
+    slopeSteepLong,
+    curveVertical,
+    liftHillCable,
+    liftHillCurved,
+    quarterLoop,
+    spinningTunnel,
+    booster,
+    inlineTwistUninverted,
+    inlineTwistInverted,
+    quarterLoopUninvertedUp,
+    quarterLoopUninvertedDown,
+    quarterLoopInvertedUp,
+    quarterLoopInvertedDown,
+    rapids,
+    flyingHalfLoopUninvertedUp,
+    flyingHalfLoopInvertedDown,
+
+    flatRideBase,
+
+    waterfall,
+    whirlpool,
+    brakeForDrop,
+    corkscrewUninverted,
+    corkscrewInverted,
+    heartlineTransfer,
+    miniGolfHole,
+    rotationControlToggle,
+    slopeSteepUp,
+
+    corkscrewLarge,
+    halfLoopMedium,
+    zeroGRoll,
+    zeroGRollLarge,
+
+    flyingLargeHalfLoopUninvertedUp,
+    flyingLargeHalfLoopInvertedDown,
+    flyingLargeHalfLoopUninvertedDown,
+    flyingLargeHalfLoopInvertedUp,
+
+    flyingHalfLoopUninvertedDown,
+    flyingHalfLoopInvertedUp,
+
+    slopeCurveLarge,
+    slopeCurveLargeBanked,
+
+    diagBrakes,
+    diagBlockBrakes,
+    inclinedBrakes,
+
+    count,
+};
+
 struct TrackDefinition
 {
-    track_type_t type;
-    pitch_type_t vangle_end;
-    pitch_type_t vangle_start;
-    roll_type_t bank_end;
-    roll_type_t bank_start;
-    int8_t preview_z_offset;
+    TrackGroup group;
+    TrackPitch pitchEnd;
+    TrackPitch pitchStart;
+    TrackRoll rollEnd;
+    TrackRoll rollStart;
+    int8_t previewZOffset;
 };
 
 struct PitchAndRoll
 {
-    pitch_type_t Pitch;
-    roll_type_t Roll;
+    TrackPitch pitch;
+    TrackRoll roll;
 };
 constexpr bool operator==(const PitchAndRoll& vb1, const PitchAndRoll& vb2)
 {
-    return vb1.Pitch == vb2.Pitch && vb1.Roll == vb2.Roll;
+    return vb1.pitch == vb2.pitch && vb1.roll == vb2.roll;
 }
 constexpr bool operator!=(const PitchAndRoll& vb1, const PitchAndRoll& vb2)
 {
     return !(vb1 == vb2);
 }
 
-/* size 0x0A */
-struct PreviewTrack
+struct SequenceClearance
 {
-    uint8_t index; // 0x00
-    int16_t x;     // 0x01
-    int16_t y;     // 0x03
-    int16_t z;     // 0x05
-    uint8_t var_07;
-    QuarterTile var_08;
-    uint8_t flags;
+    int16_t x{};
+    int16_t y{};
+    int16_t z{};
+    uint8_t clearanceZ{};
+    QuarterTile quarterTile = { 0, 0 };
+    uint8_t flags{};
 };
 
 /* size 0x0A */
 struct TrackCoordinates
 {
-    int8_t rotation_begin; // 0x00
-    int8_t rotation_end;   // 0x01
-    int16_t z_begin;       // 0x02
-    int16_t z_end;         // 0x04
-    int16_t x;             // 0x06
-    int16_t y;             // 0x08
+    int8_t rotationBegin; // 0x00
+    int8_t rotationEnd;   // 0x01
+    int16_t zBegin;       // 0x02
+    int16_t zEnd;         // 0x04
+    int16_t x;            // 0x06
+    int16_t y;            // 0x08
 };
 
 enum
@@ -103,143 +219,23 @@ enum
     TRACK_ELEMENT_COLOUR_SEAT_ROTATION_MASK = 0b11110000,
 };
 
-#define MAX_STATION_PLATFORM_LENGTH 32
-constexpr uint16_t const MAX_TRACK_HEIGHT = 254 * COORDS_Z_STEP;
+constexpr int8_t kMaxStationPlatformLength = 32;
+constexpr uint16_t const MAX_TRACK_HEIGHT = 254 * kCoordsZStep;
 constexpr uint8_t const DEFAULT_SEAT_ROTATION = 4;
 
-// Vehicle sprite groups required by track groups are defined in ride_entry_get_supported_track_pieces
-enum
+enum class TrackCurve : uint8_t
 {
-    TRACK_NONE = 0,
-
-    TRACK_FLAT = 0,
-    TRACK_STRAIGHT,
-    TRACK_STATION_END,
-    TRACK_LIFT_HILL,
-    TRACK_LIFT_HILL_STEEP,
-    TRACK_LIFT_HILL_CURVE,
-    TRACK_FLAT_ROLL_BANKING,
-    TRACK_VERTICAL_LOOP,
-    TRACK_SLOPE,
-    TRACK_SLOPE_STEEP_DOWN,
-    TRACK_SLOPE_LONG,
-    TRACK_SLOPE_CURVE,
-    TRACK_SLOPE_CURVE_STEEP,
-    TRACK_S_BEND,
-    TRACK_CURVE_VERY_SMALL,
-    TRACK_CURVE_SMALL,
-    TRACK_CURVE,
-    TRACK_CURVE_LARGE,
-    TRACK_TWIST,
-    TRACK_HALF_LOOP,
-    TRACK_CORKSCREW,
-    TRACK_TOWER_BASE,
-    TRACK_HELIX_UP_BANKED_HALF,
-    TRACK_HELIX_DOWN_BANKED_HALF,
-    TRACK_HELIX_UP_BANKED_QUARTER,
-    TRACK_HELIX_DOWN_BANKED_QUARTER,
-    TRACK_HELIX_UP_UNBANKED_QUARTER,
-    TRACK_HELIX_DOWN_UNBANKED_QUARTER,
-    TRACK_BRAKES,
-    TRACK_ON_RIDE_PHOTO,
-    TRACK_WATER_SPLASH,
-    TRACK_SLOPE_VERTICAL,
-    TRACK_BARREL_ROLL,
-    TRACK_POWERED_LIFT,
-    TRACK_HALF_LOOP_LARGE,
-    TRACK_SLOPE_CURVE_BANKED,
-    TRACK_LOG_FLUME_REVERSER,
-    TRACK_HEARTLINE_ROLL,
-    TRACK_REVERSER,
-    TRACK_REVERSE_FREEFALL,
-    TRACK_SLOPE_TO_FLAT,
-    TRACK_BLOCK_BRAKES,
-    TRACK_SLOPE_ROLL_BANKING,
-    TRACK_SLOPE_STEEP_LONG,
-    TRACK_CURVE_VERTICAL,
-    TRACK_LIFT_HILL_CABLE,
-    TRACK_LIFT_HILL_CURVED,
-    TRACK_QUARTER_LOOP,
-    TRACK_SPINNING_TUNNEL,
-    TRACK_BOOSTER,
-    TRACK_INLINE_TWIST_UNINVERTED,
-    TRACK_INLINE_TWIST_INVERTED,
-    TRACK_QUARTER_LOOP_UNINVERTED_UP,
-    TRACK_QUARTER_LOOP_UNINVERTED_DOWN,
-    TRACK_QUARTER_LOOP_INVERTED_UP,
-    TRACK_QUARTER_LOOP_INVERTED_DOWN,
-    TRACK_RAPIDS,
-    TRACK_FLYING_HALF_LOOP_UNINVERTED_UP,
-    TRACK_FLYING_HALF_LOOP_INVERTED_DOWN,
-
-    TRACK_FLAT_RIDE_BASE,
-
-    TRACK_WATERFALL,
-    TRACK_WHIRLPOOL,
-    TRACK_BRAKE_FOR_DROP,
-    TRACK_CORKSCREW_UNINVERTED,
-    TRACK_CORKSCREW_INVERTED,
-    TRACK_HEARTLINE_TRANSFER,
-    TRACK_MINI_GOLF_HOLE,
-    TRACK_ROTATION_CONTROL_TOGGLE,
-    TRACK_SLOPE_STEEP_UP,
-
-    TRACK_CORKSCREW_LARGE,
-    TRACK_HALF_LOOP_MEDIUM,
-    TRACK_ZERO_G_ROLL,
-    TRACK_ZERO_G_ROLL_LARGE,
-
-    TRACK_FLYING_LARGE_HALF_LOOP_UNINVERTED_UP,
-    TRACK_FLYING_LARGE_HALF_LOOP_INVERTED_DOWN,
-    TRACK_FLYING_LARGE_HALF_LOOP_UNINVERTED_DOWN,
-    TRACK_FLYING_LARGE_HALF_LOOP_INVERTED_UP,
-
-    TRACK_FLYING_HALF_LOOP_UNINVERTED_DOWN,
-    TRACK_FLYING_HALF_LOOP_INVERTED_UP,
-
-    TRACK_SLOPE_CURVE_LARGE,
-    TRACK_SLOPE_CURVE_LARGE_BANKED,
-
-    TRACK_DIAG_BRAKES,
-    TRACK_DIAG_BLOCK_BRAKES,
-
-    TRACK_GROUP_COUNT,
+    LeftVerySmall = 5,
+    LeftSmall = 3,
+    Left = 1,
+    LeftLarge = 7,
+    None = 0,
+    RightLarge = 8,
+    Right = 2,
+    RightSmall = 4,
+    RightVerySmall = 6
 };
-
-enum
-{
-    TRACK_CURVE_LEFT_VERY_SMALL = 5,
-    TRACK_CURVE_LEFT_SMALL = 3,
-    TRACK_CURVE_LEFT = 1,
-    TRACK_CURVE_LEFT_LARGE = 7,
-    TRACK_CURVE_NONE = 0,
-    TRACK_CURVE_RIGHT_LARGE = 8,
-    TRACK_CURVE_RIGHT = 2,
-    TRACK_CURVE_RIGHT_SMALL = 4,
-    TRACK_CURVE_RIGHT_VERY_SMALL = 6
-};
-
-enum
-{
-    TRACK_SLOPE_NONE = 0,
-    TRACK_SLOPE_UP_25 = 2,
-    TRACK_SLOPE_UP_60 = 4,
-    TRACK_SLOPE_DOWN_25 = 6,
-    TRACK_SLOPE_DOWN_60 = 8,
-    TRACK_SLOPE_UP_90 = 10,
-    TRACK_SLOPE_DOWN_90 = 18,
-
-    TRACK_VANGLE_TOWER = 10,
-    TRACK_VANGLE_REVERSE_FREEFALL = 10
-};
-
-enum
-{
-    TRACK_BANK_NONE = 0,
-    TRACK_BANK_LEFT = 2,
-    TRACK_BANK_RIGHT = 4,
-    TRACK_BANK_UPSIDE_DOWN = 15,
-};
+constexpr const uint8_t kHighestCurveValue = 8;
 
 enum
 {
@@ -261,9 +257,10 @@ enum
     TRACK_ELEM_FLAG_CURVE_ALLOWS_LIFT = (1 << 13),
     TRACK_ELEM_FLAG_INVERSION_TO_NORMAL = (1 << 14),
     TRACK_ELEM_FLAG_BANKED = (1 << 15), // Also set on Spinning Tunnel and Log Flume reverser, probably to save a flag.
+    TRACK_ELEM_FLAG_CAN_BE_PARTLY_UNDERGROUND = (1 << 16),
 };
 
-namespace TrackElemType
+namespace OpenRCT2::TrackElemType
 {
     constexpr track_type_t Flat = 0;
     constexpr track_type_t EndStation = 1;
@@ -630,11 +627,12 @@ namespace TrackElemType
 
     constexpr track_type_t DiagBrakes = 337;
     constexpr track_type_t DiagBlockBrakes = 338;
+    constexpr track_type_t Down25Brakes = 339;
 
-    constexpr track_type_t Count = 339;
+    constexpr track_type_t Count = 340;
     constexpr track_type_t None = 65535;
 
-}; // namespace TrackElemType
+}; // namespace OpenRCT2::TrackElemType
 
 enum
 {
@@ -665,6 +663,58 @@ struct TrackCircuitIterator
     bool looped;
 };
 
+struct TypeOrCurve
+{
+    bool isTrackType = true; // true if a track_type_t is selected, false if a TrackCurve is selected;
+    union
+    {
+        track_type_t trackType = OpenRCT2::TrackElemType::None;
+        TrackCurve curve;
+    };
+
+    constexpr TypeOrCurve() noexcept
+    {
+        isTrackType = false;
+        curve = TrackCurve::None;
+    }
+
+    constexpr bool operator==(track_type_t rhs)
+    {
+        return isTrackType && (trackType == rhs);
+    }
+
+    constexpr bool operator==(TrackCurve rhs)
+    {
+        return !isTrackType && (curve == rhs);
+    }
+
+    constexpr TypeOrCurve(track_type_t _type) noexcept
+    {
+        isTrackType = true;
+        trackType = _type;
+    }
+
+    constexpr TypeOrCurve& operator=(track_type_t rhs) noexcept
+    {
+        isTrackType = true;
+        trackType = rhs;
+        return *this;
+    }
+
+    constexpr TypeOrCurve(TrackCurve _curve) noexcept
+    {
+        isTrackType = false;
+        curve = _curve;
+    }
+
+    constexpr TypeOrCurve& operator=(TrackCurve rhs) noexcept
+    {
+        isTrackType = false;
+        curve = rhs;
+        return *this;
+    }
+};
+
 PitchAndRoll TrackPitchAndRollStart(track_type_t trackType);
 PitchAndRoll TrackPitchAndRollEnd(track_type_t trackType);
 
@@ -679,6 +729,7 @@ void TrackGetBack(const CoordsXYE& input, CoordsXYE* output);
 void TrackGetFront(const CoordsXYE& input, CoordsXYE* output);
 
 bool TrackElementIsCovered(track_type_t trackElementType);
+track_type_t UncoverTrackElement(track_type_t trackElementType);
 bool TrackTypeIsStation(track_type_t trackType);
 bool TrackTypeIsBrakes(track_type_t trackType);
 bool TrackTypeIsBlockBrakes(track_type_t trackType);
@@ -687,9 +738,9 @@ bool TrackTypeIsBooster(track_type_t trackType);
 std::optional<CoordsXYZ> GetTrackElementOriginAndApplyChanges(
     const CoordsXYZD& location, track_type_t type, uint16_t extra_params, TileElement** output_element, uint16_t flags);
 
-roll_type_t TrackGetActualBank(TileElement* tileElement, roll_type_t bank);
-roll_type_t TrackGetActualBank2(int32_t rideType, bool isInverted, roll_type_t bank);
-roll_type_t TrackGetActualBank3(bool useInvertedSprites, TileElement* tileElement);
+TrackRoll TrackGetActualBank(TileElement* tileElement, TrackRoll bank);
+TrackRoll TrackGetActualBank2(int32_t rideType, bool isInverted, TrackRoll bank);
+TrackRoll TrackGetActualBank3(bool useInvertedSprites, TileElement* tileElement);
 
 ResultWithMessage TrackAddStationElement(CoordsXYZD loc, RideId rideIndex, int32_t flags, bool fromTrackDesign);
 ResultWithMessage TrackRemoveStationElement(const CoordsXYZD& loc, RideId rideIndex, int32_t flags);
@@ -697,16 +748,3 @@ ResultWithMessage TrackRemoveStationElement(const CoordsXYZD& loc, RideId rideIn
 bool TrackTypeHasSpeedSetting(track_type_t trackType);
 bool TrackTypeIsHelix(track_type_t trackType);
 std::optional<CoordsXYZD> GetTrackSegmentOrigin(const CoordsXYE& posEl);
-
-/**
- * If new pieces get added to existing ride types, this could cause existing parks to change appearance,
- * since the formerly unrendered pieces were not explicitly set invisible.
- * To avoid this, this function will return true if the piece is question was added after the park was created,
- * so that import code can properly set the visibility.
- *
- * @param rideType The OpenRCT2 ride type
- * @param trackType The OpenRCT2 track type
- * @param parkFileVersion The current park file version. Pass -1 when converting S4 or S6.
- * @return
- */
-bool TrackTypeMustBeMadeInvisible(ride_type_t rideType, track_type_t trackType, int32_t parkFileVersion = -1);

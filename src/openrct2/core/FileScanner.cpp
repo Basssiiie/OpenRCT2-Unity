@@ -1,13 +1,11 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
  *
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
-
-#include "../common.h"
 
 #ifdef _WIN32
 #    include <windows.h>
@@ -33,6 +31,8 @@
 #include <stack>
 #include <string>
 #include <vector>
+
+using namespace OpenRCT2;
 
 enum class DIRECTORY_CHILD_TYPE
 {
@@ -149,7 +149,7 @@ public:
         return false;
     }
 
-    virtual void GetDirectoryChildren(std::vector<DirectoryChild>& children, const std::string& path) abstract;
+    virtual void GetDirectoryChildren(std::vector<DirectoryChild>& children, const std::string& path) = 0;
 
 private:
     void PushState(const std::string& directory)

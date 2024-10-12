@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -8,10 +8,15 @@
  *****************************************************************************/
 
 #pragma once
-#include "../common.h"
-#include "../interface/Cursors.h"
+
+#include "../core/Money.hpp"
+#include "../localisation/StringIdType.h"
 #include "../world/Location.hpp"
 #include "ObjectTypes.h"
+
+#include <string_view>
+
+enum class CursorID : uint8_t;
 
 struct LargeSceneryText;
 

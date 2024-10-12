@@ -2,6 +2,7 @@
 
 #include "../Cheats.h"
 #include "../Game.h"
+#include "../GameState.h"
 #include "../core/DataSerialiser.h"
 #include "../localisation/StringIds.h"
 #include "../paint/Paint.h"
@@ -10,6 +11,8 @@
 #include "../world/Map.h"
 #include "EntityList.h"
 #include "EntityRegistry.h"
+
+using namespace OpenRCT2;
 
 template<> bool EntityBase::Is<Litter>() const
 {
@@ -32,7 +35,7 @@ static bool IsLocationLitterable(const CoordsXYZ& mapPos)
             continue;
 
         int32_t pathZ = tileElement->GetBaseZ();
-        if (pathZ < mapPos.z || pathZ >= mapPos.z + PATH_CLEARANCE)
+        if (pathZ < mapPos.z || pathZ >= mapPos.z + kPathClearance)
             continue;
 
         return !TileElementIsUnderground(tileElement);
@@ -46,7 +49,8 @@ static bool IsLocationLitterable(const CoordsXYZ& mapPos)
  */
 void Litter::Create(const CoordsXYZD& litterPos, Type type)
 {
-    if (gCheatsDisableLittering)
+    auto& gameState = GetGameState();
+    if (gameState.Cheats.DisableLittering)
         return;
 
     auto offsetLitterPos = litterPos
@@ -86,7 +90,7 @@ void Litter::Create(const CoordsXYZD& litterPos, Type type)
     litter->SpriteData.HeightMax = 3;
     litter->SubType = type;
     litter->MoveTo(offsetLitterPos);
-    litter->creationTick = gCurrentTicks;
+    litter->creationTick = gameState.CurrentTicks;
 }
 
 /**
@@ -137,7 +141,7 @@ StringId Litter::GetName() const
 
 uint32_t Litter::GetAge() const
 {
-    return gCurrentTicks - creationTick;
+    return GetGameState().CurrentTicks - creationTick;
 }
 
 void Litter::Serialise(DataSerialiser& stream)

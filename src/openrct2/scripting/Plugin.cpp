@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -17,7 +17,6 @@
 #    include "Duktape.hpp"
 #    include "ScriptEngine.h"
 
-#    include <algorithm>
 #    include <fstream>
 #    include <memory>
 
@@ -69,7 +68,7 @@ void Plugin::Load()
     {
         auto val = std::string(duk_safe_to_string(_context, -1));
         duk_pop(_context);
-        throw std::runtime_error("Failed to load plug-in script: " + val);
+        throw std::runtime_error("Failed to load plug-in script: " + val + " at " + _path);
     }
 
     _metadata = GetMetadata(DukValue::take_from_stack(_context));
@@ -161,13 +160,13 @@ PluginMetadata Plugin::GetMetadata(const DukValue& dukMetadata)
         auto dukMinApiVersion = dukMetadata["minApiVersion"];
         if (dukMinApiVersion.type() == DukValue::Type::NUMBER)
         {
-            metadata.MinApiVersion = dukMinApiVersion.as_int();
+            metadata.MinApiVersion = dukMinApiVersion.as_uint();
         }
 
         auto dukTargetApiVersion = dukMetadata["targetApiVersion"];
         if (dukTargetApiVersion.type() == DukValue::Type::NUMBER)
         {
-            metadata.TargetApiVersion = dukTargetApiVersion.as_int();
+            metadata.TargetApiVersion = dukTargetApiVersion.as_uint();
         }
         else
         {

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,12 +10,15 @@
 #include "Station.h"
 
 #include "../Game.h"
+#include "../GameState.h"
 #include "../entity/Guest.h"
 #include "../scenario/Scenario.h"
 #include "../world/Location.hpp"
 #include "RideEntry.h"
 #include "Track.h"
 #include "Vehicle.h"
+
+using namespace OpenRCT2;
 
 static void RideUpdateStationBlockSection(Ride& ride, StationIndex stationIndex);
 static void RideUpdateStationDodgems(Ride& ride, StationIndex stationIndex);
@@ -63,16 +66,16 @@ static void RideUpdateStationBlockSection(Ride& ride, StationIndex stationIndex)
     if ((ride.status == RideStatus::Closed && ride.num_riders == 0)
         || (tileElement != nullptr && tileElement->AsTrack()->IsBrakeClosed()))
     {
-        station.Depart &= ~STATION_DEPART_FLAG;
+        station.Depart &= ~kStationDepartFlag;
 
-        if ((station.Depart & STATION_DEPART_FLAG) || (tileElement != nullptr && tileElement->AsTrack()->HasGreenLight()))
+        if ((station.Depart & kStationDepartFlag) || (tileElement != nullptr && tileElement->AsTrack()->HasGreenLight()))
             RideInvalidateStationStart(ride, stationIndex, false);
     }
     else
     {
-        if (!(station.Depart & STATION_DEPART_FLAG))
+        if (!(station.Depart & kStationDepartFlag))
         {
-            station.Depart |= STATION_DEPART_FLAG;
+            station.Depart |= kStationDepartFlag;
             RideInvalidateStationStart(ride, stationIndex, true);
         }
         else if (tileElement != nullptr && tileElement->AsTrack()->HasGreenLight())
@@ -94,7 +97,7 @@ static void RideUpdateStationDodgems(Ride& ride, StationIndex stationIndex)
     // but since dodgems do not have station lights there is no point.
     if (ride.status == RideStatus::Closed || (ride.lifecycle_flags & (RIDE_LIFECYCLE_BROKEN_DOWN | RIDE_LIFECYCLE_CRASHED)))
     {
-        station.Depart &= ~STATION_DEPART_FLAG;
+        station.Depart &= ~kStationDepartFlag;
         return;
     }
 
@@ -113,12 +116,12 @@ static void RideUpdateStationDodgems(Ride& ride, StationIndex stationIndex)
 
             // End match
             ride.lifecycle_flags &= ~RIDE_LIFECYCLE_PASS_STATION_NO_STOPPING;
-            station.Depart &= ~STATION_DEPART_FLAG;
+            station.Depart &= ~kStationDepartFlag;
             return;
         }
 
         // Continue match
-        station.Depart |= STATION_DEPART_FLAG;
+        station.Depart |= kStationDepartFlag;
     }
     else
     {
@@ -131,14 +134,14 @@ static void RideUpdateStationDodgems(Ride& ride, StationIndex stationIndex)
 
             if (vehicle->status != Vehicle::Status::WaitingToDepart)
             {
-                station.Depart &= ~STATION_DEPART_FLAG;
+                station.Depart &= ~kStationDepartFlag;
                 return;
             }
         }
 
         // Begin the match
         ride.lifecycle_flags |= RIDE_LIFECYCLE_PASS_STATION_NO_STOPPING;
-        station.Depart |= STATION_DEPART_FLAG;
+        station.Depart |= kStationDepartFlag;
         ride.window_invalidate_flags |= RIDE_INVALIDATE_RIDE_MAIN | RIDE_INVALIDATE_RIDE_LIST;
     }
 }
@@ -150,11 +153,12 @@ static void RideUpdateStationDodgems(Ride& ride, StationIndex stationIndex)
 static void RideUpdateStationNormal(Ride& ride, StationIndex stationIndex)
 {
     auto& station = ride.GetStation(stationIndex);
-    int32_t time = station.Depart & STATION_DEPART_MASK;
+    int32_t time = station.Depart & kStationDepartMask;
+    const auto currentTicks = GetGameState().CurrentTicks;
     if ((ride.lifecycle_flags & (RIDE_LIFECYCLE_BROKEN_DOWN | RIDE_LIFECYCLE_CRASHED))
         || (ride.status == RideStatus::Closed && ride.num_riders == 0))
     {
-        if (time != 0 && time != 127 && !(gCurrentTicks & 7))
+        if (time != 0 && time != 127 && !(currentTicks & 7))
             time--;
 
         station.Depart = time;
@@ -164,12 +168,12 @@ static void RideUpdateStationNormal(Ride& ride, StationIndex stationIndex)
     {
         if (time == 0)
         {
-            station.Depart |= STATION_DEPART_FLAG;
+            station.Depart |= kStationDepartFlag;
             RideInvalidateStationStart(ride, stationIndex, true);
         }
         else
         {
-            if (time != 127 && !(gCurrentTicks & 31))
+            if (time != 127 && !(currentTicks & 31))
                 time--;
 
             station.Depart = time;
@@ -187,9 +191,9 @@ static void RideUpdateStationRace(Ride& ride, StationIndex stationIndex)
     auto& station = ride.GetStation(stationIndex);
     if (ride.status == RideStatus::Closed || (ride.lifecycle_flags & (RIDE_LIFECYCLE_BROKEN_DOWN | RIDE_LIFECYCLE_CRASHED)))
     {
-        if (station.Depart & STATION_DEPART_FLAG)
+        if (station.Depart & kStationDepartFlag)
         {
-            station.Depart &= ~STATION_DEPART_FLAG;
+            station.Depart &= ~kStationDepartFlag;
             RideInvalidateStationStart(ride, stationIndex, false);
         }
         return;
@@ -220,9 +224,9 @@ static void RideUpdateStationRace(Ride& ride, StationIndex stationIndex)
 
                 // Race is over
                 ride.lifecycle_flags &= ~RIDE_LIFECYCLE_PASS_STATION_NO_STOPPING;
-                if (station.Depart & STATION_DEPART_FLAG)
+                if (station.Depart & kStationDepartFlag)
                 {
-                    station.Depart &= ~STATION_DEPART_FLAG;
+                    station.Depart &= ~kStationDepartFlag;
                     RideInvalidateStationStart(ride, stationIndex, false);
                 }
                 return;
@@ -230,7 +234,7 @@ static void RideUpdateStationRace(Ride& ride, StationIndex stationIndex)
         }
 
         // Continue racing
-        station.Depart |= STATION_DEPART_FLAG;
+        station.Depart |= kStationDepartFlag;
     }
     else
     {
@@ -243,9 +247,9 @@ static void RideUpdateStationRace(Ride& ride, StationIndex stationIndex)
 
             if (vehicle->status != Vehicle::Status::WaitingToDepart && vehicle->status != Vehicle::Status::Departing)
             {
-                if (station.Depart & STATION_DEPART_FLAG)
+                if (station.Depart & kStationDepartFlag)
                 {
-                    station.Depart &= ~STATION_DEPART_FLAG;
+                    station.Depart &= ~kStationDepartFlag;
                     RideInvalidateStationStart(ride, stationIndex, false);
                 }
                 return;
@@ -255,9 +259,9 @@ static void RideUpdateStationRace(Ride& ride, StationIndex stationIndex)
         // Begin the race
         RideRaceInitVehicleSpeeds(ride);
         ride.lifecycle_flags |= RIDE_LIFECYCLE_PASS_STATION_NO_STOPPING;
-        if (!(station.Depart & STATION_DEPART_FLAG))
+        if (!(station.Depart & kStationDepartFlag))
         {
-            station.Depart |= STATION_DEPART_FLAG;
+            station.Depart |= kStationDepartFlag;
             RideInvalidateStationStart(ride, stationIndex, true);
         }
         ride.window_invalidate_flags |= RIDE_INVALIDATE_RIDE_MAIN | RIDE_INVALIDATE_RIDE_LIST;
@@ -406,12 +410,12 @@ StationIndex RideGetFirstEmptyStationStart(const Ride& ride)
 
 int32_t RideStation::GetBaseZ() const
 {
-    return Height * COORDS_Z_STEP;
+    return Height * kCoordsZStep;
 }
 
 void RideStation::SetBaseZ(int32_t newZ)
 {
-    Height = newZ / COORDS_Z_STEP;
+    Height = newZ / kCoordsZStep;
 }
 
 CoordsXYZ RideStation::GetStart() const

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,11 @@
 
 #include "GameSetSpeedAction.h"
 
+#include "../Diagnostic.h"
 #include "../config/Config.h"
+#include "../interface/Window.h"
+
+using namespace OpenRCT2;
 
 GameSetSpeedAction::GameSetSpeedAction(int32_t speed)
     : _speed(speed)
@@ -39,8 +43,9 @@ GameActions::Result GameSetSpeedAction::Query() const
 
     if (!IsValidSpeed(_speed))
     {
-        LOG_WARNING("Invalid game command for speed %u", _speed);
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Invalid speed %u", _speed);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_VALUE_OUT_OF_RANGE);
     }
 
     return res;
@@ -52,8 +57,9 @@ GameActions::Result GameSetSpeedAction::Execute() const
 
     if (!IsValidSpeed(_speed))
     {
-        LOG_WARNING("Invalid game command for speed %u", _speed);
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Invalid speed %u", _speed);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_VALUE_OUT_OF_RANGE);
     }
 
     gGameSpeed = _speed;
@@ -64,5 +70,5 @@ GameActions::Result GameSetSpeedAction::Execute() const
 
 bool GameSetSpeedAction::IsValidSpeed(int32_t speed) const
 {
-    return (speed >= 1 && speed <= 4) || (gConfigGeneral.DebuggingTools && speed == 8);
+    return (speed >= 1 && speed <= 4) || (Config::Get().general.DebuggingTools && speed == 8);
 }

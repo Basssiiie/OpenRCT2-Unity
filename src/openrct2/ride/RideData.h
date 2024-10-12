@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -20,17 +20,18 @@
 #define DEFAULT_STALL_COLOUR_PRESET TRACK_COLOUR_PRESETS({ COLOUR_BRIGHT_RED, COLOUR_BRIGHT_RED, COLOUR_BRIGHT_RED })
 
 #include "../audio/audio.h"
-#include "../common.h"
 #include "../core/BitSet.hpp"
+#include "../drawing/ImageIndexType.h"
 #include "../entity/Guest.h"
 #include "../localisation/StringIds.h"
-#include "../sprites.h"
+#include "../paint/track/Support.h"
 #include "../util/Util.h"
 #include "Ride.h"
 #include "RideAudio.h"
 #include "RideConstruction.h"
 #include "RideEntry.h"
 #include "RideRatings.h"
+#include "RideStringIds.h"
 #include "ShopItem.h"
 #include "Track.h"
 #include "TrackPaint.h"
@@ -38,13 +39,13 @@
 
 enum class ResearchCategory : uint8_t;
 
-constexpr const uint8_t DefaultFoodStallHeight = 8 * COORDS_Z_STEP;
-constexpr const uint8_t DefaultDrinksStallHeight = 8 * COORDS_Z_STEP;
-constexpr const uint8_t DefaultShopHeight = 8 * COORDS_Z_STEP;
-constexpr const uint8_t DefaultToiletHeight = 4 * COORDS_Z_STEP;
-constexpr const uint8_t DefaultInformationKioskHeight = 6 * COORDS_Z_STEP;
-constexpr const uint8_t DefaultFirstAidHeight = 6 * COORDS_Z_STEP;
-constexpr const uint8_t DefaultCashMachineHeight = 8 * COORDS_Z_STEP;
+constexpr uint8_t DefaultFoodStallHeight = 8 * kCoordsZStep;
+constexpr uint8_t DefaultDrinksStallHeight = 8 * kCoordsZStep;
+constexpr uint8_t DefaultShopHeight = 8 * kCoordsZStep;
+constexpr uint8_t DefaultToiletHeight = 4 * kCoordsZStep;
+constexpr uint8_t DefaultInformationKioskHeight = 6 * kCoordsZStep;
+constexpr uint8_t DefaultFirstAidHeight = 6 * kCoordsZStep;
+constexpr uint8_t DefaultCashMachineHeight = 8 * kCoordsZStep;
 
 struct RideComponentName
 {
@@ -199,21 +200,39 @@ struct RideOperatingSettings
 {
     uint8_t MinValue;
     uint8_t MaxValue;
-    uint8_t MaxBrakesSpeed;
-    uint8_t PoweredLiftAcceleration;
-    uint8_t BoosterAcceleration;
-    int8_t BoosterSpeedFactor; // The factor to shift the raw booster speed with
-    uint16_t AccelerationFactor = 12;
     uint8_t OperatingSettingMultiplier = 1; // Used for the Ride window, cosmetic only.
+};
+
+struct RideTrackSpeedSettings
+{
+    int8_t BrakesMaxSpeed = 30;
+    int8_t BoosterMaxSpeed = 30;
+};
+
+struct RideBoosterSettings
+{
+    uint8_t PoweredLiftAcceleration = 0;
+    uint8_t BoosterAcceleration = 0;
+    uint8_t AccelerationFactor = 12; // the amount to right-shift the launch speed for powered launch from a station
+};
+
+struct RideLegacyBoosterSettings
+// These values that must be kept for backwards compatibility. New ride types should set the acceleration values equal to
+// BoosterSettings' and leave BoosterSpeedFactor at default.
+{
+    uint8_t PoweredLiftAcceleration = 0; // PoweredLiftAcceleration value before unified-speed update
+    uint8_t BoosterAcceleration = 0;     // BoosterAcceleration value before unified-speed update
+    int8_t BoosterSpeedFactor = 2; // Multiplier representing how much to multiply booster speed by, scaled to 2x the final
+                                   // multiplier.
 };
 
 struct RatingsModifier
 {
-    RatingsModifierType Type;
-    int32_t Threshold;
-    int32_t Excitement;
-    int32_t Intensity;
-    int32_t Nausea;
+    RatingsModifierType type;
+    int32_t threshold;
+    int32_t excitement;
+    int32_t intensity;
+    int32_t nausea;
 };
 
 struct RideRatingsDescriptor
@@ -248,7 +267,7 @@ struct UpkeepCostsDescriptor
     money64 CostPerStation;
 };
 
-using RideTrackGroup = OpenRCT2::BitSet<TRACK_GROUP_COUNT>;
+using RideTrackGroups = OpenRCT2::BitSet<EnumValue(TrackGroup::count)>;
 using UpdateRideApproachVehicleWaypointsFunction = void (*)(Guest&, const CoordsXY&, int16_t&);
 using RideMusicUpdateFunction = void (*)(Ride&);
 using PeepUpdateRideLeaveEntranceFunc = void (*)(Guest*, Ride&, CoordsXYZD&);
@@ -267,53 +286,214 @@ enum class RideConstructionWindowContext : uint8_t
     Maze,
 };
 
-struct RideTypeDescriptor
+struct TrackDrawerEntry
 {
-    uint8_t AlternateType;
-    uint8_t Category;
+    TRACK_PAINT_FUNCTION_GETTER Drawer = nullptr;
+    SupportType supportType{};
     /** rct2: 0x0097C468 (0 - 31) and 0x0097C5D4 (32 - 63) */
-    RideTrackGroup EnabledTrackPieces;
+    RideTrackGroups enabledTrackGroups{};
     // Pieces that this ride type _can_ draw, but are disabled because their vehicles lack the relevant sprites,
     // or because they are not realistic for the ride type (e.g. LIM boosters in Mini Roller Coasters).
-    RideTrackGroup ExtraTrackPieces;
-    RideTrackGroup CoveredTrackPieces;
+    RideTrackGroups extraTrackGroups{};
+
+    ImageIndex icon = kSpriteIdNull;
+    StringId tooltip = STR_NONE;
+
+    void GetAvailableTrackGroups(RideTrackGroups& res) const;
+    bool SupportsTrackGroup(const TrackGroup trackGroup) const;
+};
+
+struct TrackDrawerDescriptor
+{
+    TrackDrawerEntry Regular{};
+    TrackDrawerEntry Covered{};
+
+    constexpr TrackDrawerDescriptor()
+    {
+    }
+
+    constexpr TrackDrawerDescriptor(TrackDrawerEntry function)
+        : Regular(function)
+    {
+    }
+
+    constexpr TrackDrawerDescriptor(TrackDrawerEntry entryRegular, TrackDrawerEntry entryCovered)
+        : Regular(entryRegular)
+        , Covered(entryCovered)
+    {
+    }
+
+    bool HasCoveredPieces() const;
+};
+
+enum class RtdFlag : uint8_t
+{
+    hasTrackColourMain = 0,
+    hasTrackColourAdditional = 1,
+    hasTrackColourSupports = 2,
+
+    // Set by flat rides, tower rides and shops/stalls.
+    hasSinglePieceStation = 3,
+
+    hasLeaveWhenAnotherVehicleArrivesAtStation = 4,
+    canSynchroniseWithAdjacentStations = 5,
+
+    // Used only by boat Hire and submarine ride
+    trackMustBeOnWater = 6,
+
+    hasGForces = 7,
+
+    // Used by rides that can't have gaps, like those with a vertical tower,
+    // such as the observation tower.
+    cannotHaveGaps = 8,
+
+    hasDataLogging = 9,
+    hasDrops = 10,
+
+    noTestMode = 11,
+    // Set on rides with two varieties, like the u and o shapes of the dinghy slide
+    // and the dry and submerged track of the water coaster.
+
+    hasCoveredPieces = 12,
+
+    // Used only by maze, spiral slide and shops
+    noVehicles = 13,
+
+    hasLoadOptions = 14,
+    hasLsmBehaviourOnFlat = 15,
+
+    // Set by flat rides where the vehicle is integral to the structure, like
+    // Merry-go-round and swinging ships. (Contrast with rides like dodgems.)
+    vehicleIsIntegral = 16,
+
+    isShopOrFacility = 17,
+
+    // If set, wall scenery can not share a tile with the ride's track
+    noWallsAroundTrack = 18,
+
+    isFlatRide = 19,
+
+    // Whether or not guests will go on the ride again if they liked it
+    // (this is usually applied to everything apart from transport rides).
+    guestsWillRideAgain = 20,
+
+    // Used by Toilets and First Aid to mark that guest should go
+    // inside the building (rather than 'buying' at the counter)
+    guestsShouldGoInsideFacility = 21,
+
+    // Guests are "IN" (ride) rather than "ON" (ride)
+    describeAsInside = 22,
+
+    sellsFood = 23,
+    sellsDrinks = 24,
+    isToilet = 25,
+
+    // Whether or not vehicle colours can be set
+    hasVehicleColours = 26,
+
+    checkForStalling = 27,
+    hasTrack = 28,
+
+    // Only set by lift
+    allowExtraTowerBases = 29,
+
+    // Only set by reverser coaster
+    layeredVehiclePreview = 30,
+
+    supportsMultipleColourSchemes = 31,
+    allowDoorsOnTrack = 32,
+    hasMusicByDefault = 33,
+    allowMusic = 34,
+
+    // Used by the Flying RC, Lay-down RC, Multi-dimension RC
+    hasInvertedVariant = 35,
+
+    checkGForces = 36,
+    hasEntranceAndExit = 37,
+    allowMoreVehiclesThanStationFits = 38,
+    hasAirTime = 39,
+    singleSession = 40,
+    allowMultipleCircuits = 41,
+    allowCableLiftHill = 42,
+    showInTrackDesigner = 43,
+    isTransportRide = 44,
+    interestingToLookAt = 45,
+    slightlyInterestingToLookAt = 46,
+
+    // This is only set on the Flying RC and its alternative type.
+    startConstructionInverted = 47,
+
+    listVehiclesSeparately = 48,
+    supportsLevelCrossings = 49,
+    isSuspended = 50,
+    hasLandscapeDoors = 51,
+    upInclineRequiresLift = 52,
+    guestsCanUseUmbrella = 53,
+    isCashMachine = 54,
+    hasOneStation = 55,
+    hasSeatRotation = 56,
+    isFirstAid = 57,
+    isMaze = 58,
+    isSpiralSlide = 59,
+    allowReversedTrains = 60,
+};
+
+// Set on ride types that have a main colour, additional colour and support colour.
+constexpr uint64_t kRtdFlagsHasThreeColours = EnumsToFlags(
+    RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourAdditional, RtdFlag::hasTrackColourSupports);
+// Set on _all_ roller coaster ride types, including the _ALT types used for constructing upside down.
+constexpr uint64_t kRtdFlagsCommonCoaster = EnumsToFlags(
+    RtdFlag::hasGForces, RtdFlag::hasDataLogging, RtdFlag::hasDrops, RtdFlag::hasLoadOptions, RtdFlag::guestsWillRideAgain,
+    RtdFlag::hasVehicleColours, RtdFlag::checkForStalling, RtdFlag::hasTrack, RtdFlag::supportsMultipleColourSchemes,
+    RtdFlag::allowMusic, RtdFlag::interestingToLookAt, RtdFlag::canSynchroniseWithAdjacentStations);
+// Set on all roller coaster ride types, excluding the _ALT types used for constructing upside down.
+constexpr uint64_t kRtdFlagsCommonCoasterNonAlt = EnumsToFlags(
+    RtdFlag::showInTrackDesigner, RtdFlag::hasAirTime, RtdFlag::hasEntranceAndExit);
+
+struct RideTypeDescriptor
+{
+    uint8_t Category{};
     /** rct2: 0x0097CC68 */
-    track_type_t StartTrackPiece;
-    TRACK_PAINT_FUNCTION_GETTER TrackPaintFunction;
-    uint64_t Flags;
+    track_type_t StartTrackPiece{};
+    TrackDrawerDescriptor TrackPaintFunctions{};
+    TrackDrawerDescriptor InvertedTrackPaintFunctions{};
+    uint64_t Flags{};
     /** rct2: 0x0097C8AC */
-    uint64_t RideModes;
-    RideMode DefaultMode;
+    uint64_t RideModes{};
+    RideMode DefaultMode{};
     /** rct2: 0x0097CF40 */
-    RideOperatingSettings OperatingSettings;
-    RideNaming Naming;
-    RideNameConvention NameConvention;
-    const char* EnumName;
-    uint8_t AvailableBreakdowns;
+    RideOperatingSettings OperatingSettings{};
+    RideTrackSpeedSettings TrackSpeedSettings{};
+    RideBoosterSettings BoosterSettings{};
+    RideLegacyBoosterSettings LegacyBoosterSettings{};
+    RideNaming Naming{};
+    RideNameConvention NameConvention{};
+    const char* EnumName{};
+    uint8_t AvailableBreakdowns{};
     /** rct2: 0x0097D218 */
-    RideHeights Heights;
-    uint8_t MaxMass;
+    RideHeights Heights{};
+    uint8_t MaxMass{};
     /** rct2: 0x0097D7C8, 0x0097D7C9, 0x0097D7CA */
-    RideLiftData LiftData;
+    RideLiftData LiftData{};
     // rct2: 0x0097CD1E
-    RatingTuple RatingsMultipliers;
-    UpkeepCostsDescriptor UpkeepCosts;
+    RatingTuple RatingsMultipliers{};
+    UpkeepCostsDescriptor UpkeepCosts{};
     // rct2: 0x0097DD78
-    RideBuildCost BuildCosts;
-    money64 DefaultPrices[RCT2::ObjectLimits::MaxShopItemsPerRideEntry];
-    std::string_view DefaultMusic;
+    RideBuildCost BuildCosts{};
+    money64 DefaultPrices[OpenRCT2::RCT2::ObjectLimits::MaxShopItemsPerRideEntry]{};
+    std::string_view DefaultMusic{};
     /** rct2: 0x0097D7CB */
-    ShopItemIndex PhotoItem;
+    ShopItemIndex PhotoItem{};
     /** rct2: 0x0097D21E */
-    uint8_t BonusValue;
-    TrackColourPresetList ColourPresets;
-    RideColourPreview ColourPreview;
-    RideColourKey ColourKey;
+    uint8_t BonusValue{};
+    TrackColourPresetList ColourPresets{};
+    RideColourPreview ColourPreview{};
+    RideColourKey ColourKey{};
 
     // json name lookup
-    std::string_view Name;
+    std::string_view Name{};
 
-    RideRatingsDescriptor RatingsData;
+    RideRatingsDescriptor RatingsData{};
 
     UpdateRotatingFunction UpdateRotating = UpdateRotatingDefault;
 
@@ -339,112 +519,14 @@ struct RideTypeDescriptor
 
     UpdateRideApproachVehicleWaypointsFunction UpdateRideApproachVehicleWaypoints = UpdateRideApproachVehicleWaypointsDefault;
 
-    bool HasFlag(uint64_t flag) const;
-    void GetAvailableTrackPieces(RideTrackGroup& res) const;
-    bool SupportsTrackPiece(const uint64_t trackPiece) const;
+    bool HasFlag(RtdFlag flag) const;
+    /** @deprecated */
+    bool SupportsTrackGroup(const TrackGroup trackGroup) const;
     ResearchCategory GetResearchCategory() const;
     bool SupportsRideMode(RideMode rideMode) const;
 };
 
-#ifdef _WIN32
-#    define SET_FIELD(fieldname, ...) __VA_ARGS__
-#else
-#    define SET_FIELD(fieldname, ...) .fieldname = __VA_ARGS__
-#endif
-
 extern const RideTypeDescriptor RideTypeDescriptors[RIDE_TYPE_COUNT];
-
-enum
-{
-    RIDE_TYPE_NO_ALTERNATIVES = 0,
-    RIDE_TYPE_ALTERNATIVE_TRACK_PIECES = 1, // Dinghy slide and Water Coaster
-    RIDE_TYPE_ALTERNATIVE_TRACK_TYPE = 2,   // Flying RC, Lay-down RC, Multi-dimension RC
-};
-
-enum ride_type_flags : uint64_t
-{
-    RIDE_TYPE_FLAG_HAS_TRACK_COLOUR_MAIN = (1uLL << 0),
-    RIDE_TYPE_FLAG_HAS_TRACK_COLOUR_ADDITIONAL = (1uLL << 1),
-    RIDE_TYPE_FLAG_HAS_TRACK_COLOUR_SUPPORTS = (1uLL << 2),
-    RIDE_TYPE_FLAG_HAS_SINGLE_PIECE_STATION = (1uLL << 3), // Set by flat rides, tower rides and shops/stalls.
-    RIDE_TYPE_FLAG_HAS_LEAVE_WHEN_ANOTHER_VEHICLE_ARRIVES_AT_STATION = (1uLL << 4),
-    RIDE_TYPE_FLAG_CAN_SYNCHRONISE_ADJACENT_STATIONS = (1uLL << 5),
-    RIDE_TYPE_FLAG_TRACK_MUST_BE_ON_WATER = (1uLL << 6), // used only by boat Hire and submarine ride
-    RIDE_TYPE_FLAG_HAS_G_FORCES = (1uLL << 7),
-    RIDE_TYPE_FLAG_CANNOT_HAVE_GAPS = (1uLL << 8), // used by rides that can't have gaps, like those with a vertical tower, such
-                                                   // as the observation tower
-    RIDE_TYPE_FLAG_HAS_DATA_LOGGING = (1uLL << 9),
-    RIDE_TYPE_FLAG_HAS_DROPS = (1uLL << 10),
-    RIDE_TYPE_FLAG_NO_TEST_MODE = (1uLL << 11),
-    RIDE_TYPE_FLAG_TRACK_ELEMENTS_HAVE_TWO_VARIETIES = (1uLL << 12), // used by rides with two varieties, like the u and o
-                                                                     // shapes of the dinghy slide and the dry and submerged
-                                                                     // track of the water coaster
-    RIDE_TYPE_FLAG_NO_VEHICLES = (1uLL << 13),                       // used only by maze, spiral slide and shops
-    RIDE_TYPE_FLAG_HAS_LOAD_OPTIONS = (1uLL << 14),
-    RIDE_TYPE_FLAG_VEHICLE_IS_INTEGRAL = (1uLL << 16), // Set by flat rides where the vehicle is integral to the structure, like
-    // Merry-go-round and swinging ships. (Contrast with rides like dodgems.)
-    RIDE_TYPE_FLAG_IS_SHOP_OR_FACILITY = (1uLL << 17),
-    RIDE_TYPE_FLAG_TRACK_NO_WALLS = (1uLL << 18), // if set, wall scenery can not share a tile with the ride's track
-    RIDE_TYPE_FLAG_FLAT_RIDE = (1uLL << 19),
-    RIDE_TYPE_FLAG_PEEP_WILL_RIDE_AGAIN = (1uLL << 20), // whether or not guests will go on the ride again if they liked it
-                                                        // (this is
-    // usually applied to everything apart from transport rides)
-    RIDE_TYPE_FLAG_PEEP_SHOULD_GO_INSIDE_FACILITY = (1uLL << 21), // used by toilets and first aid to mark that peep should go
-                                                                  // inside the building (rather than 'buying' at the counter)
-    RIDE_TYPE_FLAG_IN_RIDE = (1uLL << 22),                        // peeps are "IN" (ride) rather than "ON" (ride)
-    RIDE_TYPE_FLAG_SELLS_FOOD = (1uLL << 23),
-    RIDE_TYPE_FLAG_SELLS_DRINKS = (1uLL << 24),
-    RIDE_TYPE_FLAG_IS_TOILET = (1uLL << 25),
-    RIDE_TYPE_FLAG_HAS_VEHICLE_COLOURS = (1uLL << 26), // whether or not vehicle colours can be set
-    RIDE_TYPE_FLAG_CHECK_FOR_STALLING = (1uLL << 27),
-    RIDE_TYPE_FLAG_HAS_TRACK = (1uLL << 28),
-    RIDE_TYPE_FLAG_ALLOW_EXTRA_TOWER_BASES = (1uLL << 29), // Only set by lift
-    RIDE_TYPE_FLAG_SUPPORTS_MULTIPLE_TRACK_COLOUR = (1uLL << 31),
-
-    RIDE_TYPE_FLAG_ALLOW_DOORS_ON_TRACK = (1uLL << 32),
-    RIDE_TYPE_FLAG_MUSIC_ON_DEFAULT = (1uLL << 33),
-    RIDE_TYPE_FLAG_ALLOW_MUSIC = (1uLL << 34),
-    RIDE_TYPE_FLAG_HAS_ALTERNATIVE_TRACK_TYPE = (1uLL << 35), // Used by the Flying RC, Lay-down RC, Multi-dimension RC
-    RIDE_TYPE_FLAG_PEEP_CHECK_GFORCES = (1uLL << 36),
-    RIDE_TYPE_FLAG_HAS_ENTRANCE_EXIT = (1uLL << 37),
-    RIDE_TYPE_FLAG_ALLOW_MORE_VEHICLES_THAN_STATION_FITS = (1uLL << 38),
-    RIDE_TYPE_FLAG_HAS_AIR_TIME = (1uLL << 39),
-    RIDE_TYPE_FLAG_SINGLE_SESSION = (1uLL << 40),
-    RIDE_TYPE_FLAG_ALLOW_MULTIPLE_CIRCUITS = (1uLL << 41),
-    RIDE_TYPE_FLAG_ALLOW_CABLE_LIFT_HILL = (1uLL << 42),
-    RIDE_TYPE_FLAG_SHOW_IN_TRACK_DESIGNER = (1uLL << 43),
-    RIDE_TYPE_FLAG_TRANSPORT_RIDE = (1uLL << 44),
-    RIDE_TYPE_FLAG_INTERESTING_TO_LOOK_AT = (1uLL << 45),
-    RIDE_TYPE_FLAG_SLIGHTLY_INTERESTING_TO_LOOK_AT = (1uLL << 46),
-    RIDE_TYPE_FLAG_START_CONSTRUCTION_INVERTED = (1uLL << 47), // This is only set on the Flying RC and its alternative type.
-
-    RIDE_TYPE_FLAG_LIST_VEHICLES_SEPARATELY = (1uLL << 48),
-    RIDE_TYPE_FLAG_SUPPORTS_LEVEL_CROSSINGS = (1uLL << 49),
-    RIDE_TYPE_FLAG_IS_SUSPENDED = (1uLL << 50),
-    RIDE_TYPE_FLAG_HAS_LANDSCAPE_DOORS = (1uLL << 51),
-    RIDE_TYPE_FLAG_UP_INCLINE_REQUIRES_LIFT = (1uLL << 52),
-    RIDE_TYPE_FLAG_PEEP_CAN_USE_UMBRELLA = (1uLL << 53),
-    RIDE_TYPE_FLAG_IS_CASH_MACHINE = (1uLL << 54),
-    RIDE_TYPE_FLAG_HAS_ONE_STATION = (1uLL << 55),
-    RIDE_TYPE_FLAG_HAS_SEAT_ROTATION = (1uLL << 56),
-    RIDE_TYPE_FLAG_IS_FIRST_AID = (1uLL << 57),
-    RIDE_TYPE_FLAG_IS_MAZE = (1uLL << 58),
-    RIDE_TYPE_FLAG_IS_SPIRAL_SLIDE = (1uLL << 59),
-    RIDE_TYPE_FLAG_ALLOW_REVERSED_TRAINS = (1uLL << 60),
-};
-
-// Set on ride types that have a main colour, additional colour and support colour.
-constexpr uint64_t RIDE_TYPE_FLAGS_TRACK_HAS_3_COLOURS = RIDE_TYPE_FLAG_HAS_TRACK_COLOUR_MAIN
-    | RIDE_TYPE_FLAG_HAS_TRACK_COLOUR_ADDITIONAL | RIDE_TYPE_FLAG_HAS_TRACK_COLOUR_SUPPORTS;
-// Set on _all_ roller coaster ride types, including the _ALT types used for constructing upside down.
-constexpr uint64_t RIDE_TYPE_FLAGS_COMMON_COASTER = RIDE_TYPE_FLAG_HAS_G_FORCES | RIDE_TYPE_FLAG_HAS_DATA_LOGGING
-    | RIDE_TYPE_FLAG_HAS_DROPS | RIDE_TYPE_FLAG_HAS_LOAD_OPTIONS | RIDE_TYPE_FLAG_PEEP_WILL_RIDE_AGAIN
-    | RIDE_TYPE_FLAG_HAS_VEHICLE_COLOURS | RIDE_TYPE_FLAG_CHECK_FOR_STALLING | RIDE_TYPE_FLAG_HAS_TRACK
-    | RIDE_TYPE_FLAG_SUPPORTS_MULTIPLE_TRACK_COLOUR | RIDE_TYPE_FLAG_ALLOW_MUSIC | RIDE_TYPE_FLAG_INTERESTING_TO_LOOK_AT
-    | RIDE_TYPE_FLAG_CAN_SYNCHRONISE_ADJACENT_STATIONS;
-// Set on all roller coaster ride types, excluding the _ALT types used for constructing upside down.
-constexpr uint64_t RIDE_TYPE_FLAGS_COMMON_COASTER_NON_ALT = RIDE_TYPE_FLAG_SHOW_IN_TRACK_DESIGNER | RIDE_TYPE_FLAG_HAS_AIR_TIME
-    | RIDE_TYPE_FLAG_HAS_ENTRANCE_EXIT;
 
 // clang-format off
 constexpr RideComponentName RideComponentNames[] =
@@ -500,41 +582,41 @@ extern const CarEntry CableLiftVehicle;
 
 extern const uint16_t RideFilmLength[3];
 
-extern const StringId RideModeNames[static_cast<uint8_t>(RideMode::Count)];
+extern const StringId RideModeNames[EnumValue(RideMode::Count)];
 
 // clang-format off
 constexpr RideTypeDescriptor DummyRTD =
 {
-    SET_FIELD(AlternateType, RIDE_TYPE_NULL),
-    SET_FIELD(Category, RIDE_CATEGORY_NONE),
-    SET_FIELD(EnabledTrackPieces, {}),
-    SET_FIELD(ExtraTrackPieces, {}),
-    SET_FIELD(CoveredTrackPieces, {}),
-    SET_FIELD(StartTrackPiece, TrackElemType::EndStation),
-    SET_FIELD(TrackPaintFunction, nullptr),
-    SET_FIELD(Flags, 0),
-    SET_FIELD(RideModes, EnumsToFlags(RideMode::ContinuousCircuit)),
-    SET_FIELD(DefaultMode, RideMode::ContinuousCircuit),
-    SET_FIELD(OperatingSettings, { 0, 0, 0, 0, 0, 0 }),
-    SET_FIELD(Naming, { STR_UNKNOWN_RIDE, STR_RIDE_DESCRIPTION_UNKNOWN }),
-    SET_FIELD(NameConvention, { RideComponentType::Train, RideComponentType::Track, RideComponentType::Station }),
-    SET_FIELD(EnumName, "(INVALID)"),
-    SET_FIELD(AvailableBreakdowns, 0),
-    SET_FIELD(Heights, { 12, 64, 0, 0, }),
-    SET_FIELD(MaxMass, 255),
-    SET_FIELD(LiftData, { OpenRCT2::Audio::SoundId::Null, 5, 5 }),
-    SET_FIELD(RatingsMultipliers, { 0, 0, 0 }),
-    SET_FIELD(UpkeepCosts, { 50, 1, 0, 0, 0, 0 }),
-    SET_FIELD(BuildCosts, { 0.00_GBP, 0.00_GBP, 1 }),
-    SET_FIELD(DefaultPrices, { 20, 20 }),
-    SET_FIELD(DefaultMusic, MUSIC_OBJECT_GENTLE),
-    SET_FIELD(PhotoItem, ShopItem::Photo),
-    SET_FIELD(BonusValue, 0),
-    SET_FIELD(ColourPresets, DEFAULT_FLAT_RIDE_COLOUR_PRESET),
-    SET_FIELD(ColourPreview, { static_cast<uint32_t>(SPR_NONE), static_cast<uint32_t>(SPR_NONE) }),
-    SET_FIELD(ColourKey, RideColourKey::Ride),
-    SET_FIELD(Name, "invalid"),
-	SET_FIELD(RatingsData,
+    .Category = RIDE_CATEGORY_NONE,
+    .StartTrackPiece = OpenRCT2::TrackElemType::EndStation,
+    .TrackPaintFunctions = {},
+    .InvertedTrackPaintFunctions = {},
+    .Flags = 0,
+    .RideModes = EnumsToFlags(RideMode::ContinuousCircuit),
+    .DefaultMode = RideMode::ContinuousCircuit,
+    .OperatingSettings = {},
+    .TrackSpeedSettings = {},
+    .BoosterSettings = {},
+    .LegacyBoosterSettings = {},
+    .Naming = { STR_UNKNOWN_RIDE, STR_RIDE_DESCRIPTION_UNKNOWN },
+    .NameConvention = { RideComponentType::Train, RideComponentType::Track, RideComponentType::Station },
+    .EnumName = "(INVALID)",
+    .AvailableBreakdowns = 0,
+    .Heights = { 12, 64, 0, 0, },
+    .MaxMass = 255,
+    .LiftData = { OpenRCT2::Audio::SoundId::Null, 5, 5 },
+    .RatingsMultipliers = { 0, 0, 0 },
+    .UpkeepCosts = { 50, 1, 0, 0, 0, 0 },
+    .BuildCosts = { 0.00_GBP, 0.00_GBP, 1 },
+    .DefaultPrices = { 20, 20 },
+    .DefaultMusic = MUSIC_OBJECT_GENTLE,
+    .PhotoItem = ShopItem::Photo,
+    .BonusValue = 0,
+    .ColourPresets = DEFAULT_FLAT_RIDE_COLOUR_PRESET,
+    .ColourPreview = { kSpriteIdNull, kSpriteIdNull },
+    .ColourKey = RideColourKey::Ride,
+    .Name = "invalid",
+	.RatingsData =
     {
         RatingsCalculationType::FlatRide,
         { RIDE_RATING(1, 00), RIDE_RATING(1, 00), RIDE_RATING(1, 00) },
@@ -544,14 +626,14 @@ constexpr RideTypeDescriptor DummyRTD =
         {
             { RatingsModifierType::NoModifier, 0, 0, 0, 0 },
         },
-    }),
-    SET_FIELD(UpdateRotating, UpdateRotatingDefault),
-    SET_FIELD(LightFXAddLightsMagicVehicle, nullptr),
-    SET_FIELD(StartRideMusic, OpenRCT2::RideAudio::DefaultStartRideMusicChannel),
-    SET_FIELD(DesignCreateMode, TrackDesignCreateMode::Default),
-    SET_FIELD(MusicUpdateFunction, DefaultMusicUpdate),
-    SET_FIELD(Classification, RideClassification::Ride),
-    SET_FIELD(UpdateLeaveEntrance, PeepUpdateRideLeaveEntranceDefault),
+    },
+    .UpdateRotating = UpdateRotatingDefault,
+    .LightFXAddLightsMagicVehicle = nullptr,
+    .StartRideMusic = OpenRCT2::RideAudio::DefaultStartRideMusicChannel,
+    .DesignCreateMode = TrackDesignCreateMode::Default,
+    .MusicUpdateFunction = DefaultMusicUpdate,
+    .Classification = RideClassification::Ride,
+    .UpdateLeaveEntrance = PeepUpdateRideLeaveEntranceDefault,
 };
 // clang-format on
 
@@ -568,6 +650,9 @@ constexpr bool RideTypeIsValid(ObjectEntryIndex rideType)
     return rideType < std::size(RideTypeDescriptors);
 }
 
-bool IsTrackEnabled(int32_t trackFlagIndex);
-void UpdateEnabledRidePieces(ride_type_t rideType);
-void UpdateDisabledRidePieces(const RideTrackGroup& res);
+bool IsTrackEnabled(TrackGroup trackGroup);
+void UpdateEnabledRideGroups(TrackDrawerDescriptor trackDrawerDescriptor);
+void UpdateDisabledRideGroups(const RideTrackGroups& res);
+
+TrackDrawerDescriptor getTrackDrawerDescriptor(const RideTypeDescriptor& rtd, bool isInverted);
+TrackDrawerEntry getTrackDrawerEntry(const RideTypeDescriptor& rtd, bool isInverted = false, bool isCovered = false);

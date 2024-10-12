@@ -89,7 +89,7 @@
     <ClCompile Include="ImageImporterTests.cpp" />
     <ClCompile Include="IniReaderTest.cpp" />
     <ClCompile Include="IniWriterTest.cpp" />
-    <ClCompile Include="Localisation.cpp" />
+    <ClCompile Include="LocalisationTest.cpp" />
     <ClCompile Include="MultiLaunch.cpp" />
     <ClCompile Include="ReplayTests.cpp" />
     <ClCompile Include="PlayTests.cpp" />
@@ -97,6 +97,7 @@
     <ClCompile Include="RideRatings.cpp" />
     <ClCompile Include="S6ImportExportTests.cpp" />
     <ClCompile Include="SawyerCodingTest.cpp" />
+    <ClCompile Include="ScenarioPatcherTests.cpp" />
     <ClCompile Include="TestData.cpp" />
     <ClCompile Include="tests.cpp" />
     <ClCompile Include="StringTest.cpp" />

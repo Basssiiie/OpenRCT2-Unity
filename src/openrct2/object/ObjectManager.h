@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "../common.h"
 #include "../object/Object.h"
 
 #include <memory>
@@ -26,26 +25,26 @@ struct IObjectManager
     {
     }
 
-    virtual Object* GetLoadedObject(ObjectType objectType, size_t index) abstract;
-    virtual Object* GetLoadedObject(const ObjectEntryDescriptor& entry) abstract;
-    virtual ObjectEntryIndex GetLoadedObjectEntryIndex(std::string_view identifier) abstract;
-    virtual ObjectEntryIndex GetLoadedObjectEntryIndex(const ObjectEntryDescriptor& descriptor) abstract;
-    virtual ObjectEntryIndex GetLoadedObjectEntryIndex(const Object* object) abstract;
-    virtual ObjectList GetLoadedObjects() abstract;
+    virtual Object* GetLoadedObject(ObjectType objectType, size_t index) = 0;
+    virtual Object* GetLoadedObject(const ObjectEntryDescriptor& entry) = 0;
+    virtual ObjectEntryIndex GetLoadedObjectEntryIndex(std::string_view identifier) = 0;
+    virtual ObjectEntryIndex GetLoadedObjectEntryIndex(const ObjectEntryDescriptor& descriptor) = 0;
+    virtual ObjectEntryIndex GetLoadedObjectEntryIndex(const Object* object) = 0;
+    virtual ObjectList GetLoadedObjects() = 0;
 
-    virtual Object* LoadObject(std::string_view identifier) abstract;
-    virtual Object* LoadObject(const RCTObjectEntry* entry) abstract;
-    virtual Object* LoadObject(const ObjectEntryDescriptor& descriptor) abstract;
-    virtual Object* LoadObject(const ObjectEntryDescriptor& descriptor, ObjectEntryIndex slot) abstract;
-    virtual void LoadObjects(const ObjectList& entries) abstract;
-    virtual void UnloadObjects(const std::vector<ObjectEntryDescriptor>& entries) abstract;
-    virtual void UnloadAllTransient() abstract;
-    virtual void UnloadAll() abstract;
+    virtual Object* LoadObject(std::string_view identifier) = 0;
+    virtual Object* LoadObject(const RCTObjectEntry* entry) = 0;
+    virtual Object* LoadObject(const ObjectEntryDescriptor& descriptor) = 0;
+    virtual Object* LoadObject(const ObjectEntryDescriptor& descriptor, ObjectEntryIndex slot) = 0;
+    virtual void LoadObjects(const ObjectList& entries, const bool reportProgress = false) = 0;
+    virtual void UnloadObjects(const std::vector<ObjectEntryDescriptor>& entries) = 0;
+    virtual void UnloadAllTransient() = 0;
+    virtual void UnloadAll() = 0;
 
-    virtual void ResetObjects() abstract;
+    virtual void ResetObjects() = 0;
 
-    virtual std::vector<const ObjectRepositoryItem*> GetPackableObjects() abstract;
-    virtual const std::vector<ObjectEntryIndex>& GetAllRideEntries(ride_type_t rideType) abstract;
+    virtual std::vector<const ObjectRepositoryItem*> GetPackableObjects() = 0;
+    virtual const std::vector<ObjectEntryIndex>& GetAllRideEntries(ride_type_t rideType) = 0;
 };
 
 [[nodiscard]] std::unique_ptr<IObjectManager> CreateObjectManager(IObjectRepository& objectRepository);

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,10 +10,14 @@
 #include "ParkSetEntranceFeeAction.h"
 
 #include "../Cheats.h"
+#include "../Diagnostic.h"
+#include "../GameState.h"
 #include "../core/MemoryStream.h"
 #include "../interface/Window.h"
 #include "../localisation/StringIds.h"
 #include "../world/Park.h"
+
+using namespace OpenRCT2;
 
 ParkSetEntranceFeeAction::ParkSetEntranceFeeAction(money64 fee)
     : _fee(fee)
@@ -39,22 +43,29 @@ void ParkSetEntranceFeeAction::Serialise(DataSerialiser& stream)
 
 GameActions::Result ParkSetEntranceFeeAction::Query() const
 {
-    bool noMoney = (gParkFlags & PARK_FLAGS_NO_MONEY) != 0;
-    bool forceFreeEntry = !ParkEntranceFeeUnlocked();
-    if (noMoney || forceFreeEntry)
+    if ((GetGameState().Park.Flags & PARK_FLAGS_NO_MONEY) != 0)
     {
-        return GameActions::Result(GameActions::Status::Disallowed, STR_NONE, STR_NONE);
+        LOG_ERROR("Can't set park entrance fee because the park has no money");
+        return GameActions::Result(GameActions::Status::Disallowed, STR_ERR_CANT_CHANGE_PARK_ENTRANCE_FEE, STR_NONE);
     }
-    if (_fee < 0.00_GBP || _fee > MAX_ENTRANCE_FEE)
+    else if (!Park::EntranceFeeUnlocked())
     {
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Park entrance fee is locked");
+        return GameActions::Result(GameActions::Status::Disallowed, STR_ERR_CANT_CHANGE_PARK_ENTRANCE_FEE, STR_NONE);
     }
+    else if (_fee < 0.00_GBP || _fee > MAX_ENTRANCE_FEE)
+    {
+        LOG_ERROR("Invalid park entrance fee %d", _fee);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_VALUE_OUT_OF_RANGE);
+    }
+
     return GameActions::Result();
 }
 
 GameActions::Result ParkSetEntranceFeeAction::Execute() const
 {
-    gParkEntranceFee = _fee;
+    GetGameState().Park.EntranceFee = _fee;
     WindowInvalidateByClass(WindowClass::ParkInformation);
     return GameActions::Result();
 }

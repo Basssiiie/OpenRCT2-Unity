@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,14 +9,11 @@
 
 #pragma once
 
-#include "../common.h"
-#include "../core/String.hpp"
+#include "../core/StringTypes.h"
 
-#include <string>
-#include <string_view>
 #include <vector>
 
-namespace File
+namespace OpenRCT2::File
 {
     bool Exists(u8string_view path);
     bool Copy(u8string_view srcPath, u8string_view dstPath, bool overwrite);
@@ -28,4 +25,4 @@ namespace File
     void WriteAllBytes(u8string_view path, const void* buffer, size_t length);
     uint64_t GetLastModified(u8string_view path);
     uint64_t GetSize(u8string_view path);
-} // namespace File
+} // namespace OpenRCT2::File

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -26,14 +26,16 @@
 #include "Scenery.h"
 #include "Surface.h"
 
+#include <cassert>
+
 uint8_t SmallSceneryElement::GetSceneryQuadrant() const
 {
-    return (this->Type & TILE_ELEMENT_QUADRANT_MASK) >> 6;
+    return (this->Type & kTileElementQuadrantMask) >> 6;
 }
 
 void SmallSceneryElement::SetSceneryQuadrant(uint8_t newQuadrant)
 {
-    Type &= ~TILE_ELEMENT_QUADRANT_MASK;
+    Type &= ~kTileElementQuadrantMask;
     Type |= (newQuadrant << 6);
 }
 
@@ -67,7 +69,7 @@ void SmallSceneryElement::IncreaseAge(const CoordsXY& sceneryPos)
         uint8_t newAge = age++;
 
         // Only invalidate tiles when scenery crosses the withering thresholds, and can be withered.
-        if (newAge == SCENERY_WITHER_AGE_THRESHOLD_1 || newAge == SCENERY_WITHER_AGE_THRESHOLD_2)
+        if (newAge == kSceneryWitherAgeThreshold1 || newAge == kSceneryWitherAgeThreshold2)
         {
             auto* sceneryEntry = GetEntry();
 

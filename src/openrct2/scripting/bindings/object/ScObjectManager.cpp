@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -22,6 +22,7 @@ using namespace OpenRCT2::Scripting;
 void ScObjectManager::Register(duk_context* ctx)
 {
     dukglue_register_property(ctx, &ScObjectManager::installedObjects_get, nullptr, "installedObjects");
+    dukglue_register_method(ctx, &ScObjectManager::installedObject_get, "getInstalledObject");
     dukglue_register_method(ctx, &ScObjectManager::load, "load");
     dukglue_register_method(ctx, &ScObjectManager::unload, "unload");
     dukglue_register_method(ctx, &ScObjectManager::getObject, "getObject");
@@ -42,6 +43,14 @@ std::vector<std::shared_ptr<ScInstalledObject>> ScObjectManager::installedObject
     }
 
     return result;
+}
+
+std::shared_ptr<ScInstalledObject> ScObjectManager::installedObject_get(const std::string& identifier) const
+{
+    auto context = GetContext();
+    auto& objectRepository = context->GetObjectRepository();
+    auto object = objectRepository.FindObject(identifier);
+    return object != nullptr ? std::make_shared<ScInstalledObject>(object->Id) : nullptr;
 }
 
 DukValue ScObjectManager::load(const DukValue& p1, const DukValue& p2)
@@ -105,8 +114,8 @@ DukValue ScObjectManager::load(const DukValue& p1, const DukValue& p2)
                 if (p2.type() != DukValue::NUMBER)
                     throw DukException() << "Expected number for 'index'.";
 
-                auto index = static_cast<size_t>(p2.as_int());
-                auto limit = GetObjectTypeLimit(installedObject->Type);
+                auto index = static_cast<size_t>(p2.as_uint());
+                auto limit = getObjectTypeLimit(installedObject->Type);
                 if (index < limit)
                 {
                     auto loadedObject = objectManager.GetLoadedObject(installedObject->Type, index);
@@ -155,7 +164,7 @@ void ScObjectManager::unload(const DukValue& p1, const DukValue& p2)
             if (p2.type() != DukValue::NUMBER)
                 throw DukException() << "'index' is invalid.";
 
-            auto objIndex = p2.as_int();
+            auto objIndex = p2.as_uint();
             auto obj = objectManager.GetLoadedObject(*objType, objIndex);
             if (obj != nullptr)
             {
@@ -214,8 +223,8 @@ std::vector<DukValue> ScObjectManager::getAllObjects(const std::string& typez) c
     auto type = ScObject::StringToObjectType(typez);
     if (type)
     {
-        auto count = object_entry_group_counts[EnumValue(*type)];
-        for (int32_t i = 0; i < count; i++)
+        auto count = getObjectEntryGroupCount(*type);
+        for (auto i = 0u; i < count; i++)
         {
             auto obj = objManager.GetLoadedObject(*type, i);
             if (obj != nullptr)

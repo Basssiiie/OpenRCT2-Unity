@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,13 +9,12 @@
 
 #pragma once
 
-#include "common.h"
-#include "core/String.hpp"
+#include "core/StringTypes.h"
 #include "interface/WindowClasses.h"
+#include "localisation/StringIdType.h"
 #include "world/Location.hpp"
 
 #include <memory>
-#include <string>
 
 struct IObjectManager;
 struct IObjectRepository;
@@ -81,10 +80,10 @@ class NetworkBase;
 namespace OpenRCT2
 {
     class AssetPackManager;
-    class GameState;
 
     struct IPlatformEnvironment;
     struct IReplayManager;
+    struct IScene;
 
     namespace Audio
     {
@@ -123,47 +122,60 @@ namespace OpenRCT2
     {
         virtual ~IContext() = default;
 
-        [[nodiscard]] virtual std::shared_ptr<Audio::IAudioContext> GetAudioContext() abstract;
-        [[nodiscard]] virtual std::shared_ptr<Ui::IUiContext> GetUiContext() abstract;
-        virtual GameState* GetGameState() abstract;
-        [[nodiscard]] virtual std::shared_ptr<IPlatformEnvironment> GetPlatformEnvironment() abstract;
-        virtual Localisation::LocalisationService& GetLocalisationService() abstract;
-        virtual IObjectManager& GetObjectManager() abstract;
-        virtual IObjectRepository& GetObjectRepository() abstract;
+        [[nodiscard]] virtual std::shared_ptr<Audio::IAudioContext> GetAudioContext() = 0;
+        [[nodiscard]] virtual std::shared_ptr<Ui::IUiContext> GetUiContext() = 0;
+        [[nodiscard]] virtual std::shared_ptr<IPlatformEnvironment> GetPlatformEnvironment() = 0;
+        virtual Localisation::LocalisationService& GetLocalisationService() = 0;
+        virtual IObjectManager& GetObjectManager() = 0;
+        virtual IObjectRepository& GetObjectRepository() = 0;
 #ifdef ENABLE_SCRIPTING
-        virtual Scripting::ScriptEngine& GetScriptEngine() abstract;
+        virtual Scripting::ScriptEngine& GetScriptEngine() = 0;
 #endif
-        virtual ITrackDesignRepository* GetTrackDesignRepository() abstract;
-        virtual IScenarioRepository* GetScenarioRepository() abstract;
-        virtual IReplayManager* GetReplayManager() abstract;
-        virtual AssetPackManager* GetAssetPackManager() abstract;
-        virtual IGameStateSnapshots* GetGameStateSnapshots() abstract;
-        virtual DrawingEngine GetDrawingEngineType() abstract;
-        virtual Drawing::IDrawingEngine* GetDrawingEngine() abstract;
-        virtual Paint::Painter* GetPainter() abstract;
+        virtual ITrackDesignRepository* GetTrackDesignRepository() = 0;
+        virtual IScenarioRepository* GetScenarioRepository() = 0;
+        virtual IReplayManager* GetReplayManager() = 0;
+        virtual AssetPackManager* GetAssetPackManager() = 0;
+        virtual IGameStateSnapshots* GetGameStateSnapshots() = 0;
+        virtual DrawingEngine GetDrawingEngineType() = 0;
+        virtual Drawing::IDrawingEngine* GetDrawingEngine() = 0;
+        virtual Paint::Painter* GetPainter() = 0;
 #ifndef DISABLE_NETWORK
-        virtual NetworkBase& GetNetwork() abstract;
+        virtual NetworkBase& GetNetwork() = 0;
 #endif
-        virtual int32_t RunOpenRCT2(int argc, const char** argv) abstract;
 
-        virtual bool Initialise() abstract;
-        virtual void InitialiseDrawingEngine() abstract;
-        virtual void DisposeDrawingEngine() abstract;
-        virtual bool LoadParkFromFile(
-            const u8string& path, bool loadTitleScreenOnFail = false, bool asScenario = false) abstract;
+        virtual IScene* GetPreloaderScene() = 0;
+        virtual IScene* GetIntroScene() = 0;
+        virtual IScene* GetTitleScene() = 0;
+        virtual IScene* GetGameScene() = 0;
+        virtual IScene* GetEditorScene() = 0;
+
+        virtual IScene* GetActiveScene() = 0;
+        virtual void SetActiveScene(IScene* screen) = 0;
+
+        virtual int32_t RunOpenRCT2(int argc, const char** argv) = 0;
+
+        virtual bool Initialise() = 0;
+        virtual void InitialiseDrawingEngine() = 0;
+        virtual void DisposeDrawingEngine() = 0;
+
+        virtual void OpenProgress(StringId captionStringId) = 0;
+        virtual void SetProgress(uint32_t currentProgress, uint32_t totalCount, StringId format = STR_NONE) = 0;
+        virtual void CloseProgress() = 0;
+
+        virtual bool LoadParkFromFile(const u8string& path, bool loadTitleScreenOnFail = false, bool asScenario = false) = 0;
         virtual bool LoadParkFromStream(
-            IStream* stream, const std::string& path, bool loadTitleScreenFirstOnFail = false,
-            bool asScenario = false) abstract;
-        virtual void WriteLine(const std::string& s) abstract;
-        virtual void WriteErrorLine(const std::string& s) abstract;
-        virtual void Finish() abstract;
-        virtual void Quit() abstract;
+            IStream* stream, const std::string& path, bool loadTitleScreenFirstOnFail = false, bool asScenario = false)
+            = 0;
+        virtual void WriteLine(const std::string& s) = 0;
+        virtual void WriteErrorLine(const std::string& s) = 0;
+        virtual void Finish() = 0;
+        virtual void Quit() = 0;
 
-        virtual bool HasNewVersionInfo() const abstract;
-        virtual const NewVersionInfo* GetNewVersionInfo() const abstract;
+        virtual bool HasNewVersionInfo() const = 0;
+        virtual const NewVersionInfo* GetNewVersionInfo() const = 0;
 
-        virtual void SetTimeScale(float newScale) abstract;
-        virtual float GetTimeScale() const abstract;
+        virtual void SetTimeScale(float newScale) = 0;
+        virtual float GetTimeScale() const = 0;
     };
 
     [[nodiscard]] std::unique_ptr<IContext> CreateContext();
@@ -176,17 +188,17 @@ namespace OpenRCT2
 namespace
 {
     // The number of logical update / ticks per second.
-    constexpr uint32_t GAME_UPDATE_FPS = 40;
+    constexpr uint32_t kGameUpdateFPS = 40;
     // The maximum amount of updates in case rendering is slower
-    constexpr uint32_t GAME_MAX_UPDATES = 4;
+    constexpr uint32_t kGameMaxUpdates = 4;
     // The game update interval in milliseconds, (1000 / 40fps) = 25ms
-    constexpr float GAME_UPDATE_TIME_MS = 1.0f / GAME_UPDATE_FPS;
+    constexpr float kGameUpdateTimeMS = 1.0f / kGameUpdateFPS;
     // The maximum threshold to advance.
-    constexpr float GAME_UPDATE_MAX_THRESHOLD = GAME_UPDATE_TIME_MS * GAME_MAX_UPDATES;
+    constexpr float kGameUpdateMaxThreshold = kGameUpdateTimeMS * kGameMaxUpdates;
 }; // namespace
 
-constexpr float GAME_MIN_TIME_SCALE = 0.1f;
-constexpr float GAME_MAX_TIME_SCALE = 5.0f;
+constexpr float kGameMinTimeScale = 0.1f;
+constexpr float kGameMaxTimeScale = 5.0f;
 
 void ContextInit();
 void ContextSetCurrentCursor(CursorID cursor);
@@ -212,11 +224,10 @@ void ContextSetCursorTrap(bool value);
 WindowBase* ContextOpenWindow(WindowClass wc);
 WindowBase* ContextOpenDetailWindow(uint8_t type, int32_t id);
 WindowBase* ContextOpenWindowView(uint8_t view);
-WindowBase* ContextShowError(StringId title, StringId message, const class Formatter& args);
+WindowBase* ContextShowError(StringId title, StringId message, const class Formatter& args, bool autoClose = false);
 WindowBase* ContextOpenIntent(Intent* intent);
 void ContextBroadcastIntent(Intent* intent);
 void ContextForceCloseWindowByClass(WindowClass wc);
-void ContextUpdateMapTooltip();
 void ContextHandleInput();
 void ContextInputHandleKeyboard(bool isTitle);
 void ContextQuit();

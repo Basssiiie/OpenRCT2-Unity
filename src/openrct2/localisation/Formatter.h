@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,9 +10,10 @@
 #pragma once
 
 #include "../Identifiers.h"
-#include "../common.h"
 #include "../core/Guard.hpp"
-#include "../core/String.hpp"
+#include "../core/Money.hpp"
+#include "../core/StringTypes.h"
+#include "StringIdType.h"
 
 #include <array>
 #include <cstring>
@@ -61,7 +62,7 @@ public:
     void Increment(size_t count)
     {
         auto finalCount = NumBytes() + count;
-        Guard::Assert(finalCount < Buffer.size(), "Increment is greater than buffer size!");
+        OpenRCT2::Guard::Assert(finalCount < Buffer.size(), "Increment is greater than buffer size!");
         if (finalCount < Buffer.size())
         {
             CurrentBuf += count;

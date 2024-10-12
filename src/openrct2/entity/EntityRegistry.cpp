@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,13 +9,16 @@
 
 #include "EntityRegistry.h"
 
+#include "../Diagnostic.h"
 #include "../Game.h"
+#include "../GameState.h"
 #include "../core/Algorithm.hpp"
 #include "../core/ChecksumStream.h"
 #include "../core/Crypt.h"
 #include "../core/DataSerialiser.h"
 #include "../core/Guard.hpp"
 #include "../core/MemoryStream.h"
+#include "../core/String.hpp"
 #include "../entity/Peep.h"
 #include "../entity/Staff.h"
 #include "../interface/Viewport.h"
@@ -30,29 +33,20 @@
 #include "MoneyEffect.h"
 #include "Particle.h"
 
-#include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <iterator>
 #include <numeric>
 #include <vector>
 
-union Entity
-{
-    uint8_t Pad00[0x200];
-    EntityBase base;
-    Entity()
-        : Pad00()
-    {
-    }
-};
+using namespace OpenRCT2;
 
-static Entity _entities[MAX_ENTITIES]{};
 static std::array<std::list<EntityId>, EnumValue(EntityType::Count)> gEntityLists;
 static std::vector<EntityId> _freeIdList;
 
 static bool _entityFlashingList[MAX_ENTITIES];
 
-constexpr const uint32_t SPATIAL_INDEX_SIZE = (MAXIMUM_MAP_SIZE_TECHNICAL * MAXIMUM_MAP_SIZE_TECHNICAL) + 1;
+constexpr const uint32_t SPATIAL_INDEX_SIZE = (kMaximumMapSizeTechnical * kMaximumMapSizeTechnical) + 1;
 constexpr uint32_t SPATIAL_INDEX_LOCATION_NULL = SPATIAL_INDEX_SIZE - 1;
 
 static std::array<std::vector<EntityId>, SPATIAL_INDEX_SIZE> gEntitySpatialIndex;
@@ -65,13 +59,13 @@ static constexpr size_t GetSpatialIndexOffset(const CoordsXY& loc)
         return SPATIAL_INDEX_LOCATION_NULL;
 
     // NOTE: The input coordinate is rotated and can have negative components.
-    const auto tileX = std::abs(loc.x) / COORDS_XY_STEP;
-    const auto tileY = std::abs(loc.y) / COORDS_XY_STEP;
+    const auto tileX = std::abs(loc.x) / kCoordsXYStep;
+    const auto tileY = std::abs(loc.y) / kCoordsXYStep;
 
-    if (tileX >= MAXIMUM_MAP_SIZE_TECHNICAL || tileY >= MAXIMUM_MAP_SIZE_TECHNICAL)
+    if (tileX >= kMaximumMapSizeTechnical || tileY >= kMaximumMapSizeTechnical)
         return SPATIAL_INDEX_LOCATION_NULL;
 
-    return tileX * MAXIMUM_MAP_SIZE_TECHNICAL + tileY;
+    return tileX * kMaximumMapSizeTechnical + tileY;
 }
 
 constexpr bool EntityTypeIsMiscEntity(const EntityType type)
@@ -105,23 +99,14 @@ uint16_t GetNumFreeEntities()
 
 std::string EntitiesChecksum::ToString() const
 {
-    std::string result;
-
-    result.reserve(raw.size() * 2);
-    for (auto b : raw)
-    {
-        char buf[3];
-        snprintf(buf, 3, "%02x", static_cast<int32_t>(b));
-        result.append(buf);
-    }
-
-    return result;
+    return String::StringFromHex(raw);
 }
 
 EntityBase* TryGetEntity(EntityId entityIndex)
 {
+    auto& gameState = GetGameState();
     const auto idx = entityIndex.ToUnderlying();
-    return idx >= MAX_ENTITIES ? nullptr : &_entities[idx].base;
+    return idx >= MAX_ENTITIES ? nullptr : &gameState.Entities[idx].base;
 }
 
 EntityBase* GetEntity(EntityId entityIndex)
@@ -171,8 +156,6 @@ const std::list<EntityId>& GetEntityList(const EntityType id)
  */
 void ResetAllEntities()
 {
-    gSavedAge = 0;
-
     // Free all associated Entity pointers prior to zeroing memory
     for (int32_t i = 0; i < MAX_ENTITIES; ++i)
     {
@@ -184,7 +167,8 @@ void ResetAllEntities()
         FreeEntity(*spr);
     }
 
-    std::fill(std::begin(_entities), std::end(_entities), Entity());
+    auto& gameState = GetGameState();
+    std::fill(std::begin(gameState.Entities), std::end(gameState.Entities), Entity_t());
     OpenRCT2::RideUse::GetHistory().Clear();
     OpenRCT2::RideUse::GetTypeHistory().Clear();
     for (int32_t i = 0; i < MAX_ENTITIES; ++i)
@@ -268,14 +252,15 @@ static void EntityReset(EntityBase* entity)
     auto entityIndex = entity->Id;
     _entityFlashingList[entityIndex.ToUnderlying()] = false;
 
-    Entity* spr = reinterpret_cast<Entity*>(entity);
-    *spr = Entity();
+    Entity_t* tempEntity = reinterpret_cast<Entity_t*>(entity);
+    *tempEntity = Entity_t();
 
     entity->Id = entityIndex;
     entity->Type = EntityType::Null;
 }
 
-static constexpr uint16_t MAX_MISC_SPRITES = 300;
+static constexpr uint16_t MAX_MISC_SPRITES = 1600;
+
 static void AddToEntityList(EntityBase* entity)
 {
     auto& list = gEntityLists[EnumValue(entity->Type)];
@@ -320,15 +305,15 @@ static void PrepareNewEntity(EntityBase* base, const EntityType type)
     base->Type = type;
     AddToEntityList(base);
 
-    base->x = LOCATION_NULL;
-    base->y = LOCATION_NULL;
+    base->x = kLocationNull;
+    base->y = kLocationNull;
     base->z = 0;
     base->SpriteData.Width = 0x10;
     base->SpriteData.HeightMin = 0x14;
     base->SpriteData.HeightMax = 0x8;
     base->SpriteData.SpriteRect = {};
 
-    EntitySpatialInsert(base, { LOCATION_NULL, 0 });
+    EntitySpatialInsert(base, { kLocationNull, 0 });
 }
 
 EntityBase* CreateEntity(EntityType type)
@@ -341,11 +326,14 @@ EntityBase* CreateEntity(EntityType type)
 
     if (EntityTypeIsMiscEntity(type))
     {
-        // Misc sprites are commonly used for effects, if there are less than MAX_MISC_SPRITES
-        // free it will fail to keep slots for more relevant sprites.
-        // Also there can't be more than MAX_MISC_SPRITES sprites in this list.
-        uint16_t miscSlotsRemaining = MAX_MISC_SPRITES - GetMiscEntityCount();
-        if (miscSlotsRemaining >= _freeIdList.size())
+        // Misc sprites are commonly used for effects, give other entity types higher priority.
+        if (GetMiscEntityCount() >= MAX_MISC_SPRITES)
+        {
+            return nullptr;
+        }
+
+        // If there are less than MAX_MISC_SPRITES free slots, ensure other entities can be created.
+        if (_freeIdList.size() < MAX_MISC_SPRITES)
         {
             return nullptr;
         }
@@ -409,6 +397,11 @@ void UpdateAllMiscEntities()
         Balloon, Duck>();
 }
 
+void UpdateMoneyEffect()
+{
+    MiscUpdateAllTypes<MoneyEffect>();
+}
+
 // Performs a search to ensure that insert keeps next_in_quadrant in sprite_index order
 static void EntitySpatialInsert(EntityBase* entity, const CoordsXY& newLoc)
 {
@@ -447,7 +440,7 @@ static void EntitySpatialMove(EntityBase* entity, const CoordsXY& newLoc)
 
 void EntityBase::MoveTo(const CoordsXYZ& newLocation)
 {
-    if (x != LOCATION_NULL)
+    if (x != kLocationNull)
     {
         // Invalidate old position.
         Invalidate();
@@ -456,12 +449,12 @@ void EntityBase::MoveTo(const CoordsXYZ& newLocation)
     auto loc = newLocation;
     if (!MapIsLocationValid(loc))
     {
-        loc.x = LOCATION_NULL;
+        loc.x = kLocationNull;
     }
 
     EntitySpatialMove(this, loc);
 
-    if (loc.x == LOCATION_NULL)
+    if (loc.x == kLocationNull)
     {
         x = loc.x;
         y = loc.y;

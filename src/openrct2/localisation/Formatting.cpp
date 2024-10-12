@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,10 +9,17 @@
 
 #include "Formatting.h"
 
+#include "../Context.h"
+#include "../Diagnostic.h"
 #include "../config/Config.h"
+#include "../core/String.hpp"
+#include "../object/ObjectManager.h"
+#include "../object/PeepNamesObject.h"
 #include "../util/Util.h"
+#include "Currency.h"
+#include "FormatCodes.h"
 #include "Formatter.h"
-#include "Localisation.h"
+#include "Localisation.Date.h"
 #include "StringIds.h"
 
 #include <cmath>
@@ -20,7 +27,7 @@
 
 namespace OpenRCT2
 {
-    static void FormatMonthYear(FormatBuffer& ss, int32_t month, int32_t year);
+    static void FormatMonthYear(FormatBuffer& ss, int32_t month, int32_t year, bool inSentence);
 
     static std::optional<int32_t> ParseNumericToken(std::string_view s)
     {
@@ -284,22 +291,29 @@ namespace OpenRCT2
     {
         if (IsRealNameStringId(id))
         {
-            auto realNameIndex = id - REAL_NAME_START;
-            ss << real_names[realNameIndex % std::size(real_names)];
-            ss << ' ';
-            ss << real_name_initials[(realNameIndex >> 10) % std::size(real_name_initials)];
-            ss << '.';
+            auto& objManager = GetContext()->GetObjectManager();
+            auto* peepNamesObj = static_cast<PeepNamesObject*>(objManager.GetLoadedObject(ObjectType::PeepNames, 0));
+            if (peepNamesObj != nullptr)
+            {
+                auto realNameIndex = id - kRealNameStart;
+                ss << peepNamesObj->GetGivenNameAt(realNameIndex);
+                ss << ' ';
+                ss << peepNamesObj->GetSurnameAt(realNameIndex >> 10);
+            }
         }
     }
 
-    template<size_t TSize, typename TIndex> static void AppendSeparator(char (&buffer)[TSize], TIndex& i, std::string_view sep)
+    template<size_t TSize, typename TIndex>
+    static void AppendSeparatorReversed(char (&buffer)[TSize], TIndex& i, std::string_view sep)
     {
-        if (i < TSize)
+        if (i + sep.size() >= TSize)
+            return;
+
+        utf8 sepBuffer[32];
+        std::memcpy(&sepBuffer[0], sep.data(), sep.size());
+        for (int32_t j = static_cast<int32_t>(sep.size()) - 1; j >= 0; j--)
         {
-            auto remainingLen = TSize - i;
-            auto cpyLen = std::min(sep.size(), remainingLen);
-            std::memcpy(&buffer[i], sep.data(), cpyLen);
-            i += static_cast<TIndex>(cpyLen);
+            buffer[i++] = sepBuffer[j];
         }
     }
 
@@ -350,7 +364,7 @@ namespace OpenRCT2
             }
 
             auto decSep = GetDecimalSeparator();
-            AppendSeparator(buffer, i, decSep);
+            AppendSeparatorReversed(buffer, i, decSep);
         }
 
         // Whole digits
@@ -363,7 +377,7 @@ namespace OpenRCT2
                 if (groupLen >= 3)
                 {
                     groupLen = 0;
-                    AppendSeparator(buffer, i, digitSep);
+                    AppendSeparatorReversed(buffer, i, digitSep);
                 }
             }
             buffer[i++] = static_cast<char>('0' + (num % 10));
@@ -383,7 +397,7 @@ namespace OpenRCT2
 
     template<size_t TDecimalPlace, bool TDigitSep, typename T> void FormatCurrency(FormatBuffer& ss, T rawValue)
     {
-        auto currencyDesc = &CurrencyDescriptors[EnumValue(gConfigGeneral.CurrencyFormat)];
+        auto currencyDesc = &CurrencyDescriptors[EnumValue(Config::Get().general.CurrencyFormat)];
         auto value = static_cast<int64_t>(rawValue) * currencyDesc->rate;
 
         // Negative sign
@@ -533,7 +547,7 @@ namespace OpenRCT2
             case FormatToken::Velocity:
                 if constexpr (std::is_integral<T>())
                 {
-                    switch (gConfigGeneral.MeasurementFormat)
+                    switch (Config::Get().general.MeasurementFormat)
                     {
                         default:
                         case MeasurementFormat::Imperial:
@@ -563,7 +577,7 @@ namespace OpenRCT2
             case FormatToken::Length:
                 if constexpr (std::is_integral<T>())
                 {
-                    switch (gConfigGeneral.MeasurementFormat)
+                    switch (Config::Get().general.MeasurementFormat)
                     {
                         default:
                         case MeasurementFormat::Imperial:
@@ -576,12 +590,30 @@ namespace OpenRCT2
                     }
                 }
                 break;
+            case FormatToken::Height:
+                if constexpr (std::is_integral<T>())
+                {
+                    auto metres = HeightUnitsToMetres(arg);
+                    switch (Config::Get().general.MeasurementFormat)
+                    {
+                        default:
+                        case MeasurementFormat::Imperial:
+                            FormatStringID(ss, STR_UNIT_SUFFIX_FEET, MetresToFeet(metres));
+                            break;
+                        case MeasurementFormat::Metric:
+                        case MeasurementFormat::SI:
+                            FormatStringID(ss, STR_UNIT_SUFFIX_METRES, metres);
+                            break;
+                    }
+                }
+                break;
             case FormatToken::MonthYear:
+            case FormatToken::MonthYearSentence:
                 if constexpr (std::is_integral<T>())
                 {
                     auto month = DateGetMonth(arg);
                     auto year = DateGetYear(arg) + 1;
-                    FormatMonthYear(ss, month, year);
+                    FormatMonthYear(ss, month, year, token == FormatToken::MonthYearSentence);
                 }
                 break;
             case FormatToken::Month:
@@ -624,7 +656,7 @@ namespace OpenRCT2
 
     bool IsRealNameStringId(StringId id)
     {
-        return id >= REAL_NAME_START && id <= REAL_NAME_END;
+        return id >= kRealNameStart && id <= kRealNameEnd;
     }
 
     FmtString GetFmtStringById(StringId id)
@@ -763,36 +795,38 @@ namespace OpenRCT2
                 case FormatToken::Int32:
                 case FormatToken::Comma2dp32:
                 case FormatToken::Sprite:
-                    anyArgs.push_back(ReadFromArgs<int32_t>(args));
+                    anyArgs.emplace_back(ReadFromArgs<int32_t>(args));
                     break;
                 case FormatToken::Currency2dp:
                 case FormatToken::Currency:
-                    anyArgs.push_back(ReadFromArgs<int64_t>(args));
+                    anyArgs.emplace_back(ReadFromArgs<int64_t>(args));
                     break;
                 case FormatToken::UInt16:
                 case FormatToken::MonthYear:
+                case FormatToken::MonthYearSentence:
                 case FormatToken::Month:
                 case FormatToken::Velocity:
                 case FormatToken::DurationShort:
                 case FormatToken::DurationLong:
-                    anyArgs.push_back(ReadFromArgs<uint16_t>(args));
+                    anyArgs.emplace_back(ReadFromArgs<uint16_t>(args));
                     break;
                 case FormatToken::Comma16:
                 case FormatToken::Length:
+                case FormatToken::Height:
                 case FormatToken::Comma1dp16:
-                    anyArgs.push_back(ReadFromArgs<int16_t>(args));
+                    anyArgs.emplace_back(ReadFromArgs<int16_t>(args));
                     break;
                 case FormatToken::StringById:
                 {
                     auto stringId = ReadFromArgs<StringId>(args);
-                    anyArgs.push_back(stringId);
+                    anyArgs.emplace_back(stringId);
                     BuildAnyArgListFromLegacyArgBuffer(GetFmtStringById(stringId), anyArgs, args);
                     break;
                 }
                 case FormatToken::String:
                 {
                     auto sz = ReadFromArgs<const char*>(args);
-                    anyArgs.push_back(sz);
+                    anyArgs.emplace_back(sz);
                     break;
                 }
                 case FormatToken::Pop16:
@@ -807,21 +841,13 @@ namespace OpenRCT2
         }
     }
 
-    size_t FormatStringLegacy(char* buffer, size_t bufferLen, StringId id, const void* args)
-    {
-        thread_local std::vector<FormatArg_t> anyArgs;
-        anyArgs.clear();
-        auto fmt = GetFmtStringById(id);
-        BuildAnyArgListFromLegacyArgBuffer(fmt, anyArgs, args);
-        return FormatStringAny(buffer, bufferLen, fmt, anyArgs);
-    }
-
-    static void FormatMonthYear(FormatBuffer& ss, int32_t month, int32_t year)
+    static void FormatMonthYear(FormatBuffer& ss, int32_t month, int32_t year, bool inSentence)
     {
         thread_local std::vector<FormatArg_t> tempArgs;
         tempArgs.clear();
 
-        auto fmt = GetFmtStringById(STR_DATE_FORMAT_MY);
+        auto stringId = inSentence ? STR_DATE_FORMAT_MY_SENTENCE : STR_DATE_FORMAT_MY;
+        auto fmt = GetFmtStringById(stringId);
         Formatter ft;
         ft.Add<uint16_t>(month);
         ft.Add<uint16_t>(year);
@@ -831,4 +857,67 @@ namespace OpenRCT2
         FormatStringAny(ss, fmt, tempArgs, argIndex);
     }
 
+    size_t FormatStringLegacy(char* buffer, size_t bufferLen, StringId id, const void* args)
+    {
+        thread_local std::vector<FormatArg_t> anyArgs;
+        anyArgs.clear();
+        auto fmt = GetFmtStringById(id);
+        BuildAnyArgListFromLegacyArgBuffer(fmt, anyArgs, args);
+        return FormatStringAny(buffer, bufferLen, fmt, anyArgs);
+    }
+
+    std::string FormatStringIDLegacy(StringId format, const void* args)
+    {
+        std::string buffer(256, 0);
+        size_t len{};
+        for (;;)
+        {
+            FormatStringLegacy(buffer.data(), buffer.size(), format, args);
+            len = buffer.find('\0');
+            if (len == std::string::npos)
+            {
+                len = buffer.size();
+            }
+            if (len >= buffer.size() - 1)
+            {
+                // Null terminator to close to end of buffer, grow buffer and try again
+                buffer.resize(buffer.size() * 2);
+            }
+            else
+            {
+                buffer.resize(len);
+                break;
+            }
+        }
+        return buffer;
+    }
+
+    /**
+     * Writes a formatted string to a buffer and converts it to upper case.
+     *  rct2: 0x006C2538
+     * dest (edi)
+     * format (ax)
+     * args (ecx)
+     */
+    void FormatStringToUpper(utf8* dest, size_t size, StringId format, const void* args)
+    {
+        if (size == 0)
+        {
+            return;
+        }
+
+        FormatStringLegacy(dest, size, format, args);
+
+        std::string upperString = String::ToUpper(dest);
+
+        if (upperString.size() + 1 >= size)
+        {
+            upperString.resize(size - 1);
+            dest[size - 1] = '\0';
+            LOG_WARNING("Truncating formatted string \"%s\" to %d bytes.", dest, size);
+        }
+
+        upperString.copy(dest, upperString.size());
+        dest[upperString.size()] = '\0';
+    }
 } // namespace OpenRCT2

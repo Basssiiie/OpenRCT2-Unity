@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,8 +10,8 @@
 #pragma once
 
 #include "../Identifiers.h"
-#include "../common.h"
-#include "../core/String.hpp"
+#include "../core/StringTypes.h"
+#include "../localisation/StringIdType.h"
 
 #include <algorithm>
 #include <array>
@@ -22,7 +22,7 @@
 struct CoordsXYZ;
 class Formatter;
 
-namespace News
+namespace OpenRCT2::News
 {
     enum class ItemType : uint8_t
     {
@@ -312,6 +312,4 @@ namespace News
 
     void AddItemToQueue(News::Item* newNewsItem);
     void RemoveItem(int32_t index);
-} // namespace News
-
-extern News::ItemQueues gNewsItems;
+} // namespace OpenRCT2::News

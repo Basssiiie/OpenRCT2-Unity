@@ -92,7 +92,7 @@ Since this is my work in progress pet project, the code is subject to random cha
 ### Download
 | Latest release                                                                                                        | Latest development build |
 |-----------------------------------------------------------------------------------------------------------------------|--------------------------|
-| [![OpenRCT2.org](https://img.shields.io/badge/master-v0.4.6-green.svg)](https://openrct2.org/downloads/master/latest) | [![OpenRCT2.org](https://img.shields.io/github/last-commit/OpenRCT2/OpenRCT2/develop)](https://openrct2.org/downloads/develop/latest) |
+| [![OpenRCT2.org](https://img.shields.io/badge/master-v0.4.15-green.svg)](https://openrct2.org/downloads/master/latest) | [![OpenRCT2.org](https://img.shields.io/github/last-commit/OpenRCT2/OpenRCT2/develop)](https://openrct2.org/downloads/develop/latest) |
 
 ---
 
@@ -141,22 +141,20 @@ RollerCoaster Tycoon 2 was originally written by Chris Sawyer in x86 assembly an
 
 # 2. Downloading the game (pre-built)
 
-OpenRCT2 requires original files of RollerCoaster Tycoon 2 to play. It can be bought at either [Steam](https://store.steampowered.com/app/285330/) or [GOG.com](https://www.gog.com/game/rollercoaster_tycoon_2). If you have the original RollerCoaster Tycoon and its expansion packs, you can [point OpenRCT2 to these](https://github.com/OpenRCT2/OpenRCT2/wiki/Loading-RCT1-scenarios-and-data) in order to play the original scenarios.
+OpenRCT2 requires original files of RollerCoaster Tycoon 2 to play. It can be bought at either [Steam](https://store.steampowered.com/app/285330/RollerCoaster_Tycoon_2_Triple_Thrill_Pack/) or [GOG.com](https://www.gog.com/game/rollercoaster_tycoon_2). If you have the original RollerCoaster Tycoon and its expansion packs, you can [point OpenRCT2 to these](https://github.com/OpenRCT2/OpenRCT2/wiki/Loading-RCT1-scenarios-and-data) in order to play the original scenarios.
 
-[OpenRCT2.org](https://openrct2.org/downloads) offers precompiled builds and installers of the latest master and the develop branch. There is also a [Launcher](https://github.com/IntelOrca/OpenLauncher/releases) available for Windows and Linux that will automatically update your build of the game so that you always have the latest version.
+[Our website](https://openrct2.io/download) offers portable builds and installers with the latest versions of the `master` and `develop` branches. There is also a [launcher](https://openrct2.io/download/launcher) available for Windows and Linux that will automatically update your build of the game so that you always have the latest version.
 
-[Flathub](https://flathub.org/) offers flatpaks for Linux distributions that support this application distribution system:
-* [Latest release](https://flathub.org/apps/details/io.openrct2.OpenRCT2)
+Alternatively to using the launcher, for most Linux distributions, we recommend the [latest Flatpak release](https://flathub.org/apps/details/io.openrct2.OpenRCT2). When downloading from Flathub, you will always receive the latest updates regardless of which Linux distribution you use.
 
-Some Linux distributions offer native packages already. These packages are usually third-party, but we're trying to resolve issues they are facing.
-* Arch Linux: [openrct2-git](https://aur.archlinux.org/packages/openrct2-git) (AUR) and [openrct2](https://archlinux.org/packages/extra/x86_64/openrct2/) ([extra] repository)
-* Ubuntu PPA: [`develop` branch](https://launchpad.net/~openrct2/+archive/ubuntu/nightly) (nightly builds)
-* openSUSE OBS: [games/openrct2](https://software.opensuse.org/download.html?project=games&package=openrct2)
+Some Linux distributions offer native packages:
+* Arch Linux: [openrct2](https://archlinux.org/packages/extra/x86_64/openrct2/) latest release (`extra` repository) and, alternatively, [openrct2-git](https://aur.archlinux.org/packages/openrct2-git) (AUR)
 * Gentoo (main portage tree): [games-simulation/openrct2](https://packages.gentoo.org/packages/games-simulation/openrct2)
 * NixOS (`nixos-unstable` channel): [openrct2](https://github.com/NixOS/nixpkgs/blob/master/pkgs/games/openrct2/default.nix)
-* Fedora 28 i386/amd64: [openrct2](https://copr.fedorainfracloud.org/coprs/nauticalnexus/openrct2/)
+* openSUSE OBS: [games/openrct2](https://software.opensuse.org/download.html?project=games&package=openrct2)
+* Ubuntu PPA (nightly builds): [`develop` branch](https://launchpad.net/~openrct2/+archive/ubuntu/nightly)
 
-Some \*BSD operating systems offer native packages. These packages are usually third-party, but we're trying to resolve issues they are facing.
+Some \*BSD operating systems offer native packages:
 * FreeBSD: [games/openrct2](https://www.freshports.org/games/openrct2)
 * OpenBSD: [games/openrct2](https://openports.se/games/openrct2)
 
@@ -171,29 +169,16 @@ OpenRCT2 requires original files of RollerCoaster Tycoon 2 to play. It can be bo
 <details>
   <summary>Windows prerequisites</summary>
 
+  There are two toolchain options for building the game on Windows:
+
   - Visual Studio 2022 (Enterprise / Professional / [Community (Free)](https://www.visualstudio.com/vs/community/))
     - Desktop development with C++
-  - MSYS2 MinGW Toolchain. The toolchains with supported dependencies are `mingw-x86_64`, `mingw-xi686`, `ucrt-x86_64`, `clang-x86_64`, and `clang-xi686`, each of these require the `$MINGW_PACKAGE_PREFIX` and `msys` and `clangarm-64` are lacking packages for some dependencies
-    - sdl2 (only for UI client)
-    - freetype (can be disabled)
-    - fontconfig (can be disabled)
-    - libzip (>= 1.0)
-    - libpng (>= 1.2)
-    - speexdsp (only for UI client)
-    - curl (only if building with http support)
-    - nlohmann-json (>= 3.6.0)
-    - openssl (>= 1.0; only if building with multiplayer support)
-    - icu (>= 59.0)
-    - zlib
-    - gl (commonly provided by Mesa or GPU vendors; only for UI client, can be disabled)
-    - cmake
-    - benchmark (optional)
-    - innoextract (optional runtime dependency; used for GOG installer extraction during setup)
-    - libogg
-    - libvorbis
-    - flac
- 
-  See the wiki for [the actual package names used in pacman](https://github.com/OpenRCT2/OpenRCT2/wiki/Building-OpenRCT2-on-MSYS2-MinGW).
+  - MSYS2 MinGW Toolchain
+    - The toolchains with supported dependencies are `mingw-x86_64`, `mingw-xi686`, `ucrt-x86_64`, `clang-x86_64`, and `clang-xi686`. Each of these require the `$MINGW_PACKAGE_PREFIX` set.
+    - Note that `msys` and `clangarm-64` are lacking packages for some dependencies.
+
+  The projects depends on several libraries to be installed. These can be installed automatically using `msbuild` for Visual Studio builds. See section 3.2 for details.
+  For MinGW builds, see the wiki for [the actual package names used in pacman](https://github.com/OpenRCT2/OpenRCT2/wiki/Building-OpenRCT2-on-MSYS2-MinGW).
 </details>
 
 <details>
@@ -208,7 +193,7 @@ OpenRCT2 requires original files of RollerCoaster Tycoon 2 to play. It can be bo
 <details>
   <summary>Linux prerequisites</summary>
 
-  - gcc (>= 7.1) or clang (>= 8.0.0) (for C++17 support)
+  - gcc (>= 8.0) or clang (>= 10.0) (for C++20 support)
   - sdl2 (only for UI client)
   - freetype (can be disabled)
   - fontconfig (can be disabled)
@@ -238,12 +223,14 @@ OpenRCT2 requires original files of RollerCoaster Tycoon 2 to play. It can be bo
   1. Check out the repository, this can be done using [GitHub Desktop](https://desktop.github.com) or [other tools](https://help.github.com/articles/which-remote-url-should-i-use)
   2. Open a new Developer Command Prompt for VS 2022
   3. Navigate to the repository (e.g. `cd C:\GitHub\OpenRCT2`)
-  4. To build the 64-bit version, use `msbuild openrct2.proj /t:build /p:platform=x64`
-
-     To build the 32-bit version, use `msbuild openrct2.proj /t:build /p:platform=Win32`
+  4. To build the x64 version, use `msbuild openrct2.proj /t:build /p:platform=x64`
+     To build the x86 version, use `msbuild openrct2.proj /t:build /p:platform=Win32`
+     To build the Arm64 version, use `msbuild openrct2.proj /t:build /p:platform=arm64`
+   
+     **Note:** The file `g2.dat` may not be generated on cross-compilation (e.g. building for Arm64 on a x64 machine). In this case `g2.dat` must be copied from a x86/x64 build.
   5. Run the game, `bin\openrct2`
 
-  Once you have ran msbuild once, further development can be done within Visual Studio by opening `openrct2.sln`. Make sure to select the correct target platform for which you ran the build in point #3 (`Win32` for the 32-bit version, `x64` for the 64-bit version), otherwise the build will fail in Visual Studio.
+  Once you have ran msbuild once, further development can be done within Visual Studio by opening `openrct2.sln`. Make sure to select the correct target platform for which you ran the build in point #3 (`Win32` for the x86 version, `x64` for the x64 version, `arm64` for the Arm64 version), otherwise the build will fail in Visual Studio.
 
   Other examples:
   ```
@@ -333,7 +320,7 @@ We would also like to distribute additional scenarios with the game, when the ti
 ---
 
 # 5. Licence
-**OpenRCT2** is licensed under the GNU General Public License version 3.
+**OpenRCT2** is licensed under the GNU General Public License version 3 or (at your option) any later version. See the [`licence.txt`](licence.txt) file for more details.
 
 ---
 

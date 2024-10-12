@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,6 +12,8 @@
 
 #    include "../Context.h"
 #    include "../scripting/ScriptEngine.h"
+
+using namespace OpenRCT2;
 
 CustomAction::CustomAction(const std::string& id, const std::string& json, const std::string& pluginName)
     : _id(id)

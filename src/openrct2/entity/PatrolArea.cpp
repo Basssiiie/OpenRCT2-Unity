@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,6 +12,8 @@
 #include "../core/Algorithm.hpp"
 #include "EntityList.h"
 #include "Staff.h"
+
+#include <cassert>
 
 static PatrolArea _consolidatedPatrolArea[EnumValue(StaffType::Count)];
 static std::variant<StaffType, EntityId> _patrolAreaToRender;

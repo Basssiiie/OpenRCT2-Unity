@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -33,11 +33,11 @@ public:
     uint16_t GetActionFlags() const override;
 
     void Serialise(DataSerialiser& stream) override;
-    GameActions::Result Query() const override;
-    GameActions::Result Execute() const override;
+    OpenRCT2::GameActions::Result Query() const override;
+    OpenRCT2::GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result SmoothLandTile(
+    OpenRCT2::GameActions::Result SmoothLandTile(
         int32_t direction, bool isExecuting, const CoordsXY& loc, SurfaceElement* surfaceElement) const;
     money64 SmoothLandRowByEdge(
         bool isExecuting, const CoordsXY& loc, int32_t expectedLandHeight1, int32_t expectedLandHeight2, int32_t stepX,
@@ -45,5 +45,5 @@ private:
     money64 SmoothLandRowByCorner(
         bool isExecuting, const CoordsXY& loc, int32_t expectedLandHeight, int32_t stepX, int32_t stepY, int32_t direction,
         int32_t checkDirection) const;
-    GameActions::Result SmoothLand(bool isExecuting) const;
+    OpenRCT2::GameActions::Result SmoothLand(bool isExecuting) const;
 };

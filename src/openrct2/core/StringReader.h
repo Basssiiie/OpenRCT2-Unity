@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,17 +9,16 @@
 
 #pragma once
 
-#include "../common.h"
-#include "../core/String.hpp"
+#include "../core/StringTypes.h"
 
 struct IStringReader
 {
     virtual ~IStringReader() = default;
 
-    virtual bool TryPeek(codepoint_t* outCodepoint) abstract;
-    virtual bool TryRead(codepoint_t* outCodepoint) abstract;
-    virtual void Skip() abstract;
-    virtual bool CanRead() const abstract;
+    virtual bool TryPeek(codepoint_t* outCodepoint) = 0;
+    virtual bool TryRead(codepoint_t* outCodepoint) = 0;
+    virtual void Skip() = 0;
+    virtual bool CanRead() const = 0;
 };
 
 class UTF8StringReader final : public IStringReader

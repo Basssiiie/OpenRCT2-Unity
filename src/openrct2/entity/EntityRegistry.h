@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,10 +9,22 @@
 
 #pragma once
 
-#include "../common.h"
 #include "EntityBase.h"
 
 #include <array>
+
+namespace OpenRCT2
+{
+    union Entity_t
+    {
+        uint8_t Pad00[0x200];
+        EntityBase base;
+        Entity_t()
+            : Pad00()
+        {
+        }
+    };
+} // namespace OpenRCT2
 
 constexpr uint16_t MAX_ENTITIES = 65535;
 
@@ -50,6 +62,7 @@ template<typename T> T* CreateEntityAt(const EntityId index)
 void ResetAllEntities();
 void ResetEntitySpatialIndices();
 void UpdateAllMiscEntities();
+void UpdateMoneyEffect();
 void EntitySetCoordinates(const CoordsXYZ& entityPos, EntityBase* entity);
 void EntityRemove(EntityBase* entity);
 uint16_t RemoveFloatingEntities();

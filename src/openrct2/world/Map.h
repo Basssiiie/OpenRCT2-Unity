@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,40 +9,40 @@
 
 #pragma once
 
-#include "../common.h"
 #include "Location.hpp"
 #include "TileElement.h"
 
 #include <initializer_list>
 #include <vector>
 
-constexpr uint8_t MINIMUM_LAND_HEIGHT = 2;
-constexpr uint8_t MAXIMUM_LAND_HEIGHT = 254;
-constexpr uint8_t MINIMUM_WATER_HEIGHT = 2;
-constexpr uint8_t MAXIMUM_WATER_HEIGHT = 254;
+constexpr uint8_t kMinimumLandHeight = 2;
+constexpr uint8_t kMaximumLandHeight = 254;
+constexpr uint8_t kMinimumWaterHeight = 2;
+constexpr uint8_t kMaximumWaterHeight = 254;
+/**
+ * The land height that counts as 0 metres/feet for the land height labels and altitude graphs.
+ */
+constexpr uint8_t kMapBaseZ = 7;
 
-#define MINIMUM_MAP_SIZE_TECHNICAL 5
-#define MAXIMUM_MAP_SIZE_TECHNICAL 1001
-#define MINIMUM_MAP_SIZE_PRACTICAL (MINIMUM_MAP_SIZE_TECHNICAL - 2)
-#define MAXIMUM_MAP_SIZE_PRACTICAL (MAXIMUM_MAP_SIZE_TECHNICAL - 2)
-constexpr const int32_t MAXIMUM_MAP_SIZE_BIG = COORDS_XY_STEP * MAXIMUM_MAP_SIZE_TECHNICAL;
-constexpr int32_t MAXIMUM_TILE_START_XY = MAXIMUM_MAP_SIZE_BIG - COORDS_XY_STEP;
-constexpr const int32_t LAND_HEIGHT_STEP = 2 * COORDS_Z_STEP;
-constexpr const int32_t WATER_HEIGHT_STEP = 2 * COORDS_Z_STEP;
-constexpr const int32_t MINIMUM_LAND_HEIGHT_BIG = MINIMUM_LAND_HEIGHT * COORDS_Z_STEP;
+constexpr uint8_t kMinimumMapSizeTechnical = 5;
+constexpr uint16_t kMaximumMapSizeTechnical = 1001;
+constexpr int16_t kMinimumMapSizePractical = (kMinimumMapSizeTechnical - 2);
+constexpr int16_t kMaximumMapSizePractical = (kMaximumMapSizeTechnical - 2);
+constexpr const int32_t MAXIMUM_MAP_SIZE_BIG = kCoordsXYStep * kMaximumMapSizeTechnical;
+constexpr int32_t MAXIMUM_TILE_START_XY = MAXIMUM_MAP_SIZE_BIG - kCoordsXYStep;
+constexpr const int32_t LAND_HEIGHT_STEP = 2 * kCoordsZStep;
+constexpr const int32_t WATER_HEIGHT_STEP = 2 * kCoordsZStep;
+constexpr const int32_t kMinimumLandZ = kMinimumLandHeight * kCoordsZStep;
 constexpr TileCoordsXY DEFAULT_MAP_SIZE = { 150, 150 };
 // How high construction has to be off the ground when the player owns construction rights, in tile coords.
 constexpr uint8_t ConstructionRightsClearanceSmall = 3;
 // Same as previous, but in big coords.
-constexpr const uint8_t ConstructionRightsClearanceBig = 3 * COORDS_Z_STEP;
+constexpr const uint8_t ConstructionRightsClearanceBig = 3 * kCoordsZStep;
 
-#define MAP_MINIMUM_X_Y (-MAXIMUM_MAP_SIZE_TECHNICAL)
+constexpr int16_t kMapMinimumXY = (-kMaximumMapSizeTechnical);
 
 constexpr uint32_t MAX_TILE_ELEMENTS_WITH_SPARE_ROOM = 0x1000000;
 constexpr uint32_t MAX_TILE_ELEMENTS = MAX_TILE_ELEMENTS_WITH_SPARE_ROOM - 512;
-#define MAX_TILE_TILE_ELEMENT_POINTERS (MAXIMUM_MAP_SIZE_TECHNICAL * MAXIMUM_MAP_SIZE_TECHNICAL)
-
-#define TILE_UNDEFINED_TILE_ELEMENT NULL
 
 using PeepSpawn = CoordsXYZD;
 
@@ -79,6 +79,7 @@ enum
     MAP_SELECT_TYPE_CORNER_3,
     MAP_SELECT_TYPE_FULL,
     MAP_SELECT_TYPE_FULL_WATER,
+    MAP_SELECT_TYPE_FULL_LAND_RIGHTS,
     MAP_SELECT_TYPE_QUARTER_0,
     MAP_SELECT_TYPE_QUARTER_1,
     MAP_SELECT_TYPE_QUARTER_2,
@@ -89,38 +90,12 @@ enum
     MAP_SELECT_TYPE_EDGE_3,
 };
 
-// Used when calling MapCanConstructWithClearAt();
-// This assumes that the caller has already done the check on the element it wants to place,
-// as this function can only check the element the player wants to build through.
-enum
-{
-    CREATE_CROSSING_MODE_NONE,
-    CREATE_CROSSING_MODE_TRACK_OVER_PATH,
-    CREATE_CROSSING_MODE_PATH_OVER_TRACK,
-};
-
 extern const std::array<CoordsXY, 8> CoordsDirectionDelta;
 extern const TileCoordsXY TileDirectionDelta[];
 
-extern TileCoordsXY gWidePathTileLoopPosition;
-extern uint16_t gGrassSceneryTileLoopPosition;
-
-extern TileCoordsXY gMapSize;
-extern int32_t gMapBaseZ;
-
-inline CoordsXY GetMapSizeUnits()
-{
-    return { (gMapSize.x - 1) * COORDS_XY_STEP, (gMapSize.y - 1) * COORDS_XY_STEP };
-}
-inline CoordsXY GetMapSizeMinus2()
-{
-    return { (gMapSize.x * COORDS_XY_STEP) + (8 * COORDS_XY_STEP - 2),
-             (gMapSize.y * COORDS_XY_STEP) + (8 * COORDS_XY_STEP - 2) };
-}
-inline CoordsXY GetMapSizeMaxXY()
-{
-    return GetMapSizeUnits() - CoordsXY{ 1, 1 };
-}
+CoordsXY GetMapSizeUnits();
+CoordsXY GetMapSizeMinus2();
+CoordsXY GetMapSizeMaxXY();
 
 extern uint16_t gMapSelectFlags;
 extern uint16_t gMapSelectType;
@@ -130,25 +105,20 @@ extern CoordsXYZ gMapSelectArrowPosition;
 extern uint8_t gMapSelectArrowDirection;
 
 extern std::vector<CoordsXY> gMapSelectionTiles;
-extern std::vector<PeepSpawn> gPeepSpawns;
-
-// Used in the land tool window to enable mountain tool / land smoothing
-extern bool gLandMountainMode;
-// Used in the land tool window to allow dragging and changing land styles
-extern bool gLandPaintMode;
-// Used in the clear scenery tool
-extern bool gClearSmallScenery;
-extern bool gClearLargeScenery;
-extern bool gClearFootpath;
 
 extern uint32_t gLandRemainingOwnershipSales;
 extern uint32_t gLandRemainingConstructionSales;
 
 extern bool gMapLandRightsUpdateSuccess;
 
+namespace OpenRCT2
+{
+    struct GameState_t;
+}
+
 void ReorganiseTileElements();
 const std::vector<TileElement>& GetTileElements();
-void SetTileElements(std::vector<TileElement>&& tileElements);
+void SetTileElements(OpenRCT2::GameState_t& gameState, std::vector<TileElement>&& tileElements);
 void StashMap();
 void UnstashMap();
 std::vector<TileElement> GetReorganisedTileElementsWithoutGhosts();
@@ -176,8 +146,6 @@ EntranceElement* MapGetRideExitElementAt(const CoordsXYZ& exitCoords, bool ghost
 uint8_t MapGetHighestLandHeight(const MapRange& range);
 uint8_t MapGetLowestLandHeight(const MapRange& range);
 bool MapCoordIsConnected(const TileCoordsXYZ& loc, uint8_t faceDirection);
-void MapRemoveProvisionalElements();
-void MapRestoreProvisionalElements();
 void MapUpdatePathWideFlags();
 bool MapIsLocationValid(const CoordsXY& coords);
 bool MapIsEdge(const CoordsXY& coords);
@@ -191,6 +159,7 @@ void MapInvalidateMapSelectionTiles();
 void MapInvalidateSelectionRect();
 bool MapCheckCapacityAndReorganise(const CoordsXY& loc, size_t numElements = 1);
 int16_t TileElementHeight(const CoordsXY& loc);
+int16_t TileElementHeight(const CoordsXYZ& loc, uint8_t slope);
 int16_t TileElementWaterHeight(const CoordsXY& loc);
 void TileElementRemove(TileElement* tileElement);
 TileElement* TileElementInsert(const CoordsXYZ& loc, int32_t occupiedQuadrants, TileElementType type);
@@ -214,7 +183,7 @@ struct TileElementIterator
     TileElement* element;
 };
 #ifdef PLATFORM_32BIT
-assert_struct_size(TileElementIterator, 12);
+static_assert(sizeof(TileElementIterator) == 12);
 #endif
 
 void TileElementIteratorBegin(TileElementIterator* it);
@@ -248,12 +217,11 @@ int32_t MapGetCornerHeight(int32_t z, int32_t slope, int32_t direction);
 int32_t TileElementGetCornerHeight(const SurfaceElement* surfaceElement, int32_t direction);
 
 void MapClearAllElements();
+void ClearElementAt(const CoordsXY& loc, TileElement** elementPtr);
 
 LargeSceneryElement* MapGetLargeScenerySegment(const CoordsXYZD& sceneryPos, int32_t sequence);
 std::optional<CoordsXYZ> MapLargeSceneryGetOrigin(
     const CoordsXYZD& sceneryPos, int32_t sequence, LargeSceneryElement** outElement);
-
-ScreenCoordsXY Translate3DTo2DWithZ(int32_t rotation, const CoordsXYZ& pos);
 
 TrackElement* MapGetTrackElementAt(const CoordsXYZ& trackPos);
 TileElement* MapGetTrackElementAtOfType(const CoordsXYZ& trackPos, track_type_t trackType);
@@ -268,7 +236,6 @@ bool MapIsLocationAtEdge(const CoordsXY& loc);
 
 uint16_t CheckMaxAllowableLandRightsForTile(const CoordsXYZ& tileMapPos);
 
-void FixLandOwnershipTiles(std::initializer_list<TileCoordsXY> tiles);
-void FixLandOwnershipTilesWithOwnership(
-    std::initializer_list<TileCoordsXY> tiles, uint8_t ownership, bool doNotDowngrade = false);
+void FixLandOwnershipTilesWithOwnership(std::vector<TileCoordsXY> tiles, uint8_t ownership);
 MapRange ClampRangeWithinMap(const MapRange& range);
+void ShiftMap(const TileCoordsXY& amount);

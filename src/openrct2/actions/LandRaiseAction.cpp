@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,11 +11,11 @@
 #include "LandRaiseAction.h"
 
 #include "../Context.h"
+#include "../GameState.h"
 #include "../OpenRCT2.h"
 #include "../actions/LandSetHeightAction.h"
 #include "../audio/audio.h"
 #include "../interface/Window.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
 #include "../ride/RideConstruction.h"
@@ -25,6 +25,9 @@
 #include "../world/Scenery.h"
 #include "../world/Surface.h"
 #include "../world/SurfaceData.h"
+#include "../world/tile_element/Slope.h"
+
+using namespace OpenRCT2;
 
 LandRaiseAction::LandRaiseAction(const CoordsXY& coords, MapRange range, uint8_t selectionType)
     : _coords(coords)
@@ -84,9 +87,9 @@ GameActions::Result LandRaiseAction::QueryExecute(bool isExecuting) const
     uint8_t minHeight = MapGetLowestLandHeight(validRange);
     bool withinOwnership = false;
 
-    for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += COORDS_XY_STEP)
+    for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += kCoordsXYStep)
     {
-        for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += COORDS_XY_STEP)
+        for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += kCoordsXYStep)
         {
             if (!LocationValid({ x, y }))
                 continue;
@@ -94,7 +97,7 @@ GameActions::Result LandRaiseAction::QueryExecute(bool isExecuting) const
             if (surfaceElement == nullptr)
                 continue;
 
-            if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !gCheatsSandboxMode)
+            if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !GetGameState().Cheats.SandboxMode)
             {
                 if (!MapIsLocationInPark(CoordsXY{ x, y }))
                 {
@@ -110,7 +113,7 @@ GameActions::Result LandRaiseAction::QueryExecute(bool isExecuting) const
 
             uint8_t currentSlope = surfaceElement->GetSlope();
             uint8_t newSlope = RaiseSurfaceCornerFlags(tableRow, currentSlope);
-            if (newSlope & SURFACE_STYLE_FLAG_RAISE_OR_LOWER_BASE_HEIGHT)
+            if (newSlope & kTileSlopeRaiseOrLowerBaseHeight)
             {
                 if (height + 2 > UINT8_MAX)
                 {
@@ -121,7 +124,7 @@ GameActions::Result LandRaiseAction::QueryExecute(bool isExecuting) const
                     height += 2;
                 }
             }
-            newSlope &= TILE_ELEMENT_SURFACE_SLOPE_MASK;
+            newSlope &= kTileSlopeMask;
 
             auto landSetHeightAction = LandSetHeightAction({ x, y }, height, newSlope);
             landSetHeightAction.SetFlags(GetFlags());

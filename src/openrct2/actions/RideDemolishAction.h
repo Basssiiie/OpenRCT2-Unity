@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -26,14 +26,14 @@ public:
     uint32_t GetCooldownTime() const override;
 
     void Serialise(DataSerialiser& stream) override;
-    GameActions::Result Query() const override;
-    GameActions::Result Execute() const override;
+    OpenRCT2::GameActions::Result Query() const override;
+    OpenRCT2::GameActions::Result Execute() const override;
 
 private:
-    GameActions::Result DemolishRide(Ride& ride) const;
+    OpenRCT2::GameActions::Result DemolishRide(Ride& ride) const;
     money64 MazeRemoveTrack(const CoordsXYZD& coords) const;
     money64 DemolishTracks() const;
-    GameActions::Result RefurbishRide(Ride& ride) const;
+    OpenRCT2::GameActions::Result RefurbishRide(Ride& ride) const;
     money64 GetRefurbishPrice(const Ride& ride) const;
     money64 GetRefundPrice(const Ride& ride) const;
 };

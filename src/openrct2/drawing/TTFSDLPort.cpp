@@ -1,4 +1,5 @@
 // Adapted from freetype.h in order to avoid C-style casts.
+// clang-format off
 
 #define FT_LOAD_TARGET_ALT(x) (static_cast<FT_Int32>((x)&15) << 16)
 #define FT_IMAGE_TAG(value, _x1, _x2, _x3, _x4)                                                                                \
@@ -35,7 +36,8 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#    include <algorithm>
+#    include "../Diagnostic.h"
+
 #    include <cmath>
 #    include <cstring>
 #    include <stdio.h>
@@ -216,7 +218,7 @@ static void TTF_initLineMectrics(const TTF_Font* font, const TTFSurface* textbuf
     dst = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels));
     if (row > 0)
     {
-        dst += row * textbuf->pitch;
+        dst += row * textbuf->w;
     }
 
     height = font->underline_height;
@@ -236,7 +238,7 @@ outline into account.
 static void TTF_drawLine_Solid(const TTF_Font* font, const TTFSurface* textbuf, const int row)
 {
     int line;
-    uint8_t* dst_check = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + textbuf->pitch * textbuf->h;
+    uint8_t* dst_check = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + textbuf->w * textbuf->h;
     uint8_t* dst;
     int height;
 
@@ -247,7 +249,7 @@ static void TTF_drawLine_Solid(const TTF_Font* font, const TTFSurface* textbuf, 
     {
         /* 1 because 0 is the bg color */
         std::fill_n(dst, textbuf->w, 0x01);
-        dst += textbuf->pitch;
+        dst += textbuf->w;
     }
 }
 
@@ -258,7 +260,7 @@ static void TTF_drawLine_Solid(const TTF_Font* font, const TTFSurface* textbuf, 
 static void TTF_drawLine_Shaded(const TTF_Font* font, const TTFSurface* textbuf, const int row)
 {
     int line;
-    uint8_t* dst_check = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + textbuf->pitch * textbuf->h;
+    uint8_t* dst_check = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + textbuf->w * textbuf->h;
     uint8_t* dst;
     int height;
 
@@ -268,7 +270,7 @@ static void TTF_drawLine_Shaded(const TTF_Font* font, const TTFSurface* textbuf,
     for (line = height; line > 0 && dst < dst_check; --line)
     {
         std::fill_n(dst, textbuf->w, NUM_GRAYS - 1);
-        dst += textbuf->pitch;
+        dst += textbuf->w;
     }
 }
 
@@ -1263,7 +1265,7 @@ int TTF_SizeUTF8(TTF_Font* font, const char* text, int* w, int* h)
     return status;
 }
 
-TTFSurface* TTF_RenderUTF8_Solid(TTF_Font* font, const char* text, [[maybe_unused]] uint32_t colour)
+TTFSurface* TTF_RenderUTF8(TTF_Font* font, const char* text, bool shaded)
 {
     bool first;
     int xstart;
@@ -1299,12 +1301,11 @@ TTFSurface* TTF_RenderUTF8_Solid(TTF_Font* font, const char* text, [[maybe_unuse
     }
     textbuf->w = width;
     textbuf->h = height;
-    textbuf->pitch = width;
     textbuf->pixels = calloc(1, width * height);
 
     /* Adding bound checking to avoid all kinds of memory corruption errors
     that may occur. */
-    dst_check = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + textbuf->pitch * textbuf->h;
+    dst_check = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + textbuf->w * textbuf->h;
 
     /* check kerning */
     use_kerning = FT_HAS_KERNING(font->face) && font->kerning;
@@ -1321,7 +1322,7 @@ TTFSurface* TTF_RenderUTF8_Solid(TTF_Font* font, const char* text, [[maybe_unuse
             continue;
         }
 
-        error = Find_Glyph(font, c, CACHED_METRICS | CACHED_BITMAP);
+        error = Find_Glyph(font, c, CACHED_METRICS | (shaded ? CACHED_PIXMAP : CACHED_BITMAP));
         if (error)
         {
             TTF_SetFTError("Couldn't find glyph", error);
@@ -1329,7 +1330,7 @@ TTFSurface* TTF_RenderUTF8_Solid(TTF_Font* font, const char* text, [[maybe_unuse
             return NULL;
         }
         glyph = font->current;
-        current = &glyph->bitmap;
+        current = shaded ? &glyph->pixmap : &glyph->bitmap;
         /* Ensure the width of the pixmap is correct. On some cases,
          * freetype may report a larger pixmap than possible.*/
         width = current->width;
@@ -1363,7 +1364,7 @@ TTFSurface* TTF_RenderUTF8_Solid(TTF_Font* font, const char* text, [[maybe_unuse
             {
                 continue;
             }
-            dst = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + (row + glyph->yoffset) * textbuf->pitch
+            dst = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + (row + glyph->yoffset) * textbuf->w
                 + xstart + glyph->minx;
             src = current->buffer + row * current->pitch;
 
@@ -1385,152 +1386,20 @@ TTFSurface* TTF_RenderUTF8_Solid(TTF_Font* font, const char* text, [[maybe_unuse
     if (TTF_HANDLE_STYLE_UNDERLINE(font))
     {
         row = TTF_underline_top_row(font);
-        TTF_drawLine_Solid(font, textbuf, row);
+        if (shaded)
+            TTF_drawLine_Shaded(font, textbuf, row);
+        else
+            TTF_drawLine_Solid(font, textbuf, row);
     }
 
     /* Handle the strikethrough style */
     if (TTF_HANDLE_STYLE_STRIKETHROUGH(font))
     {
         row = TTF_strikethrough_top_row(font);
-        TTF_drawLine_Solid(font, textbuf, row);
-    }
-    return textbuf;
-}
-
-TTFSurface* TTF_RenderUTF8_Shaded(TTF_Font* font, const char* text, [[maybe_unused]] uint32_t fg, [[maybe_unused]] uint32_t bg)
-{
-    bool first;
-    int xstart;
-    int width;
-    int height;
-    TTFSurface* textbuf;
-    uint8_t* src;
-    uint8_t* dst;
-    uint8_t* dst_check;
-    unsigned int row, col;
-    FT_Bitmap* current;
-    c_glyph* glyph;
-    FT_Error error;
-    FT_Long use_kerning;
-    FT_UInt prev_index = 0;
-    size_t textlen;
-
-    TTF_CHECKPOINTER(text, NULL);
-
-    /* Get the dimensions of the text surface */
-    if ((TTF_SizeUTF8(font, text, &width, &height) < 0) || !width)
-    {
-        TTF_SetError("Text has zero width");
-        return NULL;
-    }
-
-    /* Create the target surface */
-    textbuf = static_cast<TTFSurface*>(calloc(1, sizeof(TTFSurface)));
-    if (textbuf == NULL)
-    {
-        return NULL;
-    }
-    textbuf->w = width;
-    textbuf->h = height;
-    textbuf->pitch = width;
-    textbuf->pixels = calloc(1, width * height);
-
-    /* Adding bound checking to avoid all kinds of memory corruption errors
-       that may occur. */
-    dst_check = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + textbuf->pitch * textbuf->h;
-
-    /* check kerning */
-    use_kerning = FT_HAS_KERNING(font->face) && font->kerning;
-
-    /* Load and render each character */
-    textlen = strlen(text);
-    first = true;
-    xstart = 0;
-    while (textlen > 0)
-    {
-        uint16_t c = UTF8_getch(&text, &textlen);
-        if (c == UNICODE_BOM_NATIVE || c == UNICODE_BOM_SWAPPED)
-        {
-            continue;
-        }
-
-        error = Find_Glyph(font, c, CACHED_METRICS | CACHED_PIXMAP);
-        if (error)
-        {
-            TTF_SetFTError("Couldn't find glyph", error);
-            TTFFreeSurface(textbuf);
-            return NULL;
-        }
-
-        glyph = font->current;
-
-        /* Ensure the width of the pixmap is correct. On some cases,
-         * freetype may report a larger pixmap than possible.*/
-        width = glyph->pixmap.width;
-        if (font->outline <= 0 && width > glyph->maxx - glyph->minx)
-        {
-            width = glyph->maxx - glyph->minx;
-        }
-
-        /* do kerning, if possible AC-Patch */
-        if (use_kerning && prev_index && glyph->index)
-        {
-            FT_Vector delta;
-            FT_Get_Kerning(font->face, prev_index, glyph->index, ft_kerning_default, &delta);
-            xstart += delta.x >> 6;
-        }
-
-        /* Compensate for the wrap around with negative minx's */
-        if (first && (glyph->minx < 0))
-        {
-            xstart -= glyph->minx;
-        }
-        first = false;
-
-        current = &glyph->pixmap;
-        for (row = 0; row < current->rows; ++row)
-        {
-            /* Make sure we don't go either over, or under the
-             * limit */
-            if (static_cast<signed>(row) + glyph->yoffset < 0)
-            {
-                continue;
-            }
-            if (static_cast<signed>(row) + glyph->yoffset >= textbuf->h)
-            {
-                continue;
-            }
-
-            dst = const_cast<uint8_t*>(static_cast<const uint8_t*>(textbuf->pixels)) + (row + glyph->yoffset) * textbuf->pitch
-                + xstart + glyph->minx;
-            src = current->buffer + row * current->pitch;
-
-            for (col = width; col > 0 && dst < dst_check; --col)
-            {
-                *dst++ |= *src++;
-            }
-        }
-
-        xstart += glyph->advance;
-        if (TTF_HANDLE_STYLE_BOLD(font))
-        {
-            xstart += font->glyph_overhang;
-        }
-        prev_index = glyph->index;
-    }
-
-    /* Handle the underline style */
-    if (TTF_HANDLE_STYLE_UNDERLINE(font))
-    {
-        row = TTF_underline_top_row(font);
-        TTF_drawLine_Shaded(font, textbuf, row);
-    }
-
-    /* Handle the strikethrough style */
-    if (TTF_HANDLE_STYLE_STRIKETHROUGH(font))
-    {
-        row = TTF_strikethrough_top_row(font);
-        TTF_drawLine_Shaded(font, textbuf, row);
+        if (shaded)
+            TTF_drawLine_Shaded(font, textbuf, row);
+        else
+            TTF_drawLine_Solid(font, textbuf, row);
     }
     return textbuf;
 }

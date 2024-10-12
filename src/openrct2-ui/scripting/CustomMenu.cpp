@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,6 +11,9 @@
 
 #    include "CustomMenu.h"
 
+#    include "../interface/Viewport.h"
+
+#    include <openrct2-ui/UiContext.h>
 #    include <openrct2-ui/input/ShortcutManager.h>
 #    include <openrct2/Input.h>
 #    include <openrct2/world/Map.h>
@@ -86,9 +89,9 @@ namespace OpenRCT2::Scripting
         {
             auto str = CursorNames[value];
             duk_push_lstring(ctx, str.data(), str.size());
-            DukValue::take_from_stack(ctx);
+            return DukValue::take_from_stack(ctx);
         }
-        return {};
+        return ToDuk(ctx, undefined);
     }
 
     template<> CursorID FromDuk(const DukValue& s)
@@ -192,7 +195,7 @@ namespace OpenRCT2::Scripting
             obj.Set("screenCoords", ToDuk(ctx, screenCoords));
             obj.Set("mapCoords", ToDuk(ctx, info.Loc));
 
-            if (info.SpriteType == ViewportInteractionItem::Entity && info.Entity != nullptr)
+            if (info.interactionType == ViewportInteractionItem::Entity && info.Entity != nullptr)
             {
                 obj.Set("entityId", info.Entity->Id.ToUnderlying());
             }

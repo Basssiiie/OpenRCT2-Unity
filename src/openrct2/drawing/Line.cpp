@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -20,10 +20,13 @@ static void GfxDrawLineOnBuffer(DrawPixelInfo& dpi, char colour, const ScreenCoo
 {
     ScreenCoordsXY offset{ coords.x - dpi.x, coords.y - dpi.y };
 
+    const int32_t width = dpi.width;
+    const int32_t height = dpi.height;
+
     // Check to make sure point is in the y range
     if (offset.y < 0)
         return;
-    if (offset.y >= dpi.height)
+    if (offset.y >= height)
         return;
     // Check to make sure we are drawing at least a pixel
     if (!no_pixels)
@@ -41,18 +44,17 @@ static void GfxDrawLineOnBuffer(DrawPixelInfo& dpi, char colour, const ScreenCoo
     }
 
     // Ensure that the end point of the line is within range
-    if (offset.x + no_pixels - dpi.width > 0)
+    if (offset.x + no_pixels - width > 0)
     {
         // If the end point has any pixels outside range
         // cut them off. If there are now no pixels return.
-        no_pixels -= offset.x + no_pixels - dpi.width;
+        no_pixels -= offset.x + no_pixels - width;
         if (no_pixels <= 0)
             return;
     }
 
     // Get the buffer we are drawing to and move to the first coordinate.
-    uint8_t* bits_pointer = dpi.bits
-        + offset.y * (static_cast<int64_t>(static_cast<int64_t>(dpi.pitch) + static_cast<int64_t>(dpi.width))) + offset.x;
+    uint8_t* bits_pointer = dpi.bits + offset.y * dpi.LineStride() + offset.x;
 
     // Draw the line to the specified colour
     for (; no_pixels > 0; --no_pixels, ++bits_pointer)
@@ -74,10 +76,11 @@ static void GfxDrawLineOnBuffer(DrawPixelInfo& dpi, char colour, const ScreenCoo
 
 void GfxDrawLineSoftware(DrawPixelInfo& dpi, const ScreenLine& line, int32_t colour)
 {
-    int32_t x1 = line.GetX1();
-    int32_t x2 = line.GetX2();
-    int32_t y1 = line.GetY1();
-    int32_t y2 = line.GetY2();
+    const ZoomLevel zoom = dpi.zoom_level;
+    int32_t x1 = zoom.ApplyInversedTo(line.GetX1());
+    int32_t x2 = zoom.ApplyInversedTo(line.GetX2());
+    int32_t y1 = zoom.ApplyInversedTo(line.GetY1());
+    int32_t y2 = zoom.ApplyInversedTo(line.GetY2());
     // Check to make sure the line is within the drawing area
     if ((x1 < dpi.x) && (x2 < dpi.x))
     {

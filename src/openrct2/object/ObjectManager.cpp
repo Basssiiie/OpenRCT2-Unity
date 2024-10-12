@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,10 +10,13 @@
 #include "ObjectManager.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../ParkImporter.h"
 #include "../audio/audio.h"
 #include "../core/Console.hpp"
+#include "../core/JobPool.h"
 #include "../core/Memory.hpp"
+#include "../interface/Window.h"
 #include "../localisation/StringIds.h"
 #include "../ride/Ride.h"
 #include "../ride/RideAudio.h"
@@ -21,6 +24,7 @@
 #include "BannerSceneryEntry.h"
 #include "LargeSceneryObject.h"
 #include "Object.h"
+#include "ObjectLimits.h"
 #include "ObjectList.h"
 #include "ObjectRepository.h"
 #include "PathAdditionObject.h"
@@ -35,6 +39,8 @@
 #include <mutex>
 #include <thread>
 #include <unordered_set>
+
+using namespace OpenRCT2;
 
 /**
  * Represents an object that is to be loaded or is loaded and ready
@@ -79,7 +85,7 @@ public:
             return nullptr;
         }
 
-        if (index >= static_cast<size_t>(object_entry_group_counts[EnumValue(objectType)]))
+        if (index >= static_cast<size_t>(getObjectEntryGroupCount(objectType)))
         {
 #ifdef DEBUG
             if (index != OBJECT_ENTRY_INDEX_NULL)
@@ -142,9 +148,9 @@ public:
     ObjectList GetLoadedObjects() override
     {
         ObjectList objectList;
-        for (auto objectType : ObjectTypes)
+        for (auto objectType : getAllObjectTypes())
         {
-            auto maxObjectsOfType = static_cast<ObjectEntryIndex>(object_entry_group_counts[EnumValue(objectType)]);
+            auto maxObjectsOfType = static_cast<ObjectEntryIndex>(getObjectEntryGroupCount(objectType));
             for (ObjectEntryIndex i = 0; i < maxObjectsOfType; i++)
             {
                 auto obj = GetLoadedObject(objectType, i);
@@ -181,13 +187,13 @@ public:
         return RepositoryItemToObject(ori, slot);
     }
 
-    void LoadObjects(const ObjectList& objectList) override
+    void LoadObjects(const ObjectList& objectList, const bool reportProgress) override
     {
         // Find all the required objects
         auto requiredObjects = GetRequiredObjects(objectList);
 
         // Load the required objects
-        LoadObjects(requiredObjects);
+        LoadObjects(requiredObjects, reportProgress);
 
         // Update indices.
         UpdateSceneryGroupIndexes();
@@ -311,7 +317,7 @@ private:
 
     void UnloadAll(bool onlyTransient)
     {
-        for (auto type : ObjectTypes)
+        for (auto type : getAllObjectTypes())
         {
             if (!onlyTransient || !IsIntransientObjectType(type))
             {
@@ -384,7 +390,7 @@ private:
             return static_cast<ObjectEntryIndex>(std::distance(list.begin(), it));
         }
 
-        auto maxSize = object_entry_group_counts[EnumValue(objectType)];
+        auto maxSize = getObjectEntryGroupCount(objectType);
         if (list.size() < static_cast<size_t>(maxSize))
         {
             list.emplace_back();
@@ -442,7 +448,7 @@ private:
         // Unload objects that are not in the hash set
         size_t totalObjectsLoaded = 0;
         size_t numObjectsUnloaded = 0;
-        for (auto type : ObjectTypes)
+        for (auto type : getAllObjectTypes())
         {
             if (!IsIntransientObjectType(type))
             {
@@ -521,10 +527,10 @@ private:
         std::vector<ObjectToLoad> requiredObjects;
         std::vector<ObjectEntryDescriptor> missingObjects;
 
-        for (auto objectType : ObjectTypes)
+        for (auto objectType : getAllObjectTypes())
         {
             auto& descriptors = objectList.GetList(objectType);
-            auto maxSize = static_cast<size_t>(object_entry_group_counts[EnumValue(objectType)]);
+            auto maxSize = static_cast<size_t>(getObjectEntryGroupCount(objectType));
             auto listSize = static_cast<ObjectEntryIndex>(std::min(descriptors.size(), maxSize));
             for (ObjectEntryIndex i = 0; i < listSize; i++)
             {
@@ -554,31 +560,17 @@ private:
         return requiredObjects;
     }
 
-    template<typename T, typename TFunc> static void ParallelFor(const std::vector<T>& items, TFunc func)
+    void ReportProgress(size_t numLoaded, size_t numRequired)
     {
-        auto partitions = std::thread::hardware_concurrency();
-        auto partitionSize = (items.size() + (partitions - 1)) / partitions;
-        std::vector<std::thread> threads;
-        for (size_t n = 0; n < partitions; n++)
-        {
-            auto begin = n * partitionSize;
-            auto end = std::min(items.size(), begin + partitionSize);
-            threads.emplace_back(
-                [func](size_t pbegin, size_t pend) {
-                    for (size_t i = pbegin; i < pend; i++)
-                    {
-                        func(i);
-                    }
-                },
-                begin, end);
-        }
-        for (auto& t : threads)
-        {
-            t.join();
-        }
+        constexpr auto kObjectLoadMinProgress = 10;
+        constexpr auto kObjectLoadMaxProgress = 90;
+        constexpr auto kObjectLoadProgressRange = kObjectLoadMaxProgress - kObjectLoadMinProgress;
+
+        const auto currentProgress = kObjectLoadMinProgress + (numLoaded * kObjectLoadProgressRange / numRequired);
+        OpenRCT2::GetContext()->SetProgress(static_cast<uint32_t>(currentProgress), 100, STR_STRING_M_PERCENT);
     }
 
-    void LoadObjects(std::vector<ObjectToLoad>& requiredObjects)
+    void LoadObjects(std::vector<ObjectToLoad>& requiredObjects, bool reportProgress)
     {
         std::vector<Object*> objects;
         std::vector<Object*> newLoadedObjects;
@@ -605,11 +597,11 @@ private:
         std::sort(objectsToLoad.begin(), objectsToLoad.end());
         objectsToLoad.erase(std::unique(objectsToLoad.begin(), objectsToLoad.end()), objectsToLoad.end());
 
-        // Load the objects.
+        // Prepare for loading objects multi-threaded
+        auto numProcessed = 0;
+        auto numRequired = objectsToLoad.size();
         std::mutex commonMutex;
-        ParallelFor(objectsToLoad, [&](size_t i) {
-            const auto* requiredObject = objectsToLoad[i];
-
+        auto loadSingleObject = [&](const ObjectRepositoryItem* requiredObject) {
             // Object requires to be loaded, if the object successfully loads it will register it
             // as a loaded object otherwise placed into the badObjects list.
             auto newObject = _objectRepository.LoadObject(requiredObject);
@@ -626,7 +618,24 @@ private:
                 // Connect the ori to the registered object
                 _objectRepository.RegisterLoadedObject(requiredObject, std::move(newObject));
             }
-        });
+
+            numProcessed++;
+        };
+
+        auto completionFn = [&]() {
+            if (reportProgress && (numProcessed % 100) == 0)
+                ReportProgress(numProcessed, numRequired);
+        };
+
+        // Dispatch loading the objects
+        JobPool jobs{};
+        for (auto* object : objectsToLoad)
+        {
+            jobs.AddTask([object, &loadSingleObject]() { loadSingleObject(object); }, completionFn);
+        }
+
+        // Wait until all jobs are fully completed
+        jobs.Join();
 
         // Assign the loaded objects to the required objects
         for (auto& requiredObject : requiredObjects)
@@ -672,7 +681,7 @@ private:
         }
 
         // Set the new object lists
-        for (auto type : ObjectTypes)
+        for (auto type : getAllObjectTypes())
         {
             if (!IsIntransientObjectType(type))
             {
@@ -724,7 +733,7 @@ private:
         }
 
         // Build object lists
-        const auto maxRideObjects = static_cast<size_t>(object_entry_group_counts[EnumValue(ObjectType::Ride)]);
+        const auto maxRideObjects = static_cast<size_t>(getObjectEntryGroupCount(ObjectType::Ride));
         for (size_t i = 0; i < maxRideObjects; i++)
         {
             auto* rideObject = static_cast<RideObject*>(GetLoadedObject(ObjectType::Ride, i));
@@ -754,8 +763,8 @@ private:
 
     void ReportObjectLoadProblem(const RCTObjectEntry* entry)
     {
-        utf8 objName[DAT_NAME_LENGTH + 1] = { 0 };
-        std::copy_n(entry->name, DAT_NAME_LENGTH, objName);
+        utf8 objName[kDatNameLength + 1] = { 0 };
+        std::copy_n(entry->name, kDatNameLength, objName);
         Console::Error::WriteLine("[%s] Object could not be loaded.", objName);
     }
 };

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,11 +12,15 @@
 #include "../core/EnumMap.hpp"
 #include "../drawing/Drawing.h"
 #include "../sprites.h"
+#include "../util/Util.h"
 
-#include <algorithm>
 #include <cmath>
 
 ColourShadeMap ColourMapA[COLOUR_COUNT] = {};
+
+static constexpr uint8_t kLegacyColourMaskBase = 0x1F;
+static constexpr uint8_t kLegacyColourFlagOutline = (1 << 5);
+static constexpr uint8_t kLegacyColourFlagInset = (1 << 6);
 
 enum
 {
@@ -40,7 +44,7 @@ void ColoursInitMaps()
     for (int32_t i = 0; i < COLOUR_COUNT; i++)
     {
         // Get palette index in g1 / g2
-        const auto paletteIndex = (i < COLOUR_NUM_ORIGINAL) ? SPR_PALETTE_2_START : SPR_G2_PALETTE_BEGIN - COLOUR_NUM_ORIGINAL;
+        const auto paletteIndex = (i < kColourNumOriginal) ? SPR_PALETTE_2_START : SPR_G2_PALETTE_BEGIN - kColourNumOriginal;
         const G1Element* g1 = GfxGetG1Element(paletteIndex + i);
         if (g1 != nullptr)
         {
@@ -60,7 +64,7 @@ void ColoursInitMaps()
     }
 }
 
-namespace Colour
+namespace OpenRCT2::Colour
 {
     static const EnumMap<colour_t> LookupTable{
         { "black", COLOUR_BLACK },
@@ -127,10 +131,21 @@ namespace Colour
         return (result != LookupTable.end()) ? result->second : defaultValue;
     }
 
-} // namespace Colour
+    u8string ToString(colour_t colour)
+    {
+        auto result = LookupTable.find(colour);
+        if (result != LookupTable.end())
+            return u8string(result->first);
+
+        return "black";
+    }
+
+} // namespace OpenRCT2::Colour
 
 #ifndef NO_TTF
-static uint8_t BlendColourMap[PALETTE_COUNT][PALETTE_COUNT] = { 0 };
+static BlendColourMapType BlendColourMap = { 0 };
+
+static bool BlendColourMapInitialised = false;
 
 static uint8_t FindClosestPaletteIndex(uint8_t red, uint8_t green, uint8_t blue)
 {
@@ -152,21 +167,85 @@ static uint8_t FindClosestPaletteIndex(uint8_t red, uint8_t green, uint8_t blue)
     return closest;
 }
 
+static void InitBlendColourMap()
+{
+    for (size_t i = 0; i < PALETTE_SIZE; i++)
+    {
+        for (size_t j = i; j < PALETTE_SIZE; j++)
+        {
+            uint8_t red = (gPalette[i].Red + gPalette[j].Red) / 2;
+            uint8_t green = (gPalette[i].Green + gPalette[j].Green) / 2;
+            uint8_t blue = (gPalette[i].Blue + gPalette[j].Blue) / 2;
+
+            auto colour = FindClosestPaletteIndex(red, green, blue);
+            BlendColourMap[i][j] = colour;
+            BlendColourMap[j][i] = colour;
+        }
+    }
+    BlendColourMapInitialised = true;
+}
+
+BlendColourMapType* GetBlendColourMap()
+{
+    if (!BlendColourMapInitialised)
+    {
+        InitBlendColourMap();
+    }
+    return &BlendColourMap;
+}
+
 uint8_t BlendColours(const uint8_t paletteIndex1, const uint8_t paletteIndex2)
 {
-    const uint8_t cMin = std::min(paletteIndex1, paletteIndex2);
-    const uint8_t cMax = std::max(paletteIndex1, paletteIndex2);
-
-    if (BlendColourMap[cMin][cMax] != 0)
+    if (!BlendColourMapInitialised)
     {
-        return BlendColourMap[cMin][cMax];
+        InitBlendColourMap();
     }
-
-    uint8_t red = (gPalette[cMin].Red + gPalette[cMax].Red) / 2;
-    uint8_t green = (gPalette[cMin].Green + gPalette[cMax].Green) / 2;
-    uint8_t blue = (gPalette[cMin].Blue + gPalette[cMax].Blue) / 2;
-
-    BlendColourMap[cMin][cMax] = FindClosestPaletteIndex(red, green, blue);
-    return BlendColourMap[cMin][cMax];
+    return BlendColourMap[paletteIndex1][paletteIndex2];
+}
+#else
+BlendColourMapType* GetBlendColourMap()
+{
+    return nullptr;
 }
 #endif
+
+bool ColourWithFlags::hasFlag(ColourFlag flag) const
+{
+    return flags & EnumToFlag(flag);
+}
+
+void ColourWithFlags::setFlag(ColourFlag flag, bool on)
+{
+    if (on)
+        flags |= EnumToFlag(flag);
+    else
+        flags &= ~EnumToFlag(flag);
+}
+
+ColourWithFlags ColourWithFlags::withFlag(ColourFlag flag, bool on) const
+{
+    struct ColourWithFlags result = *this;
+    result.setFlag(flag, on);
+    return result;
+}
+
+ColourWithFlags ColourWithFlags::fromLegacy(uint8_t legacy)
+{
+    ColourWithFlags result{};
+    result.colour = legacy & kLegacyColourMaskBase;
+    if (legacy & kLegacyColourFlagTranslucent)
+        result.flags |= EnumToFlag(ColourFlag::translucent);
+    if (legacy & kLegacyColourFlagInset)
+        result.flags |= EnumToFlag(ColourFlag::inset);
+    if (legacy & kLegacyColourFlagOutline)
+        result.flags |= EnumToFlag(ColourFlag::withOutline);
+
+    return result;
+}
+
+ColourWithFlags& ColourWithFlags::operator=(colour_t rhs)
+{
+    colour = rhs;
+    flags = 0;
+    return *this;
+}

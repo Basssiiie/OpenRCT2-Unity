@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,7 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#if !defined(DISABLE_HTTP) && !defined(_WIN32)
+#if !defined(DISABLE_HTTP) && !defined(_WIN32) && !defined(__ANDROID__)
 
 #    include "Http.h"
 
@@ -27,7 +27,7 @@
 
 #    define OPENRCT2_USER_AGENT "OpenRCT2/" OPENRCT2_VERSION
 
-namespace Http
+namespace OpenRCT2::Http
 {
     static size_t WriteData(const char* src, size_t size, size_t nmemb, void* userdata)
     {
@@ -161,6 +161,6 @@ namespace Http
         return res;
     }
 
-} // namespace Http
+} // namespace OpenRCT2::Http
 
 #endif

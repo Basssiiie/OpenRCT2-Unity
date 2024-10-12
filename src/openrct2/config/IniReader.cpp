@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,6 @@
 
 #include "IniReader.hpp"
 
-#include "../common.h"
 #include "../core/IStream.hpp"
 #include "../core/String.hpp"
 #include "../core/StringBuilder.h"
@@ -19,6 +18,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+using namespace OpenRCT2;
 
 /**
  * Simple tuple (start, length) representing a text span in a buffer.

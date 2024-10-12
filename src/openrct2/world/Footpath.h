@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,26 +10,18 @@
 #pragma once
 
 #include "../Identifiers.h"
-#include "../common.h"
-#include "../interface/Viewport.h"
 #include "../object/Object.h"
 
 class FootpathObject;
 class FootpathSurfaceObject;
 class FootpathRailingsObject;
 struct PathElement;
+struct TileElement;
 
-enum
-{
-    PROVISIONAL_PATH_FLAG_SHOW_ARROW = (1 << 0),
-    PROVISIONAL_PATH_FLAG_1 = (1 << 1),
-    PROVISIONAL_PATH_FLAG_2 = (1 << 2),
-};
-
-constexpr auto FootpathMaxHeight = 248 * COORDS_Z_STEP;
-constexpr auto FootpathMinHeight = 2 * COORDS_Z_STEP;
-constexpr auto PATH_HEIGHT_STEP = 2 * COORDS_Z_STEP;
-constexpr auto PATH_CLEARANCE = 4 * COORDS_Z_STEP;
+constexpr auto kFootpathMaxHeight = 248 * kCoordsZStep;
+constexpr auto kFootpathMinHeight = 2 * kCoordsZStep;
+constexpr auto kPathHeightStep = 2 * kCoordsZStep;
+constexpr auto kPathClearance = 4 * kCoordsZStep;
 
 enum class RailingEntrySupportType : uint8_t
 {
@@ -59,11 +51,11 @@ struct PathRailingsDescriptor
 };
 
 using PathConstructFlags = uint8_t;
-namespace PathConstructFlag
+namespace OpenRCT2::PathConstructFlag
 {
     constexpr PathConstructFlags IsQueue = 1 << 0;
     constexpr PathConstructFlags IsLegacyPathObject = 1 << 1;
-} // namespace PathConstructFlag
+} // namespace OpenRCT2::PathConstructFlag
 
 struct FootpathSelection
 {
@@ -77,17 +69,6 @@ struct FootpathSelection
     {
         return IsQueueSelected ? QueueSurface : NormalSurface;
     }
-};
-
-struct ProvisionalFootpath
-{
-    ObjectEntryIndex Type;
-    CoordsXYZ Position;
-    uint8_t Slope;
-    uint8_t Flags;
-    ObjectEntryIndex SurfaceIndex;
-    ObjectEntryIndex RailingsIndex;
-    PathConstructFlags ConstructFlags;
 };
 
 // Masks for values stored in TileElement.type
@@ -174,26 +155,18 @@ enum
 };
 
 extern FootpathSelection gFootpathSelection;
-extern ProvisionalFootpath gProvisionalFootpath;
 extern uint16_t gFootpathSelectedId;
 extern CoordsXYZ gFootpathConstructFromPosition;
 extern uint8_t gFootpathConstructSlope;
 extern uint8_t gFootpathGroundFlags;
 
 // Given a direction, this will return how to increase/decrease the x and y coordinates.
-extern const std::array<CoordsXY, NumOrthogonalDirections> DirectionOffsets;
-extern const std::array<CoordsXY, NumOrthogonalDirections> BinUseOffsets;
-extern const std::array<CoordsXY, NumOrthogonalDirections * 2> BenchUseOffsets;
+extern const std::array<CoordsXY, kNumOrthogonalDirections> DirectionOffsets;
+extern const std::array<CoordsXY, kNumOrthogonalDirections> BinUseOffsets;
+extern const std::array<CoordsXY, kNumOrthogonalDirections * 2> BenchUseOffsets;
 
 PathElement* MapGetFootpathElement(const CoordsXYZ& coords);
 void FootpathInterruptPeeps(const CoordsXYZ& footpathPos);
-money64 FootpathProvisionalSet(
-    ObjectEntryIndex type, ObjectEntryIndex railingsType, const CoordsXYZ& footpathLoc, int32_t slope,
-    PathConstructFlags constructFlags);
-void FootpathProvisionalRemove();
-void FootpathProvisionalUpdate();
-CoordsXY FootpathGetCoordinatesFromPos(const ScreenCoordsXY& screenCoords, int32_t* direction, TileElement** tileElement);
-CoordsXY FootpathBridgeGetInfoFromPos(const ScreenCoordsXY& screenCoords, int32_t* direction, TileElement** tileElement);
 void FootpathRemoveLitter(const CoordsXYZ& footpathPos);
 void FootpathConnectEdges(const CoordsXY& footpathPos, TileElement* tileElement, int32_t flags);
 void FootpathUpdateQueueChains();
@@ -213,3 +186,4 @@ const FootpathRailingsObject* GetPathRailingsEntry(ObjectEntryIndex entryIndex);
 
 void FootpathQueueChainReset();
 void FootpathQueueChainPush(RideId rideIndex);
+bool FootpathIsZAndDirectionValid(const PathElement& tileElement, int32_t currentZ, int32_t currentDirection);

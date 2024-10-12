@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,16 +12,15 @@
 #include "../Context.h"
 #include "../audio/AudioMixer.h"
 #include "../audio/audio.h"
+#include "../core/UTF8.h"
 #include "../drawing/Drawing.h"
+#include "../drawing/Text.h"
 #include "../localisation/Formatter.h"
 #include "../localisation/Formatting.h"
-#include "../localisation/Localisation.h"
 #include "../network/network.h"
 #include "../platform/Platform.h"
 #include "../util/Util.h"
 #include "../world/Location.hpp"
-
-#include <algorithm>
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Audio;
@@ -53,7 +52,7 @@ bool ChatAvailable()
 void ChatOpen()
 {
     gChatOpen = true;
-    _chatTextInputSession = ContextStartTextInput(_chatCurrentLine, CHAT_MAX_MESSAGE_LENGTH);
+    _chatTextInputSession = ContextStartTextInput(_chatCurrentLine, kChatMaxMessageLength);
 }
 
 void ChatClose()
@@ -86,7 +85,7 @@ void ChatUpdate()
     _chatCaretTicks = (_chatCaretTicks + 1) % 30;
 }
 
-void ChatDraw(DrawPixelInfo& dpi, uint8_t chatBackgroundColor)
+void ChatDraw(DrawPixelInfo& dpi, ColourWithFlags chatBackgroundColor)
 {
     thread_local std::string lineBuffer;
 
@@ -97,7 +96,7 @@ void ChatDraw(DrawPixelInfo& dpi, uint8_t chatBackgroundColor)
     }
 
     _chatLeft = 10;
-    _chatRight = std::min((ContextGetWidth() - 10), CHAT_MAX_WINDOW_WIDTH);
+    _chatRight = std::min<int16_t>((ContextGetWidth() - 10), kChatMaxWindowWidth);
     _chatWidth = _chatRight - _chatLeft;
     _chatBottom = ContextGetHeight() - 45;
     _chatTop = _chatBottom - 10;
@@ -158,7 +157,7 @@ void ChatDraw(DrawPixelInfo& dpi, uint8_t chatBackgroundColor)
     int32_t stringHeight = 0;
 
     // Draw chat history
-    for (size_t i = 0; i < CHAT_HISTORY_SIZE; i++, screenCoords.y -= stringHeight)
+    for (size_t i = 0; i < kChatHistorySize; i++, screenCoords.y -= stringHeight)
     {
         if (i >= _chatHistory.size())
             break;
@@ -220,7 +219,7 @@ void ChatAddHistory(std::string_view s)
     std::string buffer = timeBuffer;
     buffer += s;
 
-    if (_chatHistory.size() >= CHAT_HISTORY_SIZE)
+    if (_chatHistory.size() >= kChatHistorySize)
     {
         _chatHistory.pop_back();
         _chatHistoryTime.pop_back();
@@ -232,7 +231,7 @@ void ChatAddHistory(std::string_view s)
     // Log to file (src only as logging does its own timestamp)
     NetworkAppendChatLog(s);
 
-    CreateAudioChannel(SoundId::NewsItem, 0, MIXER_VOLUME_MAX, 0.5f, 1.5f, true);
+    CreateAudioChannel(SoundId::NewsItem, 0, kMixerVolumeMax, 0.5f, 1.5f, true);
 }
 
 void ChatInput(enum ChatInput input)
@@ -289,7 +288,7 @@ static int32_t ChatHistoryDrawString(DrawPixelInfo& dpi, const char* text, const
     int32_t lineY = screenCoords.y;
     for (int32_t line = 0; line <= numLines; ++line)
     {
-        GfxDrawString(dpi, { screenCoords.x, lineY - (numLines * lineHeight) }, bufferPtr, { TEXT_COLOUR_254 });
+        DrawText(dpi, { screenCoords.x, lineY - (numLines * lineHeight) }, { TEXT_COLOUR_254 }, bufferPtr);
         bufferPtr = GetStringEnd(bufferPtr) + 1;
         lineY += lineHeight;
     }

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,11 +9,12 @@
 
 #include "Json.hpp"
 
+#include "../Diagnostic.h"
 #include "FileStream.h"
 #include "Memory.hpp"
 #include "String.hpp"
 
-namespace Json
+namespace OpenRCT2::Json
 {
     json_t ReadFromFile(u8string_view path, size_t maxSize)
     {
@@ -32,7 +33,7 @@ namespace Json
 
         try
         {
-            json = json_t::parse(fileData);
+            json = json_t::parse(fileData, /* callback */ nullptr, /* allow_exceptions */ true, /* ignore_comments */ true);
         }
         catch (const json_t::exception& e)
         {
@@ -59,7 +60,7 @@ namespace Json
 
         try
         {
-            json = json_t::parse(raw);
+            json = json_t::parse(raw, /* callback */ nullptr, /* allow_exceptions */ true, /* ignore_comments */ true);
         }
         catch (const json_t::exception& e)
         {
@@ -75,7 +76,8 @@ namespace Json
 
         try
         {
-            json = json_t::parse(vec.begin(), vec.end());
+            json = json_t::parse(
+                vec.begin(), vec.end(), /* callback */ nullptr, /* allow_exceptions */ true, /* ignore_comments */ true);
         }
         catch (const json_t::exception& e)
         {
@@ -123,4 +125,4 @@ namespace Json
 
         return retVal;
     }
-} // namespace Json
+} // namespace OpenRCT2::Json

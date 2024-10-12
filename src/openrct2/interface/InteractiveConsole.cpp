@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -13,6 +13,7 @@
 #include "../Date.h"
 #include "../EditorObjectSelectionSession.h"
 #include "../Game.h"
+#include "../GameState.h"
 #include "../OpenRCT2.h"
 #include "../PlatformEnvironment.h"
 #include "../ReplayManager.h"
@@ -34,6 +35,7 @@
 #include "../drawing/Drawing.h"
 #include "../drawing/Font.h"
 #include "../drawing/Image.h"
+#include "../entity/Balloon.h"
 #include "../entity/EntityList.h"
 #include "../entity/EntityRegistry.h"
 #include "../entity/Staff.h"
@@ -41,7 +43,6 @@
 #include "../interface/Colour.h"
 #include "../interface/Window_internal.h"
 #include "../localisation/Formatting.h"
-#include "../localisation/Localisation.h"
 #include "../management/Finance.h"
 #include "../management/NewsItem.h"
 #include "../management/Research.h"
@@ -62,7 +63,6 @@
 #include "../world/Scenery.h"
 #include "Viewport.h"
 
-#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdarg>
@@ -76,6 +76,8 @@
 #ifndef NO_TTF
 #    include "../drawing/TTF.h"
 #endif
+
+using namespace OpenRCT2;
 
 using arguments_t = std::vector<std::string>;
 using OpenRCT2::Date;
@@ -205,9 +207,9 @@ static int32_t ConsoleCommandRides(InteractiveConsole& console, const arguments_
                 else
                 {
                     auto res = SetOperatingSetting(RideId::FromUnderlying(ride_index), RideSetSetting::RideType, type);
-                    if (res == MONEY64_UNDEFINED)
+                    if (res == kMoney64Undefined)
                     {
-                        if (!gCheatsAllowArbitraryRideTypeChanges)
+                        if (!GetGameState().Cheats.AllowArbitraryRideTypeChanges)
                         {
                             console.WriteFormatLine(
                                 "That didn't work. Try enabling the 'Allow arbitrary ride type changes' cheat");
@@ -480,7 +482,7 @@ static int32_t ConsoleCommandStaff(InteractiveConsole& console, const arguments_
                 {
                     char costume_name[128] = { 0 };
                     StringId costume = StaffCostumeNames[i];
-                    OpenRCT2::FormatStringLegacy(costume_name, 128, STR_DROPDOWN_MENU_LABEL, &costume);
+                    OpenRCT2::FormatStringLegacy(costume_name, 128, STR_STRINGID, &costume);
                     // That's a terrible hack here. Costume names include inline sprites
                     // that don't work well with the console, so manually skip past them.
                     console.WriteFormatLine("        costume %i: %s", i, costume_name + 7);
@@ -547,52 +549,55 @@ static int32_t ConsoleCommandStaff(InteractiveConsole& console, const arguments_
 
 static int32_t ConsoleCommandGet(InteractiveConsole& console, const arguments_t& argv)
 {
+    auto& gameState = GetGameState();
+
     if (!argv.empty())
     {
         if (argv[0] == "park_rating")
         {
-            console.WriteFormatLine("park_rating %d", gParkRating);
+            console.WriteFormatLine("park_rating %d", gameState.Park.Rating);
         }
         else if (argv[0] == "park_value")
         {
-            console.WriteFormatLine("park_value %d", gParkValue / 10);
+            console.WriteFormatLine("park_value %d", gameState.Park.Value / 10);
         }
         else if (argv[0] == "company_value")
         {
-            console.WriteFormatLine("company_value %d", gCompanyValue / 10);
+            console.WriteFormatLine("company_value %d", gameState.CompanyValue / 10);
         }
         else if (argv[0] == "money")
         {
-            console.WriteFormatLine("money %d.%d0", gCash / 10, gCash % 10);
+            console.WriteFormatLine("money %d.%d0", gameState.Cash / 10, gameState.Cash % 10);
         }
         else if (argv[0] == "scenario_initial_cash")
         {
-            console.WriteFormatLine("scenario_initial_cash %d", gInitialCash / 10);
+            console.WriteFormatLine("scenario_initial_cash %d", gameState.InitialCash / 10);
         }
         else if (argv[0] == "current_loan")
         {
-            console.WriteFormatLine("current_loan %d", gBankLoan / 10);
+            console.WriteFormatLine("current_loan %d", gameState.BankLoan / 10);
         }
         else if (argv[0] == "max_loan")
         {
-            console.WriteFormatLine("max_loan %d", gMaxBankLoan / 10);
+            console.WriteFormatLine("max_loan %d", gameState.MaxBankLoan / 10);
         }
         else if (argv[0] == "guest_initial_cash")
         {
-            console.WriteFormatLine("guest_initial_cash %d.%d0", gGuestInitialCash / 10, gGuestInitialCash % 10);
+            console.WriteFormatLine(
+                "guest_initial_cash %d.%d0", gameState.GuestInitialCash / 10, gameState.GuestInitialCash % 10);
         }
         else if (argv[0] == "guest_initial_happiness")
         {
-            uint32_t current_happiness = gGuestInitialHappiness;
+            uint32_t current_happiness = gameState.GuestInitialHappiness;
             for (int32_t i = 15; i <= 99; i++)
             {
                 if (i == 99)
                 {
-                    console.WriteFormatLine("guest_initial_happiness %d%%  (%d)", 15, gGuestInitialHappiness);
+                    console.WriteFormatLine("guest_initial_happiness %d%%  (%d)", 15, gameState.GuestInitialHappiness);
                 }
-                else if (current_happiness == CalculateGuestInitialHappiness(i))
+                else if (current_happiness == Park::CalculateGuestInitialHappiness(i))
                 {
-                    console.WriteFormatLine("guest_initial_happiness %d%%  (%d)", i, gGuestInitialHappiness);
+                    console.WriteFormatLine("guest_initial_happiness %d%%  (%d)", i, gameState.GuestInitialHappiness);
                     break;
                 }
             }
@@ -600,72 +605,79 @@ static int32_t ConsoleCommandGet(InteractiveConsole& console, const arguments_t&
         else if (argv[0] == "guest_initial_hunger")
         {
             console.WriteFormatLine(
-                "guest_initial_hunger %d%%  (%d)", ((255 - gGuestInitialHunger) * 100) / 255, gGuestInitialHunger);
+                "guest_initial_hunger %d%%  (%d)", ((255 - gameState.GuestInitialHunger) * 100) / 255,
+                gameState.GuestInitialHunger);
         }
         else if (argv[0] == "guest_initial_thirst")
         {
             console.WriteFormatLine(
-                "guest_initial_thirst %d%%  (%d)", ((255 - gGuestInitialThirst) * 100) / 255, gGuestInitialThirst);
+                "guest_initial_thirst %d%%  (%d)", ((255 - gameState.GuestInitialThirst) * 100) / 255,
+                gameState.GuestInitialThirst);
         }
         else if (argv[0] == "guest_prefer_less_intense_rides")
         {
             console.WriteFormatLine(
-                "guest_prefer_less_intense_rides %d", (gParkFlags & PARK_FLAGS_PREF_LESS_INTENSE_RIDES) != 0);
+                "guest_prefer_less_intense_rides %d", (gameState.Park.Flags & PARK_FLAGS_PREF_LESS_INTENSE_RIDES) != 0);
         }
         else if (argv[0] == "guest_prefer_more_intense_rides")
         {
             console.WriteFormatLine(
-                "guest_prefer_more_intense_rides %d", (gParkFlags & PARK_FLAGS_PREF_MORE_INTENSE_RIDES) != 0);
+                "guest_prefer_more_intense_rides %d", (gameState.Park.Flags & PARK_FLAGS_PREF_MORE_INTENSE_RIDES) != 0);
         }
         else if (argv[0] == "forbid_marketing_campaigns")
         {
-            console.WriteFormatLine("forbid_marketing_campaigns %d", (gParkFlags & PARK_FLAGS_FORBID_MARKETING_CAMPAIGN) != 0);
+            console.WriteFormatLine(
+                "forbid_marketing_campaigns %d", (gameState.Park.Flags & PARK_FLAGS_FORBID_MARKETING_CAMPAIGN) != 0);
         }
         else if (argv[0] == "forbid_landscape_changes")
         {
-            console.WriteFormatLine("forbid_landscape_changes %d", (gParkFlags & PARK_FLAGS_FORBID_LANDSCAPE_CHANGES) != 0);
+            console.WriteFormatLine(
+                "forbid_landscape_changes %d", (gameState.Park.Flags & PARK_FLAGS_FORBID_LANDSCAPE_CHANGES) != 0);
         }
         else if (argv[0] == "forbid_tree_removal")
         {
-            console.WriteFormatLine("forbid_tree_removal %d", (gParkFlags & PARK_FLAGS_FORBID_TREE_REMOVAL) != 0);
+            console.WriteFormatLine("forbid_tree_removal %d", (gameState.Park.Flags & PARK_FLAGS_FORBID_TREE_REMOVAL) != 0);
         }
         else if (argv[0] == "forbid_high_construction")
         {
-            console.WriteFormatLine("forbid_high_construction %d", (gParkFlags & PARK_FLAGS_FORBID_HIGH_CONSTRUCTION) != 0);
+            console.WriteFormatLine(
+                "forbid_high_construction %d", (gameState.Park.Flags & PARK_FLAGS_FORBID_HIGH_CONSTRUCTION) != 0);
         }
         else if (argv[0] == "pay_for_rides")
         {
-            console.WriteFormatLine("pay_for_rides %d", (gParkFlags & PARK_FLAGS_PARK_FREE_ENTRY) != 0);
+            console.WriteFormatLine("pay_for_rides %d", (gameState.Park.Flags & PARK_FLAGS_PARK_FREE_ENTRY) != 0);
         }
         else if (argv[0] == "no_money")
         {
-            console.WriteFormatLine("no_money %d", (gParkFlags & PARK_FLAGS_NO_MONEY) != 0);
+            console.WriteFormatLine("no_money %d", (gameState.Park.Flags & PARK_FLAGS_NO_MONEY) != 0);
         }
         else if (argv[0] == "difficult_park_rating")
         {
-            console.WriteFormatLine("difficult_park_rating %d", (gParkFlags & PARK_FLAGS_DIFFICULT_PARK_RATING) != 0);
+            console.WriteFormatLine("difficult_park_rating %d", (gameState.Park.Flags & PARK_FLAGS_DIFFICULT_PARK_RATING) != 0);
         }
         else if (argv[0] == "difficult_guest_generation")
         {
-            console.WriteFormatLine("difficult_guest_generation %d", (gParkFlags & PARK_FLAGS_DIFFICULT_GUEST_GENERATION) != 0);
+            console.WriteFormatLine(
+                "difficult_guest_generation %d", (gameState.Park.Flags & PARK_FLAGS_DIFFICULT_GUEST_GENERATION) != 0);
         }
         else if (argv[0] == "park_open")
         {
-            console.WriteFormatLine("park_open %d", (gParkFlags & PARK_FLAGS_PARK_OPEN) != 0);
+            console.WriteFormatLine("park_open %d", (gameState.Park.Flags & PARK_FLAGS_PARK_OPEN) != 0);
         }
         else if (argv[0] == "land_rights_cost")
         {
-            console.WriteFormatLine("land_rights_cost %d.%d0", gLandPrice / 10, gLandPrice % 10);
+            console.WriteFormatLine("land_rights_cost %d.%d0", gameState.LandPrice / 10, gameState.LandPrice % 10);
         }
         else if (argv[0] == "construction_rights_cost")
         {
             console.WriteFormatLine(
-                "construction_rights_cost %d.%d0", gConstructionRightsPrice / 10, gConstructionRightsPrice % 10);
+                "construction_rights_cost %d.%d0", gameState.ConstructionRightsPrice / 10,
+                gameState.ConstructionRightsPrice % 10);
         }
         else if (argv[0] == "climate")
         {
             console.WriteFormatLine(
-                "climate %s  (%d)", ClimateNames[static_cast<uint8_t>(gClimate)], static_cast<uint8_t>(gClimate));
+                "climate %s  (%d)", ClimateNames[EnumValue(gameState.Climate)], EnumValue(gameState.Climate));
         }
         else if (argv[0] == "game_speed")
         {
@@ -673,7 +685,7 @@ static int32_t ConsoleCommandGet(InteractiveConsole& console, const arguments_t&
         }
         else if (argv[0] == "console_small_font")
         {
-            console.WriteFormatLine("console_small_font %d", gConfigInterface.ConsoleSmallFont);
+            console.WriteFormatLine("console_small_font %d", Config::Get().interface.ConsoleSmallFont);
         }
         else if (argv[0] == "location")
         {
@@ -682,7 +694,7 @@ static int32_t ConsoleCommandGet(InteractiveConsole& console, const arguments_t&
             {
                 Viewport* viewport = WindowGetViewport(w);
                 auto info = GetMapCoordinatesFromPos(
-                    { viewport->view_width / 2, viewport->view_height / 2 }, EnumsToFlags(ViewportInteractionItem::Terrain));
+                    { viewport->ViewWidth() / 2, viewport->ViewHeight() / 2 }, EnumsToFlags(ViewportInteractionItem::Terrain));
 
                 auto tileMapCoord = TileCoordsXY(info.Loc);
                 console.WriteFormatLine("location %d %d", tileMapCoord.x, tileMapCoord.y);
@@ -690,31 +702,31 @@ static int32_t ConsoleCommandGet(InteractiveConsole& console, const arguments_t&
         }
         else if (argv[0] == "window_scale")
         {
-            console.WriteFormatLine("window_scale %.3f", gConfigGeneral.WindowScale);
+            console.WriteFormatLine("window_scale %.3f", Config::Get().general.WindowScale);
         }
         else if (argv[0] == "window_limit")
         {
-            console.WriteFormatLine("window_limit %d", gConfigGeneral.WindowLimit);
+            console.WriteFormatLine("window_limit %d", Config::Get().general.WindowLimit);
         }
         else if (argv[0] == "render_weather_effects")
         {
-            console.WriteFormatLine("render_weather_effects %d", gConfigGeneral.RenderWeatherEffects);
+            console.WriteFormatLine("render_weather_effects %d", Config::Get().general.RenderWeatherEffects);
         }
         else if (argv[0] == "render_weather_gloom")
         {
-            console.WriteFormatLine("render_weather_gloom %d", gConfigGeneral.RenderWeatherGloom);
+            console.WriteFormatLine("render_weather_gloom %d", Config::Get().general.RenderWeatherGloom);
         }
         else if (argv[0] == "cheat_sandbox_mode")
         {
-            console.WriteFormatLine("cheat_sandbox_mode %d", gCheatsSandboxMode);
+            console.WriteFormatLine("cheat_sandbox_mode %d", GetGameState().Cheats.SandboxMode);
         }
         else if (argv[0] == "cheat_disable_clearance_checks")
         {
-            console.WriteFormatLine("cheat_disable_clearance_checks %d", gCheatsDisableClearanceChecks);
+            console.WriteFormatLine("cheat_disable_clearance_checks %d", GetGameState().Cheats.DisableClearanceChecks);
         }
         else if (argv[0] == "cheat_disable_support_limits")
         {
-            console.WriteFormatLine("cheat_disable_support_limits %d", gCheatsDisableSupportLimits);
+            console.WriteFormatLine("cheat_disable_support_limits %d", GetGameState().Cheats.DisableSupportLimits);
         }
         else if (argv[0] == "current_rotation")
         {
@@ -727,7 +739,7 @@ static int32_t ConsoleCommandGet(InteractiveConsole& console, const arguments_t&
 #ifndef NO_TTF
         else if (argv[0] == "enable_hinting")
         {
-            console.WriteFormatLine("enable_hinting %d", gConfigFonts.EnableHinting);
+            console.WriteFormatLine("enable_hinting %d", Config::Get().fonts.EnableHinting);
         }
 #endif
         else
@@ -763,10 +775,11 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
             }
         }
 
+        auto& gameState = GetGameState();
         if (argv[0] == "money" && InvalidArguments(&invalidArgs, double_valid[0]))
         {
             money64 money = ToMoney64FromGBP(double_val[0]);
-            if (gCash != money)
+            if (gameState.Cash != money)
             {
                 auto cheatSetAction = CheatSetAction(CheatType::SetMoney, money);
                 cheatSetAction.SetCallback([&console](const GameAction*, const GameActions::Result* res) {
@@ -797,7 +810,7 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         else if (argv[0] == "current_loan" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
             auto amount = std::clamp(
-                ToMoney64FromGBP(int_val[0]) - ToMoney64FromGBP(int_val[0] % 1000), 0.00_GBP, gMaxBankLoan);
+                ToMoney64FromGBP(int_val[0]) - ToMoney64FromGBP(int_val[0] % 1000), 0.00_GBP, gameState.MaxBankLoan);
             auto scenarioSetSetting = ScenarioSetSettingAction(ScenarioSetSetting::InitialLoan, amount);
             scenarioSetSetting.SetCallback([&console](const GameAction*, const GameActions::Result* res) {
                 if (res->Error != GameActions::Status::Ok)
@@ -835,7 +848,8 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         else if (argv[0] == "guest_initial_happiness" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
             auto scenarioSetSetting = ScenarioSetSettingAction(
-                ScenarioSetSetting::GuestInitialHappiness, CalculateGuestInitialHappiness(static_cast<uint8_t>(int_val[0])));
+                ScenarioSetSetting::GuestInitialHappiness,
+                Park::CalculateGuestInitialHappiness(static_cast<uint8_t>(int_val[0])));
             scenarioSetSetting.SetCallback([&console](const GameAction*, const GameActions::Result* res) {
                 if (res->Error != GameActions::Status::Ok)
                     console.WriteLineError("set guest_initial_happiness command failed, likely due to permissions.");
@@ -936,7 +950,7 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         }
         else if (argv[0] == "pay_for_rides" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
-            SET_FLAG(gParkFlags, PARK_FLAGS_PARK_FREE_ENTRY, int_val[0]);
+            SET_FLAG(gameState.Park.Flags, PARK_FLAGS_PARK_FREE_ENTRY, int_val[0]);
             console.Execute("get pay_for_rides");
         }
         else if (argv[0] == "no_money" && InvalidArguments(&invalidArgs, int_valid[0]))
@@ -1050,8 +1064,8 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         }
         else if (argv[0] == "console_small_font" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
-            gConfigInterface.ConsoleSmallFont = (int_val[0] != 0);
-            ConfigSaveDefault();
+            Config::Get().interface.ConsoleSmallFont = (int_val[0] != 0);
+            Config::Save();
             console.Execute("get console_small_font");
         }
         else if (argv[0] == "location" && InvalidArguments(&invalidArgs, int_valid[0] && int_valid[1]))
@@ -1069,8 +1083,8 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         else if (argv[0] == "window_scale" && InvalidArguments(&invalidArgs, double_valid[0]))
         {
             float newScale = static_cast<float>(0.001 * std::trunc(1000 * double_val[0]));
-            gConfigGeneral.WindowScale = std::clamp(newScale, 0.5f, 5.0f);
-            ConfigSaveDefault();
+            Config::Get().general.WindowScale = std::clamp(newScale, 0.5f, 5.0f);
+            Config::Save();
             GfxInvalidateScreen();
             ContextTriggerResize();
             ContextUpdateCursorScale();
@@ -1083,19 +1097,19 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         }
         else if (argv[0] == "render_weather_effects" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
-            gConfigGeneral.RenderWeatherEffects = (int_val[0] != 0);
-            ConfigSaveDefault();
+            Config::Get().general.RenderWeatherEffects = (int_val[0] != 0);
+            Config::Save();
             console.Execute("get render_weather_effects");
         }
         else if (argv[0] == "render_weather_gloom" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
-            gConfigGeneral.RenderWeatherGloom = (int_val[0] != 0);
-            ConfigSaveDefault();
+            Config::Get().general.RenderWeatherGloom = (int_val[0] != 0);
+            Config::Save();
             console.Execute("get render_weather_gloom");
         }
         else if (argv[0] == "cheat_sandbox_mode" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
-            if (gCheatsSandboxMode != (int_val[0] != 0))
+            if (GetGameState().Cheats.SandboxMode != (int_val[0] != 0))
             {
                 auto cheatSetAction = CheatSetAction(CheatType::SandboxMode, int_val[0] != 0);
                 cheatSetAction.SetCallback([&console](const GameAction*, const GameActions::Result* res) {
@@ -1113,7 +1127,7 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         }
         else if (argv[0] == "cheat_disable_clearance_checks" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
-            if (gCheatsDisableClearanceChecks != (int_val[0] != 0))
+            if (GetGameState().Cheats.DisableClearanceChecks != (int_val[0] != 0))
             {
                 auto cheatSetAction = CheatSetAction(CheatType::DisableClearanceChecks, int_val[0] != 0);
                 cheatSetAction.SetCallback([&console](const GameAction*, const GameActions::Result* res) {
@@ -1131,7 +1145,7 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         }
         else if (argv[0] == "cheat_disable_support_limits" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
-            if (gCheatsDisableSupportLimits != (int_val[0] != 0))
+            if (GetGameState().Cheats.DisableSupportLimits != (int_val[0] != 0))
             {
                 auto cheatSetAction = CheatSetAction(CheatType::DisableSupportLimits, int_val[0] != 0);
                 cheatSetAction.SetCallback([&console](const GameAction*, const GameActions::Result* res) {
@@ -1150,15 +1164,14 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
         else if (argv[0] == "current_rotation" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
             uint8_t currentRotation = GetCurrentRotation();
-            WindowBase* mainWindow = WindowGetMain();
             int32_t newRotation = int_val[0];
             if (newRotation < 0 || newRotation > 3)
             {
                 console.WriteLineError("Invalid argument. Valid rotations are 0-3.");
             }
-            else if (newRotation != currentRotation && mainWindow != nullptr)
+            else if (newRotation != currentRotation)
             {
-                WindowRotateCamera(*mainWindow, newRotation - currentRotation);
+                ViewportRotateAll(newRotation - currentRotation);
             }
             console.Execute("get current_rotation");
         }
@@ -1173,8 +1186,8 @@ static int32_t ConsoleCommandSet(InteractiveConsole& console, const arguments_t&
 #ifndef NO_TTF
         else if (argv[0] == "enable_hinting" && InvalidArguments(&invalidArgs, int_valid[0]))
         {
-            gConfigFonts.EnableHinting = (int_val[0] != 0);
-            ConfigSaveDefault();
+            Config::Get().fonts.EnableHinting = (int_val[0] != 0);
+            Config::Save();
             console.Execute("get enable_hinting");
             TTFToggleHinting();
         }
@@ -1260,10 +1273,12 @@ static int32_t ConsoleCommandLoadObject(InteractiveConsole& console, const argum
             ResearchResetCurrentItem();
             gSilentResearch = false;
         }
-        ScenerySetDefaultPlacementConfiguration();
 
-        auto intent = Intent(INTENT_ACTION_REFRESH_NEW_RIDES);
-        ContextBroadcastIntent(&intent);
+        auto sceneryIntent = Intent(INTENT_ACTION_SET_DEFAULT_SCENERY_CONFIG);
+        ContextBroadcastIntent(&sceneryIntent);
+
+        auto ridesIntent = Intent(INTENT_ACTION_REFRESH_NEW_RIDES);
+        ContextBroadcastIntent(&ridesIntent);
 
         gWindowUpdateTicks = 0;
         GfxInvalidateScreen();
@@ -1292,15 +1307,16 @@ constexpr std::array _objectTypeNames = {
     "Footpath Surface",
     "Footpath Railings",
     "Audio",
+    "Guest Names",
 };
 static_assert(_objectTypeNames.size() == EnumValue(ObjectType::Count));
 
 static int32_t ConsoleCommandCountObjects(InteractiveConsole& console, [[maybe_unused]] const arguments_t& argv)
 {
-    for (auto objectType : ObjectTypes)
+    for (auto objectType : getAllObjectTypes())
     {
-        int32_t entryGroupIndex = 0;
-        for (; entryGroupIndex < object_entry_group_counts[EnumValue(objectType)]; entryGroupIndex++)
+        uint32_t entryGroupIndex = 0;
+        for (; entryGroupIndex < getObjectEntryGroupCount(objectType); entryGroupIndex++)
         {
             if (ObjectEntryGetObject(objectType, entryGroupIndex) == nullptr)
             {
@@ -1308,8 +1324,7 @@ static int32_t ConsoleCommandCountObjects(InteractiveConsole& console, [[maybe_u
             }
         }
         console.WriteFormatLine(
-            "%s: %d/%d", _objectTypeNames[EnumValue(objectType)], entryGroupIndex,
-            object_entry_group_counts[EnumValue(objectType)]);
+            "%s: %d/%d", _objectTypeNames[EnumValue(objectType)], entryGroupIndex, getObjectEntryGroupCount(objectType));
     }
 
     return 0;
@@ -1394,15 +1409,6 @@ static int32_t ConsoleCommandRemoveFloatingObjects(InteractiveConsole& console, 
     return 0;
 }
 
-static int32_t ConsoleCommandRemoveParkFences(InteractiveConsole& console, [[maybe_unused]] const arguments_t& argv)
-{
-    auto action = CheatSetAction(CheatType::RemoveParkFences);
-    GameActions::Execute(&action);
-
-    console.WriteFormatLine("Park fences have been removed.");
-    return 0;
-}
-
 static int32_t ConsoleCommandShowLimits(InteractiveConsole& console, [[maybe_unused]] const arguments_t& argv)
 {
     const auto& tileElements = GetTileElements();
@@ -1420,7 +1426,7 @@ static int32_t ConsoleCommandShowLimits(InteractiveConsole& console, [[maybe_unu
     console.WriteFormatLine("Sprites: %d/%d", spriteCount, MAX_ENTITIES);
     console.WriteFormatLine("Map Elements: %zu/%d", tileElementCount, MAX_TILE_ELEMENTS);
     console.WriteFormatLine("Banners: %d/%zu", bannerCount, MAX_BANNERS);
-    console.WriteFormatLine("Rides: %d/%d", rideCount, OpenRCT2::Limits::MaxRidesInPark);
+    console.WriteFormatLine("Rides: %d/%d", rideCount, OpenRCT2::Limits::kMaxRidesInPark);
     console.WriteFormatLine("Images: %zu/%zu", ImageListGetUsedCount(), ImageListGetMaximum());
     return 0;
 }
@@ -1437,7 +1443,7 @@ static int32_t ConsoleCommandForceDate([[maybe_unused]] InteractiveConsole& cons
 
     // All cases involve providing a year, so grab that first
     year = atoi(argv[0].c_str());
-    if (year < 1 || year > MAX_YEAR)
+    if (year < 1 || year > kMaxYear)
     {
         return -1;
     }
@@ -1914,6 +1920,23 @@ static int32_t ConsoleCommandProfilerStop(
     return 0;
 }
 
+static int32_t ConsoleSpawnBalloon(InteractiveConsole& console, const arguments_t& argv)
+{
+    if (argv.size() < 3)
+    {
+        console.WriteLineError("Need arguments: <x> <y> <z> <colour>");
+        return 1;
+    }
+    int32_t x = kCoordsXYStep * atof(argv[0].c_str());
+    int32_t y = kCoordsXYStep * atof(argv[1].c_str());
+    int32_t z = kCoordsZStep * atof(argv[2].c_str());
+    int32_t col = 28;
+    if (argv.size() > 3)
+        col = atoi(argv[3].c_str());
+    Balloon::Create({ x, y, z }, col, false);
+    return 0;
+}
+
 using console_command_func = int32_t (*)(InteractiveConsole& console, const arguments_t& argv);
 struct ConsoleCommand
 {
@@ -1996,7 +2019,6 @@ static constexpr ConsoleCommand console_command_table[] = {
     { "object_count", ConsoleCommandCountObjects, "Shows the number of objects of each type in the scenario.", "object_count" },
     { "open", ConsoleCommandOpen, "Opens the window with the give name.", "open <window>." },
     { "quit", ConsoleCommandClose, "Closes the console.", "quit" },
-    { "remove_park_fences", ConsoleCommandRemoveParkFences, "Removes all park fences from the surface", "remove_park_fences" },
     { "remove_unused_objects", ConsoleCommandRemoveUnusedObjects, "Removes all the unused objects from the object selection.",
       "remove_unused_objects" },
     { "remove_floating_objects", ConsoleCommandRemoveFloatingObjects, "Removes floating objects", "remove_floating_objects" },
@@ -2006,6 +2028,7 @@ static constexpr ConsoleCommand console_command_table[] = {
     { "say", ConsoleCommandSay, "Say to other players.", "say <message>" },
     { "set", ConsoleCommandSet, "Sets the variable to the specified value.", "set <variable> <value>" },
     { "show_limits", ConsoleCommandShowLimits, "Shows the map data counts and limits.", "show_limits" },
+    { "spawn_balloon", ConsoleSpawnBalloon, "Spawns a balloon.", "spawn_balloon <x> <y> <z> <colour>" },
     { "staff", ConsoleCommandStaff, "Staff management.", "staff <subcommand>" },
     { "terminate", ConsoleCommandTerminate, "Calls std::terminate(), for testing purposes only.", "terminate" },
     { "variables", ConsoleCommandVariables, "Lists all the variables that can be used with get and sometimes set.",

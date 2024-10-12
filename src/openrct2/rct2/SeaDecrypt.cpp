@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,7 +7,6 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#include "../common.h"
 #include "../core/File.h"
 #include "../core/Numerics.hpp"
 #include "../core/Path.hpp"
@@ -17,6 +16,8 @@
 #include <cstring>
 #include <memory>
 #include <string_view>
+
+using namespace OpenRCT2;
 
 constexpr int32_t MASK_SIZE = 0x1000;
 

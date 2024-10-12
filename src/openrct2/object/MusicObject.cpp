@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -28,7 +28,7 @@
 using namespace OpenRCT2;
 using namespace OpenRCT2::Audio;
 
-constexpr size_t DEFAULT_BYTES_PER_TICK = 1378;
+constexpr size_t kDefaultBytesPerTick = 1378;
 
 void MusicObject::Load()
 {
@@ -62,13 +62,13 @@ void MusicObject::Load()
             }
             else
             {
-                track.BytesPerTick = DEFAULT_BYTES_PER_TICK;
+                track.BytesPerTick = kDefaultBytesPerTick;
                 track.Size = track.Asset.GetSize();
             }
         }
         else
         {
-            track.BytesPerTick = DEFAULT_BYTES_PER_TICK;
+            track.BytesPerTick = kDefaultBytesPerTick;
             track.Size = track.Asset.GetSize();
         }
     }
@@ -96,6 +96,11 @@ void MusicObject::DrawPreview(DrawPixelInfo& dpi, int32_t width, int32_t height)
         GfxDrawSprite(dpi, ImageId(_previewImageId), { 0, 0 });
     else
         DrawTextBasic(dpi, { x, y }, STR_WINDOW_NO_IMAGE, {}, { TextAlignment::CENTRE });
+}
+
+bool MusicObject::HasPreview() const
+{
+    return _hasPreview;
 }
 
 void MusicObject::ReadJson(IReadObjectContext* context, json_t& root)

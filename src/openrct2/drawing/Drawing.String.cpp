@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,38 +7,23 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#include "../drawing/Drawing.h"
-
 #include "../Context.h"
-#include "../common.h"
 #include "../config/Config.h"
+#include "../core/CodepointView.hpp"
 #include "../core/String.hpp"
+#include "../core/UTF8.h"
+#include "../core/UnicodeChar.h"
 #include "../drawing/IDrawingContext.h"
 #include "../drawing/IDrawingEngine.h"
+#include "../drawing/Text.h"
 #include "../interface/Viewport.h"
 #include "../localisation/Formatting.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/LocalisationService.h"
 #include "../platform/Platform.h"
 #include "../sprites.h"
-#include "../util/Util.h"
 #include "TTF.h"
 
-#include <algorithm>
-
 using namespace OpenRCT2;
-
-enum : uint32_t
-{
-    TEXT_DRAW_FLAG_INSET = 1 << 0,
-    TEXT_DRAW_FLAG_OUTLINE = 1 << 1,
-    TEXT_DRAW_FLAG_DARK = 1 << 2,
-    TEXT_DRAW_FLAG_EXTRA_DARK = 1 << 3,
-    TEXT_DRAW_FLAG_NO_FORMATTING = 1 << 28,
-    TEXT_DRAW_FLAG_Y_OFFSET_EFFECT = 1 << 29,
-    TEXT_DRAW_FLAG_TTF = 1 << 30,
-    TEXT_DRAW_FLAG_NO_DRAW = 1u << 31
-};
 
 static int32_t TTFGetStringWidth(std::string_view text, FontStyle fontStyle, bool noFormatting);
 
@@ -273,13 +258,14 @@ int32_t GfxWrapString(u8string_view text, int32_t width, FontStyle fontStyle, u8
 /**
  * Draws text that is left aligned and vertically centred.
  */
-void GfxDrawStringLeftCentred(DrawPixelInfo& dpi, StringId format, void* args, colour_t colour, const ScreenCoordsXY& coords)
+void GfxDrawStringLeftCentred(
+    DrawPixelInfo& dpi, StringId format, void* args, ColourWithFlags colour, const ScreenCoordsXY& coords)
 {
-    char buffer[CommonTextBufferSize];
+    char buffer[512];
     auto bufferPtr = buffer;
     FormatStringLegacy(bufferPtr, sizeof(buffer), format, args);
     int32_t height = StringGetHeightRaw(bufferPtr, FontStyle::Medium);
-    GfxDrawString(dpi, coords - ScreenCoordsXY{ 0, (height / 2) }, bufferPtr, { colour });
+    DrawText(dpi, coords - ScreenCoordsXY{ 0, (height / 2) }, { colour }, bufferPtr);
 }
 
 /**
@@ -310,11 +296,10 @@ static void ColourCharacter(uint8_t colour, const uint16_t* current_font_flags, 
  * Changes the palette so that the next character changes colour
  * This is specific to changing to a predefined window related colour
  */
-static void ColourCharacterWindow(uint8_t colour, const uint16_t* current_font_flags, uint8_t* palette_pointer)
+static void ColourCharacterWindow(colour_t colour, const uint16_t* current_font_flags, uint8_t* palette_pointer)
 {
     int32_t eax;
 
-    colour = NOT_TRANSLUCENT(colour);
     eax = ColourMapA[colour].colour_11;
     if (*current_font_flags & TEXT_DRAW_FLAG_OUTLINE)
     {
@@ -341,13 +326,13 @@ void DrawStringCentredRaw(
     DrawPixelInfo& dpi, const ScreenCoordsXY& coords, int32_t numLines, const utf8* text, FontStyle fontStyle)
 {
     ScreenCoordsXY screenCoords(dpi.x, dpi.y);
-    GfxDrawString(dpi, screenCoords, "", { COLOUR_BLACK, fontStyle });
+    DrawText(dpi, screenCoords, { COLOUR_BLACK, fontStyle }, "");
     screenCoords = coords;
 
     for (int32_t i = 0; i <= numLines; i++)
     {
         int32_t width = GfxGetStringWidth(text, fontStyle);
-        GfxDrawString(dpi, screenCoords - ScreenCoordsXY{ width / 2, 0 }, text, { TEXT_COLOUR_254, fontStyle });
+        DrawText(dpi, screenCoords - ScreenCoordsXY{ width / 2, 0 }, { TEXT_COLOUR_254, fontStyle }, text);
 
         const utf8* ch = text;
         const utf8* nextCh = nullptr;
@@ -439,7 +424,7 @@ void DrawNewsTicker(
     int32_t numLines, lineHeight, lineY;
     ScreenCoordsXY screenCoords(dpi.x, dpi.y);
 
-    GfxDrawString(dpi, screenCoords, "", { colour });
+    DrawText(dpi, screenCoords, { colour }, "");
 
     u8string wrappedString;
     GfxWrapString(FormatStringID(format, args), width, FontStyle::Small, &wrappedString, &numLines);
@@ -478,7 +463,7 @@ void DrawNewsTicker(
         }
 
         screenCoords = { coords.x - halfWidth, lineY };
-        GfxDrawString(dpi, screenCoords, buffer, { TEXT_COLOUR_254, FontStyle::Small });
+        DrawText(dpi, screenCoords, { TEXT_COLOUR_254, FontStyle::Small }, buffer);
 
         if (numCharactersDrawn > numCharactersToDraw)
         {
@@ -489,20 +474,6 @@ void DrawNewsTicker(
         lineY += lineHeight;
     }
 }
-
-struct TextDrawInfo
-{
-    int32_t startX;
-    int32_t startY;
-    int32_t x;
-    int32_t y;
-    int32_t maxX;
-    int32_t maxY;
-    int32_t flags;
-    uint8_t palette[8];
-    ::FontStyle FontStyle;
-    const int8_t* y_offset;
-};
 
 static void TTFDrawCharacterSprite(DrawPixelInfo& dpi, int32_t codepoint, TextDrawInfo* info)
 {
@@ -518,7 +489,7 @@ static void TTFDrawCharacterSprite(DrawPixelInfo& dpi, int32_t codepoint, TextDr
         }
 
         PaletteMap paletteMap(info->palette);
-        GfxDrawGlyph(&dpi, sprite, screenCoords, paletteMap);
+        GfxDrawGlyph(dpi, sprite, screenCoords, paletteMap);
     }
 
     info->x += characterWidth;
@@ -535,7 +506,6 @@ static void TTFDrawStringRawSprite(DrawPixelInfo& dpi, std::string_view text, Te
 
 #ifndef NO_TTF
 
-static int _ttfGlId = 0;
 static void TTFDrawStringRawTTF(DrawPixelInfo& dpi, std::string_view text, TextDrawInfo* info)
 {
     if (!TTFInitialise())
@@ -554,160 +524,20 @@ static void TTFDrawStringRawTTF(DrawPixelInfo& dpi, std::string_view text, TextD
         return;
     }
 
-    uint8_t colour = info->palette[1];
     TTFSurface* surface = TTFSurfaceCacheGetOrAdd(fontDesc->font, text);
     if (surface == nullptr)
         return;
 
-    int32_t drawX = info->x + fontDesc->offset_x;
-    int32_t drawY = info->y + fontDesc->offset_y;
-    int32_t width = surface->w;
-    int32_t height = surface->h;
-
-    if (OpenRCT2::GetContext()->GetDrawingEngineType() == DrawingEngine::OpenGL)
+    auto drawingEngine = dpi.DrawingEngine;
+    if (drawingEngine != nullptr)
     {
-        auto pixels = reinterpret_cast<uint8_t*>(const_cast<void*>(surface->pixels));
-        auto pixelsLen = static_cast<size_t>(surface->pitch) * surface->h;
-        for (size_t pp = 0; pp < pixelsLen; pp++)
-        {
-            if (pixels[pp] != 0)
-            {
-                pixels[pp] = colour;
-            }
-            else
-            {
-                pixels[pp] = PALETTE_INDEX_0;
-            }
-        }
-
-        auto baseId = uint32_t(0x7FFFF) - 1024;
-        auto imageId = baseId + _ttfGlId;
-        auto drawingEngine = dpi.DrawingEngine;
-        auto drawingContext = drawingEngine->GetDrawingContext();
-        drawingEngine->InvalidateImage(imageId);
-        drawingContext->DrawBitmap(&dpi, imageId, surface->pixels, surface->pitch, surface->h, drawX, drawY);
-
-        _ttfGlId++;
-        if (_ttfGlId >= 1023)
-        {
-            _ttfGlId = 0;
-        }
-        return;
+        int32_t drawX = info->x + fontDesc->offset_x;
+        int32_t drawY = info->y + fontDesc->offset_y;
+        uint8_t hintThresh = Config::Get().fonts.EnableHinting ? fontDesc->hinting_threshold : 0;
+        OpenRCT2::Drawing::IDrawingContext* dc = drawingEngine->GetDrawingContext();
+        dc->DrawTTFBitmap(dpi, info, surface, drawX, drawY, hintThresh);
     }
-
-    int32_t overflowX = (dpi.x + dpi.width) - (drawX + width);
-    int32_t overflowY = (dpi.y + dpi.height) - (drawY + height);
-    if (overflowX < 0)
-        width += overflowX;
-    if (overflowY < 0)
-        height += overflowY;
-    int32_t skipX = drawX - dpi.x;
-    int32_t skipY = drawY - dpi.y;
-    info->x += width;
-
-    auto src = static_cast<const uint8_t*>(surface->pixels);
-    uint8_t* dst = dpi.bits;
-
-    if (skipX < 0)
-    {
-        width += skipX;
-        src += -skipX;
-        skipX = 0;
-    }
-    if (skipY < 0)
-    {
-        height += skipY;
-        src += (-skipY * surface->pitch);
-        skipY = 0;
-    }
-
-    dst += skipX;
-    dst += skipY * (dpi.width + dpi.pitch);
-
-    int32_t srcScanSkip = surface->pitch - width;
-    int32_t dstScanSkip = dpi.width + dpi.pitch - width;
-    uint8_t* dst_orig = dst;
-    const uint8_t* src_orig = src;
-
-    // Draw shadow/outline
-    if (info->flags & TEXT_DRAW_FLAG_OUTLINE)
-    {
-        for (int32_t yy = 0; yy < height - 0; yy++)
-        {
-            for (int32_t xx = 0; xx < width - 0; xx++)
-            {
-                if (*src != 0)
-                {
-                    // right
-                    if (xx + skipX < dpi.width + dpi.pitch - 1)
-                    {
-                        *(dst + 1) = info->palette[3];
-                    }
-                    // left
-                    if (xx + skipX > 1)
-                    {
-                        *(dst - 1) = info->palette[3];
-                    }
-                    // top
-                    if (yy + skipY > 1)
-                    {
-                        *(dst - width - dstScanSkip) = info->palette[3];
-                    }
-                    // bottom
-                    if (yy + skipY < dpi.height - 1)
-                    {
-                        *(dst + width + dstScanSkip) = info->palette[3];
-                    }
-                }
-                src++;
-                dst++;
-            }
-            // Skip any remaining bits
-            src += srcScanSkip;
-            dst += dstScanSkip;
-        }
-    }
-
-    dst = dst_orig;
-    src = src_orig;
-    bool use_hinting = gConfigFonts.EnableHinting && fontDesc->hinting_threshold > 0;
-    for (int32_t yy = 0; yy < height; yy++)
-    {
-        for (int32_t xx = 0; xx < width; xx++)
-        {
-            if (*src != 0)
-            {
-                if (info->flags & TEXT_DRAW_FLAG_INSET)
-                {
-                    *(dst + width + dstScanSkip + 1) = info->palette[3];
-                }
-
-                if (*src > 180 || !use_hinting)
-                {
-                    // Centre of the glyph: use full colour.
-                    *dst = colour;
-                }
-                else if (use_hinting && *src > fontDesc->hinting_threshold)
-                {
-                    // Simulate font hinting by shading the background colour instead.
-                    if (info->flags & TEXT_DRAW_FLAG_OUTLINE)
-                    {
-                        // As outlines are black, these texts should always use a darker shade
-                        // of the foreground colour for font hinting.
-                        *dst = BlendColours(colour, PALETTE_INDEX_0);
-                    }
-                    else
-                    {
-                        *dst = BlendColours(colour, *dst);
-                    }
-                }
-            }
-            src++;
-            dst++;
-        }
-        src += srcScanSkip;
-        dst += dstScanSkip;
-    }
+    info->x += surface->w;
 }
 
 #endif // NO_TTF
@@ -917,50 +747,48 @@ static void TTFProcessString(DrawPixelInfo& dpi, std::string_view text, TextDraw
     }
 }
 
-static void TTFProcessInitialColour(int32_t colour, TextDrawInfo* info)
+static void TTFProcessInitialColour(ColourWithFlags colour, TextDrawInfo* info)
 {
-    if (colour != TEXT_COLOUR_254 && colour != TEXT_COLOUR_255)
+    if (colour.colour != TEXT_COLOUR_254 && colour.colour != TEXT_COLOUR_255)
     {
         info->flags &= ~(TEXT_DRAW_FLAG_INSET | TEXT_DRAW_FLAG_OUTLINE);
-        if (colour & COLOUR_FLAG_OUTLINE)
+        if (colour.hasFlag(ColourFlag::withOutline))
         {
             info->flags |= TEXT_DRAW_FLAG_OUTLINE;
         }
-        colour &= ~COLOUR_FLAG_OUTLINE;
-        if (!(colour & COLOUR_FLAG_INSET))
+        if (!colour.hasFlag(ColourFlag::inset))
         {
             if (!(info->flags & TEXT_DRAW_FLAG_INSET))
             {
                 uint16_t flags = info->flags;
-                ColourCharacterWindow(colour, &flags, reinterpret_cast<uint8_t*>(&info->palette));
+                ColourCharacterWindow(colour.colour, &flags, reinterpret_cast<uint8_t*>(&info->palette));
             }
         }
         else
         {
             info->flags |= TEXT_DRAW_FLAG_INSET;
-            colour &= ~COLOUR_FLAG_INSET;
 
             uint32_t eax;
             if (info->flags & TEXT_DRAW_FLAG_DARK)
             {
                 if (info->flags & TEXT_DRAW_FLAG_EXTRA_DARK)
                 {
-                    eax = ColourMapA[colour].mid_light;
+                    eax = ColourMapA[colour.colour].mid_light;
                     eax = eax << 16;
-                    eax = eax | ColourMapA[colour].dark;
+                    eax = eax | ColourMapA[colour.colour].dark;
                 }
                 else
                 {
-                    eax = ColourMapA[colour].light;
+                    eax = ColourMapA[colour.colour].light;
                     eax = eax << 16;
-                    eax = eax | ColourMapA[colour].mid_dark;
+                    eax = eax | ColourMapA[colour.colour].mid_dark;
                 }
             }
             else
             {
-                eax = ColourMapA[colour].lighter;
+                eax = ColourMapA[colour.colour].lighter;
                 eax = eax << 16;
-                eax = eax | ColourMapA[colour].mid_light;
+                eax = eax | ColourMapA[colour.colour].mid_light;
             }
 
             // Adjust text palette. Store current colour? ;
@@ -973,7 +801,7 @@ static void TTFProcessInitialColour(int32_t colour, TextDrawInfo* info)
 }
 
 void TTFDrawString(
-    DrawPixelInfo& dpi, const_utf8string text, int32_t colour, const ScreenCoordsXY& coords, bool noFormatting,
+    DrawPixelInfo& dpi, const_utf8string text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
     FontStyle fontStyle, TextDarkness darkness)
 {
     if (text == nullptr)
@@ -1048,7 +876,7 @@ static int32_t TTFGetStringWidth(std::string_view text, FontStyle fontStyle, boo
  *  rct2: 0x00682F28
  */
 void GfxDrawStringWithYOffsets(
-    DrawPixelInfo& dpi, const utf8* text, int32_t colour, const ScreenCoordsXY& coords, const int8_t* yOffsets,
+    DrawPixelInfo& dpi, const utf8* text, ColourWithFlags colour, const ScreenCoordsXY& coords, const int8_t* yOffsets,
     bool forceSpriteFont, FontStyle fontStyle)
 {
     TextDrawInfo info;

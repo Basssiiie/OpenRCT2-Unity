@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -81,9 +81,6 @@ TEST_P(ReplayTests, RunReplay)
     bool initialised = context->Initialise();
     ASSERT_TRUE(initialised);
 
-    auto gs = context->GetGameState();
-    ASSERT_NE(gs, nullptr);
-
     IReplayManager* replayManager = context->GetReplayManager();
     ASSERT_NE(replayManager, nullptr);
 
@@ -92,7 +89,7 @@ TEST_P(ReplayTests, RunReplay)
 
     while (replayManager->IsReplaying())
     {
-        gs->UpdateLogic();
+        gameStateUpdateLogic();
         if (replayManager->IsPlaybackStateMismatching())
             break;
     }

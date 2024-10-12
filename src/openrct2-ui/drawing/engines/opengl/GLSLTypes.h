@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,102 +11,102 @@
 
 #include "OpenGLAPI.h"
 
-#include <openrct2/common.h>
-
-#pragma pack(push, 1)
-
-namespace detail
+namespace OpenRCT2::Ui
 {
-    template<typename T_> struct Vec2
+#pragma pack(push, 1)
+    namespace detail
     {
-        using ValueType = T_;
-
-        union
+        template<typename T_> struct Vec2
         {
-            ValueType x;
-            ValueType s;
-            ValueType r;
+            using ValueType = T_;
+
+            union
+            {
+                ValueType x;
+                ValueType s;
+                ValueType r;
+            };
+            union
+            {
+                ValueType y;
+                ValueType t;
+                ValueType g;
+            };
         };
-        union
+
+        template struct Vec2<GLfloat>;
+        template struct Vec2<GLint>;
+
+        template<typename T_> struct Vec3
         {
-            ValueType y;
-            ValueType t;
-            ValueType g;
+            using ValueType = T_;
+
+            union
+            {
+                ValueType x;
+                ValueType s;
+                ValueType r;
+            };
+            union
+            {
+                ValueType y;
+                ValueType t;
+                ValueType g;
+            };
+            union
+            {
+                ValueType z;
+                ValueType p;
+                ValueType b;
+            };
         };
-    };
 
-    template struct Vec2<GLfloat>;
-    template struct Vec2<GLint>;
+        template struct Vec3<GLfloat>;
+        template struct Vec3<GLint>;
 
-    template<typename T_> struct Vec3
-    {
-        using ValueType = T_;
-
-        union
+        template<typename T_> struct Vec4
         {
-            ValueType x;
-            ValueType s;
-            ValueType r;
+            using ValueType = T_;
+
+            union
+            {
+                ValueType x;
+                ValueType s;
+                ValueType r;
+            };
+            union
+            {
+                ValueType y;
+                ValueType t;
+                ValueType g;
+            };
+            union
+            {
+                ValueType z;
+                ValueType p;
+                ValueType b;
+            };
+            union
+            {
+                ValueType w;
+                ValueType q;
+                ValueType a;
+            };
         };
-        union
-        {
-            ValueType y;
-            ValueType t;
-            ValueType g;
-        };
-        union
-        {
-            ValueType z;
-            ValueType p;
-            ValueType b;
-        };
-    };
 
-    template struct Vec3<GLfloat>;
-    template struct Vec3<GLint>;
+        template struct Vec4<GLfloat>;
+        template struct Vec4<GLint>;
 
-    template<typename T_> struct Vec4
-    {
-        using ValueType = T_;
+    } // namespace detail
 
-        union
-        {
-            ValueType x;
-            ValueType s;
-            ValueType r;
-        };
-        union
-        {
-            ValueType y;
-            ValueType t;
-            ValueType g;
-        };
-        union
-        {
-            ValueType z;
-            ValueType p;
-            ValueType b;
-        };
-        union
-        {
-            ValueType w;
-            ValueType q;
-            ValueType a;
-        };
-    };
+    using vec2 = detail::Vec2<GLfloat>;
+    using ivec2 = detail::Vec2<GLint>;
 
-    template struct Vec4<GLfloat>;
-    template struct Vec4<GLint>;
+    using vec3 = detail::Vec3<GLfloat>;
+    using ivec3 = detail::Vec3<GLint>;
 
-} // namespace detail
-
-using vec2 = detail::Vec2<GLfloat>;
-using ivec2 = detail::Vec2<GLint>;
-
-using vec3 = detail::Vec3<GLfloat>;
-using ivec3 = detail::Vec3<GLint>;
-
-using vec4 = detail::Vec4<GLfloat>;
-using ivec4 = detail::Vec4<GLint>;
+    using vec4 = detail::Vec4<GLfloat>;
+    using ivec4 = detail::Vec4<GLint>;
 
 #pragma pack(pop)
+} // namespace OpenRCT2::Ui

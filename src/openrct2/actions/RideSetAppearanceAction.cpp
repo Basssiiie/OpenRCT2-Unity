@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,15 +11,17 @@
 
 #include "../Cheats.h"
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../core/MemoryStream.h"
 #include "../drawing/Drawing.h"
 #include "../interface/Window.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../ride/Ride.h"
 #include "../ui/UiContext.h"
 #include "../ui/WindowManager.h"
 #include "../world/Park.h"
+
+using namespace OpenRCT2;
 
 RideSetAppearanceAction::RideSetAppearanceAction(RideId rideIndex, RideSetAppearanceType type, uint16_t value, uint32_t index)
     : _rideIndex(rideIndex)
@@ -53,8 +55,8 @@ GameActions::Result RideSetAppearanceAction::Query() const
     auto ride = GetRide(_rideIndex);
     if (ride == nullptr)
     {
-        LOG_WARNING("Invalid game command, ride_id = %u", _rideIndex.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Ride not found for rideIndex %u", _rideIndex.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_RIDE_NOT_FOUND);
     }
 
     switch (_type)
@@ -64,17 +66,19 @@ GameActions::Result RideSetAppearanceAction::Query() const
         case RideSetAppearanceType::TrackColourSupports:
             if (_index >= std::size(ride->track_colour))
             {
-                LOG_WARNING("Invalid game command, index %d out of bounds", _index);
-                return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+                LOG_ERROR("Invalid track colour %u", _index);
+                return GameActions::Result(
+                    GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_INVALID_COLOUR);
             }
             break;
         case RideSetAppearanceType::VehicleColourBody:
         case RideSetAppearanceType::VehicleColourTrim:
-        case RideSetAppearanceType::VehicleColourTernary:
+        case RideSetAppearanceType::VehicleColourTertiary:
             if (_index >= std::size(ride->vehicle_colours))
             {
-                LOG_WARNING("Invalid game command, index %d out of bounds", _index);
-                return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+                LOG_ERROR("Invalid vehicle colour %u", _index);
+                return GameActions::Result(
+                    GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_INVALID_COLOUR);
             }
             break;
         case RideSetAppearanceType::VehicleColourScheme:
@@ -82,8 +86,9 @@ GameActions::Result RideSetAppearanceAction::Query() const
         case RideSetAppearanceType::SellingItemColourIsRandom:
             break;
         default:
-            LOG_WARNING("Invalid game command, type %d not recognised", _type);
-            return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+            LOG_ERROR("Invalid ride appearance type %u", _type);
+            return GameActions::Result(
+                GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_VALUE_OUT_OF_RANGE);
     }
 
     return GameActions::Result();
@@ -94,8 +99,8 @@ GameActions::Result RideSetAppearanceAction::Execute() const
     auto ride = GetRide(_rideIndex);
     if (ride == nullptr)
     {
-        LOG_WARNING("Invalid game command, ride_id = %u", _rideIndex.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Ride not found for rideIndex %u", _rideIndex.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_RIDE_NOT_FOUND);
     }
 
     switch (_type)
@@ -120,14 +125,12 @@ GameActions::Result RideSetAppearanceAction::Execute() const
             ride->vehicle_colours[_index].Trim = _value;
             RideUpdateVehicleColours(*ride);
             break;
-        case RideSetAppearanceType::VehicleColourTernary:
+        case RideSetAppearanceType::VehicleColourTertiary:
             ride->vehicle_colours[_index].Tertiary = _value;
             RideUpdateVehicleColours(*ride);
             break;
         case RideSetAppearanceType::VehicleColourScheme:
-            ride->colour_scheme_type &= ~(
-                RIDE_COLOUR_SCHEME_MODE_DIFFERENT_PER_TRAIN | RIDE_COLOUR_SCHEME_MODE_DIFFERENT_PER_CAR);
-            ride->colour_scheme_type |= _value;
+            ride->vehicleColourSettings = static_cast<VehicleColourSettings>(_value);
             for (uint32_t i = 1; i < std::size(ride->vehicle_colours); i++)
             {
                 ride->vehicle_colours[i] = ride->vehicle_colours[0];

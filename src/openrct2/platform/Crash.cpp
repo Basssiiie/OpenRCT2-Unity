@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -26,6 +26,7 @@
 
 #    include "../Context.h"
 #    include "../Game.h"
+#    include "../GameState.h"
 #    include "../OpenRCT2.h"
 #    include "../PlatformEnvironment.h"
 #    include "../Version.h"
@@ -56,7 +57,7 @@ static const wchar_t* _wszCommitSha1Short = WSZ("");
 static const wchar_t* _wszArchitecture = WSZ(OPENRCT2_ARCHITECTURE);
 static std::map<std::wstring, std::wstring> _uploadFiles;
 
-#    define BACKTRACE_TOKEN L"a844447f10ec0bebfaea32ca5ab20835901f89aef73f9919f1279d88c5633152"
+#    define BACKTRACE_TOKEN "880330550e07896abb0de50eca685eec04e0383e57393f315b977bf88688fcf2"
 
 using namespace OpenRCT2;
 
@@ -183,7 +184,8 @@ static bool OnCrash(
         auto& objManager = ctx->GetObjectManager();
         exporter->ExportObjectsList = objManager.GetPackableObjects();
 
-        exporter->Export(saveFilePathUTF8.c_str());
+        auto& gameState = GetGameState();
+        exporter->Export(gameState, saveFilePathUTF8.c_str());
         savedGameDumped = true;
     }
     catch (const std::exception& e)
@@ -198,7 +200,7 @@ static bool OnCrash(
     }
 
     auto configFilePathUTF8 = String::ToUtf8(configFilePath);
-    if (ConfigSave(configFilePathUTF8))
+    if (Config::SaveToPath(configFilePathUTF8))
     {
         _uploadFiles[L"attachment_config.ini"] = configFilePath;
     }

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,6 +9,7 @@
 
 #include "Fonts.h"
 
+#include "../Diagnostic.h"
 #include "../config/Config.h"
 #include "../core/String.hpp"
 #include "../drawing/TTF.h"
@@ -17,6 +18,7 @@
 #include "../util/Util.h"
 #include "FontFamilies.h"
 
+using namespace OpenRCT2;
 using namespace OpenRCT2::Localisation;
 
 #ifndef NO_TTF
@@ -117,10 +119,11 @@ static void LoadSpriteFont(LocalisationService& localisationService)
 #ifndef NO_TTF
 static bool LoadFont(LocalisationService& localisationService, TTFFontSetDescriptor* font)
 {
+    TTFDispose();
     localisationService.UseTrueTypeFont(true);
+
     gCurrentTTFFontSet = font;
 
-    TTFDispose();
     bool fontInitialised = TTFInitialise();
     return fontInitialised;
 }
@@ -128,12 +131,15 @@ static bool LoadFont(LocalisationService& localisationService, TTFFontSetDescrip
 static bool LoadCustomConfigFont(LocalisationService& localisationService)
 {
     static TTFFontSetDescriptor TTFFontCustom = { {
-        { gConfigFonts.FileName.c_str(), gConfigFonts.FontName.c_str(), gConfigFonts.SizeTiny, gConfigFonts.OffsetX,
-          gConfigFonts.OffsetY, gConfigFonts.HeightTiny, gConfigFonts.HintingThreshold, nullptr },
-        { gConfigFonts.FileName.c_str(), gConfigFonts.FontName.c_str(), gConfigFonts.SizeSmall, gConfigFonts.OffsetX,
-          gConfigFonts.OffsetY, gConfigFonts.HeightSmall, gConfigFonts.HintingThreshold, nullptr },
-        { gConfigFonts.FileName.c_str(), gConfigFonts.FontName.c_str(), gConfigFonts.SizeMedium, gConfigFonts.OffsetX,
-          gConfigFonts.OffsetY, gConfigFonts.HeightMedium, gConfigFonts.HintingThreshold, nullptr },
+        { Config::Get().fonts.FileName.c_str(), Config::Get().fonts.FontName.c_str(), Config::Get().fonts.SizeTiny,
+          Config::Get().fonts.OffsetX, Config::Get().fonts.OffsetY, Config::Get().fonts.HeightTiny,
+          Config::Get().fonts.HintingThreshold, nullptr },
+        { Config::Get().fonts.FileName.c_str(), Config::Get().fonts.FontName.c_str(), Config::Get().fonts.SizeSmall,
+          Config::Get().fonts.OffsetX, Config::Get().fonts.OffsetY, Config::Get().fonts.HeightSmall,
+          Config::Get().fonts.HintingThreshold, nullptr },
+        { Config::Get().fonts.FileName.c_str(), Config::Get().fonts.FontName.c_str(), Config::Get().fonts.SizeMedium,
+          Config::Get().fonts.OffsetX, Config::Get().fonts.OffsetY, Config::Get().fonts.HeightMedium,
+          Config::Get().fonts.HintingThreshold, nullptr },
     } };
 
     TTFDispose();
@@ -151,9 +157,9 @@ void TryLoadFonts(LocalisationService& localisationService)
     auto currentLanguage = localisationService.GetCurrentLanguage();
     TTFontFamily const* fontFamily = LanguagesDescriptors[currentLanguage].font_family;
 
-    if (fontFamily != FAMILY_OPENRCT2_SPRITE)
+    if (fontFamily != kFamilyOpenRCT2Sprite)
     {
-        if (!gConfigFonts.FileName.empty())
+        if (!Config::Get().fonts.FileName.empty())
         {
             if (LoadCustomConfigFont(localisationService))
             {

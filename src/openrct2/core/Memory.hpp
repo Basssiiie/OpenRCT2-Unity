@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "../common.h"
 #include "Guard.hpp"
 
 #include <cstdlib>
@@ -19,7 +18,7 @@
 /**
  * Utility methods for memory management. Typically helpers and wrappers around the C standard library.
  */
-namespace Memory
+namespace OpenRCT2::Memory
 {
     template<typename T> static T* Allocate()
     {
@@ -86,4 +85,4 @@ namespace Memory
         }
         Free(ptr);
     }
-} // namespace Memory
+} // namespace OpenRCT2::Memory

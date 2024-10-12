@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,13 +9,12 @@
 
 #include "Crypt.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
-using namespace Crypt;
+using namespace OpenRCT2::Crypt;
 
 class OpenRCT2FNV1aAlgorithm final : public FNV1aAlgorithm
 {
@@ -92,10 +91,10 @@ public:
     }
 };
 
-namespace Crypt
+namespace OpenRCT2::Crypt
 {
     std::unique_ptr<FNV1aAlgorithm> CreateFNV1a()
     {
         return std::make_unique<OpenRCT2FNV1aAlgorithm>();
     }
-} // namespace Crypt
+} // namespace OpenRCT2::Crypt

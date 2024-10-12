@@ -47,7 +47,7 @@ void ScTrackSegment::Register(duk_context* ctx)
     dukglue_register_property(ctx, &ScTrackSegment::getPriceModifier, nullptr, "priceModifier");
     dukglue_register_property(ctx, &ScTrackSegment::getTrackGroup, nullptr, "trackGroup");
     dukglue_register_property(ctx, &ScTrackSegment::getTrackCurvature, nullptr, "turnDirection");
-    dukglue_register_property(ctx, &ScTrackSegment::getTrackSlopeDirection, nullptr, "slopeDirection");
+    dukglue_register_property(ctx, &ScTrackSegment::getTrackPitchDirection, nullptr, "slopeDirection");
 
     dukglue_register_property(
         ctx, &ScTrackSegment::getTrackFlag<TRACK_ELEM_FLAG_ONLY_UNDERWATER>, nullptr, "onlyAllowedUnderwater");
@@ -78,73 +78,73 @@ int32_t ScTrackSegment::type_get() const
 std::string ScTrackSegment::description_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return LanguageGetString(ted.Description);
+    return LanguageGetString(ted.description);
 }
 
 int32_t ScTrackSegment::beginZ_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Coordinates.z_begin;
+    return ted.coordinates.zBegin;
 }
 
 int32_t ScTrackSegment::beginDirection_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Coordinates.rotation_begin;
+    return ted.coordinates.rotationBegin;
 }
 
 int32_t ScTrackSegment::beginSlope_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Definition.vangle_start;
+    return EnumValue(ted.definition.pitchStart);
 }
 
 int32_t ScTrackSegment::beginBank_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Definition.bank_start;
+    return EnumValue(ted.definition.rollStart);
 }
 
 int32_t ScTrackSegment::endX_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Coordinates.x;
+    return ted.coordinates.x;
 }
 
 int32_t ScTrackSegment::endY_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Coordinates.y;
+    return ted.coordinates.y;
 }
 
 int32_t ScTrackSegment::endZ_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Coordinates.z_end;
+    return ted.coordinates.zEnd;
 }
 
 int32_t ScTrackSegment::endDirection_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Coordinates.rotation_end;
+    return ted.coordinates.rotationEnd;
 }
 
 int32_t ScTrackSegment::endSlope_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Definition.vangle_end;
+    return EnumValue(ted.definition.pitchEnd);
 }
 
 int32_t ScTrackSegment::endBank_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.Definition.bank_end;
+    return EnumValue(ted.definition.rollEnd);
 }
 
 int32_t ScTrackSegment::length_get() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    return ted.PieceLength;
+    return ted.pieceLength;
 }
 
 DukValue ScTrackSegment::elements_get() const
@@ -157,14 +157,15 @@ DukValue ScTrackSegment::elements_get() const
     duk_push_array(ctx);
 
     duk_uarridx_t index = 0;
-    for (auto* block = ted.Block; block->index != 0xFF; block++)
+    for (uint8_t i = 0; i < ted.numSequences; i++)
     {
+        auto& block = ted.sequences[i].clearance;
         duk_push_object(ctx);
-        duk_push_number(ctx, block->x);
+        duk_push_number(ctx, block.x);
         duk_put_prop_string(ctx, -2, "x");
-        duk_push_number(ctx, block->y);
+        duk_push_number(ctx, block.y);
         duk_put_prop_string(ctx, -2, "y");
-        duk_push_number(ctx, block->z);
+        duk_push_number(ctx, block.z);
         duk_put_prop_string(ctx, -2, "z");
 
         duk_put_prop_index(ctx, -2, index);
@@ -189,10 +190,27 @@ std::vector<DukValue> ScTrackSegment::getSubpositions(uint8_t trackSubposition, 
 
     for (auto idx = 0; idx < size; idx++)
     {
-        result.push_back(
-            ToDuk<VehicleInfo>(ctx, gTrackVehicleInfo[static_cast<uint8_t>(trackSubposition)][typeAndDirection]->info[idx]));
+        result.push_back(ToDuk<VehicleInfo>(ctx, gTrackVehicleInfo[trackSubposition][typeAndDirection]->info[idx]));
     }
     return result;
+}
+
+static DukValue _trackCurveToString(duk_context* ctx, TrackCurve curve)
+{
+    static const EnumMap<TrackCurve> map({
+        { "straight", TrackCurve::None },
+        { "left", TrackCurve::Left },
+        { "right", TrackCurve::Right },
+        { "left_small", TrackCurve::LeftSmall },
+        { "right_small", TrackCurve::RightSmall },
+        { "left_very_small", TrackCurve::LeftVerySmall },
+        { "right_very_small", TrackCurve::RightVerySmall },
+        { "left_large", TrackCurve::LeftLarge },
+        { "right_large", TrackCurve::RightLarge },
+    });
+
+    u8string text = u8string(map[curve]);
+    return ToDuk<std::string>(ctx, text);
 }
 
 DukValue ScTrackSegment::nextCurveElement_get() const
@@ -200,18 +218,11 @@ DukValue ScTrackSegment::nextCurveElement_get() const
     const auto ctx = GetContext()->GetScriptEngine().GetContext();
     const auto& ted = GetTrackElementDescriptor(_type);
 
-    int32_t curve = ted.CurveChain.next;
-    if (curve & RideConstructionSpecialPieceSelected)
-        return ToDuk<int32_t>(ctx, curve & (~RideConstructionSpecialPieceSelected));
-    switch (curve)
-    {
-        case 1:
-            return ToDuk<std::string>(ctx, "left");
-        case 2:
-            return ToDuk<std::string>(ctx, "right");
-        default:
-            return ToDuk<std::string>(ctx, "straight");
-    }
+    auto nextInChain = ted.curveChain.next;
+    if (nextInChain.isTrackType)
+        return ToDuk<int32_t>(ctx, nextInChain.trackType);
+
+    return _trackCurveToString(ctx, nextInChain.curve);
 }
 
 DukValue ScTrackSegment::previousCurveElement_get() const
@@ -219,75 +230,68 @@ DukValue ScTrackSegment::previousCurveElement_get() const
     const auto ctx = GetContext()->GetScriptEngine().GetContext();
     const auto& ted = GetTrackElementDescriptor(_type);
 
-    int32_t curve = ted.CurveChain.previous;
-    if (curve & RideConstructionSpecialPieceSelected)
-        return ToDuk<int32_t>(ctx, curve & (~RideConstructionSpecialPieceSelected));
-    switch (curve)
-    {
-        case 1:
-            return ToDuk<std::string>(ctx, "left");
-        case 2:
-            return ToDuk<std::string>(ctx, "right");
-        default:
-            return ToDuk<std::string>(ctx, "straight");
-    }
+    auto previousInChain = ted.curveChain.previous;
+    if (previousInChain.isTrackType)
+        return ToDuk<int32_t>(ctx, previousInChain.trackType);
+
+    return _trackCurveToString(ctx, previousInChain.curve);
 }
 
 DukValue ScTrackSegment::getMirrorElement() const
 {
     const auto ctx = GetContext()->GetScriptEngine().GetContext();
     const auto& ted = GetTrackElementDescriptor(_type);
-    if (ted.MirrorElement == TrackElemType::None)
+    if (ted.mirrorElement == TrackElemType::None)
         return ToDuk(ctx, nullptr);
-    return ToDuk<int32_t>(ctx, ted.MirrorElement);
+    return ToDuk<int32_t>(ctx, ted.mirrorElement);
 }
 
 DukValue ScTrackSegment::getAlternativeElement() const
 {
     const auto ctx = GetContext()->GetScriptEngine().GetContext();
     const auto& ted = GetTrackElementDescriptor(_type);
-    if (ted.AlternativeType == TrackElemType::None)
+    if (ted.alternativeType == TrackElemType::None)
         return ToDuk(ctx, nullptr);
-    return ToDuk<int32_t>(ctx, ted.AlternativeType);
+    return ToDuk<int32_t>(ctx, ted.alternativeType);
 }
 
 int32_t ScTrackSegment::getPriceModifier() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
 
-    return ted.PriceModifier;
+    return ted.priceModifier;
 }
 
 template<uint16_t flag> bool ScTrackSegment::getTrackFlag() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
 
-    return ted.Flags & flag;
+    return ted.flags & flag;
 }
 
 int32_t ScTrackSegment::getTrackGroup() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
 
-    return ted.Definition.type;
+    return EnumValue(ted.definition.group);
 }
 
 std::string ScTrackSegment::getTrackCurvature() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    if (ted.Flags & TRACK_ELEM_FLAG_TURN_LEFT)
+    if (ted.flags & TRACK_ELEM_FLAG_TURN_LEFT)
         return "left";
-    if (ted.Flags & TRACK_ELEM_FLAG_TURN_RIGHT)
+    if (ted.flags & TRACK_ELEM_FLAG_TURN_RIGHT)
         return "right";
     return "straight";
 }
 
-std::string ScTrackSegment::getTrackSlopeDirection() const
+std::string ScTrackSegment::getTrackPitchDirection() const
 {
     const auto& ted = GetTrackElementDescriptor(_type);
-    if (ted.Flags & TRACK_ELEM_FLAG_UP)
+    if (ted.flags & TRACK_ELEM_FLAG_UP)
         return "up";
-    if (ted.Flags & TRACK_ELEM_FLAG_DOWN)
+    if (ted.flags & TRACK_ELEM_FLAG_DOWN)
         return "down";
     return "flat";
 }

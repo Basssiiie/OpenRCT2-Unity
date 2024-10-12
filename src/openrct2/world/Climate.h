@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "../common.h"
 #include "../drawing/Drawing.h"
 #include "../util/Util.h"
 
@@ -70,10 +69,6 @@ struct ClimateState
     WeatherLevel Level;
 };
 
-extern ClimateType gClimate;
-extern ClimateState gClimateCurrent;
-extern ClimateState gClimateNext;
-extern uint16_t gClimateUpdateTimer;
 extern uint16_t gClimateLightningFlash;
 
 int32_t ClimateCelsiusToFahrenheit(int32_t celsius);
@@ -85,6 +80,7 @@ void ClimateForceWeather(WeatherType weather);
 
 bool ClimateIsRaining();
 bool ClimateIsSnowing();
+bool ClimateIsSnowingHeavily();
 bool WeatherIsDry(WeatherType);
 FilterPaletteID ClimateGetWeatherGloomPaletteId(const ClimateState& state);
 uint32_t ClimateGetWeatherSpriteId(const ClimateState& state);

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,8 +11,9 @@
 
 #include "../Limits.h"
 #include "../actions/ResultWithMessage.h"
-#include "../common.h"
 #include "../core/BitSet.hpp"
+#include "../core/FixedPoint.hpp"
+#include "../localisation/Formatter.h"
 #include "../object/MusicObject.h"
 #include "../rct2/DATLimits.h"
 #include "../rct2/Limits.h"
@@ -40,29 +41,40 @@ struct Vehicle;
 struct RideObjectEntry;
 struct ResultWithMessage;
 
-#define RIDE_ADJACENCY_CHECK_DISTANCE 5
+constexpr uint8_t kRideAdjacencyCheckDistance = 5;
+
 constexpr uint8_t TUNE_ID_NULL = 0xFF;
 
-constexpr uint16_t const MAX_STATION_LOCATIONS = OpenRCT2::Limits::MaxStationsPerRide * 2; // Entrance and exit per station
+constexpr uint16_t MAX_STATION_LOCATIONS = OpenRCT2::Limits::kMaxStationsPerRide * 2; // Entrance and exit per station
 
-constexpr uint16_t const MAZE_CLEARANCE_HEIGHT = 4 * COORDS_Z_STEP;
+constexpr uint16_t MAZE_CLEARANCE_HEIGHT = 4 * kCoordsZStep;
+
+constexpr uint8_t kRideMaxDropsCount = 63;
+constexpr uint8_t kRideNumDropsMask = 0b00111111;
+constexpr uint8_t kRideMaxNumPoweredLiftsCount = 3;
+constexpr uint8_t kRideNumPoweredLiftsMask = 0b11000000;
+
+constexpr money64 kRideMinPrice = 0.00_GBP;
+constexpr money64 kRideMaxPrice = 20.00_GBP;
+
+extern const StringId kRideInspectionIntervalNames[];
 
 struct RideStation
 {
+    static constexpr uint8_t kNoTrain = std::numeric_limits<uint8_t>::max();
+
     CoordsXY Start;
-    uint8_t Height;
-    uint8_t Length;
-    uint8_t Depart;
-    uint8_t TrainAtStation;
+    uint8_t Height{};
+    uint8_t Length{};
+    uint8_t Depart{};
+    uint8_t TrainAtStation{ kNoTrain };
     TileCoordsXYZD Entrance;
     TileCoordsXYZD Exit;
-    int32_t SegmentLength; // Length of track between this station and the next.
-    uint16_t SegmentTime;  // Time for train to reach the next station from this station.
-    uint8_t QueueTime;
-    uint16_t QueueLength;
-    EntityId LastPeepInQueue;
-
-    static constexpr uint8_t NO_TRAIN = std::numeric_limits<uint8_t>::max();
+    int32_t SegmentLength{}; // Length of track between this station and the next.
+    uint16_t SegmentTime{};  // Time for train to reach the next station from this station.
+    uint8_t QueueTime{};
+    uint16_t QueueLength{};
+    EntityId LastPeepInQueue{ EntityId::GetNull() };
 
     int32_t GetBaseZ() const;
     void SetBaseZ(int32_t newZ);
@@ -92,12 +104,12 @@ enum class RideClassification
     KioskOrFacility
 };
 
-namespace ShelteredSectionsBits
+namespace OpenRCT2::ShelteredSectionsBits
 {
     constexpr uint8_t NumShelteredSectionsMask = 0b00011111;
     constexpr uint8_t RotatingWhileSheltered = 0b00100000;
     constexpr uint8_t BankingWhileSheltered = 0b01000000;
-}; // namespace ShelteredSectionsBits
+}; // namespace OpenRCT2::ShelteredSectionsBits
 
 struct TrackDesign;
 struct TrackDesignState;
@@ -112,31 +124,31 @@ enum class RideStatus : uint8_t;
  */
 struct Ride
 {
-    RideId id = RideId::GetNull();
-    ride_type_t type = RIDE_TYPE_NULL;
+    RideId id{ RideId::GetNull() };
+    ride_type_t type{ RIDE_TYPE_NULL };
     // pointer to static info. for example, wild mouse type is 0x36, subtype is
     // 0x4c.
-    ObjectEntryIndex subtype;
-    RideMode mode;
-    uint8_t colour_scheme_type;
-    VehicleColour vehicle_colours[OpenRCT2::Limits::MaxTrainsPerRide + 1];
+    ObjectEntryIndex subtype{ OBJECT_ENTRY_INDEX_NULL };
+    RideMode mode{};
+    VehicleColourSettings vehicleColourSettings{};
+    VehicleColour vehicle_colours[OpenRCT2::Limits::kMaxVehicleColours]{};
     // 0 = closed, 1 = open, 2 = test
-    RideStatus status;
+    RideStatus status{};
     std::string custom_name;
-    uint16_t default_name_number;
+    uint16_t default_name_number{};
     CoordsXY overall_view;
-    EntityId vehicles[OpenRCT2::Limits::MaxTrainsPerRide + 1]; // Points to the first car in the train
-    uint8_t depart_flags;
-    uint8_t num_stations;
-    uint8_t NumTrains;
-    uint8_t num_cars_per_train;
-    uint8_t ProposedNumTrains;
-    uint8_t proposed_num_cars_per_train;
-    uint8_t max_trains;
-    uint8_t MinCarsPerTrain;
-    uint8_t MaxCarsPerTrain;
-    uint8_t min_waiting_time;
-    uint8_t max_waiting_time;
+    EntityId vehicles[OpenRCT2::Limits::kMaxTrainsPerRide + 1]{}; // Points to the first car in the train
+    uint8_t depart_flags{};
+    uint8_t num_stations{};
+    uint8_t NumTrains{};
+    uint8_t num_cars_per_train{};
+    uint8_t ProposedNumTrains{};
+    uint8_t proposed_num_cars_per_train{};
+    uint8_t max_trains{};
+    uint8_t MinCarsPerTrain{};
+    uint8_t MaxCarsPerTrain{};
+    uint8_t min_waiting_time{};
+    uint8_t max_waiting_time{};
     union
     {
         uint8_t operation_option;
@@ -144,94 +156,84 @@ struct Ride
         uint8_t NumLaps;
         uint8_t launch_speed;
         uint8_t speed;
-        uint8_t rotations;
+        uint8_t rotations{};
     };
 
-    uint8_t boat_hire_return_direction;
+    uint8_t boat_hire_return_direction{};
     TileCoordsXY boat_hire_return_position;
     // bits 0 through 4 are the number of helix sections
     // bit 5: spinning tunnel, water splash, or rapids
     // bit 6: log reverser, waterfall
     // bit 7: whirlpool
-    uint8_t special_track_elements;
-    // Divide this value by 29127 to get the human-readable max speed
-    // (in RCT2, display_speed = (max_speed * 9) >> 18)
-    int32_t max_speed;
-    int32_t average_speed;
-    uint8_t current_test_segment;
-    uint8_t average_speed_test_timeout;
-    fixed16_2dp max_positive_vertical_g;
-    fixed16_2dp max_negative_vertical_g;
-    fixed16_2dp max_lateral_g;
-    fixed16_2dp previous_vertical_g;
-    fixed16_2dp previous_lateral_g;
-    uint32_t testing_flags;
+    uint8_t special_track_elements{};
+    // Use ToHumanReadableSpeed if converting to display
+    int32_t max_speed{};
+    int32_t average_speed{};
+    uint8_t current_test_segment{};
+    uint8_t average_speed_test_timeout{};
+    fixed16_2dp max_positive_vertical_g{};
+    fixed16_2dp max_negative_vertical_g{};
+    fixed16_2dp max_lateral_g{};
+    fixed16_2dp previous_vertical_g{};
+    fixed16_2dp previous_lateral_g{};
+    uint32_t testing_flags{};
     // x y z map location of the current track piece during a test
     // this is to prevent counting special tracks multiple times
     TileCoordsXYZ CurTestTrackLocation;
     // Next 3 variables are related (XXXX XYYY ZZZa aaaa)
-    uint16_t turn_count_default; // X = current turn count
-    uint16_t turn_count_banked;
-    uint16_t turn_count_sloped; // X = number turns > 3 elements
+    uint16_t turn_count_default{}; // X = current turn count
+    uint16_t turn_count_banked{};
+    uint16_t turn_count_sloped{}; // X = number turns > 3 elements
     // Y is number of powered lifts, X is drops
-    uint8_t drops; // (YYXX XXXX)
-    uint8_t start_drop_height;
-    uint8_t highest_drop_height;
-    int32_t sheltered_length;
+    uint8_t dropsPoweredLifts{}; // (YYXX XXXX)
+    uint8_t start_drop_height{};
+    uint8_t highest_drop_height{};
+    int32_t sheltered_length{};
     // Unused always 0? Should affect nausea
-    uint16_t var_11C;
-    uint8_t num_sheltered_sections; // (?abY YYYY)
+    uint16_t var_11C{};
+    uint8_t num_sheltered_sections{}; // (?abY YYYY)
     // Customer counter in the current 960 game tick (about 30 seconds) interval
-    uint16_t cur_num_customers;
+    uint16_t cur_num_customers{};
     // Counts ticks to update customer intervals, resets each 960 game ticks.
-    uint16_t num_customers_timeout;
+    uint16_t num_customers_timeout{};
     // Customer count in the last 10 * 960 game ticks (sliding window)
-    uint16_t num_customers[OpenRCT2::Limits::CustomerHistorySize];
-    money64 price[RCT2::ObjectLimits::MaxShopItemsPerRideEntry];
+    uint16_t num_customers[OpenRCT2::Limits::kCustomerHistorySize]{};
+    money64 price[OpenRCT2::RCT2::ObjectLimits::MaxShopItemsPerRideEntry]{};
     TileCoordsXYZ ChairliftBullwheelLocation[2];
-    union
-    {
-        RatingTuple ratings;
-        struct
-        {
-            ride_rating excitement;
-            ride_rating intensity;
-            ride_rating nausea;
-        };
-    };
-    money64 value;
-    uint16_t chairlift_bullwheel_rotation;
-    uint8_t satisfaction;
-    uint8_t satisfaction_time_out;
-    uint8_t satisfaction_next;
+    RatingTuple ratings{};
+    money64 value{};
+    uint16_t chairlift_bullwheel_rotation{};
+    uint8_t satisfaction{};
+    uint8_t satisfaction_time_out{};
+    uint8_t satisfaction_next{};
     // Various flags stating whether a window needs to be refreshed
-    uint8_t window_invalidate_flags;
-    uint32_t total_customers;
-    money64 total_profit;
-    uint8_t popularity;
-    uint8_t popularity_time_out; // Updated every purchase and ?possibly by time?
-    uint8_t popularity_next;     // When timeout reached this will be the next popularity
-    uint16_t num_riders;
-    uint8_t music_tune_id;
-    uint8_t slide_in_use;
+    uint8_t window_invalidate_flags{};
+    uint32_t total_customers{};
+    money64 total_profit{};
+    uint8_t popularity{};
+    uint8_t popularity_time_out{}; // Updated every purchase and ?possibly by time?
+    uint8_t popularity_next{};     // When timeout reached this will be the next popularity
+    uint16_t num_riders{};
+    uint8_t music_tune_id{};
+    uint8_t slide_in_use{};
     union
     {
         EntityId slide_peep;
-        uint16_t maze_tiles;
+        uint16_t maze_tiles{};
     };
-    uint8_t slide_peep_t_shirt_colour;
-    uint8_t spiral_slide_progress;
-    int32_t build_date;
-    money64 upkeep_cost;
-    EntityId race_winner;
-    uint32_t music_position;
-    uint8_t breakdown_reason_pending;
-    uint8_t mechanic_status;
-    EntityId mechanic;
-    StationIndex inspection_station;
-    uint8_t broken_vehicle;
-    uint8_t broken_car;
-    uint8_t breakdown_reason;
+    uint8_t slide_peep_t_shirt_colour{};
+    uint8_t spiral_slide_progress{};
+    int32_t build_date{};
+    money64 upkeep_cost{};
+    EntityId race_winner{};
+    uint32_t music_position{};
+    uint8_t breakdown_reason_pending{};
+    uint8_t mechanic_status{};
+    EntityId mechanic{ EntityId::GetNull() };
+    StationIndex inspection_station{ StationIndex::GetNull() };
+    uint8_t broken_vehicle{};
+    uint8_t broken_car{};
+    uint8_t breakdown_reason{};
     union
     {
         struct
@@ -239,58 +241,58 @@ struct Ride
             uint8_t reliability_subvalue;   // 0 - 255, acts like the decimals for reliability_percentage
             uint8_t reliability_percentage; // Starts at 100 and decreases from there.
         };
-        uint16_t reliability;
+        uint16_t reliability{};
     };
     // Small constant used to increase the unreliability as the game continues,
     // making breakdowns more and more likely.
-    uint8_t unreliability_factor;
+    uint8_t unreliability_factor{};
     // Range from [0, 100]
-    uint8_t downtime;
-    uint8_t inspection_interval;
-    uint8_t last_inspection;
-    uint8_t downtime_history[OpenRCT2::Limits::DowntimeHistorySize];
-    uint32_t no_primary_items_sold;
-    uint32_t no_secondary_items_sold;
-    uint8_t breakdown_sound_modifier;
+    uint8_t downtime{};
+    uint8_t inspection_interval{};
+    uint8_t last_inspection{};
+    uint8_t downtime_history[OpenRCT2::Limits::kDowntimeHistorySize]{};
+    uint32_t no_primary_items_sold{};
+    uint32_t no_secondary_items_sold{};
+    uint8_t breakdown_sound_modifier{};
     // Used to oscillate the sound when ride breaks down.
     // 0 = no change, 255 = max change
-    uint8_t not_fixed_timeout;
-    uint8_t last_crash_type;
-    uint8_t connected_message_throttle;
-    money64 income_per_hour;
-    money64 profit;
-    TrackColour track_colour[OpenRCT2::Limits::NumColourSchemes];
-    ObjectEntryIndex music;
-    ObjectEntryIndex entrance_style;
-    uint16_t vehicle_change_timeout;
-    uint8_t num_block_brakes;
-    uint8_t lift_hill_speed;
-    uint32_t guests_favourite;
-    uint32_t lifecycle_flags;
-    uint16_t total_air_time;
-    StationIndex current_test_station;
-    uint8_t num_circuits;
-    CoordsXYZ CableLiftLoc;
-    EntityId cable_lift;
+    uint8_t not_fixed_timeout{};
+    uint8_t last_crash_type{};
+    uint8_t connected_message_throttle{};
+    money64 income_per_hour{};
+    money64 profit{};
+    TrackColour track_colour[kNumRideColourSchemes]{};
+    ObjectEntryIndex music{ OBJECT_ENTRY_INDEX_NULL };
+    ObjectEntryIndex entrance_style{ OBJECT_ENTRY_INDEX_NULL };
+    uint16_t vehicle_change_timeout{};
+    uint8_t num_block_brakes{};
+    uint8_t lift_hill_speed{};
+    uint32_t guests_favourite{};
+    uint32_t lifecycle_flags{};
+    uint16_t totalAirTime{};
+    StationIndex current_test_station{ StationIndex::GetNull() };
+    uint8_t num_circuits{};
+    CoordsXYZ CableLiftLoc{};
+    EntityId cable_lift{ EntityId::GetNull() };
 
     // These two fields are used to warn users about issues.
     // Such issue can be hacked rides with incompatible options set.
     // They don't require export/import.
-    uint8_t current_issues;
-    uint32_t last_issue_time;
+    uint8_t current_issues{};
+    uint32_t last_issue_time{};
 
     // TO-DO: those friend functions are temporary, find a way to not access the private fields
     friend void UpdateSpiralSlide(Ride& ride);
     friend void UpdateChairlift(Ride& ride);
 
 private:
-    std::array<RideStation, OpenRCT2::Limits::MaxStationsPerRide> stations;
+    std::array<RideStation, OpenRCT2::Limits::kMaxStationsPerRide> stations{};
 
 public:
     RideStation& GetStation(StationIndex stationIndex = StationIndex::FromUnderlying(0));
     const RideStation& GetStation(StationIndex stationIndex = StationIndex::FromUnderlying(0)) const;
-    std::array<RideStation, OpenRCT2::Limits::MaxStationsPerRide>& GetStations();
-    const std::array<RideStation, OpenRCT2::Limits::MaxStationsPerRide>& GetStations() const;
+    std::array<RideStation, OpenRCT2::Limits::kMaxStationsPerRide>& GetStations();
+    const std::array<RideStation, OpenRCT2::Limits::kMaxStationsPerRide>& GetStations() const;
     StationIndex GetStationIndex(const RideStation* station) const;
 
     // Returns the logical station number from the given station. Index 0 = station 1, index 1 = station 2. It accounts for gaps
@@ -298,9 +300,9 @@ public:
     StationIndex::UnderlyingType GetStationNumber(StationIndex in) const;
 
 public:
-    uint16_t inversions;
-    uint16_t holes;
-    uint8_t sheltered_eighths;
+    uint16_t inversions{};
+    uint16_t holes{};
+    uint8_t sheltered_eighths{};
 
     std::unique_ptr<RideMeasurement> measurement;
 
@@ -411,6 +413,12 @@ public:
     bool HasStation() const;
 
     bool FindTrackGap(const CoordsXYE& input, CoordsXYE* output) const;
+
+    uint8_t getNumDrops() const;
+    void setNumDrops(uint8_t newValue);
+
+    uint8_t getNumPoweredLifts() const;
+    void setPoweredLifts(uint8_t newValue);
 };
 void UpdateSpiralSlide(Ride& ride);
 void UpdateChairlift(Ride& ride);
@@ -430,7 +438,7 @@ struct TrackBeginEnd
     TileElement* end_element;
 };
 #ifdef PLATFORM_32BIT
-assert_struct_size(TrackBeginEnd, 36);
+static_assert(sizeof(TrackBeginEnd) == 36);
 #endif
 
 #pragma pack(pop)
@@ -608,6 +616,7 @@ enum
     RIDE_TYPE_SINGLE_RAIL_ROLLER_COASTER,
     RIDE_TYPE_ALPINE_COASTER,
     RIDE_TYPE_CLASSIC_WOODEN_ROLLER_COASTER,
+    RIDE_TYPE_CLASSIC_STAND_UP_ROLLER_COASTER,
 
     RIDE_TYPE_COUNT
 };
@@ -666,15 +675,6 @@ enum class RideMode : uint8_t
 };
 
 RideMode& operator++(RideMode& d, int);
-
-enum
-{
-    RIDE_COLOUR_SCHEME_MODE_ALL_SAME,
-    RIDE_COLOUR_SCHEME_MODE_DIFFERENT_PER_TRAIN,
-    RIDE_COLOUR_SCHEME_MODE_DIFFERENT_PER_CAR,
-
-    RIDE_COLOUR_SCHEME_MODE_COUNT,
-};
 
 enum
 {
@@ -773,23 +773,6 @@ enum
 
 enum
 {
-    RIDE_COLOUR_SCHEME_MAIN,
-    RIDE_COLOUR_SCHEME_ADDITIONAL_1,
-    RIDE_COLOUR_SCHEME_ADDITIONAL_2,
-    RIDE_COLOUR_SCHEME_ADDITIONAL_3,
-
-    RIDE_COLOUR_SCHEME_COUNT,
-};
-
-enum
-{
-    VEHICLE_COLOUR_SCHEME_SAME,
-    VEHICLE_COLOUR_SCHEME_PER_TRAIN,
-    VEHICLE_COLOUR_SCHEME_PER_VEHICLE
-};
-
-enum
-{
     RIDE_INSPECTION_EVERY_10_MINUTES,
     RIDE_INSPECTION_EVERY_20_MINUTES,
     RIDE_INSPECTION_EVERY_30_MINUTES,
@@ -808,6 +791,7 @@ enum
     RIDE_INVALIDATE_RIDE_LIST = 1 << 3,
     RIDE_INVALIDATE_RIDE_OPERATING = 1 << 4,
     RIDE_INVALIDATE_RIDE_MAINTENANCE = 1 << 5,
+    RIDE_INVALIDATE_RIDE_MUSIC = 1 << 6,
 };
 
 enum
@@ -900,21 +884,18 @@ enum
     TRACK_ELEMENT_SET_BRAKE_BOOSTER_SPEED = (1 << 7)
 };
 
-#define MAX_RIDE_MEASUREMENTS 8
-constexpr money64 RIDE_VALUE_UNDEFINED = MONEY64_UNDEFINED;
-#define RIDE_INITIAL_RELIABILITY ((100 << 8) | 0xFF) // Upper byte is percentage, lower byte is "decimal".
+constexpr uint8_t kMaxRideMeasurements = 8;
+constexpr money64 RIDE_VALUE_UNDEFINED = kMoney64Undefined;
+constexpr uint16_t kRideInitialReliability = ((100 << 8) | 0xFF); // Upper byte is percentage, lower byte is "decimal".
 
-#define STATION_DEPART_FLAG (1 << 7)
-#define STATION_DEPART_MASK (~STATION_DEPART_FLAG)
+constexpr uint8_t kStationDepartFlag = (1 << 7);
+constexpr uint8_t kStationDepartMask = static_cast<uint8_t>(~kStationDepartFlag);
 
-#define CURRENT_TURN_COUNT_MASK 0xF800
-#define TURN_MASK_1_ELEMENT 0x001F
-#define TURN_MASK_2_ELEMENTS 0x00E0
-#define TURN_MASK_3_ELEMENTS 0x0700
-#define TURN_MASK_4_PLUS_ELEMENTS 0xF800
-
-constexpr uint32_t CONSTRUCTION_LIFT_HILL_SELECTED = 1 << 0;
-constexpr uint32_t CONSTRUCTION_INVERTED_TRACK_SELECTED = 1 << 1;
+constexpr uint16_t kCurrentTurnCountMask = 0xF800;
+constexpr uint16_t kTurnMask1Element = 0x001F;
+constexpr uint16_t kTurnMask2Elements = 0x00E0;
+constexpr uint16_t kTurnMask3Elements = 0x0700;
+constexpr uint16_t kTurnMask4PlusElements = 0xF800;
 
 Ride* GetRide(RideId index);
 
@@ -1010,12 +991,6 @@ void RideDelete(RideId id);
 const RideObjectEntry* GetRideEntryByIndex(ObjectEntryIndex index);
 std::string_view GetRideEntryName(ObjectEntryIndex index);
 
-extern money64 gTotalRideValueForMoney;
-
-extern const StringId ColourSchemeNames[4];
-
-extern ObjectEntryIndex gLastEntranceStyle;
-
 int32_t RideGetCount();
 void RideInitAll();
 void ResetAllRideBuildDates();
@@ -1068,7 +1043,6 @@ bool TrackBlockGetPreviousFromZero(
 
 void RideGetStartOfTrack(CoordsXYE* output);
 
-void WindowRideConstructionUpdateActiveElements();
 money64 RideEntranceExitPlaceGhost(
     const Ride& ride, const CoordsXY& entranceExitCoords, Direction direction, int32_t placeType, StationIndex stationNum);
 
@@ -1080,13 +1054,11 @@ void BlockBrakeSetLinkedBrakesClosed(const CoordsXYZ& vehicleTrackLocation, Trac
 uint8_t RideEntryGetVehicleAtPosition(int32_t rideEntryIndex, int32_t numCarsPerTrain, int32_t position);
 void RideUpdateVehicleColours(const Ride& ride);
 
-OpenRCT2::BitSet<TRACK_GROUP_COUNT> RideEntryGetSupportedTrackPieces(const RideObjectEntry& rideEntry);
+OpenRCT2::BitSet<EnumValue(TrackGroup::count)> RideEntryGetSupportedTrackPieces(const RideObjectEntry& rideEntry);
 
 enum class RideSetSetting : uint8_t;
 money64 SetOperatingSetting(RideId rideId, RideSetSetting setting, uint8_t value);
 money64 SetOperatingSettingNested(RideId rideId, RideSetSetting setting, uint8_t value, uint8_t flags);
-
-void UpdateGhostTrackAndArrow();
 
 uint32_t RideCustomersPerHour(const Ride& ride);
 uint32_t RideCustomersInLast5Minutes(const Ride& ride);

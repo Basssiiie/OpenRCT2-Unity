@@ -96,6 +96,7 @@ STR_0091    :Ukendt Forlystelse (59)
 STR_0092    :LIM Accelereret Rutschebane
 STR_0093    :Hybrid Rutschebane
 STR_0094    :Enkelt skinde rutchebane
+STR_0095    :Alpin rutchebane
 STR_0096    :Klassisk træ rutsjebane
 STR_0512    :En kompakt rutschebane med en spiral stigning og bløde, snoede fald.
 STR_0513    :En loopende rutschebane hvor passagerne er i en stående position
@@ -178,13 +179,14 @@ STR_0600    :Selvkørende togvogne kører igennem en sen snoet bane af spor
 STR_0602    :Rutsjebanetog accelereres ud af stationen af lineære induktionsmotorer for at suse gennem snoede inversioner
 STR_0603    :En rutsjebane i træ stil, med stål spor, Med stejle fald og hurtige sving.
 STR_0604    :Gæster sider i en enkelt række, på et smalt monorail spor, imens de suser igennem skarpe sving ,snoninger og hurtige vridninger.
+STR_0605    :Ryttere kælker ned ad en bugtende stålbane og bremser for at kontrollere deres hastighed
 STR_0606    :En ældre stils trærutsjebane med en hurtig og ujævn tur med masser af luft tid, laterale G'er, og designet til at føles som ‘ude-af-kontrol’
 STR_0767    :Gæst {INT32}
 STR_0768    :Handymand {INT32}
 STR_0769    :Mekaniker {INT32}
 STR_0770    :Sikkerhedsvagt {INT32}
 STR_0771    :Entertainer {INT32}
-STR_0777    :Unavngivet park{POP16}{POP16}
+STR_0777    :Unavngivet park
 STR_0778    :Skilt
 STR_0779    :1.
 STR_0780    :2.
@@ -1735,12 +1737,12 @@ STR_2382    :Land
 STR_2383    :Vand
 STR_2384    :{WINDOW_COLOUR_2}Dit mål:
 STR_2385    :{BLACK}Ingen
-STR_2386    :{BLACK}At have mindst {COMMA16} gæster i parken, ved udgangen af {MONTHYEAR}, og med en park vurdering på mindst 600
+STR_2386    :{BLACK}At have mindst {COMMA32} gæster i parken, ved udgangen af {MONTHYEAR}, og med en park vurdering på mindst 600
 STR_2387    :{BLACK}At opnå en Parkværdi på mindst {POP16}{POP16}{CURRENCY} ved udgangen af {PUSH16}{PUSH16}{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
 STR_2388    :{BLACK}Hav det sjovt!
 STR_2389    :{BLACK}Byg den bedste {STRINGID} du kan!
 STR_2390    :{BLACK}At have 10 forskellige typer rutschebaner i gang i parken på samme tid, Hver med en spændings vurdering over 6.00
-STR_2391    :{BLACK}At have mindst {COMMA16} gæster i parken. Du må ikke lade park vurderingen flade under 700 på noget tidspunkt!
+STR_2391    :{BLACK}At have mindst {COMMA32} gæster i parken. Du må ikke lade park vurderingen flade under 700 på noget tidspunkt!
 STR_2392    :{BLACK}At opnå en månedlig indkomst fra forlystelser på mindst {POP16}{POP16}{CURRENCY}
 STR_2393    :{BLACK}At have 10 forskellige typer rutschebaner i gang i parken på samme tid, hver med en minimums længde på {LENGTH}, og en spændings vurdering på mindst 7.00
 STR_2394    :{BLACK}At færdiggøre alle 5 af de delvist færdige byggede rutschebaner i denne park, design dem til at have at opnå en spændings vurdering på mindst {POP16}{POP16}{COMMA2DP32} hver
@@ -1795,7 +1797,6 @@ STR_2450    :{YELLOW}Din reklamekampagne for parken, er slut
 STR_2451    :{YELLOW}Din reklamekampagne for {STRINGID}, er slut
 STR_2452    :{WINDOW_COLOUR_2}Penge (uden lån): {BLACK}{CURRENCY2DP}
 STR_2453    :{WINDOW_COLOUR_2}Penge (uden lån): {RED}{CURRENCY2DP}
-STR_2454    :{BLACK}{CURRENCY2DP} -
 STR_2457    :Vis finanskonti
 STR_2458    :Vis graf for penge (uden lån) over tid
 STR_2459    :Vis graf for park værdi over tid
@@ -1958,7 +1959,7 @@ STR_2749    :Mit nye scenarie
 STR_2750    :Flyt alle enheder til toppen
 STR_2751    :Flyt alle enheder til bunden
 STR_2752    :Ryd græs
-STR_2753    :Slået græs
+STR_2753    :Slå græs
 STR_2754    :Vand planter
 STR_2755    :Reparer hærværk
 STR_2756    :Fjern affald
@@ -2095,39 +2096,6 @@ STR_3008    :{PEARLAQUA}ABC
 STR_3009    :{PALESILVER}ABC
 STR_3010    :Kan ikke indlæse fil…
 STR_3011    :Filen indeholder ugyldige data
-STR_3012    :Radiobil musik stil
-STR_3013    :Karnevalsmusik stil
-STR_3014    :Romersk fanfare stil
-STR_3015    :Orientalsk stil
-STR_3016    :Maritim stil
-STR_3017    :Jungletrommer stil
-STR_3018    :Egyptisk stil
-STR_3019    :Legetøjs land stil
-STR_3020    :
-STR_3021    :Rum stil
-STR_3022    :Gyser stil
-STR_3023    :Techno stil
-STR_3024    :Rolig stil
-STR_3025    :Sommer stil
-STR_3026    :Vand stil
-STR_3027    :Western stil
-STR_3028    :Jurassic stil
-STR_3029    :Rock stil
-STR_3030    :Ragtime stil
-STR_3031    :Fantasy stil
-STR_3032    :Rock stil 2
-STR_3033    :Is stil
-STR_3034    :Sne stil
-STR_3035    :Valgfrit musik 1
-STR_3036    :Valgfrit musik 2
-STR_3037    :Middelalder stil
-STR_3038    :Undergrunds stil
-STR_3039    :Orgel stil
-STR_3040    :Mekanisk stil
-STR_3041    :Moderne stil
-STR_3042    :Pirat stil
-STR_3043    :Rock stil 3
-STR_3044    :Slik stil
 STR_3045    :Vælg musikstilen der skal spilles
 STR_3047    :Lokal myndigheder forbyder nedrivning eller ændringer af denne forlystelse
 STR_3048    :Marketingkampagner forbydes af de lokale myndigheder
@@ -2354,7 +2322,7 @@ STR_3305    :{WINDOW_COLOUR_2}Månedsinkomst:
 STR_3306    :{WINDOW_COLOUR_2}Månedsprofit:
 STR_3307    :{WINDOW_COLOUR_2}Minimum længde:
 STR_3308    :{WINDOW_COLOUR_2}Spændings vurdering:
-STR_3309    :{WINDOW_COLOUR_2}{COMMA16}
+STR_3309    :{WINDOW_COLOUR_2}{COMMA32}
 STR_3310    :{WINDOW_COLOUR_2}{LENGTH}
 STR_3311    :{WINDOW_COLOUR_2}{COMMA2DP32}
 STR_3312    :{WINDOW_COLOUR_2}forlystelser/attraktioner under bevaringsordre:
@@ -2914,7 +2882,7 @@ STR_5755    :Forkert spil version (Serveren kører med {STRING})
 STR_5756    :Ugyldig kode
 STR_5757    :Serveren er fyldt
 STR_5758    :{OUTLINE}{GREEN}{STRING} har sluttet sig til spillet
-STR_5759    :Henter kortet … ({INT32} / {INT32}) KB
+STR_5759    :Henter kortet …
 STR_5760    :Hong Kong Dollars (HK$)
 STR_5761    :New Taiwan Dollar (NT$)
 STR_5762    :Chinese Yuan (CN¥)
@@ -3278,8 +3246,8 @@ STR_6133    :Adgang til forlystelser og sceneri, der endnu ikke er opfundet
 STR_6134    :Ryd sceneri
 STR_6135    :Klienten sendte en ugyldig anmodning
 STR_6136    :Serveren sendte en ugyldig anmodning
-STR_6137    :OpenRCT2, en gratis,  open source klon af Roller Coaster Tycoon 2.
-STR_6138    :OpenRCT2 er et samarbejde imellem mange forfattere, en komplet liste kan findes i “contributors.md”. Du kan finde flere oplysninger på http://github.com/OpenRCT2/OpenRCT2
+STR_6137    :OpenRCT2, en gratis,  open source genskabelse af Roller Coaster Tycoon 2.
+STR_6138    :OpenRCT2 er et samarbejde imellem mange forfattere, en komplet liste kan findes under “bidragudere” knappen. Du kan finde flere oplysninger på http://github.com/OpenRCT2/OpenRCT2
 STR_6139    :Alle produkt- og firmanavne tilhører deres respektive indehavere. Brug af dem indebærer ikke nogen tilknytning til eller godkendelse af dem.
 STR_6140    :Ændringslog…
 STR_6141    :RCT1 bund værktøjslinje
@@ -3460,7 +3428,6 @@ STR_6356    :Generer ænder hvis parken indeholder vand
 STR_6357    :Fjern alle ænder fra kortet
 STR_6358    :Side {UINT16}
 STR_6359    :{POP16}{POP16}Side {UINT16}
-STR_6360    :{BLACK}{COMMA32}
 STR_6361    :Aktiver lyseffekter på forlystelser (eksperimentel)
 STR_6362    :Hvis aktiv, vognene for spor-forlystelser vil lyse op om natten.
 STR_6363    :Kopierede tekst til udklipsholder
@@ -3478,7 +3445,7 @@ STR_6374    :R
 STR_6375    :Ukendt forlystelse
 STR_6376    :{WINDOW_COLOUR_2}Vogn:{NEWLINE}{BLACK}{STRINGID} til {STRINGID}
 STR_6377    :{WINDOW_COLOUR_2}Type: {BLACK}{STRINGID} til {STRINGID}
-STR_6378    :Henter objektliste: {INT32} / {INT32}
+STR_6378    :Henter objektliste:
 STR_6379    :Modtog ugyldig data
 STR_6380    :Opdatering tilgængelig!
 STR_6381    :Deltag i OpenRCT2 Discord gruppe!
@@ -3585,14 +3552,17 @@ STR_6482    :Gennemsigtigheds Indstillinger
 STR_6483    :Åben gennemsigtigheds indstillinger
 STR_6484    :Skift gennemsigtig vegetation
 STR_6485    :Skift gennemsigtig køretøjer
-STR_6486    :Skift gennemsigtig gæster
-STR_6487    :Skift gennemsigtig personale
+STR_6486    :Skift skjul gæster
+STR_6487    :Skift skjul personale
 STR_6488    :{RED}Gæster klager over længden af køerne i din park.{NEWLINE}Overvej at forkorte problematiske køer eller øge forlystelsernes gennemstrømning.
 STR_6489    :Fejl: Inkompatibel Park Version
 STR_6490    :Advarsel: Semi-kompatibel Park Version
 STR_6491    :Denne park blev gemt i en nyere version af OpenRCT2. Parken er v{INT32} og kræver mindst v{INT32}. Du benytter v{INT32}
 STR_6492    :Denne park er gemt i en ældre version af OpenRCT2, og kan ikke åbnes med denne version af OpenRCT2. Parken er v{INT32}.
 STR_6493    :Denne park blev gemt i en nyere version af OpenRCT2, nogle data kan gå tabt. Parken er gemt i v{INT32}. Du benytter v{INT32}
+STR_6494    :Gruppér efter type
+STR_6495    :Gruppérer efter forlystelsestyper efter type istedet for at vise hver vogn for seperat.
+STR_6496    :{WINDOW_COLOUR_2}{STRINGID}
 STR_6497    :Klik på et felt for at vise dets felt elementer.{NEWLINE}Ctrl + Klik et felt element for at vælge det direkte.
 STR_6498    :Aktiver for at fastholde kvadratisk kortfacon.
 STR_6499    :Køretøjstype understøttes ikke af spor design formatet
@@ -3625,7 +3595,7 @@ STR_6525    :Genindlæs alle aktiver i spillet med de aktiverede materiel pakker
 STR_6526    :(basis grafik, musik og lydeffekter)
 STR_6527    :Konkurrencer
 STR_6528    :Ugyldig spor parameter!
-STR_6529    :Invalid farve skema parameter!
+STR_6529    :Ugyldig farve skema parameter!
 STR_6530    :User Created Expansion Set
 STR_6531    :The Time Machine
 STR_6532    :Katy’s Dreamworld
@@ -3633,6 +3603,93 @@ STR_6533    :{WINDOW_COLOUR_2}Spændings Faktor: {BLACK}-{COMMA16}%
 STR_6534    :{WINDOW_COLOUR_2}Intensitets Faktor: {BLACK}-{COMMA16}%
 STR_6535    :{WINDOW_COLOUR_2}Kvalme Faktor: {BLACK}-{COMMA16}%
 STR_6536    :Denne park var gemt i en senere version af OpenRCT2. Parken var gemt i v{INT32}, du benytter v{INT32}.
+STR_6537    :Tillad almindelige stier som køområde
+STR_6538    :Viser almindelige gangstier i rullemenuen Køer i sti vinduet.
+STR_6539    :Bremser lukket
+STR_6540    :{WINDOW_COLOUR_2}Særlig tak til følgende virksomheder for at tillade deres lighed:
+STR_6541    :{WINDOW_COLOUR_2}Rocky Mountain Construction Group, Josef Wiegand GmbH & Co. KG
+STR_6542    :Bidragydere
+STR_6543    :Bidragydere…
+STR_6544    :Lån kan ikke være negativ!
+STR_6545    :Brug RCT1 renteberegning
+STR_6546    :Brug renteberegningsalgoritmen for RollerCoaster Tycoon 1, som brugte en fast procentsats på ca. 1,33%.
+STR_6547    :Alt Sceneri
+STR_6548    :Vis rækværk ved kryds
+STR_6549    :Kompatibilitetsobjekter kan ikke vælges!
+STR_6550    :Denne post er inkluderet for bagudkompatibilitet, med gamle eller beskadigede genstande. Det kan ikke vælges, kun fravælges. 
+
+STR_6551    :Militærgrøn
+STR_6552    :Honningdug
+STR_6553    :Solbrun
+STR_6554    :Rødbrun
+STR_6555    :Koral rosa
+STR_6556    :Skov grøn
+STR_6557    :Chartreuse
+STR_6558    :Jæger grøn
+STR_6559    :Celadon
+STR_6560    :Limegrøn
+STR_6561    :Sepia
+STR_6562    :Fersken
+STR_6563    :Singrøn
+STR_6564    :Blågrøn
+STR_6565    :Havskum grøn
+STR_6566    :Violet
+STR_6567    :Lavendel
+STR_6568    :Pastel orange
+STR_6569    :Dybt vand
+STR_6570    :Pastel pink
+STR_6571    :Umber
+STR_6572    :Beige
+STR_6573    :Usynlig
+STR_6574    :Tomrum
+STR_6575    :Tillad specielle farveskemaer
+STR_6576    :Tilføjer specielle farver til rullemenuen Farver
+STR_6577    :Blokbremse hastighed
+STR_6578    :Indstil hastighedsgrænse for blokbremser. I bloksektionstilstand er tilstødende bremser med en langsommere hastighed forbundet med blokbremsen.
+STR_6579    :Blokbremser indstilles til standardhastighed, når de gemmes som spordesign
+STR_6580    :Nulstil
+STR_6581    :Er du sikker på, at du vil nulstille alle genvejstaster på denne fane?
+STR_6582    :Åbn vinduet med tastaturgenveje
+STR_6583    :{WINDOW_COLOUR_2}Baglænskørende tog
+STR_6584    :Vælg for at køre tog baglæns
+STR_6585    :Kan ikke foretage ændringer…
+STR_6586    :OpenRCT2
+STR_6587    :OpenRCT2 Titelmelodi er et værk af Allister Brimble,{NEWLINE}licenseret CC BY-SA 4.0.
+STR_6588    :Tak til Herman Riddering for at give os mulighed for at optage 35er Voigt.
+STR_6589    :Vis vinduesknapperne til venstre
+STR_6590    :Vis vinduesknapperne (f.eks. for at lukke vinduet) til venstre for titellinjen i stedet for til højre.
+STR_6591    :Medarbejder er i øjeblikket ved at ordne en tur og kan ikke fyres.
+STR_6592    :Medarbejder inspicerer i øjeblikket en forlystelse og kan ikke fyres.
+STR_6593    :Fjern parkhegn
+STR_6594    :Fliseinspektør: Skift væghældning
+STR_6595    :{WINDOW_COLOUR_2}Forfatter: {BLACK}{STRING}
+STR_6596    :{WINDOW_COLOUR_2}Forfattere: {BLACK}{STRING}
+STR_6597    :Ugyldig parameter
+STR_6598    :Værdi uden for grænseområde
+STR_6599    :Spøgelse element ikke fundet
+STR_6600    :Ballon ikke fundet
+STR_6601    :Ansat ikke fundet
+STR_6602    :Forlystelse ikke fundet
+STR_6603    :Forlystes objekt enhed ikke fundet
+STR_6604    :Spiller ikke fundet
+STR_6605    :Indgangs element ikke fundet
+STR_6606    :Overflade element ikke fundet
+STR_6607    :Flise element ikke fundet
+STR_6608    :Spor element ikke fundet
+STR_6609    :Spor blok ikke fundet
+STR_6610    :Sti element ikke fundet
+STR_6611    :Væg element ikke fundet
+STR_6612    :Banner element ikke fundet
+STR_6613    :Genindlæs objekt
+STR_6614    :Kan ikke ændre parkens entré pris
+STR_6615    :Spor på dette felt kræver vand
+STR_6616    :Handlingen er ugyldig for denne medarbejdertype
+STR_6617    :Kan ikke bytte felt element med sig selv
+STR_6618    :Objektet kan ikke begrænses eller afgrænses…
+STR_6619    :Objekttype kan ikke begrænses!
+STR_6620    :Objektet blev ikke fundet!
+STR_6621    :Begræns
+STR_6622    :Begræns objekt til scenarieeditoren og sandkassetilstanden.
 
 #############
 # Scenarios #
@@ -4076,16 +4133,6 @@ STR_SCNR    :Fort Anachronism
 STR_PARK    :Fort Anachronism
 STR_DTLS    :
 
-###########
-# Scenery #
-###########
-
-## Start OpenRCT2 Official
-[TTPIRF05]
-STR_NAME    :Tag
-
-## End OpenRCT2 Official
-
 ###############################################################################
 ## RCT2 Scenarios
 ###############################################################################
@@ -4223,87 +4270,87 @@ STR_DTLS    :Byg de manglende Six Flags forlystelser, eller opret dine egne desi
 ## Wacky Worlds Scenarios
 ###############################################################################
 <Africa - African Diamond Mine>
-STR_SCNR    :Afrika - Afrikansk Diamant Mine
+STR_SCNR    :Mines of Africa
 STR_PARK    :Mines of Africa
 STR_DTLS    :Du arvede en nedlagt diamantmine og fandt en værdifuld diamant.  Du beslutter dig for at investere de penge til at bygge en verdensberømt forlystelsespark.
 
 <Africa - Oasis>
-STR_SCNR    :Afrika - Oase
+STR_SCNR    :Mirage Madness
 STR_PARK    :Mirage Madness
 STR_DTLS    :En ørken oase er blevet opdaget og ville være en smuk beliggenhed for en park. Der er sørget for transport til oasen.
 
 <Africa - Victoria Falls>
-STR_SCNR    :Afrika - Victoria Falls
+STR_SCNR    :Over The Edge
 STR_PARK    :Over The Edge
 STR_DTLS    :En dæmning er blevet bygget, som tilbyder rigelige, billige vandkraft til at drive en park. Du er nødt til at nå en høj park værdi for at hjælpe med tilbagebetalingen af lånet til dæmningen.
 
 <Antarctic - Ecological Salvage>
-STR_SCNR    :Antarktis - Økologisk Genanvendelse
+STR_SCNR    :Icy Adventures
 STR_PARK    :Icy Adventures
 STR_DTLS    :Miljøagenturet har henvendt sig til dig for at omdanne et gammelt olieraffinaderi økologisk ‘øjebæ’ til en top turistattraktion. Jord er billigt, men lånerenterne er høje. Du kan sælge de gamle bygninger til genanvendelse.
 
 <Asia - Great Wall of China Tourism Enhancement>
-STR_SCNR    :Asien - Den Kinesiske Mur Turistforbedring
+STR_SCNR    :Great Wall of China
 STR_PARK    :Great Wall of China
 STR_DTLS    :Myndighederne har besluttet at forbedre turismen omkring Den Kinesiske Mur ved at bygge en forlystelsespark på den tilstødende jord. Penge er ikke noget problem!
 
 <Asia - Japanese Coastal Reclaim>
-STR_SCNR    :Asien - Japansk kystområde
+STR_SCNR    :Okinawa Coast
 STR_PARK    :Okinawa Coast
 STR_DTLS    :En eksisterende park er løbet tør for plads. Din eneste mulighed er at bygge ud i havet, og så har du taget et lån. Højdebegrænsninger på din bygning håndhæves på grund af fundamenter og jordskælvsrisiko.
 
 <Asia - Maharaja Palace>
-STR_SCNR    :Asien - Maharaja Palads
+STR_SCNR    :Park Maharaja
 STR_PARK    :Park Maharaja
 STR_DTLS    :Du er blevet bestilt af Maharajaen til at bringe underholdning til den store lokale befolkning. Byg en park inspireret af Maharajas palads.
 
 <Australasia - Ayers Rock>
-STR_SCNR    :Australasien - Ayers Rock
+STR_SCNR    :Ayers Adventure
 STR_PARK    :Ayers Adventure
 STR_DTLS    :Du hjælper aboriginal folk, til at bygge en park, som en del af en kulturel bevidsthed program. Du skal få et stort antal gæster, til at uddanne dem i den unikke arv af det oprindelige folk.
 
 <Australasia - Fun at the Beach>
-STR_SCNR    :Australasien - Sjov på Stranden
+STR_SCNR    :Beach Barbecue Blast
 STR_PARK    :Beach Barbecue Blast
 STR_DTLS    :En lokal iværksætters havlivs park er gået fallit. Du driver allerede en lille park og køber den anden park fra byggefirmaet. Udvikl den til en stor kombineret park.
 
 <Europe - European Cultural Festival>
-STR_SCNR    :Europa - Europæisk kulturfestival
+STR_SCNR    :European Extravaganza
 STR_PARK    :European Extravaganza
 STR_DTLS    :De er blevet hentet ind for at overtage, en europæisk kulturel turistattraktion, og skal øge antallet af gæster, for at kunne betale EU-tilskuddet tilbage, inden udgangen af den nuværende valgperiode i Europa-Parlamentet.
 
 <Europe - Renovation>
-STR_SCNR    :Europa - Renovation
+STR_SCNR    :From The Ashes
 STR_PARK    :From The Ashes
 STR_DTLS    :En gammel park er gået i forfald. De får et EU-tilskud til at bringe dette ugunstigt stillede område, tilbage til sin tidligere herlighed! Du er nødt til at renovere parken, og tilbagebetale tilskuddet.
 
 <N. America - Extreme Hawaiian Island>
-STR_SCNR    :Nordamerika - Ekstrem Hawaii-ø
+STR_SCNR    :Wacky Waikiki
 STR_PARK    :Wacky Waikiki
 STR_DTLS    :Befolkningen i Hawaii er træt af surfing, og er på udkig efter noget mere intenst. Du skal bygge en park, med dette i tankerne for at holde områdets turistattraktion rating i top.
 
 <North America - Grand Canyon>
-STR_SCNR    :Nordamerika - Grand Canyon
+STR_SCNR    :Canyon Calamities
 STR_PARK    :Canyon Calamities
 STR_DTLS    :Du er nødt til at bygge en park på begrænset jord, på hver side af denne naturlige skat - du har mulighed for at købe nabojord fra indianerne. Du er nødt til at fuldføre målet om at opretholde den lokale bys befolkning.
 
 <North America - Rollercoaster Heaven>
-STR_SCNR    :Nordamerika - Rutshebane Himmel
+STR_SCNR    :Rollercoaster Heaven
 STR_PARK    :Rollercoaster Heaven
 STR_DTLS    :Du er en succesfuld forretningsmagnat igang med flere sabbatår, der ønsker at bruge denne tid på at omdanne byparken til Rollercoaster Heaven. Penge er ikke noget problem!
 
 <South America - Inca Lost City>
-STR_SCNR    :Sydamerika - Inka-rigets fortabte by
+STR_SCNR    :Lost City Founder
 STR_PARK    :Lost City Founder
-STR_DTLS    :For yderligere at øge den lokale turisme skal du konstruere en park, der er i harmoni med sine omgivelser, og har højdebegrænsninger.
+STR_DTLS    :For yderligere at øge den lokale turisme skal du konstruere en park, der er i harmoni med sine omgivelser.
 
 <South America - Rain Forest Plateau>
-STR_SCNR    :Sydamerica - Regnskovs Plateau
+STR_SCNR    :Rainforest Romp
 STR_PARK    :Rainforest Romp
 STR_DTLS    :Pladsen er begrænset i den dyrebare regnskov - du skal proppe så meget som muligt ind i den eksisterende rydning for at give et levedygtigt alternativ til den lokale træindustri.
 
 <South America - Rio Carnival>
-STR_SCNR    :Sydamerica - Karneval i Rio
+STR_SCNR    :Sugarloaf Shores
 STR_PARK    :Sugarloaf Shores
 STR_DTLS    :Du driver en lille park nær Rio, men banken har indkaldt dit lån. Du er nødt til hurtigt at øge din indtjeningsevne, til at tilbagebetale denne uventede gæld.
 
@@ -4311,72 +4358,72 @@ STR_DTLS    :Du driver en lille park nær Rio, men banken har indkaldt dit lån.
 ## Time Twister Scenarios
 ###############################################################################
 <Dark Age - Castle>
-STR_SCNR    :Middelalder - Borgen
+STR_SCNR    :Cliffside Castle
 STR_PARK    :Cliffside Castle
 STR_DTLS    :Lokale medlemmer af kamp re-enactment samfundet er temmelig alvorligt om deres hobby. De har betroet dig opgaven med at bygge en mørk tidsalder forlystelsespark på grunden ved Cliffside Castle.
 
 <Dark Age - Robin Hood>
-STR_SCNR    :Middelalder - Robin Hood
+STR_SCNR    :Sherwood Forest
 STR_PARK    :Sherwood Forest
 STR_DTLS    :For at befri rigdom fra de rige og distribuere den til de trængende, har du og dine lystige svende besluttet at bygge en forlystelsespark i Sherwood Skoven.
 
 <Future - First Encounters>
-STR_SCNR    :Fremtiden - Første Kontakt
+STR_SCNR    :Extraterrestrial Extravaganza
 STR_PARK    :Extraterrestrial Extravaganza
 STR_DTLS    :Der er fundet liv på en fjern planet. Byg en Rumalien forlystelsespark til at lave penge på den hidtil usete bølge af interesse.
 
 <Future - Future World>
-STR_SCNR    :Fremtiden - Fremtidsverden
+STR_SCNR    :Gemini City
 STR_PARK    :Gemini City
 STR_DTLS    :Vis din opfindsomme, utopiske vision om fremtiden - kom op med et futuristisk parkdesign, der inkorporerer state-of-the-art attraktioner.
 
 <Mythological - Animatronic Film Set>
-STR_SCNR    :Mytologisk - Animatronic Film Sæt
+STR_SCNR    :Animatronic Antics
 STR_PARK    :Animatronic Antics
 STR_DTLS    :Du har fået til opgave at drive og forbedre en eksisterende forlystelsespark, som er bygget på et gammelt filmsæt. Byg en hyldest til de banebrydende stop-motion animatorer, der først bragte mytiske væsner til live på biograflærredet.
 
 <Mythological - Cradle of Civilisation>
-STR_SCNR    :Mytologisk - Civilisationens vugge
+STR_SCNR    :Mythological Madness
 STR_PARK    :Mythological Madness
 STR_DTLS    :Du ejer en ø af særlig arkæologisk værdi. Du har besluttet at finansiere dens bevarelse, ved at bygge en forlystelsespark baseret på områdets rige mytologiske arv.
 
 <Prehistoric - After the Asteroid>
-STR_SCNR    :Forhistorisk - Efter Asteroiden
+STR_SCNR    :Crater Carnage
 STR_PARK    :Crater Carnage
 STR_DTLS    :Du ejer et støvet gammelt meteorkrater. I den sande iværksætterånd har du besluttet at konstruere en asteroide forlystelsespark og konvertere dit tilsyneladende værdiløse land til en betydelig formue.
 
 <Prehistoric - Jurassic Safari>
-STR_SCNR    :Præhistorisk - Jurassic Safari
+STR_SCNR    :Coastersaurus
 STR_PARK    :Coastersaurus
 STR_DTLS    :Du har fået til opgave at bygge en Jurassic æra forlystelsespark. For at optimere dine besøgendes adgang til de eksotiske plante- og dyreudstillinger skal du bygge en bygning, der går over og ind i dalen.
 
 <Prehistoric - Stone Age>
-STR_SCNR    :Præhistorisk - Stenalderen
+STR_SCNR    :Rocky Rambles
 STR_PARK    :Rocky Rambles
 STR_DTLS    :For at forpurre motorvejsudviklerne og bevare de mystiske gamle stencirkler skal du konstruere en stenalder forlystelsespark og lave en fortjeneste. Det kan dog være en udfordring at tiltrække besøgende, da terrænet er en smule ugæstfrit.
 
 <Roaring Twenties - Prison Island>
-STR_SCNR    :Brølende Tyvere - Fængselsøen
+STR_SCNR    :Alcatraz
 STR_PARK    :Alcatraz
 STR_DTLS    :Den berygtede Prison Island - hvis befolkning engang husede organiseret kriminalitet og hjemmebrændere - er nu til salg. Du har besluttet at konvertere det til en top turistattraktion, og penge er ikke noget problem.
 
 <Roaring Twenties - Schneider Cup>
-STR_SCNR    :Brølende Tyvere - Schneider Cup
+STR_SCNR    :Schneider Shores
 STR_PARK    :Schneider Shores
 STR_DTLS    :T75-årsdagen for din bedstefars Schneider Cup-sejr kommer op om et par år. Du vil ære hans præstation ved at bygge en forlystelsespark baseret på den berømte vandflyver racer.
 
 <Roaring Twenties - Skyscrapers>
-STR_SCNR    :Brølende Tyvere - Skyskrabere
+STR_SCNR    :Metropolis
 STR_PARK    :Metropolis
 STR_DTLS    :Du ejer en tom grund i nærheden af den lave del af byen. For at presse mest muligt ud af din byejendom skal du bygge en skyskraber forlystelsespark inspireret af den skyhøje art deco arkitektur i tyverne.
 
 <Rock 'n' Roll - Flower Power>
-STR_SCNR    :Rock ’n’ Roll - Flower Power
+STR_SCNR    :Woodstock
 STR_PARK    :Woodstock
 STR_DTLS    :En stor årlig musikfestival finder sted på dit land. Byg en hip forlystelsespark for at holde det frisindede publikum underholdt.
 
 <Rock 'n' Roll - Rock 'n' Roll>
-STR_SCNR    :Rock ’n’ Roll - Rock og Rul
+STR_SCNR    :Rock ’n’ Roll Revival
 STR_PARK    :Rock ’n’ Roll Revival
 STR_DTLS    :Denne aldrende forlystelsespark har set bedre dage. Hjælp ejeren med at give det en retro rock ’n’ roll makeover og gøre stedet til et vellykket sted.
 
@@ -4387,3 +4434,106 @@ STR_DTLS    :Denne aldrende forlystelsespark har set bedre dage. Hjælp ejeren m
 STR_SCNR    :Panda World
 STR_PARK    :Panda World
 STR_DTLS    :Tilføj flere forlystelser, og tiltræk flere besøgende til denne panda-tema park
+
+<Tycoon Park>
+STR_SCNR    :Tycoon Park
+STR_PARK    :Tycoon Park
+STR_DTLS    :
+
+###
+<UCES Halloween>
+STR_SCNR    :Cemetery Ridge
+STR_PARK    :Cemetery Ridge
+STR_DTLS    :Dette er Halloween, UCES Halloween, græskar skriger i nattens mulm og mørke! Denne kirkegård er i problemer, og det er op til dig at redde den, mens du lader de døde hvile i fred! Kan du holde spøgelserne i deres grave og give de besøgende kuldegysninger?{NEWLINE}Forfatter: Squid
+
+###############################################################################
+## UCES: The Time Machine (2003)
+###############################################################################
+<Lighthouse of Alexandria by Katatude for UCES>
+STR_SCNR    :The Lighthouse of Alexandria
+STR_PARK    :The Lighthouse of Alexandria
+STR_DTLS    :Alexander byggede byen; Grækere, romere, egyptere satte deres præg. Men den største ære var et vidunder i den antikke verden - fyret. Besøg og lav en park!{NEWLINE}Forfatter: Katatude
+
+<Cleveland's Luna Park>
+STR_SCNR    :Luna Park, Cleveland
+STR_PARK    :Luna Park
+STR_DTLS    :Som den var på åbningsdagen - 18. Maj 1905.{NEWLINE}Forfatter: Aetherwave
+
+<Mount Vesuvius 1700 A.D. by Katatude for UCES>
+STR_SCNR    :Mount Vesuvius
+STR_PARK    :Mount Vesuvius
+STR_DTLS    :Pompeji og Herculaneum blev begravet af Mt. Vesuvius i 79 e.Kr. Besøg udgravningerne og byg en park!{NEWLINE}Forfatter: Katatude
+
+<The Sandbox by Katatude for UCES>
+STR_SCNR    :The Sandbox
+STR_PARK    :The Sandbox
+STR_DTLS    :Hvad alle vil have - en sandkasse! Så grib din lille spand og skovl og byg en park!{NEWLINE}Forfatter: Katatude
+
+<Niagara Falls & Gorge by Katatude for UCES>
+STR_SCNR    :Niagara Falls & Gorge
+STR_PARK    :Niagara Falls
+STR_DTLS    :American Falls, Bridal Falls & Canadian Horseshoe Falls på Niagara Frontier, 1850.{NEWLINE}Forfatter: Katatude
+
+<Rocky Mountain Miners>
+STR_SCNR    :Rocky Mountain Miners
+STR_PARK    :Rocky Mountain Miners
+STR_DTLS    :Et stenskred beskadigede din jernbane. Dine arbejdere er gået på guldjagt. Er der guld i rutsjebaner?{NEWLINE}Forfattere: Squid, Buckone, Fossil
+
+<The Time Machine by Katatude for UCES>
+STR_SCNR    :The Time Machine
+STR_PARK    :The Time Machine
+STR_DTLS    :Tidsmaskinen. Byg med på farten – når du vil, hvor du vil. Evigheden venter. Alt er relativt.{NEWLINE}Forfatter: Katatude
+
+<Tower of Babel>
+STR_SCNR    :Tower of Babel
+STR_PARK    :Tower of Babel
+STR_DTLS    :Hovsa! Se, hvor tidsmaskinen tog os til nu! Hvor forsvandt alle hen?{NEWLINE}Forfatter: Fossil
+
+<Transformation>
+STR_SCNR    :Transformation
+STR_PARK    :Transformation
+STR_DTLS    :Vi har ventet dig…{NEWLINE}Forfatter: Fossil
+
+<Urbis Incognitus>
+STR_SCNR    :Urbis Incognitus
+STR_PARK    :Urbis Incognitus
+STR_DTLS    :Romerne er trætte af kedelige gladiatorkampe. Giv dem mere spænding, lav en romersk by om til den største forlystelsespark nogensinde!{NEWLINE}Forfatter: Kaffe
+
+###############################################################################
+## UCES: Katy’s Dreamworld (2003)
+###############################################################################
+
+<Beneath the Christmas Tree by Katatude for UCES>
+STR_SCNR    :Beneath the Christmas Tree
+STR_PARK    :Winter Wonderland
+STR_DTLS    :Mor byggede denne scene under vores træ. Nu vil hun have lavet en park i den! Kan du hjælpe?{NEWLINE}Forfatter: Katatude
+
+<Bigrock Blast>
+STR_SCNR    :Bigrock Blast
+STR_PARK    :Bigrock Blast
+STR_DTLS    :Efter en eksplosion på Bigrock Mining Co. er befolkningen i Bigrock nødt til at bygge en forlystelsespark for at holde deres by i live.{NEWLINE}Forfattere: rbarclay & buckone
+
+<Camp Mockingbird for UCES by Katatude>
+STR_SCNR    :Camp Mockingbird
+STR_PARK    :Camp Mockingbird
+STR_DTLS    :Kun 500$ om ugen til denne sommerlejr! Bryd din sparegris op, og hav det derefter sjovt og byg en park.{NEWLINE}Forfatter: Katatude
+
+<Choo Choo Town>
+STR_SCNR    :Choo-Choo Town
+STR_PARK    :Choo-Choo Town
+STR_DTLS    :Mor! Far! Jeg vil til Fut-Fut by!{NEWLINE}Forfatter: Fossil
+
+<Dragon Islands>
+STR_SCNR    :Dragon Islands
+STR_PARK    :Dragon Islands
+STR_DTLS    :Drageøen? Jeg er ikke sikker på at jeg vil derhen…{NEWLINE}Forfatter: Fossil
+
+<Kiddy Karnival II>
+STR_SCNR    :Kiddie Karnival II
+STR_PARK    :Kiddie Karnival
+STR_DTLS    :Hej Unger, Lad os have det sjovt!{NEWLINE}Forfattere: Piehead & Fossil
+
+<Sand Dune>
+STR_SCNR    :Sand Dune
+STR_PARK    :Sand Dune
+STR_DTLS    :Som ejer af en lille park, købte du et stort stykke jord langs stranden for at udvide og tiltrække flere gæster til at besøge de smukke klitter, men pas på, du må ikke forstyrre de økologisk skrøbelige klitter.{NEWLINE}Forfatter: rbarclay

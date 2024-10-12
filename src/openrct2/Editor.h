@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,12 +9,11 @@
 
 #pragma once
 
-#include "common.h"
 #include "object/Object.h"
 
 struct ResultWithMessage;
 
-namespace Editor
+namespace OpenRCT2::Editor
 {
     void Load();
     void ConvertSaveToScenario();
@@ -30,7 +29,7 @@ namespace Editor
     uint8_t GetSelectedObjectFlags(ObjectType objectType, size_t index);
     void ClearSelectedObject(ObjectType objectType, size_t index, uint32_t flags);
     void SetSelectedObject(ObjectType objectType, size_t index, uint32_t flags);
-} // namespace Editor
+} // namespace OpenRCT2::Editor
 
 enum class EditorStep : uint8_t
 {
@@ -44,7 +43,5 @@ enum class EditorStep : uint8_t
     DesignsManager,        // 7
     Invalid = 255,         // 255
 };
-
-extern EditorStep gEditorStep;
 
 void EditorOpenWindowsForCurrentStep();

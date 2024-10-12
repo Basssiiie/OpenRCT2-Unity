@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,15 +10,15 @@
 #include "RideSetColourSchemeAction.h"
 
 #include "../Cheats.h"
-#include "../common.h"
 #include "../core/MemoryStream.h"
 #include "../interface/Window.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
 #include "../ride/Ride.h"
 #include "../ride/RideConstruction.h"
 #include "../world/Park.h"
+
+using namespace OpenRCT2;
 
 RideSetColourSchemeAction::RideSetColourSchemeAction(
     const CoordsXYZD& location, track_type_t trackType, uint16_t newColourScheme)
@@ -51,8 +51,7 @@ GameActions::Result RideSetColourSchemeAction::Query() const
 {
     if (!LocationValid(_loc))
     {
-        return GameActions::Result(
-            GameActions::Status::InvalidParameters, STR_CANT_SET_COLOUR_SCHEME, STR_LAND_NOT_OWNED_BY_PARK);
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_SET_COLOUR_SCHEME, STR_OFF_EDGE_OF_MAP);
     }
     // Find the relevant track piece, prefer sequence 0 (logic copied from GetTrackElementOriginAndApplyChanges)
     auto trackElement = MapGetTrackElementAtOfTypeSeq(_loc, _trackType, 0);
@@ -65,7 +64,7 @@ GameActions::Result RideSetColourSchemeAction::Query() const
                 GameActions::Status::InvalidParameters, STR_CANT_SET_COLOUR_SCHEME, STR_INVALID_TRACK_PARAMETERS);
         }
     }
-    if (_newColourScheme >= OpenRCT2::Limits::NumColourSchemes)
+    if (_newColourScheme >= kNumRideColourSchemes)
     {
         return GameActions::Result(
             GameActions::Status::InvalidParameters, STR_CANT_SET_COLOUR_SCHEME, STR_INVALID_COLOUR_SCHEME_PARAMETER);

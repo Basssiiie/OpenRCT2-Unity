@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -15,7 +15,7 @@
 #include <functional>
 #include <memory>
 #include <openrct2/core/FileSystem.hpp>
-#include <openrct2/localisation/StringIds.h>
+#include <openrct2/localisation/StringIdType.h>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -147,7 +147,4 @@ namespace OpenRCT2::Ui
 
         static std::string_view GetLegacyShortcutId(size_t index);
     };
-
-    InputManager& GetInputManager();
-    ShortcutManager& GetShortcutManager();
 } // namespace OpenRCT2::Ui

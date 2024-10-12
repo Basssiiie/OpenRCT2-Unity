@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <cmath>
 #include <openrct2/audio/AudioSource.h>
-#include <openrct2/common.h>
 #include <speex/speex_resampler.h>
 
 namespace OpenRCT2::Audio
@@ -48,7 +47,7 @@ namespace OpenRCT2::Audio
         AudioChannelImpl()
         {
             AudioChannelImpl::SetRate(1);
-            AudioChannelImpl::SetVolume(MIXER_VOLUME_MAX);
+            AudioChannelImpl::SetVolume(kMixerVolumeMax);
             AudioChannelImpl::SetPan(0.5f);
         }
 
@@ -155,7 +154,7 @@ namespace OpenRCT2::Audio
 
         void SetVolume(int32_t volume) override
         {
-            _volume = std::clamp(volume, 0, MIXER_VOLUME_MAX);
+            _volume = std::clamp(volume, 0, kMixerVolumeMax);
         }
 
         [[nodiscard]] float GetPan() const override
@@ -265,7 +264,7 @@ namespace OpenRCT2::Audio
                     {
                         _done = true;
                     }
-                    else if (_loop == MIXER_LOOP_INFINITE)
+                    else if (_loop == kMixerLoopInfinite)
                     {
                         _offset = 0;
                     }

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,6 +10,8 @@
 #include "SDLException.h"
 
 #include <SDL.h>
+
+using namespace OpenRCT2::Ui;
 
 SDLException::SDLException(const std::string& message)
     : runtime_error(message.c_str())

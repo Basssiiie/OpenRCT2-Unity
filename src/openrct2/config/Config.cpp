@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,6 +10,8 @@
 #include "Config.h"
 
 #include "../Context.h"
+#include "../Date.h"
+#include "../Diagnostic.h"
 #include "../OpenRCT2.h"
 #include "../PlatformEnvironment.h"
 #include "../core/Console.hpp"
@@ -20,14 +22,13 @@
 #include "../drawing/IDrawingEngine.h"
 #include "../interface/Window.h"
 #include "../localisation/Currency.h"
-#include "../localisation/Date.h"
+#include "../localisation/Formatting.h"
 #include "../localisation/Language.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../network/network.h"
 #include "../paint/VirtualFloor.h"
 #include "../platform/Platform.h"
-#include "../rct1/Limits.h"
+#include "../rct1/Csg.h"
 #include "../scenario/Scenario.h"
 #include "../ui/UiContext.h"
 #include "../util/Util.h"
@@ -39,13 +40,25 @@ using namespace OpenRCT2;
 using namespace OpenRCT2::Ui;
 
 #ifdef __APPLE__
-static constexpr bool WindowButtonsOnTheLeftDefault = true;
+static constexpr bool kWindowButtonsOnTheLeftDefault = true;
 #else
-static constexpr bool WindowButtonsOnTheLeftDefault = false;
+static constexpr bool kWindowButtonsOnTheLeftDefault = false;
+#endif
+#ifdef __ANDROID__
+static constexpr bool kEnlargedUiDefault = true;
+#else
+static constexpr bool kEnlargedUiDefault = false;
 #endif
 
-namespace Config
+namespace OpenRCT2::Config
 {
+    static Config _config{};
+
+    Config& Get()
+    {
+        return _config;
+    }
+
 #pragma region Enums
 
     static const auto Enum_MeasurementFormat = ConfigEnum<MeasurementFormat>({
@@ -143,10 +156,10 @@ namespace Config
     {
         if (reader->ReadSection("general"))
         {
-            auto model = &gConfigGeneral;
+            auto model = &_config.general;
             model->AlwaysShowGridlines = reader->GetBoolean("always_show_gridlines", false);
             model->AutosaveFrequency = reader->GetInt32("autosave", AUTOSAVE_EVERY_5MINUTES);
-            model->AutosaveAmount = reader->GetInt32("autosave_amount", DEFAULT_NUM_AUTOSAVES_TO_KEEP);
+            model->AutosaveAmount = reader->GetInt32("autosave_amount", kDefaultNumAutosavesToKeep);
             model->ConfirmationPrompt = reader->GetBoolean("confirmation_prompt", false);
             model->CurrencyFormat = reader->GetEnum<CurrencyType>(
                 "currency_format", Platform::GetLocaleCurrency(), Enum_Currency);
@@ -176,7 +189,7 @@ namespace Config
             model->WindowWidth = reader->GetInt32("window_width", -1);
             model->DefaultDisplay = reader->GetInt32("default_display", 0);
             model->DrawingEngine = reader->GetEnum<DrawingEngine>(
-                "drawing_engine", DrawingEngine::Software, Enum_DrawingEngine);
+                "drawing_engine", DrawingEngine::SoftwareWithHardwareDisplay, Enum_DrawingEngine);
             model->UncapFPS = reader->GetBoolean("uncap_fps", false);
             model->UseVSync = reader->GetBoolean("use_vsync", true);
             model->VirtualFloorStyle = reader->GetEnum<VirtualFloorStyles>(
@@ -200,6 +213,7 @@ namespace Config
             model->DisableLightningEffect = reader->GetBoolean("disable_lightning_effect", false);
             model->SteamOverlayPause = reader->GetBoolean("steam_overlay_pause", true);
             model->WindowScale = reader->GetFloat("window_scale", Platform::GetDefaultScale());
+            model->InferDisplayDPI = reader->GetBoolean("infer_display_dpi", true);
             model->ShowFPS = reader->GetBoolean("show_fps", false);
 #ifdef _DEBUG
             // Always have multi-threading disabled in debug builds, this makes things slower.
@@ -217,12 +231,13 @@ namespace Config
             model->LastSaveScenarioDirectory = reader->GetString("last_scenario_directory", "");
             model->LastSaveTrackDirectory = reader->GetString("last_track_directory", "");
             model->UseNativeBrowseDialog = reader->GetBoolean("use_native_browse_dialog", false);
-            model->WindowLimit = reader->GetInt32("window_limit", WINDOW_LIMIT_MAX);
+            model->WindowLimit = reader->GetInt32("window_limit", kWindowLimitMax);
             model->ZoomToCursor = reader->GetBoolean("zoom_to_cursor", true);
             model->RenderWeatherEffects = reader->GetBoolean("render_weather_effects", true);
             model->RenderWeatherGloom = reader->GetBoolean("render_weather_gloom", true);
             model->ShowGuestPurchases = reader->GetBoolean("show_guest_purchases", false);
             model->ShowRealNamesOfGuests = reader->GetBoolean("show_real_names_of_guests", true);
+            model->ShowRealNamesOfStaff = reader->GetBoolean("show_real_names_of_staff", false);
             model->AllowEarlyCompletion = reader->GetBoolean("allow_early_completion", false);
             model->AssetPackOrder = reader->GetString("asset_pack_order", "");
             model->EnabledAssetPacks = reader->GetString("enabled_asset_packs", "");
@@ -242,7 +257,7 @@ namespace Config
 
     static void WriteGeneral(IIniWriter* writer)
     {
-        auto model = &gConfigGeneral;
+        auto model = &_config.general;
         writer->WriteSection("general");
         writer->WriteBoolean("always_show_gridlines", model->AlwaysShowGridlines);
         writer->WriteInt32("autosave", model->AutosaveFrequency);
@@ -290,6 +305,7 @@ namespace Config
         writer->WriteBoolean("disable_lightning_effect", model->DisableLightningEffect);
         writer->WriteBoolean("steam_overlay_pause", model->SteamOverlayPause);
         writer->WriteFloat("window_scale", model->WindowScale);
+        writer->WriteBoolean("infer_display_dpi", model->InferDisplayDPI);
         writer->WriteBoolean("show_fps", model->ShowFPS);
         writer->WriteBoolean("multithreading", model->MultiThreading);
         writer->WriteBoolean("trap_cursor", model->TrapCursor);
@@ -308,6 +324,7 @@ namespace Config
         writer->WriteBoolean("render_weather_gloom", model->RenderWeatherGloom);
         writer->WriteBoolean("show_guest_purchases", model->ShowGuestPurchases);
         writer->WriteBoolean("show_real_names_of_guests", model->ShowRealNamesOfGuests);
+        writer->WriteBoolean("show_real_names_of_staff", model->ShowRealNamesOfStaff);
         writer->WriteBoolean("allow_early_completion", model->AllowEarlyCompletion);
         writer->WriteString("asset_pack_order", model->AssetPackOrder);
         writer->WriteString("enabled_asset_packs", model->EnabledAssetPacks);
@@ -327,7 +344,8 @@ namespace Config
     {
         if (reader->ReadSection("interface"))
         {
-            auto model = &gConfigInterface;
+            auto model = &_config.interface;
+            model->ToolbarButtonsCentred = reader->GetBoolean("toolbar_buttons_centred", false);
             model->ToolbarShowFinances = reader->GetBoolean("toolbar_show_finances", true);
             model->ToolbarShowResearch = reader->GetBoolean("toolbar_show_research", true);
             model->ToolbarShowCheats = reader->GetBoolean("toolbar_show_cheats", false);
@@ -342,14 +360,17 @@ namespace Config
             model->ObjectSelectionFilterFlags = reader->GetInt32("object_selection_filter_flags", 0x3FFF);
             model->ScenarioselectLastTab = reader->GetInt32("scenarioselect_last_tab", 0);
             model->ListRideVehiclesSeparately = reader->GetBoolean("list_ride_vehicles_separately", false);
-            model->WindowButtonsOnTheLeft = reader->GetBoolean("window_buttons_on_the_left", WindowButtonsOnTheLeftDefault);
+            model->WindowButtonsOnTheLeft = reader->GetBoolean("window_buttons_on_the_left", kWindowButtonsOnTheLeftDefault);
+            model->EnlargedUi = reader->GetBoolean("enlarged_ui", kEnlargedUiDefault);
+            model->TouchEnhancements = reader->GetBoolean("touch_enhancements", kEnlargedUiDefault);
         }
     }
 
     static void WriteInterface(IIniWriter* writer)
     {
-        auto model = &gConfigInterface;
+        auto model = &_config.interface;
         writer->WriteSection("interface");
+        writer->WriteBoolean("toolbar_buttons_centred", model->ToolbarButtonsCentred);
         writer->WriteBoolean("toolbar_show_finances", model->ToolbarShowFinances);
         writer->WriteBoolean("toolbar_show_research", model->ToolbarShowResearch);
         writer->WriteBoolean("toolbar_show_cheats", model->ToolbarShowCheats);
@@ -365,13 +386,15 @@ namespace Config
         writer->WriteInt32("scenarioselect_last_tab", model->ScenarioselectLastTab);
         writer->WriteBoolean("list_ride_vehicles_separately", model->ListRideVehiclesSeparately);
         writer->WriteBoolean("window_buttons_on_the_left", model->WindowButtonsOnTheLeft);
+        writer->WriteBoolean("enlarged_ui", model->EnlargedUi);
+        writer->WriteBoolean("touch_enhancements", model->TouchEnhancements);
     }
 
     static void ReadSound(IIniReader* reader)
     {
         if (reader->ReadSection("sound"))
         {
-            auto model = &gConfigSound;
+            auto model = &_config.sound;
             model->Device = reader->GetString("audio_device", "");
             model->MasterSoundEnabled = reader->GetBoolean("master_sound", true);
             model->MasterVolume = reader->GetInt32("master_volume", 100);
@@ -387,7 +410,7 @@ namespace Config
 
     static void WriteSound(IIniWriter* writer)
     {
-        auto model = &gConfigSound;
+        auto model = &_config.sound;
         writer->WriteSection("sound");
         writer->WriteString("audio_device", model->Device);
         writer->WriteBoolean("master_sound", model->MasterSoundEnabled);
@@ -420,9 +443,9 @@ namespace Config
             // to avoid people pretending to be someone else
             playerName = String::Trim(playerName);
 
-            auto model = &gConfigNetwork;
+            auto model = &_config.network;
             model->PlayerName = std::move(playerName);
-            model->DefaultPort = reader->GetInt32("default_port", NETWORK_DEFAULT_PORT);
+            model->DefaultPort = reader->GetInt32("default_port", kNetworkDefaultPort);
             model->ListenAddress = reader->GetString("listen_address", "");
             model->DefaultPassword = reader->GetString("default_password", "");
             model->StayConnected = reader->GetBoolean("stay_connected", true);
@@ -446,7 +469,7 @@ namespace Config
 
     static void WriteNetwork(IIniWriter* writer)
     {
-        auto model = &gConfigNetwork;
+        auto model = &_config.network;
         writer->WriteSection("network");
         writer->WriteString("player_name", model->PlayerName);
         writer->WriteInt32("default_port", model->DefaultPort);
@@ -474,7 +497,7 @@ namespace Config
     {
         if (reader->ReadSection("notifications"))
         {
-            auto model = &gConfigNotifications;
+            auto model = &_config.notifications;
             model->ParkAward = reader->GetBoolean("park_award", true);
             model->ParkMarketingCampaignFinished = reader->GetBoolean("park_marketing_campaign_finished", true);
             model->ParkWarnings = reader->GetBoolean("park_warnings", true);
@@ -498,7 +521,7 @@ namespace Config
 
     static void WriteNotifications(IIniWriter* writer)
     {
-        auto model = &gConfigNotifications;
+        auto model = &_config.notifications;
         writer->WriteSection("notifications");
         writer->WriteBoolean("park_award", model->ParkAward);
         writer->WriteBoolean("park_marketing_campaign_finished", model->ParkMarketingCampaignFinished);
@@ -524,7 +547,7 @@ namespace Config
     {
         if (reader->ReadSection("font"))
         {
-            auto model = &gConfigFonts;
+            auto model = &_config.fonts;
             model->FileName = reader->GetString("file_name", "");
             model->FontName = reader->GetString("font_name", "");
             model->OffsetX = reader->GetInt32("x_offset", false);
@@ -544,7 +567,7 @@ namespace Config
 
     static void WriteFont(IIniWriter* writer)
     {
-        auto model = &gConfigFonts;
+        auto model = &_config.fonts;
         writer->WriteSection("font");
         writer->WriteString("file_name", model->FileName);
         writer->WriteString("font_name", model->FontName);
@@ -566,7 +589,7 @@ namespace Config
     {
         if (reader->ReadSection("plugin"))
         {
-            auto model = &gConfigPlugin;
+            auto model = &_config.plugin;
             model->EnableHotReloading = reader->GetBoolean("enable_hot_reloading", false);
             model->AllowedHosts = reader->GetString("allowed_hosts", "");
         }
@@ -574,13 +597,13 @@ namespace Config
 
     static void WritePlugin(IIniWriter* writer)
     {
-        auto model = &gConfigPlugin;
+        auto model = &_config.plugin;
         writer->WriteSection("plugin");
         writer->WriteBoolean("enable_hot_reloading", model->EnableHotReloading);
         writer->WriteString("allowed_hosts", model->AllowedHosts);
     }
 
-    static bool SetDefaults()
+    bool SetDefaults()
     {
         try
         {
@@ -655,15 +678,7 @@ namespace Config
     {
         LOG_VERBOSE("config_find_rct1_path(...)");
 
-        static constexpr u8string_view searchLocations[] = {
-            R"(C:\Program Files\Steam\steamapps\common\Rollercoaster Tycoon Deluxe)",
-            R"(C:\Program Files (x86)\Steam\steamapps\common\Rollercoaster Tycoon Deluxe)",
-            R"(C:\GOG Games\RollerCoaster Tycoon Deluxe)",
-            R"(C:\Program Files\GalaxyClient\Games\RollerCoaster Tycoon Deluxe)",
-            R"(C:\Program Files (x86)\GalaxyClient\Games\RollerCoaster Tycoon Deluxe)",
-            R"(C:\Program Files\Hasbro Interactive\RollerCoaster Tycoon)",
-            R"(C:\Program Files (x86)\Hasbro Interactive\RollerCoaster Tycoon)",
-        };
+        static std::vector<u8string_view> searchLocations = Platform::GetSearchablePathsRCT1();
 
         for (const auto& location : searchLocations)
         {
@@ -700,19 +715,7 @@ namespace Config
     {
         LOG_VERBOSE("config_find_rct2_path(...)");
 
-        static constexpr u8string_view searchLocations[] = {
-            R"(C:\Program Files\Steam\steamapps\common\Rollercoaster Tycoon 2)",
-            R"(C:\Program Files (x86)\Steam\steamapps\common\Rollercoaster Tycoon 2)",
-            R"(C:\GOG Games\RollerCoaster Tycoon 2 Triple Thrill Pack)",
-            R"(C:\Program Files\GalaxyClient\Games\RollerCoaster Tycoon 2 Triple Thrill Pack)",
-            R"(C:\Program Files (x86)\GalaxyClient\Games\RollerCoaster Tycoon 2 Triple Thrill Pack)",
-            R"(C:\Program Files\Atari\RollerCoaster Tycoon 2)",
-            R"(C:\Program Files (x86)\Atari\RollerCoaster Tycoon 2)",
-            R"(C:\Program Files\Infogrames\RollerCoaster Tycoon 2)",
-            R"(C:\Program Files (x86)\Infogrames\RollerCoaster Tycoon 2)",
-            R"(C:\Program Files\Infogrames Interactive\RollerCoaster Tycoon 2)",
-            R"(C:\Program Files (x86)\Infogrames Interactive\RollerCoaster Tycoon 2)",
-        };
+        static std::vector<u8string_view> searchLocations = Platform::GetSearchablePathsRCT2();
 
         for (const auto& location : searchLocations)
         {
@@ -777,246 +780,158 @@ namespace Config
         LOG_INFO("Exit status %d", exit_status);
         return exit_status == 0;
     }
-} // namespace Config
 
-GeneralConfiguration gConfigGeneral;
-InterfaceConfiguration gConfigInterface;
-SoundConfiguration gConfigSound;
-NetworkConfiguration gConfigNetwork;
-NotificationConfiguration gConfigNotifications;
-FontConfiguration gConfigFonts;
-PluginConfiguration gConfigPlugin;
-
-void ConfigSetDefaults()
-{
-    Config::SetDefaults();
-}
-
-bool ConfigOpen(u8string_view path)
-{
-    if (!File::Exists(path))
+    bool OpenFromPath(u8string_view path)
     {
-        return false;
-    }
-
-    auto result = Config::ReadFile(path);
-    if (result)
-    {
-        CurrencyLoadCustomCurrencyConfig();
-    }
-    return result;
-}
-
-bool ConfigSave(u8string_view path)
-{
-    return Config::WriteFile(path);
-}
-
-u8string ConfigGetDefaultPath()
-{
-    auto env = GetContext()->GetPlatformEnvironment();
-    return Path::Combine(env->GetDirectoryPath(DIRBASE::USER), u8"config.ini");
-}
-
-bool ConfigSaveDefault()
-{
-    auto path = ConfigGetDefaultPath();
-    return ConfigSave(path);
-}
-
-bool ConfigFindOrBrowseInstallDirectory()
-{
-    std::string path = Config::FindRCT2Path();
-    if (!path.empty())
-    {
-        gConfigGeneral.RCT2Path = path;
-    }
-    else
-    {
-        if (gOpenRCT2Headless)
+        if (!File::Exists(path))
         {
             return false;
         }
 
-        auto uiContext = GetContext()->GetUiContext();
-        if (!uiContext->HasFilePicker())
+        auto result = ReadFile(path);
+        if (result)
         {
-            uiContext->ShowMessageBox(FormatStringID(STR_NEEDS_RCT2_FILES_MANUAL, nullptr));
-            return false;
+            CurrencyLoadCustomCurrencyConfig();
         }
+        return result;
+    }
 
-        try
+    u8string GetDefaultPath()
+    {
+        auto env = GetContext()->GetPlatformEnvironment();
+        return Path::Combine(env->GetDirectoryPath(DIRBASE::USER), u8"config.ini");
+    }
+
+    bool SaveToPath(u8string_view path)
+    {
+        return WriteFile(path);
+    }
+
+    bool Save()
+    {
+        auto path = GetDefaultPath();
+        return SaveToPath(path);
+    }
+
+    bool FindOrBrowseInstallDirectory()
+    {
+        std::string path = FindRCT2Path();
+        if (!path.empty())
         {
-            const char* g1DatPath = PATH_SEPARATOR "Data" PATH_SEPARATOR "g1.dat";
-            while (true)
+            Get().general.RCT2Path = path;
+        }
+        else
+        {
+            if (gOpenRCT2Headless)
             {
-                uiContext->ShowMessageBox(FormatStringID(STR_NEEDS_RCT2_FILES, nullptr));
-                std::string gog = LanguageGetString(STR_OWN_ON_GOG);
-                std::string hdd = LanguageGetString(STR_INSTALLED_ON_HDD);
+                return false;
+            }
 
-                std::vector<std::string> options;
-                std::string chosenOption;
+            auto uiContext = GetContext()->GetUiContext();
+            if (!uiContext->HasFilePicker())
+            {
+                uiContext->ShowMessageBox(LanguageGetString(STR_NEEDS_RCT2_FILES_MANUAL));
+                return false;
+            }
 
-                if (uiContext->HasMenuSupport())
+            try
+            {
+                const char* g1DatPath = PATH_SEPARATOR "Data" PATH_SEPARATOR "g1.dat";
+                while (true)
                 {
-                    options.push_back(hdd);
-                    options.push_back(gog);
-                    int optionIndex = uiContext->ShowMenuDialog(
-                        options, LanguageGetString(STR_OPENRCT2_SETUP), LanguageGetString(STR_WHICH_APPLIES_BEST));
-                    if (optionIndex < 0 || static_cast<uint32_t>(optionIndex) >= options.size())
+                    uiContext->ShowMessageBox(LanguageGetString(STR_NEEDS_RCT2_FILES));
+                    std::string gog = LanguageGetString(STR_OWN_ON_GOG);
+                    std::string hdd = LanguageGetString(STR_INSTALLED_ON_HDD);
+
+                    std::vector<std::string> options;
+                    std::string chosenOption;
+
+                    if (uiContext->HasMenuSupport())
                     {
-                        // graceful fallback if app errors or user exits out of window
-                        chosenOption = hdd;
+                        options.push_back(hdd);
+                        options.push_back(gog);
+                        int optionIndex = uiContext->ShowMenuDialog(
+                            options, LanguageGetString(STR_OPENRCT2_SETUP), LanguageGetString(STR_WHICH_APPLIES_BEST));
+                        if (optionIndex < 0 || static_cast<uint32_t>(optionIndex) >= options.size())
+                        {
+                            // graceful fallback if app errors or user exits out of window
+                            chosenOption = hdd;
+                        }
+                        else
+                        {
+                            chosenOption = options[optionIndex];
+                        }
                     }
                     else
                     {
-                        chosenOption = options[optionIndex];
-                    }
-                }
-                else
-                {
-                    chosenOption = hdd;
-                }
-
-                std::string installPath;
-                if (chosenOption == hdd)
-                {
-                    installPath = uiContext->ShowDirectoryDialog(LanguageGetString(STR_PICK_RCT2_DIR));
-                }
-                else if (chosenOption == gog)
-                {
-                    // Check if innoextract is installed. If not, prompt the user to install it.
-                    std::string dummy;
-                    if (!Platform::FindApp("innoextract", &dummy))
-                    {
-                        uiContext->ShowMessageBox(FormatStringID(STR_INSTALL_INNOEXTRACT, nullptr));
-                        return false;
+                        chosenOption = hdd;
                     }
 
-                    const std::string dest = Path::Combine(
-                        GetContext()->GetPlatformEnvironment()->GetDirectoryPath(DIRBASE::CONFIG), "rct2");
-
-                    while (true)
+                    std::string installPath;
+                    if (chosenOption == hdd)
                     {
-                        uiContext->ShowMessageBox(LanguageGetString(STR_PLEASE_SELECT_GOG_INSTALLER));
-                        utf8 gogPath[4096];
-                        if (!Config::SelectGogInstaller(gogPath))
+                        installPath = uiContext->ShowDirectoryDialog(LanguageGetString(STR_PICK_RCT2_DIR));
+                    }
+                    else if (chosenOption == gog)
+                    {
+                        // Check if innoextract is installed. If not, prompt the user to install it.
+                        std::string dummy;
+                        if (!Platform::FindApp("innoextract", &dummy))
                         {
-                            // The user clicked "Cancel", so stop trying.
+                            uiContext->ShowMessageBox(LanguageGetString(STR_INSTALL_INNOEXTRACT));
                             return false;
                         }
 
-                        uiContext->ShowMessageBox(LanguageGetString(STR_THIS_WILL_TAKE_A_FEW_MINUTES));
+                        const std::string dest = Path::Combine(
+                            GetContext()->GetPlatformEnvironment()->GetDirectoryPath(DIRBASE::CONFIG), "rct2");
 
-                        if (Config::ExtractGogInstaller(gogPath, dest))
-                            break;
+                        while (true)
+                        {
+                            uiContext->ShowMessageBox(LanguageGetString(STR_PLEASE_SELECT_GOG_INSTALLER));
+                            utf8 gogPath[4096];
+                            if (!SelectGogInstaller(gogPath))
+                            {
+                                // The user clicked "Cancel", so stop trying.
+                                return false;
+                            }
 
-                        uiContext->ShowMessageBox(LanguageGetString(STR_NOT_THE_GOG_INSTALLER));
+                            uiContext->ShowMessageBox(LanguageGetString(STR_THIS_WILL_TAKE_A_FEW_MINUTES));
+
+                            if (ExtractGogInstaller(gogPath, dest))
+                                break;
+
+                            uiContext->ShowMessageBox(LanguageGetString(STR_NOT_THE_GOG_INSTALLER));
+                        }
+
+                        installPath = Path::Combine(dest, u8"app");
+                    }
+                    if (installPath.empty())
+                    {
+                        return false;
+                    }
+                    Get().general.RCT2Path = installPath;
+
+                    if (Platform::OriginalGameDataExists(installPath))
+                    {
+                        return true;
                     }
 
-                    installPath = Path::Combine(dest, u8"app");
+                    uiContext->ShowMessageBox(FormatStringIDLegacy(STR_COULD_NOT_FIND_AT_PATH, &g1DatPath));
                 }
-                if (installPath.empty())
-                {
-                    return false;
-                }
-                gConfigGeneral.RCT2Path = installPath;
-
-                if (Platform::OriginalGameDataExists(installPath))
-                {
-                    return true;
-                }
-
-                uiContext->ShowMessageBox(FormatStringID(STR_COULD_NOT_FIND_AT_PATH, &g1DatPath));
+            }
+            catch (const std::exception& ex)
+            {
+                Console::Error::WriteLine(ex.what());
+                return false;
             }
         }
-        catch (const std::exception& ex)
+        // While we're at it, also check if the player has RCT1
+        std::string rct1Path = FindRCT1Path();
+        if (!rct1Path.empty())
         {
-            Console::Error::WriteLine(ex.what());
-            return false;
+            Get().general.RCT1Path = std::move(rct1Path);
         }
+
+        return true;
     }
-    // While we're at it, also check if the player has RCT1
-    std::string rct1Path = Config::FindRCT1Path();
-    if (!rct1Path.empty())
-    {
-        gConfigGeneral.RCT1Path = std::move(rct1Path);
-    }
-
-    return true;
-}
-
-std::string FindCsg1datAtLocation(u8string_view path)
-{
-    auto checkPath1 = Path::Combine(path, u8"Data", u8"CSG1.DAT");
-    auto checkPath2 = Path::Combine(path, u8"Data", u8"CSG1.1");
-
-    // Since Linux is case sensitive (and macOS sometimes too), make sure we handle case properly.
-    std::string path1result = Path::ResolveCasing(checkPath1);
-    if (!path1result.empty())
-    {
-        return path1result;
-    }
-
-    std::string path2result = Path::ResolveCasing(checkPath2);
-    return path2result;
-}
-
-bool Csg1datPresentAtLocation(u8string_view path)
-{
-    auto location = FindCsg1datAtLocation(path);
-    return !location.empty();
-}
-
-u8string FindCsg1idatAtLocation(u8string_view path)
-{
-    auto result1 = Path::ResolveCasing(Path::Combine(path, u8"Data", u8"CSG1I.DAT"));
-    if (!result1.empty())
-    {
-        return result1;
-    }
-    auto result2 = Path::ResolveCasing(Path::Combine(path, u8"RCTdeluxe_install", u8"Data", u8"CSG1I.DAT"));
-    return result2;
-}
-
-bool Csg1idatPresentAtLocation(u8string_view path)
-{
-    std::string location = FindCsg1idatAtLocation(path);
-    return !location.empty();
-}
-
-bool RCT1DataPresentAtLocation(u8string_view path)
-{
-    return Csg1datPresentAtLocation(path) && Csg1idatPresentAtLocation(path) && CsgAtLocationIsUsable(path);
-}
-
-bool CsgIsUsable(const Gx& csg)
-{
-    return csg.header.total_size == RCT1::Limits::LL_CSG1_DAT_FileSize
-        && csg.header.num_entries == RCT1::Limits::Num_LL_CSG_Entries;
-}
-
-bool CsgAtLocationIsUsable(u8string_view path)
-{
-    auto csg1HeaderPath = FindCsg1idatAtLocation(path);
-    if (csg1HeaderPath.empty())
-    {
-        return false;
-    }
-
-    auto csg1DataPath = FindCsg1datAtLocation(path);
-    if (csg1DataPath.empty())
-    {
-        return false;
-    }
-
-    auto fileHeader = FileStream(csg1HeaderPath, FILE_MODE_OPEN);
-    auto fileData = FileStream(csg1DataPath, FILE_MODE_OPEN);
-    size_t fileHeaderSize = fileHeader.GetLength();
-    size_t fileDataSize = fileData.GetLength();
-
-    Gx csg = {};
-    csg.header.num_entries = static_cast<uint32_t>(fileHeaderSize / sizeof(RCTG1Element));
-    csg.header.total_size = static_cast<uint32_t>(fileDataSize);
-    return CsgIsUsable(csg);
-}
+} // namespace OpenRCT2::Config

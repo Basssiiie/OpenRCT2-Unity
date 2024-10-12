@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,12 +9,17 @@
 
 #include "RideEntranceExitPlaceAction.h"
 
+#include "../Diagnostic.h"
+#include "../GameState.h"
 #include "../actions/RideEntranceExitRemoveAction.h"
 #include "../management/Finance.h"
 #include "../ride/Ride.h"
 #include "../ride/Station.h"
 #include "../world/ConstructionClearance.h"
 #include "../world/MapAnimation.h"
+#include "../world/tile_element/EntranceElement.h"
+
+using namespace OpenRCT2;
 
 RideEntranceExitPlaceAction::RideEntranceExitPlaceAction(
     const CoordsXY& loc, Direction direction, RideId rideIndex, StationIndex stationNum, bool isExit)
@@ -55,14 +60,14 @@ GameActions::Result RideEntranceExitPlaceAction::Query() const
     auto ride = GetRide(_rideIndex);
     if (ride == nullptr)
     {
-        LOG_WARNING("Invalid game command for ride %u", _rideIndex.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, errorTitle, STR_NONE);
+        LOG_ERROR("Ride not found for rideIndex %u", _rideIndex.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, errorTitle, STR_ERR_RIDE_NOT_FOUND);
     }
 
-    if (_stationNum.ToUnderlying() >= OpenRCT2::Limits::MaxStationsPerRide)
+    if (_stationNum.ToUnderlying() >= Limits::kMaxStationsPerRide)
     {
-        LOG_WARNING("Invalid station number for ride. stationNum: %u", _stationNum.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, errorTitle, STR_NONE);
+        LOG_ERROR("Invalid station number for ride. stationNum: %u", _stationNum.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, errorTitle, STR_ERR_VALUE_OUT_OF_RANGE);
     }
 
     if (ride->status != RideStatus::Closed && ride->status != RideStatus::Simulating)
@@ -92,7 +97,11 @@ GameActions::Result RideEntranceExitPlaceAction::Query() const
     }
 
     auto z = ride->GetStation(_stationNum).GetBaseZ();
-    if (!LocationValid(_loc) || (!gCheatsSandboxMode && !MapIsLocationOwned({ _loc, z })))
+    if (!LocationValid(_loc))
+    {
+        return GameActions::Result(GameActions::Status::InvalidParameters, errorTitle, STR_OFF_EDGE_OF_MAP);
+    }
+    if (!GetGameState().Cheats.SandboxMode && !MapIsLocationOwned({ _loc, z }))
     {
         return GameActions::Result(GameActions::Status::NotOwned, errorTitle, STR_LAND_NOT_OWNED_BY_PARK);
     }
@@ -136,8 +145,8 @@ GameActions::Result RideEntranceExitPlaceAction::Execute() const
     auto ride = GetRide(_rideIndex);
     if (ride == nullptr)
     {
-        LOG_WARNING("Invalid game command for ride %u", _rideIndex.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, errorTitle, STR_NONE);
+        LOG_ERROR("Ride not found for rideIndex %u", _rideIndex.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, errorTitle, STR_ERR_RIDE_NOT_FOUND);
     }
 
     if (!(GetFlags() & GAME_COMMAND_FLAG_GHOST))
@@ -162,7 +171,8 @@ GameActions::Result RideEntranceExitPlaceAction::Execute() const
     }
 
     auto z = station.GetBaseZ();
-    if (!(GetFlags() & GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED) && !(GetFlags() & GAME_COMMAND_FLAG_GHOST))
+    if (!(GetFlags() & GAME_COMMAND_FLAG_ALLOW_DURING_PAUSED) && !(GetFlags() & GAME_COMMAND_FLAG_GHOST)
+        && !GetGameState().Cheats.DisableClearanceChecks)
     {
         FootpathRemoveLitter({ _loc, z });
         WallRemoveAtZ({ _loc, z });
@@ -225,7 +235,7 @@ GameActions::Result RideEntranceExitPlaceAction::TrackPlaceQuery(const CoordsXYZ
     const auto errorTitle = isExit ? STR_CANT_BUILD_MOVE_EXIT_FOR_THIS_RIDE_ATTRACTION
                                    : STR_CANT_BUILD_MOVE_ENTRANCE_FOR_THIS_RIDE_ATTRACTION;
 
-    if (!gCheatsSandboxMode && !MapIsLocationOwned(loc))
+    if (!GetGameState().Cheats.SandboxMode && !MapIsLocationOwned(loc))
     {
         return GameActions::Result(GameActions::Status::NotOwned, errorTitle, STR_LAND_NOT_OWNED_BY_PARK);
     }

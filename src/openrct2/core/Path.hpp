@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,12 +9,9 @@
 
 #pragma once
 
-#include "../common.h"
-#include "../core/String.hpp"
+#include "../core/StringTypes.h"
 
-#include <string>
-
-namespace Path
+namespace OpenRCT2::Path
 {
     [[nodiscard]] u8string Combine(u8string_view a, u8string_view b);
 
@@ -43,4 +40,4 @@ namespace Path
      * Note: This will not resolve the case for Windows.
      */
     u8string ResolveCasing(u8string_view path);
-} // namespace Path
+} // namespace OpenRCT2::Path

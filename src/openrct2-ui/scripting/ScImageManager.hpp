@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -93,8 +93,8 @@ namespace OpenRCT2::Scripting
 
         void free(const DukValue& dukRange)
         {
-            auto start = dukRange["start"].as_int();
-            auto count = dukRange["count"].as_int();
+            auto start = dukRange["start"].as_uint();
+            auto count = dukRange["count"].as_uint();
 
             ImageList range(start, count);
 

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -30,8 +30,8 @@ template<typename T> struct ConfigEnumEntry
 template<typename T> struct IConfigEnum
 {
     virtual ~IConfigEnum() = default;
-    virtual std::string GetName(T value) const abstract;
-    virtual T GetValue(const std::string& key, T defaultValue) const abstract;
+    virtual std::string GetName(T value) const = 0;
+    virtual T GetValue(const std::string& key, T defaultValue) const = 0;
 };
 
 template<typename T> class ConfigEnum final : public IConfigEnum<T>
@@ -61,7 +61,7 @@ public:
     {
         for (const auto& entry : _entries)
         {
-            if (String::IEquals(entry.Key, key))
+            if (OpenRCT2::String::IEquals(entry.Key, key))
             {
                 return entry.Value;
             }

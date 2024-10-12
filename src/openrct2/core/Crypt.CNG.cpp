@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -29,7 +29,7 @@
 constexpr bool NT_SUCCESS(NTSTATUS status) {return status >= 0;}
 // clang-format on
 
-using namespace Crypt;
+using namespace OpenRCT2::Crypt;
 
 static void CngThrowOnBadStatus(std::string_view name, NTSTATUS status)
 {
@@ -63,7 +63,7 @@ public:
     {
         // BCRYPT_HASH_REUSABLE_FLAG only available from Windows 8
         _algName = algName;
-        _reusable = Platform::IsOSVersionAtLeast(6, 2, 0);
+        _reusable = OpenRCT2::Platform::IsOSVersionAtLeast(6, 2, 0);
         Initialise();
     }
 
@@ -653,7 +653,7 @@ public:
 private:
     static std::tuple<DWORD, PBYTE> HashData(const void* data, size_t dataLen)
     {
-        auto hash = Crypt::SHA256(data, dataLen);
+        auto hash = OpenRCT2::Crypt::SHA256(data, dataLen);
         return ToHeap(hash.data(), hash.size());
     }
 
@@ -667,7 +667,7 @@ private:
     }
 };
 
-namespace Crypt
+namespace OpenRCT2::Crypt
 {
     std::unique_ptr<Sha1Algorithm> CreateSHA1()
     {
@@ -688,6 +688,6 @@ namespace Crypt
     {
         return std::make_unique<CngRsaKey>();
     }
-} // namespace Crypt
+} // namespace OpenRCT2::Crypt
 
 #endif

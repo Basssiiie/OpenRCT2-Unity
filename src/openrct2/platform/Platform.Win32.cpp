@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,6 +10,12 @@
 #ifdef _WIN32
 
 // Windows.h needs to be included first
+#    ifndef WIN32_LEAN_AND_MEAN
+#        define WIN32_LEAN_AND_MEAN
+#    endif
+#    include "../Diagnostic.h"
+
+#    include <cassert>
 #    include <windows.h>
 
 // Then the rest
@@ -23,11 +29,10 @@
 
 #    include "../Date.h"
 #    include "../OpenRCT2.h"
-#    include "../common.h"
 #    include "../core/Path.hpp"
 #    include "../core/String.hpp"
-#    include "../localisation/Date.h"
 #    include "../localisation/Language.h"
+#    include "../localisation/Localisation.Date.h"
 #    include "Platform.h"
 
 #    include <cstring>
@@ -47,7 +52,7 @@ static constexpr wchar_t SINGLE_INSTANCE_MUTEX_NAME[] = L"RollerCoaster Tycoon 2
 #    define SOFTWARE_CLASSES L"Software\\Classes"
 #    define MUI_CACHE L"Local Settings\\Software\\Microsoft\\Windows\\Shell\\MuiCache"
 
-namespace Platform
+namespace OpenRCT2::Platform
 {
     static std::string WIN32_GetKnownFolderPath(REFKNOWNFOLDERID rfid);
     static std::string WIN32_GetModuleFileNameW(HMODULE hModule);
@@ -604,6 +609,7 @@ namespace Platform
             { L"fi", LANGUAGE_FINNISH },
             { L"sv", LANGUAGE_SWEDISH },
             { L"tr", LANGUAGE_TURKISH },
+            { L"uk", LANGUAGE_UKRAINIAN },
             { L"vi", LANGUAGE_VIETNAMESE },
         };
         static_assert(
@@ -882,6 +888,36 @@ namespace Platform
         return false;
     }
 
-} // namespace Platform
+    std::vector<std::string_view> GetSearchablePathsRCT1()
+    {
+        return {
+            R"(C:\Program Files\Steam\steamapps\common\Rollercoaster Tycoon Deluxe)",
+            R"(C:\Program Files (x86)\Steam\steamapps\common\Rollercoaster Tycoon Deluxe)",
+            R"(C:\GOG Games\RollerCoaster Tycoon Deluxe)",
+            R"(C:\Program Files\GalaxyClient\Games\RollerCoaster Tycoon Deluxe)",
+            R"(C:\Program Files (x86)\GalaxyClient\Games\RollerCoaster Tycoon Deluxe)",
+            R"(C:\Program Files\Hasbro Interactive\RollerCoaster Tycoon)",
+            R"(C:\Program Files (x86)\Hasbro Interactive\RollerCoaster Tycoon)",
+        };
+    }
+
+    std::vector<std::string_view> GetSearchablePathsRCT2()
+    {
+        return {
+            R"(C:\Program Files\Steam\steamapps\common\Rollercoaster Tycoon 2)",
+            R"(C:\Program Files (x86)\Steam\steamapps\common\Rollercoaster Tycoon 2)",
+            R"(C:\GOG Games\RollerCoaster Tycoon 2 Triple Thrill Pack)",
+            R"(C:\Program Files\GalaxyClient\Games\RollerCoaster Tycoon 2 Triple Thrill Pack)",
+            R"(C:\Program Files (x86)\GalaxyClient\Games\RollerCoaster Tycoon 2 Triple Thrill Pack)",
+            R"(C:\Program Files\Atari\RollerCoaster Tycoon 2)",
+            R"(C:\Program Files (x86)\Atari\RollerCoaster Tycoon 2)",
+            R"(C:\Program Files\Infogrames\RollerCoaster Tycoon 2)",
+            R"(C:\Program Files (x86)\Infogrames\RollerCoaster Tycoon 2)",
+            R"(C:\Program Files\Infogrames Interactive\RollerCoaster Tycoon 2)",
+            R"(C:\Program Files (x86)\Infogrames Interactive\RollerCoaster Tycoon 2)",
+        };
+    }
+
+} // namespace OpenRCT2::Platform
 
 #endif

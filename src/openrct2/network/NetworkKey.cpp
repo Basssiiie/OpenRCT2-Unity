@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,8 +14,11 @@
 #    include "../Diagnostic.h"
 #    include "../core/Crypt.h"
 #    include "../core/IStream.hpp"
+#    include "../core/String.hpp"
 
 #    include <vector>
+
+using namespace OpenRCT2;
 
 NetworkKey::NetworkKey() = default;
 NetworkKey::~NetworkKey() = default;
@@ -172,16 +175,7 @@ std::string NetworkKey::PublicKeyHash()
             throw std::runtime_error("No key found");
         }
         auto hash = Crypt::SHA1(key.c_str(), key.size());
-
-        std::string result;
-        result.reserve(hash.size() * 2);
-        for (auto b : hash)
-        {
-            char buf[3];
-            snprintf(buf, 3, "%02x", b);
-            result.append(buf);
-        }
-        return result;
+        return String::StringFromHex(hash);
     }
     catch (const std::exception& e)
     {

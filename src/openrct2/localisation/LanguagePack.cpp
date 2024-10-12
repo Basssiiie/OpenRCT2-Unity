@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,7 +10,7 @@
 #include "LanguagePack.h"
 
 #include "../Context.h"
-#include "../common.h"
+#include "../Diagnostic.h"
 #include "../core/FileStream.h"
 #include "../core/Memory.hpp"
 #include "../core/RTL.h"
@@ -18,13 +18,14 @@
 #include "../core/StringBuilder.h"
 #include "../core/StringReader.h"
 #include "Language.h"
-#include "Localisation.h"
 #include "LocalisationService.h"
+#include "StringIds.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
+
+using namespace OpenRCT2;
 
 // Don't try to load more than language files that exceed 64 MiB
 constexpr uint64_t MAX_LANGUAGE_SIZE = 64 * 1024 * 1024;
@@ -476,7 +477,7 @@ private:
     }
 };
 
-namespace LanguagePackFactory
+namespace OpenRCT2::LanguagePackFactory
 {
     std::unique_ptr<ILanguagePack> FromFile(uint16_t id, const utf8* path)
     {
@@ -495,4 +496,4 @@ namespace LanguagePackFactory
         auto languagePack = LanguagePack::FromText(id, text);
         return languagePack;
     }
-} // namespace LanguagePackFactory
+} // namespace OpenRCT2::LanguagePackFactory

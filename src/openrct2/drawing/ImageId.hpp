@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,13 +9,14 @@
 
 #pragma once
 
+#include "ImageIndexType.h"
+
 #include <cassert>
 #include <cstdint>
 #include <limits>
 
 using colour_t = uint8_t;
 enum class FilterPaletteID : int32_t;
-typedef uint32_t ImageIndex;
 
 static constexpr ImageIndex ImageIndexUndefined = std::numeric_limits<ImageIndex>::max();
 

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -13,8 +13,10 @@
 
 #    include <SDL_video.h>
 #    include <algorithm>
+#    include <cassert>
 #    include <memory>
-#    include <openrct2/common.h>
+
+using namespace OpenRCT2::Ui;
 
 constexpr GLuint BACKBUFFER_ID = 0;
 
@@ -26,7 +28,7 @@ OpenGLFramebuffer::OpenGLFramebuffer(SDL_Window* window)
     SDL_GL_GetDrawableSize(window, &_width, &_height);
 }
 
-OpenGLFramebuffer::OpenGLFramebuffer(int32_t width, int32_t height, bool depth, bool integer)
+OpenGLFramebuffer::OpenGLFramebuffer(int32_t width, int32_t height, bool depth, bool integer, bool word)
 {
     _width = width;
     _height = height;
@@ -35,7 +37,9 @@ OpenGLFramebuffer::OpenGLFramebuffer(int32_t width, int32_t height, bool depth, 
     glBindTexture(GL_TEXTURE_2D, _texture);
     if (integer)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, width, height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
+        int internalFormat = word ? GL_R16UI : GL_R8UI;
+        int type = word ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE;
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RED_INTEGER, type, nullptr);
     }
     else
     {
@@ -101,7 +105,7 @@ void OpenGLFramebuffer::GetPixels(DrawPixelInfo& dpi) const
     {
         std::copy_n(src, _width, dst);
         src -= _width;
-        dst += dpi.width + dpi.pitch;
+        dst += dpi.LineStride();
     }
 }
 

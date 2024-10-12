@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,10 +9,7 @@
 
 #pragma once
 
-#include "common.h"
-#include "core/String.hpp"
-
-#include <string>
+#include "core/StringTypes.h"
 
 enum class PromptMode : uint8_t;
 
@@ -49,6 +46,7 @@ extern bool gOpenRCT2NoGraphics;
 extern bool gOpenRCT2ShowChangelog;
 extern bool gOpenRCT2SilentBreakpad;
 extern u8string gSilentRecordingName;
+extern bool gSilentReplays;
 
 #ifndef DISABLE_NETWORK
 extern int32_t gNetworkStart;

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,10 +9,10 @@
 
 #pragma once
 
-#include "common.h"
+#include <cstdint>
 
-constexpr int32_t MAX_YEAR = 8192;
-constexpr int32_t TICKS_PER_MONTH = 0x10000;
+constexpr int32_t kMaxYear = 8192;
+constexpr int32_t kTicksPerMonth = 0x10000;
 
 enum
 {
@@ -38,22 +38,17 @@ enum
 
 namespace OpenRCT2
 {
+    struct GameState_t;
+
     /**
      * Represents the current day, month and year in OpenRCT2.
      */
-    class Date final
+    struct Date final
     {
-    private:
-        uint16_t _monthTicks = 0;
-        uint32_t _monthsElapsed = 0;
-
-    public:
-        Date() = default;
-        Date(uint32_t monthsElapsed, uint16_t monthTicks);
+        uint32_t monthsElapsed = 0;
+        uint16_t monthTicks = 0;
 
         static Date FromYMD(int32_t year, int32_t month = 0, int32_t day = 0);
-
-        void Update();
 
         uint16_t GetMonthTicks() const;
         uint32_t GetMonthsElapsed() const;
@@ -68,6 +63,8 @@ namespace OpenRCT2
 
         static int32_t GetDaysInMonth(int32_t month);
     };
+
+    void DateUpdate(GameState_t& gameState);
 } // namespace OpenRCT2
 
 struct RealWorldDate
@@ -86,6 +83,8 @@ struct RealWorldTime
 };
 
 OpenRCT2::Date& GetDate();
+void ResetDate();
+
 extern RealWorldTime gRealTimeOfDay;
 
 int32_t DateGetMonth(int32_t months);

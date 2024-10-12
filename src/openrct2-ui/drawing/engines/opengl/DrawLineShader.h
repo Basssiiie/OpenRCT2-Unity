@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,30 +12,32 @@
 #include "DrawCommands.h"
 #include "GLSLTypes.h"
 #include "OpenGLShaderProgram.h"
-
-class DrawLineShader final : public OpenGLShaderProgram
+namespace OpenRCT2::Ui
 {
-private:
-    GLuint uScreenSize;
+    class DrawLineShader final : public OpenGLShaderProgram
+    {
+    private:
+        GLuint uScreenSize;
 
-    GLuint vClip;
-    GLuint vBounds;
-    GLuint vColour;
-    GLuint vDepth;
+        GLuint vClip;
+        GLuint vBounds;
+        GLuint vColour;
+        GLuint vDepth;
 
-    GLuint vVertMat;
+        GLuint vVertMat;
 
-    GLuint _vbo;
-    GLuint _vboInstances;
-    GLuint _vao;
+        GLuint _vbo;
+        GLuint _vboInstances;
+        GLuint _vao;
 
-public:
-    DrawLineShader();
-    ~DrawLineShader() override;
+    public:
+        DrawLineShader();
+        ~DrawLineShader() override;
 
-    void SetScreenSize(int32_t width, int32_t height);
-    void DrawInstances(const LineCommandBatch& instances);
+        void SetScreenSize(int32_t width, int32_t height);
+        void DrawInstances(const LineCommandBatch& instances);
 
-private:
-    void GetLocations();
-};
+    private:
+        void GetLocations();
+    };
+} // namespace OpenRCT2::Ui

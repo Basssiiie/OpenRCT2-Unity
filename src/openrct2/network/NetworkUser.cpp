@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -18,10 +18,13 @@
 #    include "../core/Guard.hpp"
 #    include "../core/Json.hpp"
 #    include "../core/Path.hpp"
+#    include "../core/String.hpp"
 
 #    include <unordered_set>
 
-constexpr const utf8* USER_STORE_FILENAME = "users.json";
+using namespace OpenRCT2;
+
+constexpr const utf8* kUserStoreFilename = "users.json";
 
 std::unique_ptr<NetworkUser> NetworkUser::FromJson(const json_t& jsonData)
 {
@@ -210,7 +213,7 @@ NetworkUser* NetworkUserManager::GetOrAddUser(const std::string& hash)
 u8string NetworkUserManager::GetStorePath()
 {
     auto env = OpenRCT2::GetContext()->GetPlatformEnvironment();
-    return Path::Combine(env->GetDirectoryPath(OpenRCT2::DIRBASE::USER), USER_STORE_FILENAME);
+    return Path::Combine(env->GetDirectoryPath(OpenRCT2::DIRBASE::USER), kUserStoreFilename);
 }
 
 #endif

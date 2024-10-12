@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -15,23 +15,23 @@
 #include "../ride/ShopItem.h"
 #include "Peep.h"
 
-#define PEEP_MAX_THOUGHTS 5
+constexpr int8_t kPeepMaxThoughts = 5;
 
-#define PEEP_HUNGER_WARNING_THRESHOLD 25
-#define PEEP_THIRST_WARNING_THRESHOLD 25
-#define PEEP_TOILET_WARNING_THRESHOLD 28
-#define PEEP_LITTER_WARNING_THRESHOLD 23
-#define PEEP_DISGUST_WARNING_THRESHOLD 22
-#define PEEP_VANDALISM_WARNING_THRESHOLD 15
-#define PEEP_NOEXIT_WARNING_THRESHOLD 8
-#define PEEP_LOST_WARNING_THRESHOLD 8
-#define PEEP_TOO_LONG_QUEUE_THRESHOLD 25
+constexpr int8_t kPeepHungerWarningThreshold = 25;
+constexpr int8_t kPeepThirstWarningThreshold = 25;
+constexpr int8_t kPeepToiletWarningThreshold = 28;
+constexpr int8_t kPeepLitterWarningThreshold = 23;
+constexpr int8_t kPeepDisgustWarningThreshold = 22;
+constexpr int8_t kPeepVandalismWarningThreshold = 15;
+constexpr int8_t kPeepNoExitWarningThreshold = 8;
+constexpr int8_t kPeepLostWarningThreshold = 8;
+constexpr int8_t kPeepTooLongQueueThreshold = 25;
 
-#define PEEP_MAX_HAPPINESS 255
-#define PEEP_MAX_HUNGER 255
-#define PEEP_MAX_TOILET 255
-#define PEEP_MAX_NAUSEA 255
-#define PEEP_MAX_THIRST 255
+constexpr int kPeepMaxHappiness = 255;
+constexpr int kPeepMaxHunger = 255;
+constexpr int16_t kPeepMaxToilet = 255;
+constexpr int16_t kPeepMaxNausea = 255;
+constexpr int kPeepMaxThirst = 255;
 
 enum class PeepThoughtType : uint8_t
 {
@@ -294,7 +294,7 @@ public:
     int8_t RejoinQueueTimeout; // whilst waiting for a free vehicle (or pair) in the entrance
     RideId PreviousRide;
     uint16_t PreviousRideTimeOut;
-    std::array<PeepThought, PEEP_MAX_THOUGHTS> Thoughts;
+    std::array<PeepThought, kPeepMaxThoughts> Thoughts;
     // 0x3F Litter Count split into lots of 3 with time, 0xC0 Time since last recalc
     uint8_t LitterCount;
     // 0x3F Sick Count split into lots of 3 with time, 0xC0 Time since last recalc
@@ -321,15 +321,15 @@ public:
     uint64_t ItemFlags;
 
     void UpdateGuest();
-    void Tick128UpdateGuest(int32_t index);
-    int64_t GetFoodOrDrinkFlags() const;
-    int64_t GetEmptyContainerFlags() const;
+    void Tick128UpdateGuest(uint32_t index);
+    uint64_t GetFoodOrDrinkFlags() const;
+    uint64_t GetEmptyContainerFlags() const;
     bool HasDrink() const;
     bool HasFoodOrDrink() const;
     bool HasEmptyContainer() const;
     void OnEnterRide(Ride& ride);
     void OnExitRide(Ride& ride);
-    void UpdateSpriteType();
+    void UpdateAnimationGroup();
     bool HeadingForRideOrParkExit() const;
     void StopPurchaseThought(ride_type_t rideType);
     void TryGetUpFromSitting();
@@ -354,7 +354,7 @@ public:
     void CheckCantFindRide();
     void CheckCantFindExit();
     bool DecideAndBuyItem(Ride& ride, ShopItem shopItem, money64 price);
-    void SetSpriteType(PeepSpriteType new_sprite_type);
+    void SetAnimationGroup(PeepAnimationGroup new_sprite_type);
     void HandleEasterEggName();
     int32_t GetEasterEggNameId() const;
     void UpdateEasterEggInteractions();
@@ -380,7 +380,7 @@ public:
 
 private:
     void UpdateRide();
-    void UpdateOnRide(){}; // TODO
+    void UpdateOnRide() {}; // TODO
     void UpdateWalking();
     void UpdateWaitingAtCrossing();
     void UpdateQueuing();
@@ -414,15 +414,15 @@ private:
     void UpdateRideShopInteract();
     void UpdateRideShopLeave();
     void UpdateRidePrepareForExit();
-    void Loc68F9F3();
-    void Loc68FA89();
+    void UpdateMotivesIdle();
+    void UpdateConsumptionMotives();
     int32_t CheckEasterEggName(int32_t index) const;
     void GivePassingPeepsPurpleClothes(Guest* passingPeep);
     void GivePassingPeepsPizza(Guest* passingPeep);
     void MakePassingPeepsSick(Guest* passingPeep);
     void GivePassingPeepsIceCream(Guest* passingPeep);
     Ride* FindBestRideToGoOn();
-    OpenRCT2::BitSet<OpenRCT2::Limits::MaxRidesInPark> FindRidesToGoOn();
+    OpenRCT2::BitSet<OpenRCT2::Limits::kMaxRidesInPark> FindRidesToGoOn();
     bool FindVehicleToEnter(const Ride& ride, std::vector<uint8_t>& car_array);
     void GoToRideEntrance(const Ride& ride);
 };
@@ -459,18 +459,6 @@ enum
     EASTEREGG_PEEP_NAME_NANCY_STILLWAGON,
     EASTEREGG_PEEP_NAME_DAVID_ELLIS
 };
-
-extern uint8_t gGuestChangeModifier;
-extern uint32_t gNumGuestsInPark;
-extern uint32_t gNumGuestsInParkLastWeek;
-extern uint32_t gNumGuestsHeadingForPark;
-
-extern money64 gGuestInitialCash;
-extern uint8_t gGuestInitialHappiness;
-extern uint8_t gGuestInitialHunger;
-extern uint8_t gGuestInitialThirst;
-
-extern uint32_t gNextGuestNumber;
 
 void PeepThoughtSetFormatArgs(const PeepThought* thought, Formatter& ft);
 

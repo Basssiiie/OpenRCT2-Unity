@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,12 +12,10 @@
 #ifdef ENABLE_SCRIPTING
 
 #    include "../../../Context.h"
-#    include "../../../common.h"
 #    include "../../Duktape.hpp"
 #    include "ScParkMessage.hpp"
 #    include "ScResearch.hpp"
 
-#    include <algorithm>
 #    include <vector>
 
 namespace OpenRCT2::Scripting
@@ -50,6 +48,8 @@ namespace OpenRCT2::Scripting
         uint32_t suggestedGuestMaximum_get() const;
 
         int32_t guestGenerationProbability_get() const;
+
+        DukValue generateGuest();
 
         money64 guestInitialCash_get() const;
 
@@ -98,6 +98,8 @@ namespace OpenRCT2::Scripting
         void messages_set(const std::vector<DukValue>& value);
 
         void postMessage(DukValue message);
+
+        std::vector<int32_t> getMonthlyExpenditure(const std::string& expenditureType) const;
 
         static void Register(duk_context* ctx);
     };

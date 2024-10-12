@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,7 +12,6 @@
 #ifdef ENABLE_SCRIPTING
 
 #    include "../actions/CustomAction.h"
-#    include "../common.h"
 #    include "../core/FileWatcher.h"
 #    include "../management/Finance.h"
 #    include "../world/Location.hpp"
@@ -33,7 +32,7 @@ struct duk_hthread;
 typedef struct duk_hthread duk_context;
 
 class GameAction;
-namespace GameActions
+namespace OpenRCT2::GameActions
 {
     class Result;
 }
@@ -47,7 +46,7 @@ namespace OpenRCT2
 
 namespace OpenRCT2::Scripting
 {
-    static constexpr int32_t OPENRCT2_PLUGIN_API_VERSION = 81;
+    static constexpr int32_t OPENRCT2_PLUGIN_API_VERSION = 103;
 
     // Versions marking breaking changes.
     static constexpr int32_t API_VERSION_33_PEEP_DEPRECATION = 33;
@@ -126,20 +125,15 @@ namespace OpenRCT2::Scripting
         }
     };
 
-    using IntervalHandle = int32_t;
+    using IntervalHandle = uint32_t;
     struct ScriptInterval
     {
         std::shared_ptr<Plugin> Owner;
-        IntervalHandle Handle{};
         uint32_t Delay{};
         int64_t LastTimestamp{};
         DukValue Callback;
         bool Repeat{};
-
-        bool IsValid() const
-        {
-            return Handle != 0;
-        }
+        bool Deleted{};
     };
 
     class ScriptEngine
@@ -162,7 +156,8 @@ namespace OpenRCT2::Scripting
         DukValue _parkStorage;
 
         uint32_t _lastIntervalTimestamp{};
-        std::vector<ScriptInterval> _intervals;
+        std::map<IntervalHandle, ScriptInterval> _intervals;
+        IntervalHandle _nextIntervalHandle = 1;
 
         std::unique_ptr<FileWatcher> _pluginFileWatcher;
         std::unordered_set<std::string> _changedPluginFiles;
@@ -266,6 +261,9 @@ namespace OpenRCT2::Scripting
         IntervalHandle AddInterval(const std::shared_ptr<Plugin>& plugin, int32_t delay, bool repeat, DukValue&& callback);
         void RemoveInterval(const std::shared_ptr<Plugin>& plugin, IntervalHandle handle);
 
+        static std::string_view ExpenditureTypeToString(ExpenditureType expenditureType);
+        static ExpenditureType StringToExpenditureType(std::string_view expenditureType);
+
 #    ifndef DISABLE_NETWORK
         void AddSocket(const std::shared_ptr<ScSocketBase>& socket);
 #    endif
@@ -293,8 +291,6 @@ namespace OpenRCT2::Scripting
         void ProcessREPL();
         void RemoveCustomGameActions(const std::shared_ptr<Plugin>& plugin);
         [[nodiscard]] GameActions::Result DukToGameActionResult(const DukValue& d);
-        static std::string_view ExpenditureTypeToString(ExpenditureType expenditureType);
-        static ExpenditureType StringToExpenditureType(std::string_view expenditureType);
 
         void InitSharedStorage();
         void LoadSharedStorage();

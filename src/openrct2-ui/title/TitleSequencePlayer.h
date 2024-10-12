@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,17 +10,14 @@
 #pragma once
 
 #include <memory>
-#include <openrct2/common.h>
 
 struct ITitleSequencePlayer;
 struct IScenarioRepository;
 
 namespace OpenRCT2
 {
-    class GameState;
-
     namespace Title
     {
-        [[nodiscard]] std::unique_ptr<ITitleSequencePlayer> CreateTitleSequencePlayer(GameState& gameState);
+        [[nodiscard]] std::unique_ptr<ITitleSequencePlayer> CreateTitleSequencePlayer();
     } // namespace Title
 } // namespace OpenRCT2

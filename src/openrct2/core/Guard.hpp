@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -25,7 +25,7 @@ enum class ASSERT_BEHAVIOUR
 /**
  * Utility methods for asserting function parameters.
  */
-namespace Guard
+namespace OpenRCT2::Guard
 {
     ASSERT_BEHAVIOUR GetAssertBehaviour();
     void SetAssertBehaviour(ASSERT_BEHAVIOUR behaviour);
@@ -66,6 +66,6 @@ namespace Guard
         Guard::Assert(index < container.size(), "Index %zu out of bounds (%zu)", index, container.size());
     }
 
-} // namespace Guard
+} // namespace OpenRCT2::Guard
 
 #define GUARD_LINE "Location: %s:%d", __func__, __LINE__

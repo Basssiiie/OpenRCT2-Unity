@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,10 +12,12 @@
 #include "../OpenRCT2.h"
 #include "../core/Console.hpp"
 #include "../core/String.hpp"
+#include "../drawing/Font.h"
 #include "../platform/Platform.h"
 
-#include <algorithm>
 #include <cstring>
+
+using namespace OpenRCT2;
 
 #pragma region CommandLineArgEnumerator
 
@@ -91,7 +93,7 @@ bool CommandLineArgEnumerator::TryPopString(const char** result)
 
 #pragma endregion
 
-namespace CommandLine
+namespace OpenRCT2::CommandLine
 {
     constexpr const char* HelpText = "openrct2 -ha shows help for all commands. "
                                      "openrct2 <command> -h will show help and details for a given command.";
@@ -522,7 +524,7 @@ namespace CommandLine
         }
         return nullptr;
     }
-} // namespace CommandLine
+} // namespace OpenRCT2::CommandLine
 
 int32_t CommandLineRun(const char** argv, int32_t argc)
 {

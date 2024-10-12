@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,9 +11,10 @@
 
 #include "../core/EnumMap.hpp"
 
+#include <cassert>
 #include <string>
 
-namespace Cursor
+namespace OpenRCT2::Cursor
 {
     static const EnumMap<CursorID> LookupTable{
         { "CURSOR_BLANK", CursorID::Blank },
@@ -52,4 +53,4 @@ namespace Cursor
         auto result = LookupTable.find(s);
         return (result != LookupTable.end()) ? result->second : defaultValue;
     }
-} // namespace Cursor
+} // namespace OpenRCT2::Cursor

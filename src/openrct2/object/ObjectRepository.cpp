@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,10 +10,9 @@
 #include "ObjectRepository.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../OpenRCT2.h"
 #include "../PlatformEnvironment.h"
-#include "../common.h"
-#include "../config/Config.h"
 #include "../core/Console.hpp"
 #include "../core/DataSerialiser.h"
 #include "../core/FileIndex.hpp"
@@ -25,7 +24,6 @@
 #include "../core/Numerics.hpp"
 #include "../core/Path.hpp"
 #include "../core/String.hpp"
-#include "../localisation/Localisation.h"
 #include "../localisation/LocalisationService.h"
 #include "../object/Object.h"
 #include "../park/Legacy.h"
@@ -41,7 +39,6 @@
 #include "ObjectManager.h"
 #include "RideObject.h"
 
-#include <algorithm>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -87,11 +84,11 @@ private:
 public:
     explicit ObjectFileIndex(IObjectRepository& objectRepository, const IPlatformEnvironment& env)
         : FileIndex(
-            "object index", MAGIC_NUMBER, VERSION, env.GetFilePath(PATHID::CACHE_OBJECTS), std::string(PATTERN),
-            std::vector<std::string>{
-                env.GetDirectoryPath(DIRBASE::OPENRCT2, DIRID::OBJECT),
-                env.GetDirectoryPath(DIRBASE::USER, DIRID::OBJECT),
-            })
+              "object index", MAGIC_NUMBER, VERSION, env.GetFilePath(PATHID::CACHE_OBJECTS), std::string(PATTERN),
+              std::vector<std::string>{
+                  env.GetDirectoryPath(DIRBASE::OPENRCT2, DIRID::OBJECT),
+                  env.GetDirectoryPath(DIRBASE::USER, DIRID::OBJECT),
+              })
         , _objectRepository(objectRepository)
     {
     }
@@ -470,6 +467,13 @@ private:
         }
     }
 
+    // 0x0098DA2C
+    static constexpr std::array<int32_t, 11> kLegacyObjectEntryGroupEncoding = {
+        CHUNK_ENCODING_RLE, CHUNK_ENCODING_RLE, CHUNK_ENCODING_RLE,    CHUNK_ENCODING_RLE,
+        CHUNK_ENCODING_RLE, CHUNK_ENCODING_RLE, CHUNK_ENCODING_RLE,    CHUNK_ENCODING_RLE,
+        CHUNK_ENCODING_RLE, CHUNK_ENCODING_RLE, CHUNK_ENCODING_ROTATE,
+    };
+
     static void SaveObject(
         std::string_view path, const RCTObjectEntry* entry, const void* data, size_t dataSize, bool fixChecksum = true)
     {
@@ -525,7 +529,7 @@ private:
         // Encode data
         ObjectType objectType = entry->GetType();
         SawyerCodingChunkHeader chunkHeader;
-        chunkHeader.encoding = object_entry_group_encoding[EnumValue(objectType)];
+        chunkHeader.encoding = kLegacyObjectEntryGroupEncoding[EnumValue(objectType)];
         chunkHeader.length = static_cast<uint32_t>(dataSize);
         uint8_t* encodedDataBuffer = Memory::Allocate<uint8_t>(0x600000);
         size_t encodedDataSize = SawyerCodingWriteChunkBuffer(

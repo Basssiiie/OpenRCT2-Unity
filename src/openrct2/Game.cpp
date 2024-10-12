@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,8 +11,10 @@
 
 #include "Cheats.h"
 #include "Context.h"
+#include "Diagnostic.h"
 #include "Editor.h"
 #include "FileClassifier.h"
+#include "GameState.h"
 #include "GameStateSnapshots.h"
 #include "Input.h"
 #include "OpenRCT2.h"
@@ -26,6 +28,7 @@
 #include "core/Console.hpp"
 #include "core/File.h"
 #include "core/FileScanner.h"
+#include "core/Money.hpp"
 #include "core/Path.hpp"
 #include "entity/EntityRegistry.h"
 #include "entity/PatrolArea.h"
@@ -35,7 +38,6 @@
 #include "interface/Screenshot.h"
 #include "interface/Viewport.h"
 #include "interface/Window.h"
-#include "localisation/Localisation.h"
 #include "management/Finance.h"
 #include "management/Marketing.h"
 #include "management/Research.h"
@@ -45,6 +47,7 @@
 #include "object/ObjectList.h"
 #include "object/WaterEntry.h"
 #include "platform/Platform.h"
+#include "rct12/CSStringConverter.h"
 #include "ride/Ride.h"
 #include "ride/RideRatings.h"
 #include "ride/Station.h"
@@ -52,8 +55,8 @@
 #include "ride/TrackDesign.h"
 #include "ride/Vehicle.h"
 #include "scenario/Scenario.h"
+#include "scenes/title/TitleScene.h"
 #include "scripting/ScriptEngine.h"
-#include "title/TitleScreen.h"
 #include "ui/UiContext.h"
 #include "ui/WindowManager.h"
 #include "util/SawyerCoding.h"
@@ -69,10 +72,11 @@
 #include "world/Scenery.h"
 #include "world/Surface.h"
 
-#include <algorithm>
 #include <cstdio>
 #include <iterator>
 #include <memory>
+
+using namespace OpenRCT2;
 
 uint16_t gCurrentDeltaTime;
 uint8_t gGamePaused = 0;
@@ -87,7 +91,6 @@ bool gIsAutosaveLoaded = false;
 
 bool gLoadKeepWindowsOpen = false;
 
-uint32_t gCurrentTicks;
 uint32_t gCurrentRealTimeTicks;
 
 #ifdef ENABLE_SCRIPTING
@@ -104,7 +107,7 @@ void GameResetSpeed()
 
 void GameIncreaseGameSpeed()
 {
-    auto newSpeed = std::min(gConfigGeneral.DebuggingTools ? 5 : 4, gGameSpeed + 1);
+    auto newSpeed = std::min(Config::Get().general.DebuggingTools ? 5 : 4, gGameSpeed + 1);
     if (newSpeed == 5)
         newSpeed = 8;
 
@@ -132,177 +135,6 @@ void GameCreateWindows()
     ContextOpenWindow(WindowClass::TopToolbar);
     ContextOpenWindow(WindowClass::BottomToolbar);
     WindowResizeGui(ContextGetWidth(), ContextGetHeight());
-}
-
-enum
-{
-    SPR_GAME_PALETTE_DEFAULT = 1532,
-    SPR_GAME_PALETTE_WATER = 1533,
-    SPR_GAME_PALETTE_WATER_DARKER_1 = 1534,
-    SPR_GAME_PALETTE_WATER_DARKER_2 = 1535,
-    SPR_GAME_PALETTE_3 = 1536,
-    SPR_GAME_PALETTE_3_DARKER_1 = 1537,
-    SPR_GAME_PALETTE_3_DARKER_2 = 1538,
-    SPR_GAME_PALETTE_4 = 1539,
-    SPR_GAME_PALETTE_4_DARKER_1 = 1540,
-    SPR_GAME_PALETTE_4_DARKER_2 = 1541,
-};
-
-/**
- *
- *  rct2: 0x006838BD
- */
-void UpdatePaletteEffects()
-{
-    auto water_type = OpenRCT2::ObjectManager::GetObjectEntry<WaterObjectEntry>(0);
-
-    if (gClimateLightningFlash == 1)
-    {
-        // Change palette to lighter colour during lightning
-        int32_t palette = SPR_GAME_PALETTE_DEFAULT;
-
-        if (water_type != nullptr)
-        {
-            palette = water_type->image_id;
-        }
-        const G1Element* g1 = GfxGetG1Element(palette);
-        if (g1 != nullptr)
-        {
-            int32_t xoffset = g1->x_offset;
-            xoffset = xoffset * 4;
-            uint8_t* paletteOffset = gGamePalette + xoffset;
-            for (int32_t i = 0; i < g1->width; i++)
-            {
-                paletteOffset[(i * 4) + 0] = -((0xFF - g1->offset[(i * 3) + 0]) / 2) - 1;
-                paletteOffset[(i * 4) + 1] = -((0xFF - g1->offset[(i * 3) + 1]) / 2) - 1;
-                paletteOffset[(i * 4) + 2] = -((0xFF - g1->offset[(i * 3) + 2]) / 2) - 1;
-            }
-            UpdatePalette(gGamePalette, PALETTE_OFFSET_DYNAMIC, PALETTE_LENGTH_DYNAMIC);
-        }
-        gClimateLightningFlash++;
-    }
-    else
-    {
-        if (gClimateLightningFlash == 2)
-        {
-            // Change palette back to normal after lightning
-            int32_t palette = SPR_GAME_PALETTE_DEFAULT;
-
-            if (water_type != nullptr)
-            {
-                palette = water_type->image_id;
-            }
-
-            const G1Element* g1 = GfxGetG1Element(palette);
-            if (g1 != nullptr)
-            {
-                int32_t xoffset = g1->x_offset;
-                xoffset = xoffset * 4;
-                uint8_t* paletteOffset = gGamePalette + xoffset;
-                for (int32_t i = 0; i < g1->width; i++)
-                {
-                    paletteOffset[(i * 4) + 0] = g1->offset[(i * 3) + 0];
-                    paletteOffset[(i * 4) + 1] = g1->offset[(i * 3) + 1];
-                    paletteOffset[(i * 4) + 2] = g1->offset[(i * 3) + 2];
-                }
-            }
-        }
-
-        // Animate the water/lava/chain movement palette
-        uint32_t shade = 0;
-        if (gConfigGeneral.RenderWeatherGloom)
-        {
-            auto paletteId = ClimateGetWeatherGloomPaletteId(gClimateCurrent);
-            if (paletteId != FilterPaletteID::PaletteNull)
-            {
-                shade = 1;
-                if (paletteId != FilterPaletteID::PaletteDarken1)
-                {
-                    shade = 2;
-                }
-            }
-        }
-        uint32_t j = gPaletteEffectFrame;
-        j = ((static_cast<uint16_t>((~j / 2) * 128) * 15) >> 16);
-        uint32_t waterId = SPR_GAME_PALETTE_WATER;
-        if (water_type != nullptr)
-        {
-            waterId = water_type->palette_index_1;
-        }
-        const G1Element* g1 = GfxGetG1Element(shade + waterId);
-        if (g1 != nullptr)
-        {
-            uint8_t* vs = &g1->offset[j * 3];
-            uint8_t* vd = &gGamePalette[PALETTE_OFFSET_WATER_WAVES * 4];
-            int32_t n = PALETTE_LENGTH_WATER_WAVES;
-            for (int32_t i = 0; i < n; i++)
-            {
-                vd[0] = vs[0];
-                vd[1] = vs[1];
-                vd[2] = vs[2];
-                vs += 9;
-                if (vs >= &g1->offset[9 * n])
-                {
-                    vs -= 9 * n;
-                }
-                vd += 4;
-            }
-        }
-
-        waterId = SPR_GAME_PALETTE_3;
-        if (water_type != nullptr)
-        {
-            waterId = water_type->palette_index_2;
-        }
-        g1 = GfxGetG1Element(shade + waterId);
-        if (g1 != nullptr)
-        {
-            uint8_t* vs = &g1->offset[j * 3];
-            uint8_t* vd = &gGamePalette[PALETTE_OFFSET_WATER_SPARKLES * 4];
-            int32_t n = PALETTE_LENGTH_WATER_SPARKLES;
-            for (int32_t i = 0; i < n; i++)
-            {
-                vd[0] = vs[0];
-                vd[1] = vs[1];
-                vd[2] = vs[2];
-                vs += 9;
-                if (vs >= &g1->offset[9 * n])
-                {
-                    vs -= 9 * n;
-                }
-                vd += 4;
-            }
-        }
-
-        j = (static_cast<uint16_t>(gPaletteEffectFrame * -960) * 3) >> 16;
-        waterId = SPR_GAME_PALETTE_4;
-        g1 = GfxGetG1Element(shade + waterId);
-        if (g1 != nullptr)
-        {
-            uint8_t* vs = &g1->offset[j * 3];
-            uint8_t* vd = &gGamePalette[PALETTE_INDEX_243 * 4];
-            int32_t n = 3;
-            for (int32_t i = 0; i < n; i++)
-            {
-                vd[0] = vs[0];
-                vd[1] = vs[1];
-                vd[2] = vs[2];
-                vs += 3;
-                if (vs >= &g1->offset[3 * n])
-                {
-                    vs -= 3 * n;
-                }
-                vd += 4;
-            }
-        }
-
-        UpdatePalette(gGamePalette, PALETTE_OFFSET_ANIMATED, PALETTE_LENGTH_ANIMATED);
-        if (gClimateLightningFlash == 2)
-        {
-            UpdatePalette(gGamePalette, PALETTE_OFFSET_DYNAMIC, PALETTE_LENGTH_DYNAMIC);
-            gClimateLightningFlash = 0;
-        }
-    }
 }
 
 void PauseToggle()
@@ -347,6 +179,8 @@ void RCT2StringToUTF8Self(char* buffer, size_t length)
 
 static void FixGuestsHeadingToParkCount()
 {
+    auto& gameState = GetGameState();
+
     uint32_t guestsHeadingToPark = 0;
 
     for (auto* peep : EntityList<Guest>())
@@ -357,12 +191,13 @@ static void FixGuestsHeadingToParkCount()
         }
     }
 
-    if (gNumGuestsHeadingForPark != guestsHeadingToPark)
+    if (gameState.NumGuestsHeadingForPark != guestsHeadingToPark)
     {
-        LOG_WARNING("Corrected bad amount of guests heading to park: %u -> %u", gNumGuestsHeadingForPark, guestsHeadingToPark);
+        LOG_WARNING(
+            "Corrected bad amount of guests heading to park: %u -> %u", gameState.NumGuestsHeadingForPark, guestsHeadingToPark);
     }
 
-    gNumGuestsHeadingForPark = guestsHeadingToPark;
+    gameState.NumGuestsHeadingForPark = guestsHeadingToPark;
 }
 
 static void FixGuestCount()
@@ -378,12 +213,13 @@ static void FixGuestCount()
         }
     }
 
-    if (gNumGuestsInPark != guestCount)
+    auto& gameState = GetGameState();
+    if (gameState.NumGuestsInPark != guestCount)
     {
-        LOG_WARNING("Corrected bad amount of guests in park: %u -> %u", gNumGuestsInPark, guestCount);
+        LOG_WARNING("Corrected bad amount of guests in park: %u -> %u", gameState.NumGuestsInPark, guestCount);
     }
 
-    gNumGuestsInPark = guestCount;
+    gameState.NumGuestsInPark = guestCount;
 }
 
 static void FixPeepsWithInvalidRideReference()
@@ -394,7 +230,7 @@ static void FixPeepsWithInvalidRideReference()
     // Fix possibly invalid field values
     for (auto peep : EntityList<Guest>())
     {
-        if (peep->CurrentRideStation.ToUnderlying() >= OpenRCT2::Limits::MaxStationsPerRide)
+        if (peep->CurrentRideStation.ToUnderlying() >= OpenRCT2::Limits::kMaxStationsPerRide)
         {
             const auto srcStation = peep->CurrentRideStation;
             const auto rideIdx = peep->CurrentRide;
@@ -444,9 +280,9 @@ static void FixInvalidSurfaces()
     // Fixes broken saves where a surface element could be null
     // and broken saves with incorrect invisible map border tiles
 
-    for (int32_t y = 0; y < MAXIMUM_MAP_SIZE_TECHNICAL; y++)
+    for (int32_t y = 0; y < kMaximumMapSizeTechnical; y++)
     {
-        for (int32_t x = 0; x < MAXIMUM_MAP_SIZE_TECHNICAL; x++)
+        for (int32_t x = 0; x < kMaximumMapSizeTechnical; x++)
         {
             auto* surfaceElement = MapGetSurfaceElementAt(TileCoordsXY{ x, y });
 
@@ -463,10 +299,11 @@ static void FixInvalidSurfaces()
 
             // Fix the invisible border tiles.
             // At this point, we can be sure that surfaceElement is not NULL.
-            if (x == 0 || x == gMapSize.x - 1 || y == 0 || y == gMapSize.y - 1)
+            auto& gameState = GetGameState();
+            if (x == 0 || x == gameState.MapSize.x - 1 || y == 0 || y == gameState.MapSize.y - 1)
             {
-                surfaceElement->SetBaseZ(MINIMUM_LAND_HEIGHT_BIG);
-                surfaceElement->SetClearanceZ(MINIMUM_LAND_HEIGHT_BIG);
+                surfaceElement->SetBaseZ(kMinimumLandZ);
+                surfaceElement->SetClearanceZ(kMinimumLandZ);
                 surfaceElement->SetSlope(0);
                 surfaceElement->SetWaterHeight(0);
             }
@@ -504,11 +341,13 @@ void GameFixSaveVars()
 
 void GameLoadInit()
 {
-    IGameStateSnapshots* snapshots = GetContext()->GetGameStateSnapshots();
+    auto* context = GetContext();
+
+    IGameStateSnapshots* snapshots = context->GetGameStateSnapshots();
     snapshots->Reset();
 
-    gScreenFlags = SCREEN_FLAGS_PLAYING;
-    OpenRCT2::Audio::StopAll();
+    context->SetActiveScene(context->GetGameScene());
+
     if (!gLoadKeepWindowsOpen)
     {
         ViewportInitAll();
@@ -520,8 +359,9 @@ void GameLoadInit()
         WindowUnfollowSprite(*mainWindow);
     }
 
-    auto windowManager = GetContext()->GetUiContext()->GetWindowManager();
-    windowManager->SetMainView(gSavedView, gSavedViewZoom, gSavedViewRotation);
+    auto windowManager = context->GetUiContext()->GetWindowManager();
+    auto& gameState = GetGameState();
+    windowManager->SetMainView(gameState.SavedView, gameState.SavedViewZoom, gameState.SavedViewRotation);
 
     if (NetworkGetMode() != NETWORK_MODE_CLIENT)
     {
@@ -529,22 +369,19 @@ void GameLoadInit()
     }
     ResetEntitySpatialIndices();
     ResetAllSpriteQuadrantPlacements();
-    ScenerySetDefaultPlacementConfiguration();
-
-    auto intent = Intent(INTENT_ACTION_REFRESH_NEW_RIDES);
-    ContextBroadcastIntent(&intent);
 
     gWindowUpdateTicks = 0;
+    gCurrentRealTimeTicks = 0;
 
     LoadPalette();
 
     if (!gOpenRCT2Headless)
     {
-        intent = Intent(INTENT_ACTION_CLEAR_TILE_INSPECTOR_CLIPBOARD);
-        ContextBroadcastIntent(&intent);
+        windowManager->BroadcastIntent(Intent(INTENT_ACTION_SET_DEFAULT_SCENERY_CONFIG));
+        windowManager->BroadcastIntent(Intent(INTENT_ACTION_REFRESH_NEW_RIDES));
+        windowManager->BroadcastIntent(Intent(INTENT_ACTION_CLEAR_TILE_INSPECTOR_CLIPBOARD));
     }
 
-    OpenRCT2::Audio::StopTitleMusic();
     gGameSpeed = 1;
 }
 
@@ -639,7 +476,9 @@ void SaveGameCmd(u8string_view name /* = {} */)
 void SaveGameWithName(u8string_view name)
 {
     LOG_VERBOSE("Saving to %s", u8string(name).c_str());
-    if (ScenarioSave(name, gConfigGeneral.SavePluginData ? 1 : 0))
+
+    auto& gameState = GetGameState();
+    if (ScenarioSave(gameState, name, Config::Get().general.SavePluginData ? 1 : 0))
     {
         LOG_VERBOSE("Saved to %s", u8string(name).c_str());
         gCurrentLoadedPath = name;
@@ -745,7 +584,7 @@ void GameAutosave()
         timeName, sizeof(timeName), "autosave_%04u-%02u-%02u_%02u-%02u-%02u%s", currentDate.year, currentDate.month,
         currentDate.day, currentTime.hour, currentTime.minute, currentTime.second, fileExtension);
 
-    int32_t autosavesToKeep = gConfigGeneral.AutosaveAmount;
+    int32_t autosavesToKeep = Config::Get().general.AutosaveAmount;
     LimitAutosaveCount(autosavesToKeep - 1, (gScreenFlags & SCREEN_FLAGS_EDITOR));
 
     auto env = GetContext()->GetPlatformEnvironment();
@@ -761,7 +600,9 @@ void GameAutosave()
         File::Copy(path, backupPath, true);
     }
 
-    if (!ScenarioSave(path, saveFlags))
+    auto& gameState = GetGameState();
+
+    if (!ScenarioSave(gameState, path, saveFlags))
         Console::Error::WriteLine("Could not autosave the scenario. Is the save folder writeable?");
 }
 
@@ -772,7 +613,6 @@ static void GameLoadOrQuitNoSavePromptCallback(int32_t result, const utf8* path)
         GameNotifyMapChange();
         GameUnloadScripts();
         WindowCloseByClass(WindowClass::EditorObjectSelection);
-        GetContext()->LoadParkFromFile(path);
         GameLoadScripts();
         GameNotifyMapChanged();
         gIsAutosaveLoaded = gIsAutosave;
@@ -828,7 +668,9 @@ void GameLoadOrQuitNoSavePrompt()
             gFirstTimeSaving = true;
             GameNotifyMapChange();
             GameUnloadScripts();
-            TitleLoad();
+
+            auto* context = OpenRCT2::GetContext();
+            context->SetActiveScene(context->GetTitleScene());
             break;
         }
         case PromptMode::SaveBeforeNewGame:

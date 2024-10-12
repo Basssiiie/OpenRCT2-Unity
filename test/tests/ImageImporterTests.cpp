@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,6 +14,7 @@
 #include <openrct2/drawing/ImageImporter.h>
 #include <string_view>
 
+using namespace OpenRCT2;
 using namespace OpenRCT2::Drawing;
 
 class ImageImporterTests : public testing::Test
@@ -41,7 +42,8 @@ TEST_F(ImageImporterTests, Import_Logo)
 
     ImageImporter importer;
     auto image = Imaging::ReadFromFile(logoPath, IMAGE_FORMAT::PNG_32);
-    auto result = importer.Import(image, 3, 5, ImageImporter::Palette::OpenRCT2, ImageImporter::ImportFlags::RLE);
+    auto meta = ImageImportMeta{ .offset = { 3, 5 } };
+    auto result = importer.Import(image, meta);
 
     ASSERT_EQ(result.Buffer.data(), result.Element.offset);
     ASSERT_EQ(128, result.Element.width);

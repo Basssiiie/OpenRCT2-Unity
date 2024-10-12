@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -30,9 +30,6 @@ extern TTFFontSetDescriptor TTFFontNanum;
 extern TTFFontSetDescriptor TTFFontArial;
 extern TTFFontSetDescriptor TTFFontArialUnicode;
 extern TTFFontSetDescriptor TTFFontMicroHei;
-#    define FONT(x) x
-#else
-#    define FONT(x) FONT_OPENRCT2_SPRITE
 #endif // NO_TTF
 
 void TryLoadFonts(OpenRCT2::Localisation::LocalisationService& localisationService);

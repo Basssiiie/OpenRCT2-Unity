@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,10 +10,7 @@
 #pragma once
 
 #include "../Cheats.h"
-#include "../core/MemoryStream.h"
-#include "../core/String.hpp"
 #include "../entity/Guest.h"
-#include "../localisation/Localisation.h"
 #include "../network/NetworkTypes.h"
 #include "../network/network.h"
 #include "../object/Object.h"
@@ -24,6 +21,7 @@
 #include "DataSerialiserTag.h"
 #include "Endianness.h"
 #include "MemoryStream.h"
+#include "StringTypes.h"
 
 #include <cstdio>
 #include <iomanip>
@@ -675,26 +673,26 @@ template<> struct DataSerializerTraitsT<TrackDesignTrackElement>
 {
     static void encode(OpenRCT2::IStream* stream, const TrackDesignTrackElement& val)
     {
-        stream->Write(&val.Type);
-        stream->Write(&val.Flags);
-        stream->Write(&val.ColourScheme);
-        stream->Write(&val.StationIndex);
-        stream->Write(&val.BrakeBoosterSpeed);
-        stream->Write(&val.SeatRotation);
+        stream->Write(&val.type);
+        stream->Write(&val.flags);
+        stream->Write(&val.colourScheme);
+        stream->Write(&val.stationIndex);
+        stream->Write(&val.brakeBoosterSpeed);
+        stream->Write(&val.seatRotation);
     }
     static void decode(OpenRCT2::IStream* stream, TrackDesignTrackElement& val)
     {
-        stream->Read(&val.Type);
-        stream->Read(&val.Flags);
-        stream->Read(&val.ColourScheme);
-        stream->Read(&val.StationIndex);
-        stream->Read(&val.BrakeBoosterSpeed);
-        stream->Read(&val.SeatRotation);
+        stream->Read(&val.type);
+        stream->Read(&val.flags);
+        stream->Read(&val.colourScheme);
+        stream->Read(&val.stationIndex);
+        stream->Read(&val.brakeBoosterSpeed);
+        stream->Read(&val.seatRotation);
     }
     static void log(OpenRCT2::IStream* stream, const TrackDesignTrackElement& val)
     {
         char msg[128] = {};
-        snprintf(msg, sizeof(msg), "TrackDesignTrackElement(type = %d, flags = %d)", val.Type, val.Flags);
+        snprintf(msg, sizeof(msg), "TrackDesignTrackElement(type = %d, flags = %d)", val.type, val.flags);
         stream->Write(msg, strlen(msg));
     }
 };
@@ -703,19 +701,20 @@ template<> struct DataSerializerTraitsT<TrackDesignMazeElement>
 {
     static void encode(OpenRCT2::IStream* stream, const TrackDesignMazeElement& val)
     {
-        uint32_t temp = ByteSwapBE(val.all);
-        stream->Write(&temp);
+        stream->Write(&val.location);
+        stream->Write(&val.mazeEntry);
     }
     static void decode(OpenRCT2::IStream* stream, TrackDesignMazeElement& val)
     {
-        uint32_t temp;
-        stream->Read(&temp);
-        val.all = ByteSwapBE(temp);
+        stream->Read(&val.location);
+        stream->Read(&val.mazeEntry);
     }
     static void log(OpenRCT2::IStream* stream, const TrackDesignMazeElement& val)
     {
         char msg[128] = {};
-        snprintf(msg, sizeof(msg), "TrackDesignMazeElement(all = %d)", val.all);
+        snprintf(
+            msg, sizeof(msg), "TrackDesignMazeElement(x = %d, y = %d, entry = %d)", val.location.x, val.location.y,
+            val.mazeEntry);
         stream->Write(msg, strlen(msg));
     }
 };
@@ -724,26 +723,20 @@ template<> struct DataSerializerTraitsT<TrackDesignEntranceElement>
 {
     static void encode(OpenRCT2::IStream* stream, const TrackDesignEntranceElement& val)
     {
-        stream->Write(&val.x);
-        stream->Write(&val.y);
-        stream->Write(&val.z);
-        stream->Write(&val.direction);
+        stream->Write(&val.location);
         stream->Write(&val.isExit);
     }
     static void decode(OpenRCT2::IStream* stream, TrackDesignEntranceElement& val)
     {
-        stream->Read(&val.x);
-        stream->Read(&val.y);
-        stream->Read(&val.z);
-        stream->Read(&val.direction);
+        stream->Read(&val.location);
         stream->Read(&val.isExit);
     }
     static void log(OpenRCT2::IStream* stream, const TrackDesignEntranceElement& val)
     {
         char msg[128] = {};
         snprintf(
-            msg, sizeof(msg), "TrackDesignEntranceElement(x = %d, y = %d, z = %d, dir = %d, isExit = %d)", val.x, val.y, val.z,
-            val.direction, val.isExit);
+            msg, sizeof(msg), "TrackDesignEntranceElement(x = %d, y = %d, z = %d, dir = %d, isExit = %d)", val.location.x,
+            val.location.y, val.location.z, val.location.direction, val.isExit);
         stream->Write(msg, strlen(msg));
     }
 };
@@ -754,30 +747,56 @@ template<> struct DataSerializerTraitsT<TrackDesignSceneryElement>
     {
         stream->Write(&val.loc);
         stream->Write(&val.flags);
-        stream->Write(&val.primary_colour);
-        stream->Write(&val.secondary_colour);
+        stream->Write(&val.primaryColour);
+        stream->Write(&val.secondaryColour);
+        stream->Write(&val.tertiaryColour);
         DataSerializerTraits<ObjectEntryDescriptor> s;
-        s.encode(stream, val.scenery_object);
+        s.encode(stream, val.sceneryObject);
     }
     static void decode(OpenRCT2::IStream* stream, TrackDesignSceneryElement& val)
     {
         stream->Read(&val.loc);
         stream->Read(&val.flags);
-        stream->Read(&val.primary_colour);
-        stream->Read(&val.secondary_colour);
+        stream->Read(&val.primaryColour);
+        stream->Read(&val.secondaryColour);
+        stream->Read(&val.tertiaryColour);
         DataSerializerTraits<ObjectEntryDescriptor> s;
-        s.decode(stream, val.scenery_object);
+        s.decode(stream, val.sceneryObject);
     }
     static void log(OpenRCT2::IStream* stream, const TrackDesignSceneryElement& val)
     {
         char msg[128] = {};
         snprintf(
-            msg, sizeof(msg), "TrackDesignSceneryElement(x = %d, y = %d, z = %d, flags = %d, colour1 = %d, colour2 = %d)",
-            val.loc.x, val.loc.y, val.loc.z, val.flags, val.primary_colour, val.secondary_colour);
+            msg, sizeof(msg),
+            "TrackDesignSceneryElement(x = %d, y = %d, z = %d, flags = %d, colour1 = %d, colour2 = %d, colour3 = %d)",
+            val.loc.x, val.loc.y, val.loc.z, val.flags, val.primaryColour, val.secondaryColour, val.tertiaryColour);
         stream->Write(msg, strlen(msg));
 
-        auto identifier = val.scenery_object.GetName();
+        auto identifier = val.sceneryObject.GetName();
         stream->WriteArray(identifier.data(), identifier.size());
+    }
+};
+
+template<> struct DataSerializerTraitsT<TrackColour>
+{
+    static void encode(OpenRCT2::IStream* stream, const TrackColour& val)
+    {
+        stream->Write(&val.main);
+        stream->Write(&val.additional);
+        stream->Write(&val.supports);
+    }
+    static void decode(OpenRCT2::IStream* stream, TrackColour& val)
+    {
+        stream->Read(&val.main);
+        stream->Read(&val.additional);
+        stream->Read(&val.supports);
+    }
+    static void log(OpenRCT2::IStream* stream, const TrackColour& val)
+    {
+        char msg[128] = {};
+        snprintf(
+            msg, sizeof(msg), "TrackColour(main = %d, additional = %d, supports = %d)", val.main, val.additional, val.supports);
+        stream->Write(msg, strlen(msg));
     }
 };
 
@@ -799,6 +818,30 @@ template<> struct DataSerializerTraitsT<VehicleColour>
     {
         char msg[128] = {};
         snprintf(msg, sizeof(msg), "VehicleColour(Body = %d, Trim = %d, Tertiary = %d)", val.Body, val.Trim, val.Tertiary);
+        stream->Write(msg, strlen(msg));
+    }
+};
+
+template<> struct DataSerializerTraitsT<RatingTuple>
+{
+    static void encode(OpenRCT2::IStream* stream, const RatingTuple& val)
+    {
+        stream->Write(&val.excitement);
+        stream->Write(&val.intensity);
+        stream->Write(&val.nausea);
+    }
+    static void decode(OpenRCT2::IStream* stream, RatingTuple& val)
+    {
+        stream->Read(&val.excitement);
+        stream->Read(&val.intensity);
+        stream->Read(&val.nausea);
+    }
+    static void log(OpenRCT2::IStream* stream, const RatingTuple& val)
+    {
+        char msg[128] = {};
+        snprintf(
+            msg, sizeof(msg), "RatingTuple(excitement = %d, intensity = %d, nausea = %d)", val.excitement, val.intensity,
+            val.nausea);
         stream->Write(msg, strlen(msg));
     }
 };

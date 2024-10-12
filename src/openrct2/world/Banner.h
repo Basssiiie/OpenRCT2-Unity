@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,7 +10,6 @@
 #pragma once
 
 #include "../Identifiers.h"
-#include "../common.h"
 #include "../ride/RideTypes.h"
 #include "Location.hpp"
 
@@ -19,6 +18,11 @@
 class Formatter;
 struct TileElement;
 struct WallElement;
+
+namespace OpenRCT2
+{
+    struct GameState_t;
+}
 
 constexpr ObjectEntryIndex BANNER_NULL = OBJECT_ENTRY_INDEX_NULL;
 constexpr size_t MAX_BANNERS = 8192;
@@ -31,6 +35,7 @@ struct Banner
     ObjectEntryIndex type = BANNER_NULL;
     uint8_t flags{};
     std::string text;
+    mutable std::string formattedTextBuffer;
     uint8_t colour{};
     RideId ride_index{};
     uint8_t text_colour{};
@@ -54,7 +59,7 @@ enum BANNER_FLAGS
     BANNER_FLAG_IS_WALL = (1 << 3)
 };
 
-void BannerInit();
+void BannerInit(OpenRCT2::GameState_t& gameState);
 TileElement* BannerGetTileElement(BannerIndex bannerIndex);
 WallElement* BannerGetScrollingWallTileElement(BannerIndex bannerIndex);
 RideId BannerGetClosestRideIndex(const CoordsXYZ& mapPos);

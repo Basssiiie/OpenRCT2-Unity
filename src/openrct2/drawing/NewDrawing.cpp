@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,7 +10,6 @@
 #include "NewDrawing.h"
 
 #include "../Context.h"
-#include "../config/Config.h"
 #include "../drawing/Drawing.h"
 #include "../interface/Screenshot.h"
 #include "../localisation/StringIds.h"
@@ -21,6 +20,7 @@
 #include "IDrawingContext.h"
 #include "IDrawingEngine.h"
 
+#include <cassert>
 #include <cmath>
 
 using namespace OpenRCT2;
@@ -160,9 +160,9 @@ void GfxSetDirtyBlocks(const ScreenRect& rect)
     }
 }
 
-void GfxClear(DrawPixelInfo* dpi, uint8_t paletteIndex)
+void GfxClear(DrawPixelInfo& dpi, uint8_t paletteIndex)
 {
-    auto drawingEngine = dpi->DrawingEngine;
+    auto drawingEngine = dpi.DrawingEngine;
     if (drawingEngine != nullptr)
     {
         IDrawingContext* dc = drawingEngine->GetDrawingContext();
@@ -176,7 +176,7 @@ void GfxFillRect(DrawPixelInfo& dpi, const ScreenRect& rect, int32_t colour)
     if (drawingEngine != nullptr)
     {
         IDrawingContext* dc = drawingEngine->GetDrawingContext();
-        dc->FillRect(&dpi, colour, rect.GetLeft(), rect.GetTop(), rect.GetRight(), rect.GetBottom());
+        dc->FillRect(dpi, colour, rect.GetLeft(), rect.GetTop(), rect.GetRight(), rect.GetBottom());
     }
 }
 
@@ -186,7 +186,7 @@ void GfxFilterRect(DrawPixelInfo& dpi, const ScreenRect& rect, FilterPaletteID p
     if (drawingEngine != nullptr)
     {
         IDrawingContext* dc = drawingEngine->GetDrawingContext();
-        dc->FilterRect(&dpi, palette, rect.GetLeft(), rect.GetTop(), rect.GetRight(), rect.GetBottom());
+        dc->FilterRect(dpi, palette, rect.GetLeft(), rect.GetTop(), rect.GetRight(), rect.GetBottom());
     }
 }
 
@@ -196,7 +196,7 @@ void GfxDrawLine(DrawPixelInfo& dpi, const ScreenLine& line, int32_t colour)
     if (drawingEngine != nullptr)
     {
         IDrawingContext* dc = drawingEngine->GetDrawingContext();
-        dc->DrawLine(&dpi, colour, line);
+        dc->DrawLine(dpi, colour, line);
     }
 }
 
@@ -228,7 +228,7 @@ void GfxDrawDashedLine(
         {
             x = screenLine.GetX1() + dxPrecise * i * 2 / precisionFactor;
             y = screenLine.GetY1() + dyPrecise * i * 2 / precisionFactor;
-            dc->DrawLine(&dpi, color, { { x, y }, { x + dxPrecise / precisionFactor, y + dyPrecise / precisionFactor } });
+            dc->DrawLine(dpi, color, { { x, y }, { x + dxPrecise / precisionFactor, y + dyPrecise / precisionFactor } });
         }
     }
 }
@@ -239,13 +239,13 @@ void FASTCALL GfxDrawSprite(DrawPixelInfo& dpi, const ImageId imageId, const Scr
     if (drawingEngine != nullptr)
     {
         IDrawingContext* dc = drawingEngine->GetDrawingContext();
-        dc->DrawSprite(&dpi, imageId, coords.x, coords.y);
+        dc->DrawSprite(dpi, imageId, coords.x, coords.y);
     }
 }
 
-void FASTCALL GfxDrawGlyph(DrawPixelInfo* dpi, const ImageId image, const ScreenCoordsXY& coords, const PaletteMap& paletteMap)
+void FASTCALL GfxDrawGlyph(DrawPixelInfo& dpi, const ImageId image, const ScreenCoordsXY& coords, const PaletteMap& paletteMap)
 {
-    auto drawingEngine = dpi->DrawingEngine;
+    auto drawingEngine = dpi.DrawingEngine;
     if (drawingEngine != nullptr)
     {
         IDrawingContext* dc = drawingEngine->GetDrawingContext();
@@ -254,9 +254,9 @@ void FASTCALL GfxDrawGlyph(DrawPixelInfo* dpi, const ImageId image, const Screen
 }
 
 void FASTCALL
-    GfxDrawSpriteRawMasked(DrawPixelInfo* dpi, const ScreenCoordsXY& coords, const ImageId maskImage, const ImageId colourImage)
+    GfxDrawSpriteRawMasked(DrawPixelInfo& dpi, const ScreenCoordsXY& coords, const ImageId maskImage, const ImageId colourImage)
 {
-    auto drawingEngine = dpi->DrawingEngine;
+    auto drawingEngine = dpi.DrawingEngine;
     if (drawingEngine != nullptr)
     {
         IDrawingContext* dc = drawingEngine->GetDrawingContext();
@@ -264,9 +264,9 @@ void FASTCALL
     }
 }
 
-void FASTCALL GfxDrawSpriteSolid(DrawPixelInfo* dpi, const ImageId image, const ScreenCoordsXY& coords, uint8_t colour)
+void FASTCALL GfxDrawSpriteSolid(DrawPixelInfo& dpi, const ImageId image, const ScreenCoordsXY& coords, uint8_t colour)
 {
-    auto drawingEngine = dpi->DrawingEngine;
+    auto drawingEngine = dpi.DrawingEngine;
     if (drawingEngine != nullptr)
     {
         IDrawingContext* dc = drawingEngine->GetDrawingContext();

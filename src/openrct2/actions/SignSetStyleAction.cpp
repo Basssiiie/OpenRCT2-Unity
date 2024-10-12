@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,6 +10,7 @@
 #include "SignSetStyleAction.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../core/MemoryStream.h"
 #include "../drawing/Drawing.h"
 #include "../localisation/StringIds.h"
@@ -17,6 +18,8 @@
 #include "../windows/Intent.h"
 #include "../world/Banner.h"
 #include "../world/Scenery.h"
+
+using namespace OpenRCT2;
 
 SignSetStyleAction::SignSetStyleAction(BannerIndex bannerIndex, uint8_t mainColour, uint8_t textColour, bool isLarge)
     : _bannerIndex(bannerIndex)
@@ -50,7 +53,7 @@ GameActions::Result SignSetStyleAction::Query() const
     auto banner = GetBanner(_bannerIndex);
     if (banner == nullptr)
     {
-        LOG_ERROR("Invalid banner id. id = ", _bannerIndex);
+        LOG_ERROR("Banner not found for bannerIndex %u", _bannerIndex);
         return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_NONE);
     }
 
@@ -59,12 +62,13 @@ GameActions::Result SignSetStyleAction::Query() const
         TileElement* tileElement = BannerGetTileElement(_bannerIndex);
         if (tileElement == nullptr)
         {
-            LOG_WARNING("Invalid game command for setting sign style, banner id '%d' not found", _bannerIndex);
+            LOG_ERROR("Banner tile element not found for bannerIndex %u", _bannerIndex);
             return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_NONE);
         }
         if (tileElement->GetType() != TileElementType::LargeScenery)
         {
-            LOG_WARNING("Invalid game command for setting sign style, banner id '%d' is not large", _bannerIndex);
+            LOG_ERROR(
+                "Tile element has type %u, expected %d (LargeScenery)", tileElement->GetType(), TileElementType::LargeScenery);
             return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_NONE);
         }
     }
@@ -74,7 +78,7 @@ GameActions::Result SignSetStyleAction::Query() const
 
         if (wallElement == nullptr)
         {
-            LOG_WARNING("Invalid game command for setting sign style, banner id '%d' not found", _bannerIndex);
+            LOG_ERROR("Wall element not found for bannerIndex", _bannerIndex);
             return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_NONE);
         }
     }
@@ -87,7 +91,7 @@ GameActions::Result SignSetStyleAction::Execute() const
     auto banner = GetBanner(_bannerIndex);
     if (banner == nullptr)
     {
-        LOG_ERROR("Invalid banner id. id = ", _bannerIndex);
+        LOG_ERROR("Invalid banner id %u", _bannerIndex);
         return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_NONE);
     }
 

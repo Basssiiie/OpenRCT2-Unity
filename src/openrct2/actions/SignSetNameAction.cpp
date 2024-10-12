@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,14 +11,14 @@
 
 #include "../Context.h"
 #include "../Diagnostic.h"
-#include "../common.h"
 #include "../drawing/Drawing.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../ride/Ride.h"
 #include "../world/Banner.h"
 
 #include <string>
+
+using namespace OpenRCT2;
 
 SignSetNameAction::SignSetNameAction(BannerIndex bannerIndex, const std::string& name)
     : _bannerIndex(bannerIndex)
@@ -48,7 +48,7 @@ GameActions::Result SignSetNameAction::Query() const
     auto banner = GetBanner(_bannerIndex);
     if (banner == nullptr)
     {
-        LOG_WARNING("Invalid game command for setting sign name, banner id = %d", _bannerIndex);
+        LOG_ERROR("Banner not found for bannerIndex %d", _bannerIndex);
         return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_RENAME_SIGN, STR_NONE);
     }
     return GameActions::Result();
@@ -59,7 +59,7 @@ GameActions::Result SignSetNameAction::Execute() const
     auto banner = GetBanner(_bannerIndex);
     if (banner == nullptr)
     {
-        LOG_WARNING("Invalid game command for setting sign name, banner id = %d", _bannerIndex);
+        LOG_ERROR("Banner not found for bannerIndex %d", _bannerIndex);
         return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_RENAME_SIGN, STR_NONE);
     }
 

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "../common.h"
-#include "../core/String.hpp"
+#include "../core/CallingConventions.h"
+#include "../core/StringTypes.h"
 #include "../interface/Colour.h"
 #include "../interface/ZoomLevel.h"
 #include "../world/Location.hpp"
@@ -18,6 +18,7 @@
 #include "ImageId.hpp"
 #include "Text.h"
 
+#include <cassert>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -44,13 +45,13 @@ struct PaletteBGRA
     uint8_t Alpha{};
 };
 
-constexpr auto PALETTE_SIZE = 256;
+constexpr auto PALETTE_SIZE = 256u;
 
 struct GamePalette
 {
     PaletteBGRA Colour[PALETTE_SIZE]{};
 
-    PaletteBGRA& operator[](uint16_t idx)
+    PaletteBGRA& operator[](size_t idx)
     {
         assert(idx < PALETTE_SIZE);
         if (idx >= PALETTE_SIZE)
@@ -62,7 +63,7 @@ struct GamePalette
         return Colour[idx];
     }
 
-    const PaletteBGRA operator[](uint16_t idx) const
+    const PaletteBGRA operator[](size_t idx) const
     {
         assert(idx < PALETTE_SIZE);
         if (idx >= PALETTE_SIZE)
@@ -94,7 +95,7 @@ struct RCTG1Header
     uint32_t num_entries = 0;
     uint32_t total_size = 0;
 };
-assert_struct_size(RCTG1Header, 8);
+static_assert(sizeof(RCTG1Header) == 8);
 #pragma pack(pop)
 
 struct Gx
@@ -114,22 +115,61 @@ struct DrawPixelInfo
     int32_t pitch{}; // note: this is actually (pitch - width)
     ZoomLevel zoom_level{};
 
-    /**
-     * As x and y are based on 1:1 units, zooming in will cause a reduction in precision when mapping zoomed-in
-     * pixels to 1:1 pixels. When x, y are not a multiple of the zoom level, the remainder will be non-zero.
-     * The drawing of sprites will need to be offset by this amount.
-     */
-    uint8_t remX{};
-    uint8_t remY{};
-
     // Last position of drawn text.
     ScreenCoordsXY lastStringPos{};
 
     OpenRCT2::Drawing::IDrawingEngine* DrawingEngine{};
 
-    size_t GetBytesPerRow() const;
     uint8_t* GetBitsOffset(const ScreenCoordsXY& pos) const;
     DrawPixelInfo Crop(const ScreenCoordsXY& pos, const ScreenSize& size) const;
+
+    [[nodiscard]] constexpr int32_t WorldX() const
+    {
+        return zoom_level.ApplyTo(x);
+    }
+    [[nodiscard]] constexpr int32_t WorldY() const
+    {
+        return zoom_level.ApplyTo(y);
+    }
+    [[nodiscard]] constexpr int32_t WorldWidth() const
+    {
+        return zoom_level.ApplyTo(width);
+    }
+    [[nodiscard]] constexpr int32_t WorldHeight() const
+    {
+        return zoom_level.ApplyTo(height);
+    }
+
+    [[nodiscard]] constexpr int32_t LineStride() const
+    {
+        return width + pitch;
+    }
+};
+
+struct TextDrawInfo
+{
+    int32_t startX;
+    int32_t startY;
+    int32_t x;
+    int32_t y;
+    int32_t maxX;
+    int32_t maxY;
+    int32_t flags;
+    uint8_t palette[8];
+    ::FontStyle FontStyle;
+    const int8_t* y_offset;
+};
+
+enum : uint32_t
+{
+    TEXT_DRAW_FLAG_INSET = 1 << 0,
+    TEXT_DRAW_FLAG_OUTLINE = 1 << 1,
+    TEXT_DRAW_FLAG_DARK = 1 << 2,
+    TEXT_DRAW_FLAG_EXTRA_DARK = 1 << 3,
+    TEXT_DRAW_FLAG_NO_FORMATTING = 1 << 28,
+    TEXT_DRAW_FLAG_Y_OFFSET_EFFECT = 1 << 29,
+    TEXT_DRAW_FLAG_TTF = 1 << 30,
+    TEXT_DRAW_FLAG_NO_DRAW = 1u << 31
 };
 
 struct RCTG1Element
@@ -142,7 +182,7 @@ struct RCTG1Element
     uint16_t flags;         // 0x0C
     uint16_t zoomed_offset; // 0x0E
 };
-assert_struct_size(RCTG1Element, 0x10);
+static_assert(sizeof(RCTG1Element) == 0x10);
 
 enum
 {
@@ -184,6 +224,10 @@ enum
     INSET_RECT_FLAG_BORDER_INSET = (1 << 5),      // 0x20
     INSET_RECT_FLAG_FILL_DONT_LIGHTEN = (1 << 6), // 0x40
     INSET_RECT_FLAG_FILL_MID_LIGHT = (1 << 7),    // 0x80
+
+    INSET_RECT_F_30 = (INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_NONE),
+    INSET_RECT_F_60 = (INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_DONT_LIGHTEN),
+    INSET_RECT_F_E0 = (INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_DONT_LIGHTEN | INSET_RECT_FLAG_FILL_MID_LIGHT),
 };
 
 enum class FilterPaletteID : int32_t
@@ -374,6 +418,7 @@ public:
     {
     }
 
+    bool operator==(const PaletteMap& lhs) const;
     uint8_t& operator[](size_t index);
     uint8_t operator[](size_t index) const;
     uint8_t Blend(uint8_t src, uint8_t dst) const;
@@ -478,21 +523,14 @@ void FASTCALL BlitPixels(const uint8_t* src, uint8_t* dst, const PaletteMap& pal
     }
 }
 
-#define PALETTE_TO_G1_OFFSET_COUNT 144
-constexpr uint8_t PALETTE_TOTAL_OFFSETS = 192;
+constexpr uint8_t kPaletteTotalOffsets = 192;
 
-#define INSET_RECT_F_30 (INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_NONE)
-#define INSET_RECT_F_60 (INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_DONT_LIGHTEN)
-#define INSET_RECT_F_E0 (INSET_RECT_FLAG_BORDER_INSET | INSET_RECT_FLAG_FILL_DONT_LIGHTEN | INSET_RECT_FLAG_FILL_MID_LIGHT)
-
-#define MAX_SCROLLING_TEXT_MODES 38
+constexpr int8_t kMaxScrollingTextModes = 38;
 
 extern GamePalette gPalette;
 extern uint8_t gGamePalette[256 * 4];
 extern uint32_t gPaletteEffectFrame;
-extern const FilterPaletteID GlassPaletteIds[COLOUR_COUNT];
-extern thread_local uint8_t gPeepPalette[256];
-extern thread_local uint8_t gOtherPalette[256];
+
 extern uint8_t gTextPalette[];
 extern const TranslucentWindowPalette TranslucentWindowPalettes[COLOUR_COUNT];
 
@@ -511,7 +549,7 @@ void GfxTransposePalette(int32_t pal, uint8_t product);
 void LoadPalette();
 
 // other
-void GfxClear(DrawPixelInfo* dpi, uint8_t paletteIndex);
+void GfxClear(DrawPixelInfo& dpi, uint8_t paletteIndex);
 void GfxFilterPixel(DrawPixelInfo& dpi, const ScreenCoordsXY& coords, FilterPaletteID palette);
 void GfxInvalidatePickedUpPeep();
 void GfxDrawPickedUpPeep(DrawPixelInfo& dpi);
@@ -524,7 +562,7 @@ void GfxDrawDashedLine(
 
 // rect
 void GfxFillRect(DrawPixelInfo& dpi, const ScreenRect& rect, int32_t colour);
-void GfxFillRectInset(DrawPixelInfo& dpi, const ScreenRect& rect, int32_t colour, uint8_t flags);
+void GfxFillRectInset(DrawPixelInfo& dpi, const ScreenRect& rect, ColourWithFlags colour, uint8_t flags);
 void GfxFilterRect(DrawPixelInfo& dpi, const ScreenRect& rect, FilterPaletteID palette);
 
 // sprite
@@ -543,10 +581,10 @@ void FASTCALL GfxSpriteToBuffer(DrawPixelInfo& dpi, const DrawSpriteArgs& args);
 void FASTCALL GfxBmpSpriteToBuffer(DrawPixelInfo& dpi, const DrawSpriteArgs& args);
 void FASTCALL GfxRleSpriteToBuffer(DrawPixelInfo& dpi, const DrawSpriteArgs& args);
 void FASTCALL GfxDrawSprite(DrawPixelInfo& dpi, const ImageId image_id, const ScreenCoordsXY& coords);
-void FASTCALL GfxDrawGlyph(DrawPixelInfo* dpi, const ImageId image, const ScreenCoordsXY& coords, const PaletteMap& paletteMap);
-void FASTCALL GfxDrawSpriteSolid(DrawPixelInfo* dpi, const ImageId image, const ScreenCoordsXY& coords, uint8_t colour);
+void FASTCALL GfxDrawGlyph(DrawPixelInfo& dpi, const ImageId image, const ScreenCoordsXY& coords, const PaletteMap& paletteMap);
+void FASTCALL GfxDrawSpriteSolid(DrawPixelInfo& dpi, const ImageId image, const ScreenCoordsXY& coords, uint8_t colour);
 void FASTCALL GfxDrawSpriteRawMasked(
-    DrawPixelInfo* dpi, const ScreenCoordsXY& coords, const ImageId maskImage, const ImageId colourImage);
+    DrawPixelInfo& dpi, const ScreenCoordsXY& coords, const ImageId maskImage, const ImageId colourImage);
 void FASTCALL GfxDrawSpriteSoftware(DrawPixelInfo& dpi, const ImageId imageId, const ScreenCoordsXY& spriteCoords);
 void FASTCALL GfxDrawSpritePaletteSetSoftware(
     DrawPixelInfo& dpi, const ImageId imageId, const ScreenCoordsXY& coords, const PaletteMap& paletteMap);
@@ -554,16 +592,15 @@ void FASTCALL GfxDrawSpriteRawMaskedSoftware(
     DrawPixelInfo& dpi, const ScreenCoordsXY& scrCoords, const ImageId maskImage, const ImageId colourImage);
 
 // string
-void GfxDrawString(DrawPixelInfo& dpi, const ScreenCoordsXY& coords, const_utf8string buffer, TextPaint textPaint = {});
-
-void GfxDrawStringLeftCentred(DrawPixelInfo& dpi, StringId format, void* args, colour_t colour, const ScreenCoordsXY& coords);
+void GfxDrawStringLeftCentred(
+    DrawPixelInfo& dpi, StringId format, void* args, ColourWithFlags colour, const ScreenCoordsXY& coords);
 void DrawStringCentredRaw(
     DrawPixelInfo& dpi, const ScreenCoordsXY& coords, int32_t numLines, const utf8* text, FontStyle fontStyle);
 void DrawNewsTicker(
     DrawPixelInfo& dpi, const ScreenCoordsXY& coords, int32_t width, colour_t colour, StringId format, u8string_view args,
     int32_t ticks);
 void GfxDrawStringWithYOffsets(
-    DrawPixelInfo& dpi, const utf8* text, int32_t colour, const ScreenCoordsXY& coords, const int8_t* yOffsets,
+    DrawPixelInfo& dpi, const utf8* text, ColourWithFlags colour, const ScreenCoordsXY& coords, const int8_t* yOffsets,
     bool forceSpriteFont, FontStyle fontStyle);
 
 int32_t GfxWrapString(u8string_view text, int32_t width, FontStyle fontStyle, u8string* outWrappedText, int32_t* outNumLines);
@@ -574,7 +611,7 @@ int32_t StringGetHeightRaw(std::string_view text, FontStyle fontStyle);
 int32_t GfxClipString(char* buffer, int32_t width, FontStyle fontStyle);
 u8string ShortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle);
 void TTFDrawString(
-    DrawPixelInfo& dpi, const_utf8string text, int32_t colour, const ScreenCoordsXY& coords, bool noFormatting,
+    DrawPixelInfo& dpi, const_utf8string text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
     FontStyle fontStyle, TextDarkness darkness);
 
 // scrolling text
@@ -605,8 +642,11 @@ void MaskFn(
 std::optional<uint32_t> GetPaletteG1Index(colour_t paletteId);
 std::optional<PaletteMap> GetPaletteMapForColour(colour_t paletteId);
 void UpdatePalette(const uint8_t* colours, int32_t start_index, int32_t num_colours);
+void UpdatePaletteEffects();
 
-void RefreshVideo(bool recreateWindow);
+void RefreshVideo();
 void ToggleWindowedMode();
+
+void DebugDPI(DrawPixelInfo& dpi);
 
 #include "NewDrawing.h"

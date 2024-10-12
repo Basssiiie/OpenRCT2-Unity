@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,13 +9,12 @@
 
 #pragma once
 
-#include "../common.h"
-#include "../core/FixedVector.h"
 #include "../drawing/Drawing.h"
 #include "../interface/Colour.h"
 #include "../world/Location.hpp"
 #include "../world/Map.h"
 #include "Boundbox.h"
+#include "tile_element/Paint.Tunnel.h"
 
 #include <mutex>
 #include <thread>
@@ -74,7 +73,10 @@ struct PaintStringStruct
 struct PaintEntry
 {
 private:
-    std::array<uint8_t, std::max({ sizeof(PaintStruct), sizeof(AttachedPaintStruct), sizeof(PaintStringStruct) })> data;
+    // Avoid including expensive <algorithm> for std::max. Manually ensure we use the largest type.
+    static_assert(sizeof(PaintStruct) >= sizeof(AttachedPaintStruct));
+    static_assert(sizeof(PaintStruct) >= sizeof(PaintStringStruct));
+    std::array<uint8_t, sizeof(PaintStruct)> data;
 
 public:
     PaintStruct* AsBasic()
@@ -115,17 +117,9 @@ struct SupportHeight
     uint8_t pad;
 };
 
-struct TunnelEntry
-{
-    uint8_t height;
-    uint8_t type;
-};
-
-// The maximum size must be MAXIMUM_MAP_SIZE_TECHNICAL multiplied by 2 because
+// The maximum size must be kMaximumMapSizeTechnical multiplied by 2 because
 // the quadrant index is based on the x and y components combined.
-static constexpr int32_t MaxPaintQuadrants = MAXIMUM_MAP_SIZE_TECHNICAL * 2;
-
-#define TUNNEL_MAX_COUNT 65
+static constexpr int32_t MaxPaintQuadrants = kMaximumMapSizeTechnical * 2;
 
 /**
  * A pool of PaintEntry instances that can be rented out.
@@ -197,12 +191,13 @@ struct PaintSessionCore
     uint32_t ViewFlags;
     uint32_t QuadrantBackIndex;
     uint32_t QuadrantFrontIndex;
-    ImageId TrackColours[4];
+    ImageId TrackColours;
+    ImageId SupportColours;
     SupportHeight SupportSegments[9];
     SupportHeight Support;
     uint16_t WaterHeight;
-    TunnelEntry LeftTunnels[TUNNEL_MAX_COUNT];
-    TunnelEntry RightTunnels[TUNNEL_MAX_COUNT];
+    TunnelEntry LeftTunnels[kTunnelMaxCount];
+    TunnelEntry RightTunnels[kTunnelMaxCount];
     uint8_t LeftTunnelCount;
     uint8_t RightTunnelCount;
     uint8_t VerticalTunnelHeight;
@@ -281,7 +276,8 @@ extern CoordsXY gClipSelectionB;
 /** rct2: 0x00993CC4. The white ghost that indicates not-yet-built elements. */
 constexpr ImageId ConstructionMarker = ImageId(0).WithRemap(FilterPaletteID::PaletteGhost);
 constexpr ImageId HighlightMarker = ImageId(0).WithRemap(FilterPaletteID::PaletteGhost);
-constexpr ImageId TrackGhost = ImageId(0, FilterPaletteID::PaletteNull);
+constexpr ImageId TrackStationColour = ImageId(0, COLOUR_BLACK);
+constexpr ImageId ShopSupportColour = ImageId(0, COLOUR_DARK_BROWN);
 
 extern bool gShowDirtyVisuals;
 extern bool gPaintBoundingBoxes;
@@ -328,15 +324,13 @@ inline PaintStruct* PaintAddImageAsParentRotated(
     return PaintAddImageAsParentRotated(session, direction, imageId, offset, { offset, boundBoxSize });
 }
 
-void PaintUtilPushTunnelRotated(PaintSession& session, uint8_t direction, uint16_t height, uint8_t type);
-
 bool PaintAttachToPreviousAttach(PaintSession& session, const ImageId imageId, int32_t x, int32_t y);
 bool PaintAttachToPreviousPS(PaintSession& session, const ImageId image_id, int32_t x, int32_t y);
 void PaintFloatingMoneyEffect(
     PaintSession& session, money64 amount, StringId string_id, int32_t y, int32_t z, int8_t y_offsets[], int32_t offset_x,
     uint32_t rotation);
 
-PaintSession* PaintSessionAlloc(DrawPixelInfo& dpi, uint32_t viewFlags);
+PaintSession* PaintSessionAlloc(DrawPixelInfo& dpi, uint32_t viewFlags, uint8_t rotation);
 void PaintSessionFree(PaintSession* session);
 void PaintSessionGenerate(PaintSession& session);
 void PaintSessionArrange(PaintSessionCore& session);

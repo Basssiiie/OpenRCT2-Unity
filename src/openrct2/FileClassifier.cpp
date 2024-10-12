@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,6 +9,7 @@
 
 #include "FileClassifier.h"
 
+#include "Diagnostic.h"
 #include "core/Console.hpp"
 #include "core/FileStream.h"
 #include "core/Path.hpp"
@@ -18,6 +19,8 @@
 #include "rct2/RCT2.h"
 #include "scenario/Scenario.h"
 #include "util/SawyerCoding.h"
+
+using namespace OpenRCT2;
 
 static bool TryClassifyAsPark(OpenRCT2::IStream* stream, ClassifiedFileInfo* result);
 static bool TryClassifyAsS6(OpenRCT2::IStream* stream, ClassifiedFileInfo* result);

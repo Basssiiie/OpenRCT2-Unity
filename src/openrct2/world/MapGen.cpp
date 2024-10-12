@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,31 +10,33 @@
 #include "MapGen.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../Game.h"
-#include "../common.h"
+#include "../GameState.h"
 #include "../core/Guard.hpp"
 #include "../core/Imaging.h"
 #include "../core/String.hpp"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
-#include "../object/Object.h"
 #include "../object/ObjectEntryManager.h"
+#include "../object/ObjectList.h"
 #include "../object/ObjectManager.h"
 #include "../object/SmallSceneryEntry.h"
 #include "../object/TerrainEdgeObject.h"
 #include "../object/TerrainSurfaceObject.h"
 #include "../platform/Platform.h"
 #include "../util/Util.h"
+#include "../world/tile_element/Slope.h"
 #include "Map.h"
 #include "MapHelpers.h"
 #include "Scenery.h"
 #include "Surface.h"
 
-#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <iterator>
 #include <vector>
+
+using namespace OpenRCT2;
 
 #pragma region Height map struct
 
@@ -91,7 +93,40 @@ static constexpr std::string_view BaseTerrain[] = {
     "rct2.terrain_surface.dirt",  "rct2.terrain_surface.ice",
 };
 
-static void MapGenPlaceTrees();
+static void MapGenGenerateBlank(MapGenSettings* settings);
+static void MapGenGenerateSimplex(MapGenSettings* settings);
+static void MapGenGenerateFromHeightmapImage(MapGenSettings* settings);
+
+static void MapGenPlaceTrees(MapGenSettings* settings);
+static void MapGenAddBeaches(MapGenSettings* settings);
+
+void MapGenGenerate(MapGenSettings* settings)
+{
+    // First, generate the height map
+    switch (settings->algorithm)
+    {
+        case MapGenAlgorithm::blank:
+            MapGenGenerateBlank(settings);
+            break;
+
+        case MapGenAlgorithm::simplexNoise:
+            MapGenGenerateSimplex(settings);
+            break;
+
+        case MapGenAlgorithm::heightmapImage:
+            MapGenGenerateFromHeightmapImage(settings);
+            break;
+    }
+
+    // Add beaches?
+    if (settings->beaches)
+        MapGenAddBeaches(settings);
+
+    // Place trees?
+    if (settings->trees)
+        MapGenPlaceTrees(settings);
+}
+
 static void MapGenSetWaterLevel(int32_t waterLevel);
 static void MapGenSmoothHeight(int32_t iterations);
 static void MapGenSetHeight(MapGenSettings* settings);
@@ -116,41 +151,14 @@ static void SetHeight(int32_t x, int32_t y, int32_t height)
         _height[x + y * _heightSize.x] = height;
 }
 
-void MapGenGenerateBlank(MapGenSettings* settings)
+static ObjectEntryIndex MapGenSurfaceTextureId(MapGenSettings* settings)
 {
-    int32_t x, y;
-    MapClearAllElements();
-
-    MapInit(settings->mapSize);
-    for (y = 1; y < settings->mapSize.y - 1; y++)
-    {
-        for (x = 1; x < settings->mapSize.x - 1; x++)
-        {
-            auto surfaceElement = MapGetSurfaceElementAt(TileCoordsXY{ x, y });
-            if (surfaceElement != nullptr)
-            {
-                surfaceElement->SetSurfaceObjectIndex(settings->floor);
-                surfaceElement->SetEdgeObjectIndex(settings->wall);
-                surfaceElement->BaseHeight = settings->height;
-                surfaceElement->ClearanceHeight = settings->height;
-            }
-        }
-    }
-
-    MapGenSetWaterLevel(settings->water_level);
-}
-
-void MapGenGenerate(MapGenSettings* settings)
-{
-    const auto& mapSize = settings->mapSize;
-    auto waterLevel = settings->water_level;
-    const auto selectedFloor = TerrainSurfaceObject::GetById(settings->floor);
-    std::string_view floorTexture = selectedFloor != nullptr ? selectedFloor->GetIdentifier() : "";
-    const auto selectedEdge = TerrainEdgeObject::GetById(settings->wall);
-    std::string_view edgeTexture = selectedFloor != nullptr ? selectedEdge->GetIdentifier() : "";
     auto& objectManager = OpenRCT2::GetContext()->GetObjectManager();
 
-    if (floorTexture.empty())
+    const auto selectedFloor = TerrainSurfaceObject::GetById(settings->landTexture);
+    std::string_view surfaceTexture = selectedFloor != nullptr ? selectedFloor->GetIdentifier() : "";
+
+    if (surfaceTexture.empty())
     {
         std::vector<std::string_view> availableTerrains;
         std::copy_if(std::begin(BaseTerrain), std::end(BaseTerrain), std::back_inserter(availableTerrains), [&](auto terrain) {
@@ -159,17 +167,31 @@ void MapGenGenerate(MapGenSettings* settings)
 
         if (availableTerrains.empty())
             // Fall back to the first available surface texture that is available in the park
-            floorTexture = TerrainSurfaceObject::GetById(0)->GetIdentifier();
+            surfaceTexture = TerrainSurfaceObject::GetById(0)->GetIdentifier();
         else
-            floorTexture = availableTerrains[UtilRand() % availableTerrains.size()];
+            surfaceTexture = availableTerrains[UtilRand() % availableTerrains.size()];
     }
+
+    auto surfaceTextureId = objectManager.GetLoadedObjectEntryIndex(ObjectEntryDescriptor(surfaceTexture));
+    return surfaceTextureId;
+}
+
+static ObjectEntryIndex MapGenEdgeTextureId(MapGenSettings* settings, ObjectEntryIndex surfaceTextureId)
+{
+    auto& objectManager = OpenRCT2::GetContext()->GetObjectManager();
+
+    const auto selectedEdge = TerrainEdgeObject::GetById(settings->edgeTexture);
+    std::string_view edgeTexture = selectedEdge != nullptr ? selectedEdge->GetIdentifier() : "";
 
     if (edgeTexture.empty())
     {
+        auto surfaceObject = objectManager.GetLoadedObject(ObjectType::TerrainSurface, surfaceTextureId);
+        auto surfaceTexture = surfaceObject->GetIdentifier();
+
         // Base edge type on surface type
-        if (floorTexture == "rct2.terrain_surface.dirt")
+        if (surfaceTexture == "rct2.terrain_surface.dirt")
             edgeTexture = "rct2.terrain_edge.wood_red";
-        else if (floorTexture == "rct2.terrain_surface.ice")
+        else if (surfaceTexture == "rct2.terrain_surface.ice")
             edgeTexture = "rct2.terrain_edge.ice";
         else
             edgeTexture = "rct2.terrain_edge.rock";
@@ -179,29 +201,46 @@ void MapGenGenerate(MapGenSettings* settings)
             edgeTexture = TerrainEdgeObject::GetById(0)->GetIdentifier();
     }
 
-    auto floorTextureId = objectManager.GetLoadedObjectEntryIndex(ObjectEntryDescriptor(floorTexture));
     auto edgeTextureId = objectManager.GetLoadedObjectEntryIndex(ObjectEntryDescriptor(edgeTexture));
+    return edgeTextureId;
+}
 
+static void MapGenResetSurfaces(MapGenSettings* settings)
+{
     MapClearAllElements();
+    MapInit(settings->mapSize);
 
-    // Initialise the base map
-    MapInit(mapSize);
-    for (auto y = 1; y < mapSize.y - 1; y++)
+    const auto surfaceTextureId = MapGenSurfaceTextureId(settings);
+    const auto edgeTextureId = MapGenEdgeTextureId(settings, surfaceTextureId);
+
+    for (auto y = 1; y < settings->mapSize.y - 1; y++)
     {
-        for (auto x = 1; x < mapSize.x - 1; x++)
+        for (auto x = 1; x < settings->mapSize.x - 1; x++)
         {
             auto surfaceElement = MapGetSurfaceElementAt(TileCoordsXY{ x, y });
             if (surfaceElement != nullptr)
             {
-                surfaceElement->SetSurfaceObjectIndex(floorTextureId);
+                surfaceElement->SetSurfaceObjectIndex(surfaceTextureId);
                 surfaceElement->SetEdgeObjectIndex(edgeTextureId);
-                surfaceElement->BaseHeight = settings->height;
-                surfaceElement->ClearanceHeight = settings->height;
+                surfaceElement->BaseHeight = settings->heightmapLow;
+                surfaceElement->ClearanceHeight = settings->heightmapLow;
             }
         }
     }
+}
+
+static void MapGenGenerateBlank(MapGenSettings* settings)
+{
+    MapGenResetSurfaces(settings);
+    MapGenSetWaterLevel(settings->waterLevel);
+}
+
+static void MapGenGenerateSimplex(MapGenSettings* settings)
+{
+    MapGenResetSurfaces(settings);
 
     // Create the temporary height map and initialise
+    auto& mapSize = settings->mapSize;
     _heightSize = { mapSize.x * 2, mapSize.y * 2 };
     _height = new uint8_t[_heightSize.y * _heightSize.x];
     std::fill_n(_height, _heightSize.y * _heightSize.x, 0x00);
@@ -213,43 +252,47 @@ void MapGenGenerate(MapGenSettings* settings)
     MapGenSetHeight(settings);
     delete[] _height;
 
-    // Set the tile slopes so that there are no cliffs
-    while (MapSmooth(1, 1, mapSize.x - 1, mapSize.y - 1))
+    if (settings->smoothTileEdges)
     {
+        // Set the tile slopes so that there are no cliffs
+        while (MapSmooth(1, 1, mapSize.x - 1, mapSize.y - 1))
+        {
+        }
     }
 
     // Add the water
-    MapGenSetWaterLevel(waterLevel);
+    MapGenSetWaterLevel(settings->waterLevel);
+}
 
-    // Add sandy beaches
-    std::string_view beachTexture = floorTexture;
-    if (settings->floor == -1 && floorTexture == "rct2.terrain_surface.grass" && (UtilRand() & 1))
-    {
-        std::vector<std::string_view> availableBeachTextures;
-        if (objectManager.GetLoadedObject(ObjectEntryDescriptor("rct2.terrain_surface.sand")) != nullptr)
-            availableBeachTextures.push_back("rct2.terrain_surface.sand");
-        if (objectManager.GetLoadedObject(ObjectEntryDescriptor("rct2.terrain_surface.sand_brown")) != nullptr)
-            availableBeachTextures.push_back("rct2.terrain_surface.sand_brown");
+static void MapGenAddBeaches(MapGenSettings* settings)
+{
+    auto& objectManager = OpenRCT2::GetContext()->GetObjectManager();
 
-        if (!availableBeachTextures.empty())
-            beachTexture = availableBeachTextures[UtilRand() % availableBeachTextures.size()];
-    }
+    // Figure out what beach texture to use
+    std::vector<std::string_view> availableBeachTextures;
+    if (objectManager.GetLoadedObject(ObjectEntryDescriptor("rct2.terrain_surface.sand")) != nullptr)
+        availableBeachTextures.push_back("rct2.terrain_surface.sand");
+    if (objectManager.GetLoadedObject(ObjectEntryDescriptor("rct2.terrain_surface.sand_brown")) != nullptr)
+        availableBeachTextures.push_back("rct2.terrain_surface.sand_brown");
+
+    if (availableBeachTextures.empty())
+        return;
+
+    std::string_view beachTexture = availableBeachTextures[UtilRand() % availableBeachTextures.size()];
     auto beachTextureId = objectManager.GetLoadedObjectEntryIndex(ObjectEntryDescriptor(beachTexture));
 
+    // Add sandy beaches
+    const auto& mapSize = settings->mapSize;
     for (auto y = 1; y < mapSize.y - 1; y++)
     {
         for (auto x = 1; x < mapSize.x - 1; x++)
         {
             auto surfaceElement = MapGetSurfaceElementAt(TileCoordsXY{ x, y });
 
-            if (surfaceElement != nullptr && surfaceElement->BaseHeight < waterLevel + 6)
+            if (surfaceElement != nullptr && surfaceElement->BaseHeight < settings->waterLevel + 6)
                 surfaceElement->SetSurfaceObjectIndex(beachTextureId);
         }
     }
-
-    // Place the trees
-    if (settings->trees != 0)
-        MapGenPlaceTrees();
 }
 
 static void MapGenPlaceTree(ObjectEntryIndex type, const CoordsXY& loc)
@@ -304,13 +347,13 @@ template<typename T> static bool TryFindTreeInList(std::string_view id, const T&
 /**
  * Randomly places a selection of preset trees on the map. Picks the right tree for the terrain it is placing it on.
  */
-static void MapGenPlaceTrees()
+static void MapGenPlaceTrees(MapGenSettings* settings)
 {
     std::vector<int32_t> grassTreeIds;
     std::vector<int32_t> desertTreeIds;
     std::vector<int32_t> snowTreeIds;
 
-    for (int32_t i = 0; i < object_entry_group_counts[EnumValue(ObjectType::SmallScenery)]; i++)
+    for (auto i = 0u; i < getObjectEntryGroupCount(ObjectType::SmallScenery); i++)
     {
         auto* sceneryEntry = OpenRCT2::ObjectManager::GetObjectEntry<SmallSceneryEntry>(i);
         auto entry = ObjectEntryGetObject(ObjectType::SmallScenery, i);
@@ -333,21 +376,24 @@ static void MapGenPlaceTrees()
     }
 
     // Place trees
-    CoordsXY pos;
-    float treeToLandRatio = (10 + (UtilRand() % 30)) / 100.0f;
-    for (int32_t y = 1; y < gMapSize.y - 1; y++)
-    {
-        for (int32_t x = 1; x < gMapSize.x - 1; x++)
-        {
-            pos.x = x * COORDS_XY_STEP;
-            pos.y = y * COORDS_XY_STEP;
+    float treeToLandRatio = static_cast<float>(settings->treeToLandRatio) / 100.0f;
 
+    auto& gameState = GetGameState();
+    for (int32_t y = 1; y < gameState.MapSize.y - 1; y++)
+    {
+        for (int32_t x = 1; x < gameState.MapSize.x - 1; x++)
+        {
+            auto pos = CoordsXY{ x, y } * kCoordsXYStep;
             auto* surfaceElement = MapGetSurfaceElementAt(pos);
             if (surfaceElement == nullptr)
                 continue;
 
             // Don't place on water
             if (surfaceElement->GetWaterHeight() > 0)
+                continue;
+
+            if (settings->minTreeAltitude > surfaceElement->BaseHeight
+                || settings->maxTreeAltitude < surfaceElement->BaseHeight)
                 continue;
 
             // On sand surfaces, give the tile a score based on nearby water, to be used to determine whether to spawn
@@ -364,10 +410,10 @@ static void MapGenPlaceTrees()
                     for (int32_t offsetX = -maxOasisDistance; offsetX <= maxOasisDistance; offsetX++)
                     {
                         // Get map coord, clamped to the edges
-                        const auto offset = CoordsXY{ offsetX * COORDS_XY_STEP, offsetY * COORDS_XY_STEP };
+                        const auto offset = CoordsXY{ offsetX * kCoordsXYStep, offsetY * kCoordsXYStep };
                         auto neighbourPos = pos + offset;
-                        neighbourPos.x = std::clamp(neighbourPos.x, COORDS_XY_STEP, COORDS_XY_STEP * (gMapSize.x - 1));
-                        neighbourPos.y = std::clamp(neighbourPos.y, COORDS_XY_STEP, COORDS_XY_STEP * (gMapSize.y - 1));
+                        neighbourPos.x = std::clamp(neighbourPos.x, kCoordsXYStep, kCoordsXYStep * (gameState.MapSize.x - 1));
+                        neighbourPos.y = std::clamp(neighbourPos.y, kCoordsXYStep, kCoordsXYStep * (gameState.MapSize.y - 1));
 
                         const auto neighboutSurface = MapGetSurfaceElementAt(neighbourPos);
                         if (neighboutSurface != nullptr && neighboutSurface->GetWaterHeight() > 0)
@@ -415,13 +461,14 @@ static void MapGenPlaceTrees()
  */
 static void MapGenSetWaterLevel(int32_t waterLevel)
 {
-    for (int32_t y = 1; y < gMapSize.y - 1; y++)
+    auto& gameState = GetGameState();
+    for (int32_t y = 1; y < gameState.MapSize.y - 1; y++)
     {
-        for (int32_t x = 1; x < gMapSize.x - 1; x++)
+        for (int32_t x = 1; x < gameState.MapSize.x - 1; x++)
         {
             auto surfaceElement = MapGetSurfaceElementAt(TileCoordsXY{ x, y });
             if (surfaceElement != nullptr && surfaceElement->BaseHeight < waterLevel)
-                surfaceElement->SetWaterHeight(waterLevel * COORDS_Z_STEP);
+                surfaceElement->SetWaterHeight(waterLevel * kCoordsZStep);
         }
     }
 }
@@ -486,7 +533,7 @@ static void MapGenSetHeight(MapGenSettings* settings)
             surfaceElement->BaseHeight = std::max(2, baseHeight * 2);
 
             // If base height is below water level, lower it to create more natural shorelines
-            if (surfaceElement->BaseHeight >= 4 && surfaceElement->BaseHeight <= settings->water_level)
+            if (surfaceElement->BaseHeight >= 4 && surfaceElement->BaseHeight <= settings->waterLevel)
                 surfaceElement->BaseHeight -= 2;
 
             surfaceElement->ClearanceHeight = surfaceElement->BaseHeight;
@@ -494,13 +541,13 @@ static void MapGenSetHeight(MapGenSettings* settings)
             uint8_t currentSlope = surfaceElement->GetSlope();
 
             if (q00 > baseHeight)
-                currentSlope |= TILE_ELEMENT_SLOPE_S_CORNER_UP;
+                currentSlope |= kTileSlopeSCornerUp;
             if (q01 > baseHeight)
-                currentSlope |= TILE_ELEMENT_SLOPE_W_CORNER_UP;
+                currentSlope |= kTileSlopeWCornerUp;
             if (q10 > baseHeight)
-                currentSlope |= TILE_ELEMENT_SLOPE_E_CORNER_UP;
+                currentSlope |= kTileSlopeECornerUp;
             if (q11 > baseHeight)
-                currentSlope |= TILE_ELEMENT_SLOPE_N_CORNER_UP;
+                currentSlope |= kTileSlopeNCornerUp;
 
             surfaceElement->SetSlope(currentSlope);
         }
@@ -644,18 +691,16 @@ static float Grad(int32_t hash, float x, float y)
 
 static void MapGenSimplex(MapGenSettings* settings)
 {
-    int32_t x, y;
-
-    float freq = settings->simplex_base_freq * (1.0f / _heightSize.x);
+    float freq = settings->simplex_base_freq / 100.0f * (1.0f / _heightSize.x);
     int32_t octaves = settings->simplex_octaves;
 
-    int32_t low = settings->simplex_low;
-    int32_t high = settings->simplex_high;
+    int32_t low = settings->heightmapLow / 2;
+    int32_t high = settings->heightmapHigh / 2 - low;
 
     NoiseRand();
-    for (y = 0; y < _heightSize.y; y++)
+    for (int32_t y = 0; y < _heightSize.y; y++)
     {
-        for (x = 0; x < _heightSize.x; x++)
+        for (int32_t x = 0; x < _heightSize.x; x++)
         {
             float noiseValue = std::clamp(FractalNoise(x, y, freq, octaves, 2.0f, 0.65f), -1.0f, 1.0f);
             float normalisedNoiseValue = (noiseValue + 1.0f) / 2.0f;
@@ -678,7 +723,7 @@ static TileCoordsXY MapgenHeightmapCoordToTileCoordsXY(uint32_t x, uint32_t y)
     return TileCoordsXY(static_cast<int32_t>(y + 1), static_cast<int32_t>(x + 1));
 }
 
-bool MapGenLoadHeightmap(const utf8* path)
+bool MapGenLoadHeightmapImage(const utf8* path)
 {
     auto format = Imaging::GetImageFormatFromPath(path);
     if (format == IMAGE_FORMAT::PNG)
@@ -690,11 +735,11 @@ bool MapGenLoadHeightmap(const utf8* path)
     try
     {
         auto image = Imaging::ReadFromFile(path, format);
-        auto width = std::min<uint32_t>(image.Width, MAXIMUM_MAP_SIZE_PRACTICAL);
-        auto height = std::min<uint32_t>(image.Height, MAXIMUM_MAP_SIZE_PRACTICAL);
+        auto width = std::min<uint32_t>(image.Width, kMaximumMapSizePractical);
+        auto height = std::min<uint32_t>(image.Height, kMaximumMapSizePractical);
         if (width != image.Width || height != image.Height)
         {
-            ContextShowError(STR_HEIGHT_MAP_ERROR, STR_ERROR_HEIHGT_MAP_TOO_BIG, {});
+            ContextShowError(STR_HEIGHT_MAP_ERROR, STR_ERROR_HEIGHT_MAP_TOO_BIG, {});
         }
 
         // Allocate memory for the height map values, one byte pixel
@@ -739,7 +784,7 @@ bool MapGenLoadHeightmap(const utf8* path)
 /**
  * Frees the memory used to store the selected height map
  */
-void MapGenUnloadHeightmap()
+void MapGenUnloadHeightmapImage()
 {
     _heightMapData.mono_bitmap.clear();
     _heightMapData.width = 0;
@@ -792,10 +837,10 @@ static void MapGenSmoothHeightmap(std::vector<uint8_t>& src, int32_t strength)
     }
 }
 
-void MapGenGenerateFromHeightmap(MapGenSettings* settings)
+static void MapGenGenerateFromHeightmapImage(MapGenSettings* settings)
 {
     Guard::Assert(!_heightMapData.mono_bitmap.empty(), "No height map loaded");
-    Guard::Assert(settings->simplex_high != settings->simplex_low, "Low and high setting cannot be the same");
+    Guard::Assert(settings->heightmapHigh != settings->heightmapLow, "Low and high setting cannot be the same");
 
     // Make a copy of the original height map that we can edit
     auto dest = _heightMapData.mono_bitmap;
@@ -836,10 +881,13 @@ void MapGenGenerateFromHeightmap(MapGenSettings* settings)
     }
 
     Guard::Assert(maxValue > minValue, "Input range is invalid");
-    Guard::Assert(settings->simplex_high > settings->simplex_low, "Output range is invalid");
+    Guard::Assert(settings->heightmapHigh > settings->heightmapLow, "Output range is invalid");
+
+    const auto surfaceTextureId = MapGenSurfaceTextureId(settings);
+    const auto edgeTextureId = MapGenEdgeTextureId(settings, surfaceTextureId);
 
     const uint8_t rangeIn = maxValue - minValue;
-    const uint8_t rangeOut = settings->simplex_high - settings->simplex_low;
+    const uint8_t rangeOut = (settings->heightmapHigh - settings->heightmapLow) * 2;
 
     for (uint32_t y = 0; y < _heightMapData.height; y++)
     {
@@ -853,7 +901,8 @@ void MapGenGenerateFromHeightmap(MapGenSettings* settings)
 
             // Read value from bitmap, and convert its range
             uint8_t value = dest[x + y * _heightMapData.width];
-            value = static_cast<uint8_t>(static_cast<float>(value - minValue) / rangeIn * rangeOut) + settings->simplex_low;
+            value = static_cast<uint8_t>(static_cast<float>(value - minValue) / rangeIn * rangeOut)
+                + (settings->heightmapLow * 2);
             surfaceElement->BaseHeight = value;
 
             // Floor to even number
@@ -861,16 +910,20 @@ void MapGenGenerateFromHeightmap(MapGenSettings* settings)
             surfaceElement->BaseHeight *= 2;
             surfaceElement->ClearanceHeight = surfaceElement->BaseHeight;
 
+            // Set textures
+            surfaceElement->SetSurfaceObjectIndex(surfaceTextureId);
+            surfaceElement->SetEdgeObjectIndex(edgeTextureId);
+
             // Set water level
-            if (surfaceElement->BaseHeight < settings->water_level)
+            if (surfaceElement->BaseHeight < settings->waterLevel)
             {
-                surfaceElement->SetWaterHeight(settings->water_level * COORDS_Z_STEP);
+                surfaceElement->SetWaterHeight(settings->waterLevel * kCoordsZStep);
             }
         }
     }
 
-    // Smooth map
-    if (settings->smooth)
+    // Smooth tile edges
+    if (settings->smoothTileEdges)
     {
         // Keep smoothing the entire map until no tiles are changed anymore
         while (true)

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "../common.h"
 #include "../core/Identifier.hpp"
 #include "../interface/Window.h"
 
@@ -43,11 +42,17 @@ enum IntentAction
     INTENT_ACTION_UPDATE_CASH,
     INTENT_ACTION_UPDATE_BANNER,
     INTENT_ACTION_UPDATE_RESEARCH,
-    INTENT_ACTION_TRACK_DESIGN_REMOVE_PROVISIONAL,
-    INTENT_ACTION_TRACK_DESIGN_RESTORE_PROVISIONAL,
+    INTENT_ACTION_UPDATE_VEHICLE_SOUNDS,
     INTENT_ACTION_SET_MAP_TOOLTIP,
     INTENT_ACTION_NEW_SCENERY,
     INTENT_ACTION_TILE_MODIFY,
+    INTENT_ACTION_PROGRESS_OPEN,
+    INTENT_ACTION_PROGRESS_SET,
+    INTENT_ACTION_PROGRESS_CLOSE,
+    INTENT_ACTION_REMOVE_PROVISIONAL_ELEMENTS,
+    INTENT_ACTION_RESTORE_PROVISIONAL_ELEMENTS,
+    INTENT_ACTION_REMOVE_PROVISIONAL_FOOTPATH,
+    INTENT_ACTION_REMOVE_PROVISIONAL_TRACK_PIECE,
 
     INTENT_ACTION_NULL = 255,
 };
@@ -125,4 +130,7 @@ enum
     INTENT_EXTRA_BANNER_INDEX,
     INTENT_EXTRA_FORMATTER,
     INTENT_EXTRA_SCENERY_GROUP_ENTRY_INDEX,
+    INTENT_EXTRA_PROGRESS_OFFSET,
+    INTENT_EXTRA_PROGRESS_TOTAL,
+    INTENT_EXTRA_STRING_ID,
 };

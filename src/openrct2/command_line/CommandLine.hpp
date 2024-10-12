@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../common.h"
+#include <cstdint>
 
 /**
  * Class for enumerating and retrieving values for a set of command line arguments.
@@ -89,29 +89,23 @@ enum
 
 constexpr char NAC = '\0';
 
-#define ExampleTableEnd                                                                                                        \
-    {                                                                                                                          \
-        nullptr, nullptr                                                                                                       \
-    }
-#define OptionTableEnd                                                                                                         \
-    {                                                                                                                          \
-        UINT8_MAX, nullptr, NAC, nullptr, nullptr                                                                              \
-    }
-#define CommandTableEnd                                                                                                        \
-    {                                                                                                                          \
-        nullptr, nullptr, nullptr, nullptr, nullptr                                                                            \
-    }
+constexpr CommandLineExample kExampleTableEnd = CommandLineExample{ nullptr, nullptr };
+constexpr CommandLineOptionDefinition kOptionTableEnd = CommandLineOptionDefinition{ UINT8_MAX, nullptr, NAC, nullptr,
+                                                                                     nullptr };
+constexpr CommandLineCommand kCommandTableEnd = CommandLineCommand{ nullptr, nullptr, nullptr, nullptr, nullptr };
 
-#define DefineCommand(name, params, options, func)                                                                             \
-    {                                                                                                                          \
-        name, params, options, nullptr, func                                                                                   \
-    }
-#define DefineSubCommand(name, subcommandtable)                                                                                \
-    {                                                                                                                          \
-        name, "", nullptr, subcommandtable, nullptr                                                                            \
-    }
+consteval CommandLineCommand DefineCommand(
+    const char* name, const char* params, const CommandLineOptionDefinition* options, const CommandLineFunc func)
+{
+    return CommandLineCommand{ name, params, options, nullptr, func };
+}
 
-namespace CommandLine
+consteval CommandLineCommand DefineSubCommand(const char* name, const CommandLineCommand* subcommandtable)
+{
+    return CommandLineCommand{ name, "", nullptr, subcommandtable, nullptr };
+}
+
+namespace OpenRCT2::CommandLine
 {
     extern const CommandLineCommand RootCommands[];
     extern const CommandLineCommand ScreenshotCommands[];
@@ -126,4 +120,4 @@ namespace CommandLine
 
     exitcode_t HandleCommandConvert(CommandLineArgEnumerator* enumerator);
     exitcode_t HandleCommandUri(CommandLineArgEnumerator* enumerator);
-} // namespace CommandLine
+} // namespace OpenRCT2::CommandLine

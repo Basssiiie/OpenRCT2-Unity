@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,6 +11,7 @@
 
 #    include "Platform.h"
 
+#    include "../Diagnostic.h"
 #    include "../core/Guard.hpp"
 #    include "../localisation/Language.h"
 
@@ -31,7 +32,7 @@ jmethodID AndroidClassLoader::_findClassMethod;
 // available until after JNI_OnLoad is called.
 static std::shared_ptr<AndroidClassLoader> acl;
 
-namespace Platform
+namespace OpenRCT2::Platform
 {
     std::string GetFolderPath(SPECIAL_FOLDER folder)
     {
@@ -151,6 +152,16 @@ namespace Platform
         return {};
     }
 
+    u8string GetRCT1SteamDir()
+    {
+        return {};
+    }
+
+    u8string GetRCT2SteamDir()
+    {
+        return {};
+    }
+
 #    ifndef NO_TTF
     std::string GetFontPath(const TTFFontDescriptor& font)
     {
@@ -181,7 +192,17 @@ namespace Platform
             AndroidClassLoader::_classLoader, AndroidClassLoader::_findClassMethod,
             env->NewStringUTF(std::string(name).c_str())));
     }
-} // namespace Platform
+
+    std::vector<std::string_view> GetSearchablePathsRCT1()
+    {
+        return { "/sdcard/rct1" };
+    }
+
+    std::vector<std::string_view> GetSearchablePathsRCT2()
+    {
+        return { "/sdcard/rct2" };
+    }
+} // namespace OpenRCT2::Platform
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* pjvm, void* reserved)
 {

@@ -97,6 +97,9 @@ STR_0091    :Okänd åktur (59)
 STR_0092    :Induktionsberg- och dalbana
 STR_0093    :Hybridberg- och dalbana
 STR_0094    :Enkelspårig berg- och dalbana
+STR_0095    :Alpin berg- och dalbana
+STR_0096    :Klassisk berg- och dalbana i trä
+STR_0097    :Klassisk stående berg- och dalbana
 STR_0512    :En kompakt berg- och dalbana med en spiralvriden kedjelift och mjuka, vridna stup.
 STR_0513    :En ringlande berg- och dalbana där passagerarna åker stående
 STR_0514    :Tåg hängande under banan som svingar ut åt sidan i kurvorna
@@ -161,7 +164,7 @@ STR_0578    :Vagnar åker runt en bana omgiven av ringar utför branta nedförsb
 STR_0579    :En stillsam runda minigolf
 STR_0580    :En gigantisk berg- och dalbana i stål som kan ge mjuka fall och höjder på över 100 meter
 STR_0581    :En ring med säten dras upp till toppen av ett högt torn medan det sakta roterar, för att sedan falla fritt och stoppas mjukt vid botten med hjälp av magnetbromsar
-STR_0582    :Gäster styr svävarfarkoster
+STR_0582    :Gästerna åker i svävare som de styr fritt
 STR_0583    :Byggnad med förvrängda rum och vinklade korridorer för att förvilla människorna som går igenom den
 STR_0584    :Speciella cyklar som passagerarna själva trampar fram längs en stålskensbana
 STR_0585    :Passagerarna sitter i par med ansiktena antingen bakåt eller framåt då de åker genom loopar och skruvar med snabba omkastningar
@@ -177,13 +180,16 @@ STR_0599    :En kompakt berg- och dalbana med individuella vagnar och mjukt vrid
 STR_0600    :Motordrivna gruvtåg rusar längs en mjuk och kurvig spårlayout
 STR_0602    :Berg- och dalbanetågen accelereras ut från stationen med induktionsmotorer för att fara genom tvinnande inversioner
 STR_0603    :En berg- och dalbana i trästil med stålspår, som möjliggör branta stup och inversioner
-STR_0604    :Passagerare åker i singelled längs en stålbalk, som tar dem genom tighta inversioner och krökar.
+STR_0604    :Passagerare åker i singelled längs en stålbalk, som tar dem genom tighta inversioner och krökar
+STR_0605    :Passagerare åker släde nerför ett slingrande stålspår och bromsar för att reglera hastigheten
+STR_0606    :Den här berg- och dalbanan i trä är i äldre stil. Den är snabb, tuff, högljudd och ger en känsla av att förlora kontrollen. Dessutom spenderar man mycket tid flygandes över topparna
+STR_0607    :En intensiv berg- och dalbana i äldre stil där passagerarna åker stående
 STR_0767    :Besökare {INT32}
 STR_0768    :Vaktmästare {INT32}
 STR_0769    :Mekaniker {INT32}
 STR_0770    :Säkerhetsvakt {INT32}
 STR_0771    :Underhållare {INT32}
-STR_0777    :Namnlös park{POP16}{POP16}
+STR_0777    :Namnlös park
 STR_0778    :Skylt
 STR_0779    :1
 STR_0780    :2
@@ -274,8 +280,8 @@ STR_0883    :Spara spel
 STR_0884    :Ladda landskap
 STR_0885    :Spara landskap
 STR_0887    :Avsluta scenarioredigeraren
-STR_0888    :Avsluta åktursdesignern
-STR_0889    :Avsluta spårdesignredigeraren
+STR_0888    :Avsluta bandesignern
+STR_0889    :Avsluta bandesignhanterare
 STR_0891    :Skärmdump
 STR_0892    :Skärmdumpen sparades som ’{STRINGID}’
 STR_0893    :Skärmdumpen misslyckades!
@@ -1734,12 +1740,12 @@ STR_2382    :Land
 STR_2383    :Vatten
 STR_2384    :{WINDOW_COLOUR_2}Ditt uppdrag:
 STR_2385    :{BLACK}Inget
-STR_2386    :{BLACK}Att ha minst {COMMA16} besökare i parken tills {MONTHYEAR}, med ett parkomdöme över 600
+STR_2386    :{BLACK}Att ha minst {COMMA32} besökare i parken tills {MONTHYEAR}, med ett parkomdöme över 600
 STR_2387    :{BLACK}Att uppnå ett parkvärde över {POP16}{POP16}{CURRENCY} tills {PUSH16}{PUSH16}{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
 STR_2388    :{BLACK}Ha kul!
 STR_2389    :{BLACK}Bygg den bästa {STRINGID} du kan!
 STR_2390    :{BLACK}Att ha tio olika sorters berg- och dalbanor i din park, alla med en glädjenivå över 6.00
-STR_2391    :{BLACK}Att ha minst {COMMA16} besökare i din park. Du får aldrig låta parkomdömet gå under 700!
+STR_2391    :{BLACK}Att ha minst {COMMA32} besökare i din park. Du får aldrig låta parkomdömet gå under 700!
 STR_2392    :{BLACK}Att få en månadsinkomst från åktursbiljetter på minst {POP16}{POP16}{CURRENCY}
 STR_2393    :{BLACK}Att ha tio olika sorters berg- och dalbanor i din park, alla ska vara längre än {LENGTH}, och med en glädjenivå över 7.00
 STR_2394    :{BLACK}Att bygga klart alla fem delvis byggda berg- och dalbanor i parken, designade så att de alla får en glädjenivå över {POP16}{POP16}{COMMA2DP32}
@@ -1794,7 +1800,6 @@ STR_2450    :{YELLOW}Din kampanj för parken har slutförts
 STR_2451    :{YELLOW}Din kampanj för {STRINGID} har slutförts
 STR_2452    :{WINDOW_COLOUR_2}Pengar (utan lån): {BLACK}{CURRENCY2DP}
 STR_2453    :{WINDOW_COLOUR_2}Pengar (utan lån): {RED}{CURRENCY2DP}
-STR_2454    :{BLACK}{CURRENCY2DP} –
 STR_2457    :Visa finansiella konton
 STR_2458    :Visa graf med pengar (utan lån) över tid
 STR_2459    :Visa graf med parkvärde över tid
@@ -2095,39 +2100,6 @@ STR_3008    :{PEARLAQUA}ABC
 STR_3009    :{PALESILVER}ABC
 STR_3010    :Kan inte ladda fil…
 STR_3011    :Filen innehåller ogiltiga data
-STR_3012    :Radiobilstema
-STR_3013    :Tivolitema
-STR_3014    :Romerskt tema
-STR_3015    :Pagod-tema
-STR_3016    :Marstema
-STR_3017    :Djungeltema
-STR_3018    :Egyptiskt tema
-STR_3019    :Underlandstema
-STR_3020    :
-STR_3021    :Rymdtema
-STR_3022    :Skräcktema
-STR_3023    :Technotema
-STR_3024    :Stillsamt tema
-STR_3025    :Sommartider
-STR_3026    :Vattentema
-STR_3027    :Vilda västern-tema
-STR_3028    :Dinosaurietema
-STR_3029    :Rocktema
-STR_3030    :Glade Chapplies piano
-STR_3031    :Fantasitema
-STR_3032    :Rocktema 2
-STR_3033    :Istema
-STR_3034    :Snötema
-STR_3035    :Egen musik 1
-STR_3036    :Egen musik 2
-STR_3037    :Medeltidstema
-STR_3038    :Stadstema
-STR_3039    :Orgeltema
-STR_3040    :Mekaniktema
-STR_3041    :Modernt tema
-STR_3042    :Pirattema
-STR_3043    :Rocktema 3
-STR_3044    :Godislandstema
 STR_3045    :Välj musikstil som ska spelas{NEWLINE}Teman på sånger och dekorationer kan blandas utan problem
 STR_3047    :Lokala myndigheter har förbjudit rivning och modifikation av denna åktur
 STR_3048    :Kampanjer är förbjudna av lokala myndigheter
@@ -2355,7 +2327,7 @@ STR_3305    :{WINDOW_COLOUR_2}Månadsinkomst:
 STR_3306    :{WINDOW_COLOUR_2}Månadsvinst:
 STR_3307    :{WINDOW_COLOUR_2}Minimilängd:
 STR_3308    :{WINDOW_COLOUR_2}Glädjenivå:
-STR_3309    :{WINDOW_COLOUR_2}{COMMA16}
+STR_3309    :{WINDOW_COLOUR_2}{COMMA32}
 STR_3310    :{WINDOW_COLOUR_2}{LENGTH}
 STR_3311    :{WINDOW_COLOUR_2}{COMMA2DP32}
 STR_3312    :{WINDOW_COLOUR_2}Åkturer och attraktioner som måste bevaras:
@@ -2378,8 +2350,8 @@ STR_3331    :Vägen från parkentrén till kartkanten är antingen inte komplett
 STR_3332    :Parkentrén är åt fel håll eller har ingen väg som leder till kartkanten
 STR_3333    :Exportera egendefinierade objekt med sparade spel
 STR_3334    :Välj om egendefinierade objekt (extra objekt som inte följer med basspelet) ska sparas i sparade spel och scenarion, vilket låter spelare importera dessa data
-STR_3335    :Åktursdesigner – Välj åkturstyp och fordon
-STR_3336    :Bandesign-hanterare – Välj åkturstyp
+STR_3335    :Bandesigner – Välj åkturstyp och fordon
+STR_3336    :Bandesignhanterare – Välj åkturstyp
 STR_3338    :{BLACK}Egendesignad layout
 STR_3339    :{BLACK}{COMMA16} design tillgänglig, eller egendesignad layout
 STR_3340    :{BLACK}{COMMA16} designer tillgängliga, eller egendesignad layout
@@ -2501,9 +2473,9 @@ STR_5196    :Landrättigheter
 STR_5197    :Dekorationer
 STR_5198    :Gångväg
 STR_5199    :Åkturkonstruktion
-STR_5200    :Spårdesignplacering
+STR_5200    :Bandesignplacering
 STR_5201    :Ny åktur
-STR_5202    :Spårdesignval
+STR_5202    :Bandesignval
 STR_5203    :Åkturer
 STR_5204    :Åkturslista
 STR_5205    :Besökare
@@ -2516,8 +2488,8 @@ STR_5211    :Forskningslista
 STR_5212    :Dekorationsinställningar
 STR_5213    :Målinställningar
 STR_5214    :Kartgenerator
-STR_5215    :Spårdesignfönstret
-STR_5216    :Spårdesignlistan
+STR_5215    :Bandesignfönstret
+STR_5216    :Bandesignlistan
 STR_5217    :Fusk
 STR_5218    :Teman
 STR_5219    :Inställningar
@@ -2810,7 +2782,7 @@ STR_5608    :BH
 STR_5609    :CH
 STR_5610    :Ta bort den valda rutan eller elementet. Detta kommer tvinga en borttagning, inga pengar kommer ges eller användas. Använd med försiktighet.
 STR_5611    :G
-STR_5612    :Spökflagga
+STR_5612    :Skissflagga
 STR_5613    :B
 STR_5614    :Trasig flagga
 STR_5615    :L
@@ -2918,7 +2890,7 @@ STR_5755    :Fel version av OpenRCT2 (servern använder {STRING})
 STR_5756    :Fel lösenord
 STR_5757    :Servern är full
 STR_5758    :{OUTLINE}{GREEN}{STRING} har anslutit till spelet
-STR_5759    :Laddar ner banan… ({INT32} av {INT32}) KiB
+STR_5759    :Laddar ner banan…
 STR_5760    :Hong Kong-dollar (HK$)
 STR_5761    :New Taiwan-dollar (NT$)
 STR_5762    :Kinesiska Yuan (CN¥)
@@ -3114,7 +3086,7 @@ STR_5957    :Nordväst
 STR_5958    :Nordost
 STR_5959    :Sydost
 STR_5960    :Placering i väderstreck:
-STR_5961    :Entré-index: {BLACK}{COMMA16}
+STR_5961    :Noteringsindex: {BLACK}{COMMA16}
 STR_5962    :Kollisionsdetektering:
 STR_5963    :Upphöjda hörn:
 STR_5964    :Diagonal
@@ -3464,7 +3436,6 @@ STR_6356    :Sätter ut ankor om parken innehåller vatten
 STR_6357    :Tar bort alla ankor från kartan
 STR_6358    :Sida {UINT16}
 STR_6359    :{POP16}{POP16}Sida {UINT16}
-STR_6360    :{BLACK}{COMMA32}
 STR_6361    :Aktivera ljuseffekter på åkturer (experiment)
 STR_6362    :Om aktiverad, lyses vagnar på spår upp om natten.
 STR_6363    :Text kopierad till urklipp
@@ -3482,7 +3453,7 @@ STR_6374    :F
 STR_6375    :Okänd åktur
 STR_6376    :{WINDOW_COLOUR_2}Fordon:{NEWLINE}{BLACK}{STRINGID} för {STRINGID}
 STR_6377    :{WINDOW_COLOUR_2}Typ: {BLACK}{STRINGID} för {STRINGID}
-STR_6378    :Mottar objektlista: {INT32} / {INT32}
+STR_6378    :Mottar objektlista:
 STR_6379    :Mottog ogiltiga data
 STR_6380    :Uppdatering tillgänglig!
 STR_6381    :Gå med i OpenRCT2 Discord!
@@ -3597,6 +3568,168 @@ STR_6490    :Varning: Halvkompatibel parkversion
 STR_6491    :Denna park sparades i en nyare version av OpenRCT2. Parken är v{INT32} och kräver åtminstone v{INT32}.
 STR_6492    :Denna park sparades i en äldre version av OpenRCT2, och kan inte öppnas med denna version av OpenRCT2. Parken är v{INT32}.
 STR_6493    :Denna park sparades i en nyare version av OpenRCT2, viss data kan gå förlorad. Parken är v{INT32} och kräver åtminstone v{INT32}.
+STR_6494    :Gruppera efter färdtyp
+STR_6495    :Gruppera turer efter färdtyp istället för att visa varje fordon separat.
+STR_6496    :{WINDOW_COLOUR_2}{STRINGID}
+STR_6497    :Klicka på en ruta för att visa dess rutelement.{NEWLINE}Ctrl + klicka på ett rutelement för att välja det direkt.
+STR_6498    :Aktivera för att behålla kvadratisk kartform.
+STR_6499    :Fordonstyp stöds inte av spårdesignformatet
+STR_6500    :Spårelement stöds inte av spårdesignformatet
+STR_6501    :Slumpvis färg
+STR_6502    :Ange ett värde mellan {COMMA16} och {COMMA16}
+STR_6503    :Minst ett stationsobjekt måste väljas
+STR_6504    :Minst en terrängyta måste väljas
+STR_6505    :Minst en terrängkant måste väljas
+STR_6506    :Stor halvkorkskruv (vänster)
+STR_6507    :Stor halvkorkskruv (höger)
+STR_6508    :Medium halvloop (vänster)
+STR_6509    :Medium halvloop (höger)
+STR_6510    :Noll-G roll (vänster)
+STR_6511    :Noll-G roll (höger)
+STR_6512    :Stor noll-G roll (vänster)
+STR_6513    :Stor noll-G roll (höger)
+STR_6514    :Ogiltig höjd!
+STR_6515    :{BLACK}RollerCoaster Tycoon 1 är inte länkad. Reservbilder används.
+STR_6516    :Ett eller flera objekt som läggs till kräver RollerCoaster Tycoon 1 länkad för korrekt visning. Reservbilder används.
+STR_6517    :Ett eller flera objekt i den här parken kräver RollerCoaster Tycoon 1 länkad för korrekt visning. Reservbilder används.
+STR_6518    :{BLACK}Håll muspekaren över ett scenario för att se dess beskrivning och mål. Klicka för att börja spela.
+STR_6519    :Extra
+STR_6520    :Resurspaket
+STR_6521    :Låg prioritet
+STR_6522    :Hög prioritet
+STR_6523    :Minska prioriteten för det valda resurspaketet.
+STR_6524    :Öka prioriteten för det valda resurspaketet.
+STR_6525    :Ladda om alla resurspaket i spelet med resurspaket aktiverade.
+STR_6526    :(grundläggande grafik, musik och ljudeffekter)
+STR_6527    :Tävlingar
+STR_6528    :Ogiltiga spårparametrar!
+STR_6529    :Ogiltig färgschemaparameter!
+STR_6530    :User Created Expansion Set
+STR_6531    :Tidsmaskinen
+STR_6532    :Katys drömvärld
+STR_6533    :{WINDOW_COLOUR_2}Spänningsfaktor: {BLACK}-{COMMA16}%
+STR_6534    :{WINDOW_COLOUR_2}Intensitetsfaktor: {BLACK}-{COMMA16} %
+STR_6535    :{WINDOW_COLOUR_2}Illamåendefaktor: {BLACK}-{COMMA16}%
+STR_6536    :Denna park sparades i en senare version av OpenRCT2. Parken sparades i v{INT32}, du använder för närvarande v{INT32}.
+STR_6537    :Tillåt normala gångvägar som köer
+STR_6538    :Visar normala gångvägar i kölistan i gångvägsfönstret
+STR_6539    :Bromsen stängd
+STR_6540    :{WINDOW_COLOUR_2}Särskilt tack till följande företag för att de tillåter oss att använda deras likhet:
+STR_6541    :{WINDOW_COLOUR_2}Rocky Mountain Construction Group, Josef Wiegand GmbH & Co. KG
+STR_6542    :Medverkande
+STR_6543    :Medverkande …
+STR_6544    :Lånet kan inte vara negativt!
+STR_6545    :Använd RCT1-ränteberäkning
+STR_6546    :Använd RollerCoaster Tycoon 1:s ränteberäkningsalgoritm, som använder en fast procentsats på cirka 1,33 %.
+STR_6547    :Allt landskap
+STR_6548    :Visa räcken vid korsning
+STR_6549    :Kompatibilitetsobjekt kan inte väljas!
+STR_6550    :Denna post ingår för bakåtkompatibilitet med gamla eller skadade objekt. Den kan inte väljas, bara avmarkeras.
+STR_6551    :Armégrönt
+STR_6552    :Honungsmelon
+STR_6553    :Gulbrun
+STR_6554    :Rödbrun
+STR_6555    :Korallrosa
+STR_6556    :Skogsgrön
+STR_6557    :Chartreusegrön
+STR_6558    :Jaktgrön
+STR_6559    :Celadongrön
+STR_6560    :Limegrön
+STR_6561    :Sepia
+STR_6562    :Persikorosa
+STR_6563    :Ljus lavendel
+STR_6564    :Blågrön
+STR_6565    :Havsskumsgrön
+STR_6566    :Violett
+STR_6567    :Lavendel
+STR_6568    :Pastellorange
+STR_6569    :Djupt vatten
+STR_6570    :Pastellrosa
+STR_6571    :Umbra
+STR_6572    :Beige
+STR_6573    :Osynlig
+STR_6574    :Tomhet
+STR_6575    :Tillåt speciella färgscheman
+STR_6576    :Lägger till speciella färger till färgpaletten
+STR_6577    :Blockbromshastighet
+STR_6578    :Ställ in hastighetsgräns för blockbromsar. I blockområdesläge kopplas intilliggande bromsar med en lägre hastighet till blockbromsen.
+STR_6579    :Blockbromsar ställs in på standardhastighet när de sparas som bandesign
+STR_6580    :Återställa
+STR_6581    :Är du säker på att du vill återställa alla kortkommandon på den här fliken?
+STR_6582    :Öppna fönstret för kortkommandon
+STR_6583    :{WINDOW_COLOUR_2}Bakvända tåg
+STR_6584    :Välj att köra tåg baklänges
+STR_6585    :Ändringar kan inte göras…
+STR_6586    :OpenRCT2
+STR_6587    :OpenRCT2:s omslagstema är ett verk av Allister Brimble,{NEWLINE}licensierat under CC BY-SA 4.0.
+STR_6588    :Tack till Herman Riddering för att vi fick spela in 35er Voigt.
+STR_6589    :Visa fönsterknappar till vänster
+STR_6590    :Visa fönsterknapparna (t.ex. för att stänga fönstret) till vänster om titelraden istället för till höger.
+STR_6591    :Den här personen reparerar just nu en åktur och kan därför inte avskedas.
+STR_6592    :Den här personen inspekterar just nu en åktur och kan därför inte avskedas.
+STR_6593    :Ta bort parkstängsel
+STR_6594    :Rutinspekteraren: Växla vägglutning
+STR_6595    :{WINDOW_COLOUR_2}Författare: {BLACK}{STRING}
+STR_6596    :{WINDOW_COLOUR_2}Författare: {BLACK}{STRING}
+STR_6597    :Ogiltig parameter
+STR_6598    :Värde utanför intervallet
+STR_6599    :Skisselementet hittades inte
+STR_6600    :Ballongen hittades inte
+STR_6601    :Personalen hittades inte
+STR_6602    :Åkturen hittades inte
+STR_6603    :Attraktionsobjektet hittades inte
+STR_6604    :Spelaren hittades inte
+STR_6605    :Entréelementet hittades inte
+STR_6606    :Ytelementet hittades inte
+STR_6607    :Rutelelementet hittades inte
+STR_6608    :Spårelementet hittades inte
+STR_6609    :Spårblocket hittades inte
+STR_6610    :Gångvägselementet hittades inte
+STR_6611    :Väggelementet hittades inte
+STR_6612    :Bannerelementet hittades inte
+STR_6613    :Ladda om objektet
+STR_6614    :Kan inte ändra entréavgiften till parken
+STR_6615    :Spår på denna ruta behöver vatten
+STR_6616    :Åtgärden ogiltig för den personaltypen
+STR_6617    :Kan inte byta rutelementet med sig självt
+STR_6618    :Kan inte begränsa eller avbegränsa objekt...
+STR_6619    :Objekttypen kan inte begränsas!
+STR_6620    :Objektet hittades inte!
+STR_6621    :Begränsa
+STR_6622    :Begränsa objektet till scenarieredigerare och sandlådeläge
+STR_6623    :Skriv "help" för en lista över tillgängliga kommandon. Skriv "hide" för att dölja konsolen.
+STR_6624    :Rutinspekteraren: Sortera element
+STR_6625    :Ogiltig färg
+STR_6626    :Animationen är spegelvänd
+STR_6627    :Spårhastigheten för hög!
+STR_6628    :Kan endast placeras på gångvägskanter!
+STR_6629    :Centrera verktygsfältsknapparna horisontellt
+STR_6630    :Denna inställning kommer att rikta in verktygsfältsknapparna horisontellt i mitten av skärmen. Det traditionella sättet att justera dem är i det vänstra och högra hörnet.
+STR_6631    :Laddar…
+STR_6632    :Kontrollerar objektfiler...
+STR_6633    :Kontrollerar scenariefiler...
+STR_6634    :Kontrollerar spårdesignfiler...
+STR_6635    :Kontrollerar resurspaket...
+STR_6636    :Kontrollerar titelsekvenser...
+STR_6637    :Laddar titelsekvens...
+STR_6638    :Förstorat användargränssnitt
+STR_6639    :Modifierar gränssnittet för att vara mer lämpligt för touchanvändning
+STR_6640    :Redigera resurspaket...
+STR_6641    :Laddar/förloppsfönster
+STR_6642    :{STRING} ({COMMA32} / {COMMA32})
+STR_6643    :{STRING} ({COMMA32} / {COMMA32} KiB)
+STR_6644    :Förbättringar för touchanvändning
+STR_6645    :Gör vissa element i gränssnittet större så att de är lättare att klicka eller trycka på.
+STR_6646    :Skaparen: {STRING}
+STR_6647    :Skaparna: {STRING}
+STR_6648    :Laddar plugin-motorn…
+STR_6649    :Laddar scenariet...
+STR_6650    :Laddar sparade spelet...
+STR_6651    :{STRING} ({COMMA32}%)
+STR_6652    :Felmeddelande
+STR_6653    :Alla källor visas
+STR_6654    :Visar {POP16}{UINT16} källor
+STR_6655    :Endast ‘{POP16}{STRINGID}’
 
 #############
 # Scenarion #
@@ -4189,87 +4322,87 @@ STR_DTLS    :Bygg de Six Flags-attraktionerna som saknas eller skapa dina egna f
 ## Wacky Worlds Scenarios
 ###############################################################################
 <Africa - African Diamond Mine>
-STR_SCNR    :Afrika – Afrikansk diamantgruva
+STR_SCNR    :Afrikas gruvor
 STR_PARK    :Afrikas gruvor
 STR_DTLS    :Du har hittat en diamant efter att ha ärvt en övergiven diamantgruva. Du beslutar dig för att satsa pengarna på ett storslaget nöjesfält.
 
 <Africa - Oasis>
-STR_SCNR    :Afrika – Oas
+STR_SCNR    :Hägring och fägring
 STR_PARK    :Hägring och fägring
 STR_DTLS    :Man har upptäckt en ökenoas som skulle passa utmärkt till ett nöjesfält. Transportmöjligheter till oasen har ordnats redan.
 
 <Africa - Victoria Falls>
-STR_SCNR    :Afrika – Victoriafallen
+STR_SCNR    :Över kanten
 STR_PARK    :Över kanten
 STR_DTLS    :En nybyggd damm ger tillräckligt med billig vattenkraft för att kunna driva ett nöjesfält. Du måste dock uppnå ett högt parkvärde för att kunna betala tillbaka lånet för dammen.
 
 <Antarctic - Ecological Salvage>
-STR_SCNR    :Antarktis – Miljöräddning
+STR_SCNR    :Iskallt äventyr
 STR_PARK    :Iskallt äventyr
 STR_DTLS    :En miljöorganisation har bett dig att bygga om ett gammalt, miljöfarligt oljeraffinaderi till en toppmodern turistattraktion. Marken är billig, men låneräntan är hög. Du kan dock sälja de gamla byggnaderna.
 
 <Asia - Great Wall of China Tourism Enhancement>
-STR_SCNR    :Asien – Turistsatsning vid Kinesiska muren
+STR_SCNR    :Kinesiska muren
 STR_PARK    :Kinesiska muren
 STR_DTLS    :Myndigheterna har beslutat att stödja turismen kring Kinesiska muren genom att bygga ett nöjesfält i dess närhet. Pengar är inget hinder!
 
 <Asia - Japanese Coastal Reclaim>
-STR_SCNR    :Asien – Japansk kustremsa
+STR_SCNR    :Okinawa-kusten
 STR_PARK    :Okinawa-kusten
 STR_DTLS    :Ett nöjesfält behöver mer plats. Din enda möjlighet är att ta ett lån och bygga ut mot havet. Höjdrestriktioner råder på grund av jordbävningsfaran.
 
 <Asia - Maharaja Palace>
-STR_SCNR    :Asien – Maharadjans palats
+STR_SCNR    :Maharadjaparken
 STR_PARK    :Maharadjaparken
 STR_DTLS    :Du har fått i uppdrag av maharadjan att underhålla lokalbefolkningen. Inhämta inspiration från maharadjans palats när du bygger nöjesfältet.
 
 <Australasia - Ayers Rock>
-STR_SCNR    :Australasien – Ayers Rock
+STR_SCNR    :Ayers äventyr
 STR_PARK    :Ayers äventyr
 STR_DTLS    :Du hjälper urbefolkningen att bygga ett nöjesfält som en del av ett kulturprogram. Du måste locka tillräckligt med besökare för att kunna sprida urbefolkningens kultur.
 
 <Australasia - Fun at the Beach>
-STR_SCNR    :Australasien – Fun at the Beach
+STR_SCNR    :Strandhugg
 STR_PARK    :Strandhugg
 STR_DTLS    :En lokal affärsmans vattenpark har gått i konkurs. Du driver redan en liten välfungerande park, och har köpt upp konkursboet. Utveckla det hela till en stor gemensam park.
 
 <Europe - European Cultural Festival>
-STR_SCNR    :Europa – Europeisk kulturfestival
+STR_SCNR    :Europeisk festival
 STR_PARK    :Europeisk festival
 STR_DTLS    :Du har blivit erbjuden att ta över en europeisk turistattraktion, men måste öka besöksfrekvensen för att kunna betala tillbaka ett EU-lån innan det europeiska parlamentet tar sommarlov.
 
 <Europe - Renovation>
-STR_SCNR    :Europa – Renovering
+STR_SCNR    :Ur askan
 STR_PARK    :Ur askan
 STR_DTLS    :Ett gammalt nöjesfält har förfallit. Du har beviljats ett EU-lån för att kunna återställa det nedgångna området till sin forna prakt. Du måste renovera nöjesfältet och betala tillbaka lånet.
 
 <N. America - Extreme Hawaiian Island>
-STR_SCNR    :Nordamerika – Extrem Hawaii-ö
+STR_SCNR    :Wacky Waikiki
 STR_PARK    :Wacky Waikiki
 STR_DTLS    :Folket på Hawaii har tröttnat på att surfa och vill göra något mer spännande. Du måste bygga ett nöjesfält för att hålla dem på gott humör och bibehålla områdets attraktionskraft.
 
 <North America - Grand Canyon>
-STR_SCNR    :Nordamerika – Grand Canyon
+STR_SCNR    :Trubbel i Canyon
 STR_PARK    :Trubbel i Canyon
 STR_DTLS    :Du måste bygga ett nöjesfält på ett begränsat område på båda sidor om detta naturfenomen. Du har möjlighet att köpa upp angränsande land från urbefolkningen. Målet med bygget är att bibehålla den lokala befolkningssiffran.
 
 <North America - Rollercoaster Heaven>
-STR_SCNR    :Nordamerika – Rollercoaster Heaven
+STR_SCNR    :Rollercoaster Heaven
 STR_PARK    :Rollercoaster Heaven
 STR_DTLS    :Du är en framgångsrik affärsman som under ett sabbatsår beslutar dig för att förvandla en stadspark till ett ”Rollercoaster Heaven”, oavsett kostnad!
 
 <South America - Inca Lost City>
-STR_SCNR    :Sydamerika – Förlorad inka-stad
+STR_SCNR    :Grundare av Förlorade Staden
 STR_PARK    :Grundare av Förlorade Staden
 STR_DTLS    :Du måste öka de lokala turistintäkterna genom att bygga ett nöjesfält som passar omgivningen och håller sig inom höjdrestriktionerna.
 
 <South America - Rain Forest Plateau>
-STR_SCNR    :Sydamerika – Regnskogsplatå
+STR_SCNR    :Kul i regnskog
 STR_PARK    :Kul i regnskog
 STR_DTLS    :Utrymmet är begränsat i den utrotningshotade regnskogen. Du måste få plats med så mycket som möjligt i gläntan för att kunna erbjuda ett alternativ till den lokala timmerindustrin.
 
 <South America - Rio Carnival>
-STR_SCNR    :Sydamerika – Rio-karneval
+STR_SCNR    :Sockersöta stränder
 STR_PARK    :Sockersöta stränder
 STR_DTLS    :Du driver ett litet nöjesfält nära Rio, men banken kräver plötsligt betalning av ditt lån. Du måste öka dina intäkter snabbt för att kunna klara den uppkomna krisen.
 
@@ -4277,72 +4410,72 @@ STR_DTLS    :Du driver ett litet nöjesfält nära Rio, men banken kräver plöt
 ## Time Twister Scenarios
 ###############################################################################
 <Dark Age - Castle>
-STR_SCNR    :Medeltiden – Slott
+STR_SCNR    :Slott på klipporna
 STR_PARK    :Slott på klipporna
 STR_DTLS    :Medlemmarna i den lokala medeltidsföreningen tar sin hobby på allvar. De har bett dig konstruera en nöjespark med medeltidstema på det gamla slottets ägor.
 
 <Dark Age - Robin Hood>
-STR_SCNR    :Medeltiden – Robin Hood
+STR_SCNR    :Sherwoodskogen
 STR_PARK    :Sherwoodskogen
 STR_DTLS    :För att kunna stjäla mer från de rika och ge till de fattiga har du och dina män bestämt er för att bygga ett nöjesfält i Sherwoodskogen.
 
 <Future - First Encounters>
-STR_SCNR    :Framtid – Första kontakt
+STR_SCNR    :Utomjordisk extravagans
 STR_PARK    :Utomjordisk extravagans
 STR_DTLS    :Liv har påträffats på en främmande planet. Bygg en park med utomjordiskt tema för att tjäna pengar på folks nyväckta intresse.
 
 <Future - Future World>
-STR_SCNR    :Framtid – Framtidsvärld
+STR_SCNR    :Gemini City
 STR_PARK    :Gemini City
 STR_DTLS    :Realisera din innovativa och utopiska vision av framtiden. Bygg en futuristisk park med de allra senaste attraktionerna.
 
 <Mythological - Animatronic Film Set>
-STR_SCNR    :Mytologisk tid – Animatronisk filminspelning
+STR_SCNR    :Animatroniska äventyr
 STR_PARK    :Animatroniska äventyr
 STR_DTLS    :Du har fått i uppgift att driva och förbättra en existerande park som ligger på en gammal filminspelningsplats. Bygg en hyllning till filmhistoriens animationspionjärer som först gav liv åt förhistoriska vidunder på vita duken.
 
 <Mythological - Cradle of Civilisation>
-STR_SCNR    :Mytologisk tid – Civilisationens vagga
+STR_SCNR    :Mytologiskt arv
 STR_PARK    :Mytologiskt arv
 STR_DTLS    :Du äger en ö av högt arkeologiskt värde. Du har bestämt dig för att finansiera dess bevarande genom att konstruera ett nöjesfält med ett tema baserat på områdets rika mytologiska arv.
 
 <Prehistoric - After the Asteroid>
-STR_SCNR    :Förhistorisk tid – Efter asteroiden
+STR_SCNR    :Kraterkatastrof
 STR_PARK    :Kraterkatastrof
 STR_DTLS    :Du äger en dammig gammal meteorkrater. Som den entreprenör du är bestämmer du dig för att bygga ett nöjesfält med asteroidtema och omvandla den till synes värdelösa marken till en förmögenhet.
 
 <Prehistoric - Jurassic Safari>
-STR_SCNR    :Förhistorisk tid – Dinosauriesafari
+STR_SCNR    :Bergosaurier
 STR_PARK    :Bergosaurier
 STR_DTLS    :Du har fått i uppgift att bygga en park med Juratema. För att besökarna ska kunna uppleva den exotiska floran och faunan ordentligt krävs det att du bygger attraktioner som går ovanför och ned i dalen.
 
 <Prehistoric - Stone Age>
-STR_SCNR    :Förhistorisk tid – Stenålder
+STR_SCNR    :Stenigt värre
 STR_PARK    :Stenigt värre
 STR_DTLS    :Stoppa motorvägsbygget och bevara de urtida stencirklarna genom att bygga ett nöjesfält med stenålderstema som går med vinst. Det kan dock bli en smula problematiskt att locka besökare eftersom terrängen är aningen oländig.
 
 <Roaring Twenties - Prison Island>
-STR_SCNR    :Det glada tjugotalet – Fängelseön
+STR_SCNR    :Alcatraz
 STR_PARK    :Alcatraz
 STR_DTLS    :Den ökända fängelseön, vars befolkning en gång i tiden utgjordes av smugglare och gangsters, är till salu. Du har bestämt dig för att förvandla den till en förstklassig turistattraktion. Pengar är inget hinder.
 
 <Roaring Twenties - Schneider Cup>
-STR_SCNR    :Det glada tjugotalet – Schneidertrofén
+STR_SCNR    :Schneiders strand
 STR_PARK    :Schneiders strand
 STR_DTLS    :75-årsjubiléet av din faders vinst av Schneidertrofén inträffar om några år. Du vill hedra hans prestation genom att bygga en park baserad på den berömda sjöflygplanstävlingen.
 
 <Roaring Twenties - Skyscrapers>
-STR_SCNR    :Det glada tjugotalet – Skyskrapor
+STR_SCNR    :Metropolis
 STR_PARK    :Metropolis
 STR_DTLS    :Du äger en tom tomt i närheten av stadens lågt byggda kvarter. För att få ut så mycket vinst som möjligt av marken bygger du ett nöjesfält i form av en skyskrapa inspirerad av tjugotalets art déco-arkitektur.
 
 <Rock 'n' Roll - Flower Power>
-STR_SCNR    :Rock’n’roll – Flower power
+STR_SCNR    :Woodstock
 STR_PARK    :Woodstock
 STR_DTLS    :En stor årlig rockfestival äger rum på din mark. Bygg en hipp nöjespark i den fritänkande publikens smak.
 
 <Rock 'n' Roll - Rock 'n' Roll>
-STR_SCNR    :Rock’n’roll – Rock’n’roll
+STR_SCNR    :Rock’n’roll-revival
 STR_PARK    :Rock’n’roll-revival
 STR_DTLS    :Denna åldrande park har sett bättre dagar. Hjälp ägaren med att ge den ett retro-rock’n’roll-tema för att förvandla den till en framgångsrik park.
 

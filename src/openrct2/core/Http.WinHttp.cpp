@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -20,7 +20,7 @@
 #    include <windows.h>
 #    include <winhttp.h>
 
-namespace Http
+namespace OpenRCT2::Http
 {
     static constexpr char OPENRCT2_USER_AGENT[] = "OpenRCT2/" OPENRCT2_VERSION;
 
@@ -235,6 +235,6 @@ namespace Http
             throw;
         }
     }
-} // namespace Http
+} // namespace OpenRCT2::Http
 
 #endif

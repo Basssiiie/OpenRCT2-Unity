@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,16 +10,14 @@
 #include "TextComposition.h"
 
 #include "UiContext.h"
+#include "UiStringIds.h"
 #include "interface/InGameConsole.h"
 
 #include <SDL.h>
-#include <algorithm>
 #include <openrct2-ui/interface/Window.h>
-#include <openrct2/common.h>
 #include <openrct2/core/Memory.hpp>
 #include <openrct2/core/String.hpp>
-#include <openrct2/interface/InteractiveConsole.h>
-#include <openrct2/localisation/Localisation.h>
+#include <openrct2/core/UTF8.h>
 
 #ifdef __MACOSX__
 // macOS uses COMMAND rather than CTRL for many keyboard shortcuts
@@ -38,11 +36,7 @@ bool TextComposition::IsActive()
 
 TextInputSession* TextComposition::Start(u8string& buffer, size_t maxLength)
 {
-    // TODO This doesn't work, and position could be improved to where text entry is
-    SDL_Rect rect = { 10, 10, 100, 100 };
-    SDL_SetTextInputRect(&rect);
     SDL_StartTextInput();
-
     _session.Buffer = &buffer;
     _session.MaxLength = maxLength;
     _session.SelectionStart = buffer.size();
@@ -88,7 +82,7 @@ void TextComposition::HandleMessage(const SDL_Event* e)
                 Insert(e->text.text);
 
                 console.RefreshCaret(_session.SelectionStart);
-                WindowUpdateTextbox();
+                OpenRCT2::Ui::Windows::WindowUpdateTextbox();
             }
             break;
         case SDL_KEYDOWN:
@@ -131,7 +125,7 @@ void TextComposition::HandleMessage(const SDL_Event* e)
                         Delete();
 
                         console.RefreshCaret(_session.SelectionStart);
-                        WindowUpdateTextbox();
+                        OpenRCT2::Ui::Windows::WindowUpdateTextbox();
                     }
                     break;
                 case SDLK_HOME:
@@ -153,11 +147,11 @@ void TextComposition::HandleMessage(const SDL_Event* e)
                     _session.SelectionStart = startOffset;
                     Delete();
                     console.RefreshCaret(_session.SelectionStart);
-                    WindowUpdateTextbox();
+                    OpenRCT2::Ui::Windows::WindowUpdateTextbox();
                     break;
                 }
                 case SDLK_RETURN:
-                    WindowCancelTextbox();
+                    OpenRCT2::Ui::Windows::WindowCancelTextbox();
                     break;
                 case SDLK_LEFT:
                     if (modifier & KEYBOARD_PRIMARY_MODIFIER)
@@ -186,7 +180,7 @@ void TextComposition::HandleMessage(const SDL_Event* e)
                         utf8* text = SDL_GetClipboardText();
                         Insert(text);
                         SDL_free(text);
-                        WindowUpdateTextbox();
+                        OpenRCT2::Ui::Windows::WindowUpdateTextbox();
                     }
                     break;
             }
@@ -276,7 +270,8 @@ void TextComposition::CaretMoveToLeftToken()
             lastChar = selectionOffset;
             break;
         }
-
+        if (selectionOffset == 0)
+            break;
         ch--;
         selectionOffset--;
     }
@@ -295,12 +290,13 @@ void TextComposition::CaretMoveToLeftToken()
             break;
 
         lastChar = selectionOffset;
-
+        if (selectionOffset == 0)
+            break;
         ch--;
         selectionOffset--;
     }
 
-    _session.SelectionSize = std::max<size_t>(0, _session.SelectionSize - (selectionOffset - _session.SelectionStart));
+    _session.SelectionSize = _session.SelectionSize - (selectionOffset - _session.SelectionStart);
     _session.SelectionStart = selectionOffset == 0 ? 0 : lastChar;
 }
 

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,8 +9,7 @@
 
 #pragma once
 
-#include "../common.h"
-#include "../core/String.hpp"
+#include "../core/StringTypes.h"
 
 #include <memory>
 #include <string_view>
@@ -20,7 +19,7 @@ class Object;
 struct RCTObjectEntry;
 enum class ObjectType : uint8_t;
 
-namespace ObjectFactory
+namespace OpenRCT2::ObjectFactory
 {
     [[nodiscard]] std::unique_ptr<Object> CreateObjectFromLegacyFile(
         IObjectRepository& objectRepository, const utf8* path, bool loadImages);
@@ -32,4 +31,4 @@ namespace ObjectFactory
 
     [[nodiscard]] std::unique_ptr<Object> CreateObjectFromJsonFile(
         IObjectRepository& objectRepository, const std::string& path, bool loadImages);
-} // namespace ObjectFactory
+} // namespace OpenRCT2::ObjectFactory

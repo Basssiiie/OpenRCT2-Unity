@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,10 +11,11 @@
 
 #include <array>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <vector>
 
-namespace Crypt
+namespace OpenRCT2::Crypt
 {
     template<size_t TLength> class HashAlgorithm
     {
@@ -71,4 +72,4 @@ namespace Crypt
     {
         return CreateSHA256()->Update(data, dataLen)->Finish();
     }
-} // namespace Crypt
+} // namespace OpenRCT2::Crypt

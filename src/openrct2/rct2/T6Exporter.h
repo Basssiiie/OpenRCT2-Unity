@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "../common.h"
 #include "../ride/TrackDesign.h"
 
 #include <vector>
@@ -19,7 +18,7 @@ namespace OpenRCT2
     struct IStream;
 }
 
-namespace RCT2
+namespace OpenRCT2::RCT2
 {
     /**
      * Class to export RollerCoaster Tycoon 2 track designs (*.TD6).
@@ -27,12 +26,12 @@ namespace RCT2
     class T6Exporter final
     {
     public:
-        T6Exporter(TrackDesign* trackDesign);
+        T6Exporter(const TrackDesign& trackDesign);
 
         bool SaveTrack(const utf8* path);
         bool SaveTrack(OpenRCT2::IStream* stream);
 
     private:
-        TrackDesign* _trackDesign;
+        const TrackDesign& _trackDesign;
     };
-} // namespace RCT2
+} // namespace OpenRCT2::RCT2

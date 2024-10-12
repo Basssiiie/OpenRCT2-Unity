@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,9 +9,11 @@
 
 #include "Font.h"
 
-#include "../localisation/FormatCodes.h"
-#include "../localisation/Language.h"
+#include "../Diagnostic.h"
+#include "../core/UTF8.h"
+#include "../core/UnicodeChar.h"
 #include "../localisation/LocalisationService.h"
+#include "../rct12/CSChar.h"
 #include "../sprites.h"
 #include "../util/Util.h"
 #include "Drawing.h"
@@ -20,6 +22,8 @@
 #include <iterator>
 #include <limits>
 #include <unordered_map>
+
+using namespace OpenRCT2;
 
 static constexpr int32_t SpriteFontLineHeight[FontStyleCount] = {
     10,
@@ -33,6 +37,8 @@ static uint8_t _additionalSpriteFontCharacterWidth[FontStyleCount][SPR_G2_GLYPH_
 #ifndef NO_TTF
 TTFFontSetDescriptor* gCurrentTTFFontSet;
 #endif // NO_TTF
+
+constexpr uint8_t CS_SPRITE_FONT_OFFSET = 32;
 
 static const std::unordered_map<char32_t, int32_t> codepointOffsetMap = {
     { UnicodeChar::ae_uc, SPR_G2_AE_UPPER - SPR_CHAR_START },
@@ -187,12 +193,12 @@ static const std::unordered_map<char32_t, int32_t> codepointOffsetMap = {
     { UnicodeChar::cyrillic_e, SPR_G2_CYRILLIC_E_LOWER - SPR_CHAR_START },
     { UnicodeChar::cyrillic_yu, SPR_G2_CYRILLIC_YU_LOWER - SPR_CHAR_START },
     { UnicodeChar::cyrillic_ya, SPR_G2_CYRILLIC_YA_LOWER - SPR_CHAR_START },
-    { UnicodeChar::cyrillic_io, 235 - CS_SPRITE_FONT_OFFSET },                                   // Looks just like ë
-    { UnicodeChar::cyrillic_ukrainian_ie, SPR_G2_CYRILLIC_UKRAINIAN_IE_LOWER - SPR_CHAR_START }, // Looks just like ë
+    { UnicodeChar::cyrillic_io, 235 - CS_SPRITE_FONT_OFFSET }, // Looks just like ë
+    { UnicodeChar::cyrillic_ukrainian_ie, SPR_G2_CYRILLIC_UKRAINIAN_IE_LOWER - SPR_CHAR_START },
     { UnicodeChar::cyrillic_dze, 's' - CS_SPRITE_FONT_OFFSET },
     { UnicodeChar::cyrillic_dotted_i, 'i' - CS_SPRITE_FONT_OFFSET },
     { UnicodeChar::cyrillic_yi, 239 - CS_SPRITE_FONT_OFFSET }, // Looks just like ï
-    { UnicodeChar::cyrillic_je, 'j' - CS_SPRITE_FONT_OFFSET },
+    { UnicodeChar::cyrillic_je, SPR_G2_J - SPR_CHAR_START },
     { UnicodeChar::cyrillic_ghe_upturn_uc, SPR_G2_CYRILLIC_GHE_UPTURN_UPPER - SPR_CHAR_START },
     { UnicodeChar::cyrillic_ghe_upturn, SPR_G2_CYRILLIC_GHE_UPTURN_LOWER - SPR_CHAR_START },
 
@@ -280,7 +286,7 @@ void FontSpriteInitialiseCharacters()
     for (const auto& fontStyle : FontStyles)
     {
         int32_t glyphOffset = EnumValue(fontStyle) * SPR_G2_GLYPH_COUNT;
-        for (int32_t glyphIndex = 0; glyphIndex < SPR_G2_GLYPH_COUNT; glyphIndex++)
+        for (auto glyphIndex = 0u; glyphIndex < SPR_G2_GLYPH_COUNT; glyphIndex++)
         {
             const G1Element* g1 = GfxGetG1Element(glyphIndex + SPR_G2_CHAR_BEGIN + glyphOffset);
             int32_t width = 0;

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,101 +9,100 @@
 
 #pragma once
 
-#include "common.h"
-#include "core/String.hpp"
+#include "core/StringTypes.h"
 
 #include <memory>
-#include <string>
 
 class Intent;
 struct ParkLoadResult;
 
 enum class GameCommand : int32_t
 {
-    SetRideAppearance,        // GA
-    SetLandHeight,            // GA
-    TogglePause,              // GA
-    PlaceTrack,               // GA
-    RemoveTrack,              // GA
-    LoadOrQuit,               // GA
-    CreateRide,               // GA
-    DemolishRide,             // GA
-    SetRideStatus,            // GA
-    SetRideVehicles,          // GA
-    SetRideName,              // GA
-    SetRideSetting,           // GA
-    PlaceRideEntranceOrExit,  // GA
-    RemoveRideEntranceOrExit, // GA
-    RemoveScenery,            // GA
-    PlaceScenery,             // GA
-    SetWaterHeight,           // GA
-    PlacePath,                // GA
-    PlacePathLayout,          // GA
-    RemovePath,               // GA
-    ChangeSurfaceStyle,       // GA
-    SetRidePrice,             // GA
-    SetGuestName,             // GA
-    SetStaffName,             // GA
-    RaiseLand,                // GA
-    LowerLand,                // GA
-    EditLandSmooth,           // GA
-    RaiseWater,               // GA
-    LowerWater,               // GA
-    SetBrakesSpeed,           // GA
-    HireNewStaffMember,       // GA
-    SetStaffPatrol,           // GA
-    FireStaffMember,          // GA
-    SetStaffOrders,           // GA
-    SetParkName,              // GA
-    SetParkOpen,              // GA
-    BuyLandRights,            // GA
-    PlaceParkEntrance,        // GA
-    RemoveParkEntrance,       // GA
-    SetMazeTrack,             // GA
-    SetParkEntranceFee,       // GA
-    SetStaffColour,           // GA
-    PlaceWall,                // GA
-    RemoveWall,               // GA
-    PlaceLargeScenery,        // GA
-    RemoveLargeScenery,       // GA
-    SetCurrentLoan,           // GA
-    SetResearchFunding,       // GA
-    PlaceTrackDesign,         // GA
-    StartMarketingCampaign,   // GA
-    PlaceMazeDesign,          // GA
-    PlaceBanner,              // GA
-    RemoveBanner,             // GA
-    SetSceneryColour,         // GA
-    SetWallColour,            // GA
-    SetLargeSceneryColour,    // GA
-    SetBannerColour,          // GA
-    SetLandOwnership,         // GA
-    ClearScenery,             // GA
-    SetBannerName,            // GA
-    SetSignName,              // GA
-    SetBannerStyle,           // GA
-    SetSignStyle,             // GA
-    SetPlayerGroup,           // GA
-    ModifyGroups,             // GA
-    KickPlayer,               // GA
-    Cheat,                    // GA
-    PickupGuest,              // GA
-    PickupStaff,              // GA
-    BalloonPress,             // GA
-    ModifyTile,               // GA
-    EditScenarioOptions,      // GA
-    PlacePeepSpawn,           // GA
-    SetClimate,               // GA
-    SetColourScheme,          // GA
-    SetStaffCostume,          // GA
-    PlaceFootpathAddition,    // GA
-    RemoveFootpathAddition,   // GA
-    GuestSetFlags,            // GA
-    SetDate,                  // GA
-    Custom,                   // GA
+    SetRideAppearance,
+    SetLandHeight,
+    TogglePause,
+    PlaceTrack,
+    RemoveTrack,
+    LoadOrQuit,
+    CreateRide,
+    DemolishRide,
+    SetRideStatus,
+    SetRideVehicles,
+    SetRideName,
+    SetRideSetting,
+    PlaceRideEntranceOrExit,
+    RemoveRideEntranceOrExit,
+    RemoveScenery,
+    PlaceScenery,
+    SetWaterHeight,
+    PlacePath,
+    PlacePathLayout,
+    RemovePath,
+    ChangeSurfaceStyle,
+    SetRidePrice,
+    SetGuestName,
+    SetStaffName,
+    RaiseLand,
+    LowerLand,
+    EditLandSmooth,
+    RaiseWater,
+    LowerWater,
+    SetBrakesSpeed,
+    HireNewStaffMember,
+    SetStaffPatrol,
+    FireStaffMember,
+    SetStaffOrders,
+    SetParkName,
+    SetParkOpen,
+    BuyLandRights,
+    PlaceParkEntrance,
+    RemoveParkEntrance,
+    SetMazeTrack,
+    SetParkEntranceFee,
+    SetStaffColour,
+    PlaceWall,
+    RemoveWall,
+    PlaceLargeScenery,
+    RemoveLargeScenery,
+    SetCurrentLoan,
+    SetResearchFunding,
+    PlaceTrackDesign,
+    StartMarketingCampaign,
+    PlaceMazeDesign,
+    PlaceBanner,
+    RemoveBanner,
+    SetSceneryColour,
+    SetWallColour,
+    SetLargeSceneryColour,
+    SetBannerColour,
+    SetLandOwnership,
+    ClearScenery,
+    SetBannerName,
+    SetSignName,
+    SetBannerStyle,
+    SetSignStyle,
+    SetPlayerGroup,
+    ModifyGroups,
+    KickPlayer,
+    Cheat,
+    PickupGuest,
+    PickupStaff,
+    BalloonPress,
+    ModifyTile,
+    EditScenarioOptions,
+    PlacePeepSpawn,
+    SetClimate,
+    SetColourScheme,
+    SetStaffCostume,
+    PlaceFootpathAddition,
+    RemoveFootpathAddition,
+    GuestSetFlags,
+    SetDate,
+    Custom,
     ChangeMapSize,
     FreezeRideRating,
     SetGameSpeed,
+    SetRestrictedScenery,
     Count,
 };
 
@@ -134,7 +133,6 @@ enum
     ERROR_TYPE_FILE_LOAD = 255
 };
 
-extern uint32_t gCurrentTicks;
 extern uint32_t gCurrentRealTimeTicks;
 
 extern uint16_t gCurrentDeltaTime;
@@ -156,7 +154,6 @@ void GameReduceGameSpeed();
 
 void GameCreateWindows();
 void ResetAllSpriteQuadrantPlacements();
-void UpdatePaletteEffects();
 
 void GameLoadOrQuitNoSavePrompt();
 void GameLoadInit();

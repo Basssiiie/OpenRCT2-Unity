@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -13,12 +13,11 @@
 #include "../core/IStream.hpp"
 #include "../core/Json.hpp"
 #include "../core/String.hpp"
-#include "../localisation/Language.h"
-#include "../localisation/LanguagePack.h"
 #include "../localisation/LocalisationService.h"
+#include "../rct12/CSStringConverter.h"
 #include "Object.h"
 
-#include <algorithm>
+using namespace OpenRCT2;
 
 static constexpr uint8_t RCT2ToOpenRCT2LanguageId[] = {
     LANGUAGE_ENGLISH_UK,

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,6 +10,7 @@
 #include "ParkEntrancePlaceAction.h"
 
 #include "../Cheats.h"
+#include "../GameState.h"
 #include "../OpenRCT2.h"
 #include "../core/MemoryStream.h"
 #include "../localisation/StringIds.h"
@@ -20,10 +21,15 @@
 #include "../world/MapAnimation.h"
 #include "../world/Park.h"
 #include "../world/Surface.h"
+#include "../world/tile_element/EntranceElement.h"
 
-ParkEntrancePlaceAction::ParkEntrancePlaceAction(const CoordsXYZD& location, ObjectEntryIndex pathType)
+using namespace OpenRCT2;
+
+ParkEntrancePlaceAction::ParkEntrancePlaceAction(
+    const CoordsXYZD& location, ObjectEntryIndex pathType, ObjectEntryIndex entranceType)
     : _loc(location)
     , _pathType(pathType)
+    , _entranceType(entranceType)
 {
 }
 
@@ -31,6 +37,7 @@ void ParkEntrancePlaceAction::AcceptParameters(GameActionParameterVisitor& visit
 {
     visitor.Visit(_loc);
     visitor.Visit("footpathSurfaceObject", _pathType);
+    visitor.Visit("entranceObject", _entranceType);
 }
 
 uint16_t ParkEntrancePlaceAction::GetActionFlags() const
@@ -44,11 +51,12 @@ void ParkEntrancePlaceAction::Serialise(DataSerialiser& stream)
 
     stream << DS_TAG(_loc);
     stream << DS_TAG(_pathType);
+    stream << DS_TAG(_entranceType);
 }
 
 GameActions::Result ParkEntrancePlaceAction::Query() const
 {
-    if (!(gScreenFlags & SCREEN_FLAGS_EDITOR) && !gCheatsSandboxMode)
+    if (!(gScreenFlags & SCREEN_FLAGS_EDITOR) && !GetGameState().Cheats.SandboxMode)
     {
         return GameActions::Result(GameActions::Status::NotInEditorMode, STR_CANT_BUILD_THIS_HERE, STR_NONE);
     }
@@ -57,8 +65,8 @@ GameActions::Result ParkEntrancePlaceAction::Query() const
     res.Expenditure = ExpenditureType::LandPurchase;
     res.Position = { _loc.x, _loc.y, _loc.z };
 
-    auto mapSizeUnits = GetMapSizeUnits() - CoordsXY{ COORDS_XY_STEP, COORDS_XY_STEP };
-    if (!LocationValid(_loc) || _loc.x <= COORDS_XY_STEP || _loc.y <= COORDS_XY_STEP || _loc.x >= mapSizeUnits.x
+    auto mapSizeUnits = GetMapSizeUnits() - CoordsXY{ kCoordsXYStep, kCoordsXYStep };
+    if (!LocationValid(_loc) || _loc.x <= kCoordsXYStep || _loc.y <= kCoordsXYStep || _loc.x >= mapSizeUnits.x
         || _loc.y >= mapSizeUnits.y)
     {
         return GameActions::Result(
@@ -71,7 +79,8 @@ GameActions::Result ParkEntrancePlaceAction::Query() const
             GameActions::Status::NoFreeElements, STR_CANT_BUILD_THIS_HERE, STR_ERR_LANDSCAPE_DATA_AREA_FULL);
     }
 
-    if (gParkEntrances.size() >= OpenRCT2::Limits::MaxParkEntrances)
+    const auto& gameState = GetGameState();
+    if (gameState.Park.Entrances.size() >= OpenRCT2::Limits::kMaxParkEntrances)
     {
         return GameActions::Result(
             GameActions::Status::InvalidParameters, STR_CANT_BUILD_THIS_HERE, STR_ERR_TOO_MANY_PARK_ENTRANCES);
@@ -117,7 +126,7 @@ GameActions::Result ParkEntrancePlaceAction::Execute() const
 
     uint32_t flags = GetFlags();
 
-    gParkEntrances.push_back(_loc);
+    GetGameState().Park.Entrances.push_back(_loc);
 
     auto zLow = _loc.z;
     auto zHigh = zLow + ParkEntranceHeight;
@@ -152,6 +161,7 @@ GameActions::Result ParkEntrancePlaceAction::Execute() const
         entranceElement->SetDirection(_loc.direction);
         entranceElement->SetSequenceIndex(index);
         entranceElement->SetEntranceType(ENTRANCE_TYPE_PARK_ENTRANCE);
+        entranceElement->setEntryIndex(_entranceType);
         if (gFootpathSelection.LegacyPath == OBJECT_ENTRY_INDEX_NULL)
         {
             entranceElement->SetSurfaceEntryIndex(gFootpathSelection.NormalSurface);
@@ -166,11 +176,11 @@ GameActions::Result ParkEntrancePlaceAction::Execute() const
             FootpathConnectEdges(entranceLoc, entranceElement->as<TileElement>(), GAME_COMMAND_FLAG_APPLY);
         }
 
-        ParkUpdateFences(entranceLoc);
-        ParkUpdateFences({ entranceLoc.x - COORDS_XY_STEP, entranceLoc.y });
-        ParkUpdateFences({ entranceLoc.x + COORDS_XY_STEP, entranceLoc.y });
-        ParkUpdateFences({ entranceLoc.x, entranceLoc.y - COORDS_XY_STEP });
-        ParkUpdateFences({ entranceLoc.x, entranceLoc.y + COORDS_XY_STEP });
+        Park::UpdateFences(entranceLoc);
+        Park::UpdateFences({ entranceLoc.x - kCoordsXYStep, entranceLoc.y });
+        Park::UpdateFences({ entranceLoc.x + kCoordsXYStep, entranceLoc.y });
+        Park::UpdateFences({ entranceLoc.x, entranceLoc.y - kCoordsXYStep });
+        Park::UpdateFences({ entranceLoc.x, entranceLoc.y + kCoordsXYStep });
 
         MapInvalidateTile({ entranceLoc, entranceElement->GetBaseZ(), entranceElement->GetClearanceZ() });
 

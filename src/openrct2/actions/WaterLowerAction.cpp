@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,10 +9,13 @@
 
 #include "WaterLowerAction.h"
 
+#include "../GameState.h"
 #include "../OpenRCT2.h"
 #include "../audio/audio.h"
 #include "../ride/RideConstruction.h"
 #include "WaterSetHeightAction.h"
+
+using namespace OpenRCT2;
 
 WaterLowerAction::WaterLowerAction(MapRange range)
     : _range(range)
@@ -65,9 +68,9 @@ GameActions::Result WaterLowerAction::QueryExecute(bool isExecuting) const
     uint8_t minHeight = GetLowestHeight(validRange);
     bool hasChanged = false;
     bool withinOwnership = false;
-    for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += COORDS_XY_STEP)
+    for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += kCoordsXYStep)
     {
-        for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += COORDS_XY_STEP)
+        for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += kCoordsXYStep)
         {
             if (!LocationValid({ x, y }))
                 continue;
@@ -76,7 +79,7 @@ GameActions::Result WaterLowerAction::QueryExecute(bool isExecuting) const
             if (surfaceElement == nullptr)
                 continue;
 
-            if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !gCheatsSandboxMode)
+            if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !GetGameState().Cheats.SandboxMode)
             {
                 if (!MapIsLocationInPark(CoordsXY{ x, y }))
                 {
@@ -85,7 +88,7 @@ GameActions::Result WaterLowerAction::QueryExecute(bool isExecuting) const
             }
             withinOwnership = true;
 
-            uint8_t height = surfaceElement->GetWaterHeight() / COORDS_Z_STEP;
+            uint8_t height = surfaceElement->GetWaterHeight() / kCoordsZStep;
             if (height == 0)
                 continue;
 
@@ -119,7 +122,7 @@ GameActions::Result WaterLowerAction::QueryExecute(bool isExecuting) const
 
     if (isExecuting && hasChanged)
     {
-        OpenRCT2::Audio::Play3D(OpenRCT2::Audio::SoundId::LayingOutWater, res.Position);
+        Audio::Play3D(Audio::SoundId::LayingOutWater, res.Position);
     }
     // Force ride construction to recheck area
     _currentTrackSelectionFlags |= TRACK_SELECTION_FLAG_RECHECK;
@@ -131,11 +134,11 @@ uint8_t WaterLowerAction::GetLowestHeight(const MapRange& validRange) const
 {
     // The lowest height to lower the water to is the highest water level in the selection
     uint8_t minHeight{ 0 };
-    for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += COORDS_XY_STEP)
+    for (int32_t y = validRange.GetTop(); y <= validRange.GetBottom(); y += kCoordsXYStep)
     {
-        for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += COORDS_XY_STEP)
+        for (int32_t x = validRange.GetLeft(); x <= validRange.GetRight(); x += kCoordsXYStep)
         {
-            if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !gCheatsSandboxMode)
+            if (!(gScreenFlags & SCREEN_FLAGS_SCENARIO_EDITOR) && !GetGameState().Cheats.SandboxMode)
             {
                 if (!MapIsLocationInPark(CoordsXY{ x, y }))
                 {
@@ -147,7 +150,7 @@ uint8_t WaterLowerAction::GetLowestHeight(const MapRange& validRange) const
             if (surfaceElement == nullptr)
                 continue;
 
-            uint8_t height = surfaceElement->GetWaterHeight() / COORDS_Z_STEP;
+            uint8_t height = surfaceElement->GetWaterHeight() / kCoordsZStep;
             if (height == 0)
                 continue;
 

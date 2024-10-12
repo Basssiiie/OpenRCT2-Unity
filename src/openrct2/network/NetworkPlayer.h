@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,7 +10,6 @@
 #pragma once
 
 #include "../Game.h"
-#include "../common.h"
 #include "../world/Map.h"
 
 #include <string>
@@ -34,7 +33,7 @@ public:
     uint32_t LastActionTime = 0;
     CoordsXYZ LastActionCoord = {};
     Peep* PickupPeep = nullptr;
-    int32_t PickupPeepOldX = LOCATION_NULL;
+    int32_t PickupPeepOldX = kLocationNull;
     std::string KeyHash;
     uint32_t LastDemolishRideTime = 0;
     uint32_t LastPlaceSceneryTime = 0;

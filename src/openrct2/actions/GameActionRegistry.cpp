@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -67,6 +67,7 @@
 #include "RideSetStatusAction.h"
 #include "RideSetVehicleAction.h"
 #include "ScenarioSetSettingAction.h"
+#include "ScenerySetRestrictedAction.h"
 #include "SignSetNameAction.h"
 #include "SignSetStyleAction.h"
 #include "SmallSceneryPlaceAction.h"
@@ -94,7 +95,9 @@
 
 #include <array>
 
-namespace GameActions
+using namespace OpenRCT2;
+
+namespace OpenRCT2::GameActions
 {
     struct GameActionEntry
     {
@@ -208,6 +211,7 @@ namespace GameActions
         REGISTER_ACTION(CheatSetAction);
         REGISTER_ACTION(MapChangeSizeAction);
         REGISTER_ACTION(GameSetSpeedAction);
+        REGISTER_ACTION(ScenerySetRestrictedAction);
 #ifdef ENABLE_SCRIPTING
         REGISTER_ACTION(CustomAction);
 #endif
@@ -253,4 +257,4 @@ namespace GameActions
         return false;
     }
 
-} // namespace GameActions
+} // namespace OpenRCT2::GameActions

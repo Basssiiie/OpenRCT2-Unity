@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,13 +9,12 @@
 
 #pragma once
 
-#include "../common.h"
 #include "Memory.hpp"
 #include "String.hpp"
 
 #include <initializer_list>
 
-namespace Collections
+namespace OpenRCT2::Collections
 {
     template<typename TCollection, typename TItem>
     static void AddRange(TCollection& collection, std::initializer_list<TItem> initializerList)
@@ -98,4 +97,4 @@ namespace Collections
     }
 
 #pragma endregion
-} // namespace Collections
+} // namespace OpenRCT2::Collections

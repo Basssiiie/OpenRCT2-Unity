@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,8 +11,6 @@
 
 #ifndef DISABLE_NETWORK
 
-#    include "../common.h"
-
 #    include <memory>
 #    include <string>
 #    include <vector>
@@ -22,7 +20,7 @@ namespace OpenRCT2
     struct IStream;
 }
 
-namespace Crypt
+namespace OpenRCT2::Crypt
 {
     class RsaKey;
 }
@@ -45,7 +43,7 @@ public:
 
 private:
     NetworkKey(const NetworkKey&) = delete;
-    std::unique_ptr<Crypt::RsaKey> _key;
+    std::unique_ptr<OpenRCT2::Crypt::RsaKey> _key;
 };
 
 #endif // DISABLE_NETWORK

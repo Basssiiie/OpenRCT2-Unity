@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,11 +10,12 @@
 #include "LandBuyRightsAction.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
+#include "../GameState.h"
 #include "../OpenRCT2.h"
 #include "../actions/LandSetHeightAction.h"
 #include "../audio/audio.h"
 #include "../interface/Window.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
 #include "../ride/RideData.h"
@@ -23,6 +24,8 @@
 #include "../world/Park.h"
 #include "../world/Scenery.h"
 #include "../world/Surface.h"
+
+using namespace OpenRCT2;
 
 LandBuyRightsAction::LandBuyRightsAction(const MapRange& range, LandBuyRightSetting setting)
     : _range(range)
@@ -86,9 +89,9 @@ GameActions::Result LandBuyRightsAction::QueryExecute(bool isExecuting) const
     res.Expenditure = ExpenditureType::LandPurchase;
 
     // Game command modified to accept selection size
-    for (auto y = validRange.GetTop(); y <= validRange.GetBottom(); y += COORDS_XY_STEP)
+    for (auto y = validRange.GetTop(); y <= validRange.GetBottom(); y += kCoordsXYStep)
     {
-        for (auto x = validRange.GetLeft(); x <= validRange.GetRight(); x += COORDS_XY_STEP)
+        for (auto x = validRange.GetLeft(); x <= validRange.GetRight(); x += kCoordsXYStep)
         {
             if (!LocationValid({ x, y }))
                 continue;
@@ -110,15 +113,16 @@ GameActions::Result LandBuyRightsAction::MapBuyLandRightsForTile(const CoordsXY&
 {
     if (_setting >= LandBuyRightSetting::Count)
     {
-        LOG_WARNING("Tried calling buy land rights with an incorrect setting. setting = %u", _setting);
-        return GameActions::Result(GameActions::Status::InvalidParameters, _ErrorTitles[0], STR_NONE);
+        LOG_ERROR("Invalid land buying setting %u", _setting);
+        return GameActions::Result(GameActions::Status::InvalidParameters, _ErrorTitles[0], STR_ERR_VALUE_OUT_OF_RANGE);
     }
 
     SurfaceElement* surfaceElement = MapGetSurfaceElementAt(loc);
     if (surfaceElement == nullptr)
     {
-        LOG_ERROR("Could not find surface. x = %d, y = %d", loc.x, loc.y);
-        return GameActions::Result(GameActions::Status::InvalidParameters, _ErrorTitles[EnumValue(_setting)], STR_NONE);
+        LOG_ERROR("No surface at x = %d, y = %d", loc.x, loc.y);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, _ErrorTitles[EnumValue(_setting)], STR_ERR_SURFACE_ELEMENT_NOT_FOUND);
     }
 
     auto res = GameActions::Result();
@@ -139,9 +143,9 @@ GameActions::Result LandBuyRightsAction::MapBuyLandRightsForTile(const CoordsXY&
             if (isExecuting)
             {
                 surfaceElement->SetOwnership(OWNERSHIP_OWNED);
-                ParkUpdateFencesAroundTile(loc);
+                Park::UpdateFencesAroundTile(loc);
             }
-            res.Cost = gLandPrice;
+            res.Cost = GetGameState().LandPrice;
             return res;
 
         case LandBuyRightSetting::BuyConstructionRights: // 2
@@ -163,11 +167,11 @@ GameActions::Result LandBuyRightsAction::MapBuyLandRightsForTile(const CoordsXY&
                 uint16_t baseZ = surfaceElement->GetBaseZ();
                 MapInvalidateTile({ loc, baseZ, baseZ + 16 });
             }
-            res.Cost = gConstructionRightsPrice;
+            res.Cost = GetGameState().ConstructionRightsPrice;
             return res;
 
         default:
-            LOG_WARNING("Tried calling buy land rights with an incorrect setting. setting = %u", _setting);
-            return GameActions::Result(GameActions::Status::InvalidParameters, _ErrorTitles[0], STR_NONE);
+            LOG_ERROR("Invalid land buying setting %u", _setting);
+            return GameActions::Result(GameActions::Status::InvalidParameters, _ErrorTitles[0], STR_ERR_VALUE_OUT_OF_RANGE);
     }
 }

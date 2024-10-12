@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -8,6 +8,8 @@
  *****************************************************************************/
 
 #ifndef DISABLE_NETWORK
+
+#    include "../Diagnostic.h"
 
 #    include <atomic>
 #    include <chrono>
@@ -49,11 +51,12 @@
     #include <netdb.h>
     #include <netinet/in.h>
     #include <netinet/tcp.h>
-    #include <unistd.h>
     #include <sys/ioctl.h>
+    #include <sys/select.h>
     #include <sys/socket.h>
+    #include <sys/time.h>
     #include <unistd.h>
-    #include "../common.h"
+
     using SOCKET = int32_t;
     #define SOCKET_ERROR -1
     #define INVALID_SOCKET -1
@@ -70,7 +73,7 @@
 
 #    include "Socket.h"
 
-constexpr auto CONNECT_TIMEOUT = std::chrono::milliseconds(3000);
+constexpr auto kConnectTimeout = std::chrono::milliseconds(3000);
 
 // RAII WSA initialisation needed for Windows
 #    ifdef _WIN32
@@ -247,7 +250,7 @@ private:
 class TcpSocket final : public ITcpSocket, protected Socket
 {
 private:
-    std::atomic<SocketStatus> _status = ATOMIC_VAR_INIT(SocketStatus::Closed);
+    std::atomic<SocketStatus> _status{ SocketStatus::Closed };
     uint16_t _listeningPort = 0;
     SOCKET _socket = INVALID_SOCKET;
 
@@ -489,7 +492,7 @@ public:
                         return;
                     }
                 }
-            } while ((std::chrono::system_clock::now() - connectStartTime) < CONNECT_TIMEOUT);
+            } while ((std::chrono::system_clock::now() - connectStartTime) < kConnectTimeout);
 
             // Connection request timed out
             throw SocketException("Connection timed out.");
@@ -972,7 +975,7 @@ std::vector<std::unique_ptr<INetworkEndpoint>> GetBroadcastAddresses()
     return baddresses;
 }
 
-namespace Convert
+namespace OpenRCT2::Convert
 {
     uint16_t HostToNetwork(uint16_t value)
     {
@@ -983,6 +986,6 @@ namespace Convert
     {
         return ntohs(value);
     }
-} // namespace Convert
+} // namespace OpenRCT2::Convert
 
 #endif

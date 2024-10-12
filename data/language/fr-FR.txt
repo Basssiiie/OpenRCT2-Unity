@@ -20,7 +20,7 @@ STR_0013    :Balade en voiture
 STR_0014    :Chute libre lancée
 STR_0015    :Bobsleigh
 STR_0016    :Tour d’observation
-STR_0017    :Montagnes russe looping
+STR_0017    :Montagnes russes looping
 STR_0018    :Canotube
 STR_0019    :Train de la mine
 STR_0020    :Télésiège
@@ -49,7 +49,7 @@ STR_0042    :Vrille
 STR_0043    :Anneaux de l’espace
 STR_0044    :Chute libre renversée
 STR_0045    :Ascenseur
-STR_0046    :Montagnes russes en chute vert.
+STR_0046    :Montagnes russes à chute verticale
 STR_0047    :Distributeur de monnaie
 STR_0048    :Twist
 STR_0049    :Maison hantée
@@ -67,7 +67,7 @@ STR_0060    :Manège Inconnu (3A)
 STR_0061    :Virginia Reel
 STR_0062    :Bateaux éclabousseurs
 STR_0063    :Mini hélicoptères
-STR_0064    :Mont. russes — posit. couchée
+STR_0064    :Montagnes russes en position couchée
 STR_0065    :Monorail suspendu
 STR_0066    :Manège Inconnu (40)
 STR_0067    :Inverseur
@@ -80,7 +80,7 @@ STR_0073    :Maison biscornue
 STR_0074    :Vélos monorail
 STR_0075    :Montagnes compactes inversées
 STR_0076    :Montagnes aquatiques
-STR_0077    :Voiture propulsée dans les airs
+STR_0077    :Montagnes russes verticales à air comprimé
 STR_0078    :Epingle à cheveux inversée
 STR_0079    :Tapis volant
 STR_0080    :Balade sous-marine
@@ -100,6 +100,7 @@ STR_0093    :Montagnes russes hybrides
 STR_0094    :Montagnes russes à rail unique
 STR_0095    :Montagnes russes alpines
 STR_0096    :Montagnes russes en bois classiques
+STR_0097    :Montagnes russes debout classiques
 STR_0512    :Des voitures individuelles descendent des pentes régulières en virage
 STR_0513    :Grand huit que les passagers parcourent debout
 STR_0514    :Des voitures suspendues sous la voie se balancent dans les virages des montagnes russes
@@ -183,12 +184,13 @@ STR_0603    :Train de montagnes russes en bois avec des rails en acier, permetta
 STR_0604    :Les passagers parcourent une voie à rail unique dans des voitures mono-places, à travers des inversions et des virages serrés
 STR_0605    :Les passagers dévalent une voie en acier sinueuse, freinant pour contrôler leur vitesse
 STR_0606    :Une montagne russe en bois au style ancien, rapide et turbulente, avec de nombreux moments en suspension, quelques forces latérales et conçues pour paraître hors de contrôle
+STR_0607    :Les passagers parcourent debout une montagne russe en acier intense au style ancien, ponctuée d’inversions
 STR_0767    :Visiteur {INT32}
 STR_0768    :Agent d’entretien {INT32}
 STR_0769    :Mécanicien {INT32}
 STR_0770    :Agent de sécurité {INT32}
 STR_0771    :Animateur {INT32}
-STR_0777    :Parc sans nom{POP16}{POP16}
+STR_0777    :Parc sans nom
 STR_0778    :Panneau
 STR_0779    :1er
 STR_0780    :2
@@ -989,7 +991,7 @@ STR_1594    :« Cette soupe aux raviolis de {STRINGID} est vraiment une bonne a
 STR_1595    :« Cette soupe aux boulettes de viande de {STRINGID} est vraiment une bonne affaire »
 STR_1596    :« Ce jus de fruits de {STRINGID} est vraiment une bonne affaire »
 STR_1597    :« Ce lait de soja de {STRINGID} est vraiment une bonne affaire »
-STR_1598    :« Ce sujongkwa de {STRINGID} est vraiment une bonne affaire »
+STR_1598    :« Ce Sujeonggwa de {STRINGID} est vraiment une bonne affaire »
 STR_1599    :« Ce sandwich de {STRINGID} est vraiment une bonne affaire »
 STR_1600    :« Ce cookie de {STRINGID} est vraiment une bonne affaire »
 STR_1601    :
@@ -1021,7 +1023,7 @@ STR_1626    :« Je ne paierai pas si cher pour une soupe aux raviolis de {STRIN
 STR_1627    :« Je ne paierai pas si cher pour une soupe aux boulettes de viandes de {STRINGID} »
 STR_1628    :« Je ne paierai pas si cher pour un jus de fruits de {STRINGID} »
 STR_1629    :« Je ne paierai pas si cher pour du lait de soja de {STRINGID} »
-STR_1630    :« Je ne paierai pas si cher pour un sujongkwa de {STRINGID} »
+STR_1630    :« Je ne paierai pas si cher pour un Sujeonggwa de {STRINGID} »
 STR_1631    :« Je ne paierai pas si cher pour un sandwich de {STRINGID} »
 STR_1632    :« Je ne paierai pas si cher pour un cookie de {STRINGID} »
 STR_1633    :
@@ -1491,7 +1493,7 @@ STR_2110    :{WINDOW_COLOUR_2}Prix de la soupe aux raviolis :
 STR_2111    :{WINDOW_COLOUR_2}Prix de la soupe aux boulettes de viande :
 STR_2112    :{WINDOW_COLOUR_2}Prix d’un jus de fruits :
 STR_2113    :{WINDOW_COLOUR_2}Prix d’un lait de soja :
-STR_2114    :{WINDOW_COLOUR_2}Prix d’un sujongkwa :
+STR_2114    :{WINDOW_COLOUR_2}Prix d’un Sujeonggwa :
 STR_2115    :{WINDOW_COLOUR_2}Prix d’un sandwich :
 STR_2116    :{WINDOW_COLOUR_2}Prix d’un cookie :
 STR_2117    :{WINDOW_COLOUR_2}
@@ -1510,7 +1512,7 @@ STR_2132    :Soupe aux raviolis
 STR_2133    :Soupe aux boulettes de viande
 STR_2134    :Jus de fruits
 STR_2135    :Lait de soja
-STR_2136    :Sujongkwa
+STR_2136    :Sujeonggwa
 STR_2137    :Sandwich
 STR_2138    :Cookie
 STR_2139    :Bol vide
@@ -1529,7 +1531,7 @@ STR_2154    :Soupes aux raviolis
 STR_2155    :Soupes aux boulettes de viande
 STR_2156    :Jus de fruits
 STR_2157    :Laits de soja
-STR_2158    :Sujongkwa
+STR_2158    :Sujeonggwa
 STR_2159    :Sandwichs
 STR_2160    :Cookies
 STR_2161    :Bols vides
@@ -1548,7 +1550,7 @@ STR_2176    :de la soupe aux raviolis
 STR_2177    :de la soupe aux boulettes de viande
 STR_2178    :un jus de fruits
 STR_2179    :du lait de soja
-STR_2180    :du Sujongkwa
+STR_2180    :du Sujeonggwa
 STR_2181    :un sandwich
 STR_2182    :un cookie
 STR_2183    :un bol vide
@@ -1567,7 +1569,7 @@ STR_2198    :Soupe aux raviolis
 STR_2199    :Soupe aux boulettes de viande
 STR_2200    :Jus de fruits
 STR_2201    :Lait de soja
-STR_2202    :Sujongkwa
+STR_2202    :Sujeonggwa
 STR_2203    :Sandwich
 STR_2204    :Cookie
 STR_2205    :Bol vide
@@ -1744,12 +1746,12 @@ STR_2382    :Terrain
 STR_2383    :Eau
 STR_2384    :{WINDOW_COLOUR_2}Votre objectif :
 STR_2385    :{BLACK}Aucun
-STR_2386    :{BLACK}Avoir au moins {COMMA16} visiteurs dans votre parc à la fin {MONTHYEAR}, avec une évaluation de parc d’au moins 600
+STR_2386    :{BLACK}Avoir au moins {COMMA32} visiteurs dans votre parc à la fin {MONTHYEAR}, avec une évaluation de parc d’au moins 600
 STR_2387    :{BLACK}Atteindre une valeur de parc d’au moins {POP16}{POP16}{CURRENCY} à la fin {PUSH16}{PUSH16}{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
 STR_2388    :{BLACK}Amusez-vous !
 STR_2389    :{BLACK}Construisez la meilleure attraction {STRINGID} possible !
 STR_2390    :{BLACK}Avoir construit au moins 10 montagnes russes différentes dans votre parc, chacune d’entre elles atteignant un indice d’engouement d’au moins 6.00
-STR_2391    :{BLACK}Avoir reçu au moins {COMMA16} visiteurs dans votre parc. L’évaluation du parc ne doit jamais descendre en dessous des 700 !
+STR_2391    :{BLACK}Avoir reçu au moins {COMMA32} visiteurs dans votre parc. L’évaluation du parc ne doit jamais descendre en dessous des 700 !
 STR_2392    :{BLACK}Obtenir un revenu mensuel avec les tickets d’attraction d’au moins {POP16}{POP16}{CURRENCY}
 STR_2393    :{BLACK}Avoir construit au moins 10 montagnes russes différentes dans votre parc, chacune d’entre elles atteignant une longueur d’au moins {LENGTH}, avec un indice d’engouement d’au moins 7.00
 STR_2394    :{BLACK}Terminer la construction des 5 montagnes russes entamées dans ce parc, avec une conception leur permettant d’atteindre un indice d’engouement d’au moins {POP16}{POP16}{COMMA2DP32} chacune
@@ -1804,7 +1806,6 @@ STR_2450    :{YELLOW}Votre campagne marketing pour le parc est terminée
 STR_2451    :{YELLOW}Votre campagne marketing pour {STRINGID} est terminée
 STR_2452    :{WINDOW_COLOUR_2}Argent (moins l’emprunt) : {BLACK}{CURRENCY2DP}
 STR_2453    :{WINDOW_COLOUR_2}Argent (moins l’emprunt) : {RED}{CURRENCY2DP}
-STR_2454    :{BLACK}{CURRENCY2DP} -
 STR_2457    :Voir comptes financiers
 STR_2458    :Voir graphique Argent (moins emprunt) sur durée
 STR_2459    :Voir graphique Valeur du parc sur durée
@@ -2002,7 +2003,7 @@ STR_2793    :(Réussi par {STRINGID})
 STR_2794    :{WINDOW_COLOUR_2}Réussi par : {BLACK}{STRINGID}{NEWLINE}{WINDOW_COLOUR_2} avec une valeur de société de : {BLACK}{CURRENCY}
 STR_2795    :Trier
 STR_2796    :Trie la liste des attractions dans l’ordre avec le type d’informations affiché
-STR_2797    :Défiler la vue quand le curseur atteint le bord de l’écran
+STR_2797    :Défiler la vue quand le curseur est au bord de l’écran
 STR_2798    :Fait défiler la vue quand le curseur atteint le bord de l’écran
 STR_2799    :Voir ou modifier les touches de raccourci
 STR_2800    :{WINDOW_COLOUR_2}Nombre total d’entrées : {BLACK}{COMMA32}
@@ -2104,39 +2105,6 @@ STR_3008    :{PEARLAQUA}ABC
 STR_3009    :{PALESILVER}ABC
 STR_3010    :Impossible de charger le fichier…
 STR_3011    :Le fichier contient des données non valides
-STR_3012    :Auto-tamponneuse
-STR_3013    :Orgue champ de foire
-STR_3014    :Fanfare romaine
-STR_3015    :Oriental
-STR_3016    :Alien
-STR_3017    :Tambours de la jungle
-STR_3018    :Egyptien
-STR_3019    :Jouets par milliers
-STR_3020    :
-STR_3021    :Espace
-STR_3022    :Horreur
-STR_3023    :Techno
-STR_3024    :Tranquille
-STR_3025    :Estival
-STR_3026    :Aquatique
-STR_3027    :Western
-STR_3028    :Jurassique
-STR_3029    :Rock
-STR_3030    :Ragtime
-STR_3031    :Imaginaire
-STR_3032    :Rock 2
-STR_3033    :Glace
-STR_3034    :Neige
-STR_3035    :Musique perso 1
-STR_3036    :Musique perso 2
-STR_3037    :Médiéval
-STR_3038    :Urbain
-STR_3039    :Orgue
-STR_3040    :Mécanique
-STR_3041    :Moderne
-STR_3042    :Pirates
-STR_3043    :Rock 3
-STR_3044    :Bonbon-ville
 STR_3045    :Choisit le style de musique
 STR_3047    :Les autorités locales interdisent la démolition ou modification de cette attraction
 STR_3048    :Les autorités locales interdisent toute campagne marketing
@@ -2363,7 +2331,7 @@ STR_3305    :{WINDOW_COLOUR_2}Revenu mensuel :
 STR_3306    :{WINDOW_COLOUR_2}Bénéfice mensuel :
 STR_3307    :{WINDOW_COLOUR_2}Longueur minimum :
 STR_3308    :{WINDOW_COLOUR_2}Indice d’engouement :
-STR_3309    :{WINDOW_COLOUR_2}{COMMA16}
+STR_3309    :{WINDOW_COLOUR_2}{COMMA32}
 STR_3310    :{WINDOW_COLOUR_2}{LENGTH}
 STR_3311    :{WINDOW_COLOUR_2}{COMMA2DP32}
 STR_3312    :{WINDOW_COLOUR_2}Attractions protégées :
@@ -2925,7 +2893,7 @@ STR_5755    :Mauvaise version du programme (le serveur utilise {STRING})
 STR_5756    :Mauvais mot de passe
 STR_5757    :Serveur plein
 STR_5758    :{OUTLINE}{GREEN}{STRING} a rejoint la partie
-STR_5759    :Téléchargement de la carte… ({INT32}/{INT32} Kio)
+STR_5759    :Téléchargement de la carte…
 STR_5760    :Dollars de Hong Kong (HK$)
 STR_5761    :Nouveau Dollar Taïwanais (NT$)
 STR_5762    :Yuan Chinois (CN¥)
@@ -3471,7 +3439,6 @@ STR_6356    :Fait apparaître des canards si le parc contient de l’eau.
 STR_6357    :Supprime tous les canards de la carte.
 STR_6358    :Page {UINT16}
 STR_6359    :{POP16}{POP16}Page {UINT16}
-STR_6360    :{BLACK}{COMMA32}
 STR_6361    :Activer les effets de lumières sur les{NEWLINE}attractions (expérimental)
 STR_6362    :Si activé, les véhicules sur les attractions sur rails seront éclairés la nuit
 STR_6363    :Texte copié dans le presse-papier
@@ -3489,7 +3456,7 @@ STR_6374    :C
 STR_6375    :Attraction inconnue
 STR_6376    :{WINDOW_COLOUR_2}Véhicule : {NEWLINE}{BLACK}{STRINGID} pour {STRINGID}
 STR_6377    :{WINDOW_COLOUR_2}Type : {BLACK}{STRINGID} pour {STRINGID}
-STR_6378    :Réception de la liste des objets : {INT32} / {INT32}
+STR_6378    :Réception de la liste des objets :
 STR_6379    :Donnée(s) invalide(s) reçues
 STR_6380    :Mise à jour disponible !
 STR_6381    :Rejoindre le Discord d’OpenRCT2 !
@@ -3703,6 +3670,74 @@ STR_6589    :Placer les boutons de fenêtre à gauche
 STR_6590    :Place les boutons de fenêtre (par exemple pour fermer la fenêtre) sur la gauche de la barre de titre au lieu de la droite
 STR_6591    :L’employé est en train de réparer une attraction et ne peut pas être licencié.
 STR_6592    :L’employé est en train d’inspecter une attraction et ne peut pas être licencié.
+STR_6593    :Retirer les clôtures du parc
+STR_6594    :Inspecteur de cases: Permuter la pente des murs
+STR_6595    :{WINDOW_COLOUR_2}Créé par : {BLACK}{STRING}
+STR_6596    :{WINDOW_COLOUR_2}Créé par : {BLACK}{STRING}
+STR_6597    :Paramètre invalide
+STR_6598    :Valeur hors plage
+STR_6599    :Élément fantôme introuvable
+STR_6600    :Ballon introuvable
+STR_6601    :Employé introuvable
+STR_6602    :Attraction introuvable
+STR_6603    :Entrée d’objet d’attraction introuvable
+STR_6604    :Joueur/joueuse introuvable
+STR_6605    :Élément d’entrée introuvable
+STR_6606    :Élément de surface introuvable
+STR_6607    :Élément de case introuvable
+STR_6608    :Élément de voie introuvable
+STR_6609    :Bloc de voie introuvable
+STR_6610    :Élément de chemin introuvable
+STR_6611    :Élément de mur introuvable
+STR_6612    :Élément de bannière introuvable
+STR_6613    :Recharger l’objet
+STR_6614    :Impossible de changer le prix d’entrée du parc
+STR_6615    :La voie a besoin d’eau sur cette case
+STR_6616    :Action invalide pour ce type de personnel
+STR_6617    :Impossible de permuter un élément de case avec lui-même
+STR_6618    :Impossible de restreindre ou dé-restreindre l’objet…
+STR_6619    :Ce type d’objet ne peut pas être restreint !
+STR_6620    :Objet introuvable !
+STR_6621    :Restreindre
+STR_6622    :Restreint l’objet à l’éditeur de scénario et au mode bac à sable
+STR_6623    :Tapez « help » pour une liste des commandes disponibles. Tapez « hide » pour cacher la console.
+STR_6624    :Inspecteur de cases : Trier les éléments
+STR_6625    :Couleur invalide
+STR_6626    :L’animation est retournée
+STR_6627    :Vitesse de voie trop élevée !
+STR_6628    :Ne peut être placé que sur le bord des allées !
+STR_6629    :Centrer les boutons de la barre d’outils
+STR_6630    :Ce réglage aligne horizontalement les boutons de la barre d’outil au centre de l’écran, au lieu de les répartir à gauche et à droite
+STR_6631    :Chargement…
+STR_6632    :Vérification des fichiers d’objet…
+STR_6633    :Vérification des fichiers de scénario…
+STR_6634    :Vérification des fichiers de conception de voie…
+STR_6635    :Vérification des packs de ressources…
+STR_6636    :Vérification des séquences titre…
+STR_6637    :Chargement de la séquence titre…
+STR_6638    :Interface agrandie
+STR_6639    :Adapte l’interface à un usage tactile
+STR_6640    :Modifier le pack de ressources…
+STR_6641    :Fenêtre de chargement/progression
+STR_6642    :{STRING} ({COMMA32} / {COMMA32})
+STR_6643    :{STRING} ({COMMA32} / {COMMA32} Kio)
+STR_6644    :Améliorations pour le tactile
+STR_6645    :Augmente la taille de certains éléments d’interface pour qu’ils soient plus faciles à cliquer ou taper
+STR_6646    :Auteur/autrice : {STRING}
+STR_6647    :Auteurs/autrices : {STRING}
+STR_6648    :Chargement du moteur de greffons…
+STR_6649    :Chargement du scénario…
+STR_6650    :Chargement de la partie sauvegardée…
+STR_6651    :{STRING} ({COMMA32}%)
+STR_6652    :Fenêtre d’erreur
+STR_6653    :Toutes les sources
+STR_6654    :{POP16}{UINT16} sources
+STR_6655    :Juste {POP16}{STRINGID}
+STR_6656    :Retirer toutes les barrières du parc
+STR_6657    :Terrain libre
+STR_6658    :Définir ce terrain comme n’appartenant pas au parc ni disponible à l’achat
+STR_6659    :Les visiteurs ignorent les prix
+STR_6660    :Les visiteurs ignoreront le prix des attractions et des boutiques
 
 #############
 # Scenarios #
@@ -4283,87 +4318,87 @@ STR_DTLS    :Construisez les attractions Six Flags manquantes ou créez vos prop
 ## Wacky Worlds Scenarios
 ###############################################################################
 <Africa - African Diamond Mine>
-STR_SCNR    :Afrique — La mine de diamants
+STR_SCNR    :Mines d’Afrique
 STR_PARK    :Mines d’Afrique
 STR_DTLS    :Vous héritez d’une mine de diamants désaffectée et découvrez un diamant de grande valeur. Vous décidez d’investir cet argent dans la construction d’un parc à thème de renommée mondiale.
 
 <Africa - Oasis>
-STR_SCNR    :Afrique — L’oasis
+STR_SCNR    :Mirage fou
 STR_PARK    :Mirage fou
 STR_DTLS    :Une oasis offrant le cadre idéal pour un parc a été découverte dans le désert. Des moyens de transport ont été fournis.
 
 <Africa - Victoria Falls>
-STR_SCNR    :Afrique — Chutes Victoria
+STR_SCNR    :Amortir la chute
 STR_PARK    :Amortir la chute
 STR_DTLS    :Un barrage offrant suffisamment de puissance hydroélectrique à faible coût pour la création d’un parc a été construit. Votre but est d’obtenir une haute rentabilité pour rembourser l’emprunt du barrage.
 
 <Antarctic - Ecological Salvage>
-STR_SCNR    :Antarctique — Sauvetage écologique
+STR_SCNR    :Aventures glacées
 STR_PARK    :Aventures glacées
 STR_DTLS    :L’agence pour l’environnement vous charge de transformer une vieille raffinerie de pétrole en attraction touristique de premier ordre. Le terrain n’est pas cher mais l’intérêt sur l’emprunt est élevé. Vous pouvez vendre les équipements.
 
 <Asia - Great Wall of China Tourism Enhancement>
-STR_SCNR    :Asie — Développement de la Grande Muraille
+STR_SCNR    :Grande Muraille de Chine
 STR_PARK    :Grande Muraille de Chine
 STR_DTLS    :Les autorités ont décidé d’accroître le tourisme dans les environs de la Grande Muraille en construisant un parc à thème sur les terrains environnants. Aucune restriction financière.
 
 <Asia - Japanese Coastal Reclaim>
-STR_SCNR    :Asie — A la conquête de l’océan
+STR_SCNR    :Côte Okinawa
 STR_PARK    :Côte Okinawa
 STR_DTLS    :L’un de vos parcs au Japon ne peut plus s’étendre. Une seule possibilité : construire sur la mer. Vous contractez un emprunt et devez respecter des restrictions de hauteur en raison du risque de tremblement de terre.
 
 <Asia - Maharaja Palace>
-STR_SCNR    :Asia — Le palais du maharajah
+STR_SCNR    :Parc Maharajah
 STR_PARK    :Parc Maharajah
 STR_DTLS    :Le maharajah vous a chargé de divertir la nombreuse population locale. Construisez un parc inspiré du palais du maharajah.
 
 <Australasia - Ayers Rock>
-STR_SCNR    :Océanie — Ayers Rock
+STR_SCNR    :L’aventure aborigène
 STR_PARK    :L’aventure aborigène
 STR_DTLS    :Vous aidez les Aborigènes à construire un parc s’inscrivant dans un programme de sensibilisation culturelle. Vous devez toucher un large public et l’intéresser au patrimoine authentique des Aborigènes.
 
 <Australasia - Fun at the Beach>
-STR_SCNR    :Océanie — Fun at the Beach
+STR_SCNR    :Attractions sous les tropiques
 STR_PARK    :Attractions sous les tropiques
 STR_DTLS    :Le parc maritime d’un entrepreneur local fait faillite. Vous êtes à la tête d’un petit parc et devez trouver les fonds nécessaires au rachat de l’autre parc. Vous y parviendrez en visant la création d’un immense parc combiné.
 
 <Europe - European Cultural Festival>
-STR_SCNR    :Europe — Le festival culturel européen
+STR_SCNR    :L’extravagance européenne
 STR_PARK    :L’extravagance européenne
 STR_DTLS    :Vous avez été choisi pour reprendre un parc d’attractions culturel européen et devez augmenter sa fréquentation pour pouvoir rembourser les subventions européennes à la fin du mandat parlementaire européen.
 
 <Europe - Renovation>
-STR_SCNR    :Europe — Rénovation
+STR_SCNR    :La Renaissance
 STR_PARK    :La Renaissance
 STR_DTLS    :Un ancien parc est tombé en ruines. Vous recevez une subvention de l’Union Européenne pour rendre à cette zone défavorisée sa gloire passée. Vous devez rénover le parc et rembourser la subvention.
 
 <N. America - Extreme Hawaiian Island>
-STR_SCNR    :Amérique du Nord — Hawaii extrême
+STR_SCNR    :C’est parti Waikiki !
 STR_PARK    :C’est parti Waikiki !
 STR_DTLS    :Les habitants de Hawaii en ont assez de surfer et cherche des sensations plus fortes. Vous devez construire un parc qui les satisfera et qui garantira l’attrait touristique de la zone.
 
 <North America - Grand Canyon>
-STR_SCNR    :Amérique du Nord — Le Grand Canyon
+STR_SCNR    :Pas de faille possible
 STR_PARK    :Pas de faille possible
 STR_DTLS    :Vous devez construire un parc à étendue limitée de chaque côté de ce cadeau de la nature. Vous pouvez acheter les terres avoisinantes aux Indiens locaux. Vous devez remplir cet objectif pour maintenir le nombre d’habitants dans la ville.
 
 <North America - Rollercoaster Heaven>
-STR_SCNR    :Amérique du Nord — Le parc de vos rêves
+STR_SCNR    :Le paradis des montagnes russes
 STR_PARK    :Le paradis des montagnes russes
 STR_DTLS    :Vous êtes un businessman accompli en période sabbatique de 4 ans, désirant construire un parc sans la moindre restriction financière.
 
 <South America - Inca Lost City>
-STR_SCNR    :Amérique du Sud — La cité inca
+STR_SCNR    :Les aventuriers de la cité perdue
 STR_PARK    :Les aventuriers de la cité perdue
-STR_DTLS    :Pour dynamiser encore plus le tourisme local vous devez construire un parc en harmonie avec son environnement, avec des restrictions de hauteur.
+STR_DTLS    :Pour dynamiser encore plus le tourisme local vous devez construire un parc en harmonie avec son environnement.
 
 <South America - Rain Forest Plateau>
-STR_SCNR    :Amérique du Sud — La forêt équatoriale
+STR_SCNR    :La forêt en folie
 STR_PARK    :La forêt en folie
 STR_DTLS    :L’espace est limité dans la précieuse forêt équatoriale : vous devez entasser les éléments autant que vous pouvez dans la clairière déjà existante, de manière à fournir une alternative à l’industrie sylvestre locale.
 
 <South America - Rio Carnival>
-STR_SCNR    :Amérique du Sud — Le carnaval de Rio
+STR_SCNR    :Au pied du pain de sucre
 STR_PARK    :Au pied du pain de sucre
 STR_DTLS    :Vous dirigez un petit parc près de Rio, mais la banque a demandé le remboursement de votre prêt. Vous devez rapidement augmenter votre rentabilité pour rembourser cette dette inattendue.
 
@@ -4371,72 +4406,72 @@ STR_DTLS    :Vous dirigez un petit parc près de Rio, mais la banque a demandé 
 ## Time Twister Scenarios
 ###############################################################################
 <Dark Age - Castle>
-STR_SCNR    :Moyen Âge — Château
+STR_SCNR    :Château en bord de falaise
 STR_PARK    :Château en bord de falaise
 STR_DTLS    :Les sociétaires d’une association de reconstitution de combats médiévaux prennent leur activité très au sérieux. Ils vous ont chargé de construire un parc sur le thème du Moyen Âge sur les terres d’un château en bord de falaise.
 
 <Dark Age - Robin Hood>
-STR_SCNR    :Moyen Âge — Robin des Bois
+STR_SCNR    :Forêt de Sherwood
 STR_PARK    :Forêt de Sherwood
 STR_DTLS    :Pour voler l’argent des riches et le donner aux pauvres, vos joyeux compères et vous-même avez décidé de construire un parc dans la forêt de Sherwood.
 
 <Future - First Encounters>
-STR_SCNR    :Futur — Rencontre du 3e type
+STR_SCNR    :Extravagance extraterrestre
 STR_PARK    :Extravagance extraterrestre
 STR_DTLS    :Une forme de vie a été découverte sur une autre planète. Construisez un parc sur le thème des extraterrestres pour engranger un maximum de profits.
 
 <Future - Future World>
-STR_SCNR    :Futur — Le monde du futur
+STR_SCNR    :Gemini City
 STR_PARK    :Gemini City
 STR_DTLS    :Faites preuve de créativité et laissez parler vos talents de visionnaire en construisant un parc futuriste proposant des attractions du dernier cri.
 
 <Mythological - Animatronic Film Set>
-STR_SCNR    :Mythologique — Automates de films
+STR_SCNR    :Automates de l’Antiquité
 STR_PARK    :Automates de l’Antiquité
 STR_DTLS    :Vous êtes chargé(e) de rénover et d’exploiter un parc déjà existant, construit à partir d’un ancien décor de cinéma. Rendez hommage aux pionniers de l’animation d’automates qui ont donné vie à des créatures mythiques dans les salles obscures.
 
 <Mythological - Cradle of Civilisation>
-STR_SCNR    :Mythologique — Berceau de la civilisation
+STR_SCNR    :Folie mythologique
 STR_PARK    :Folie mythologique
 STR_DTLS    :Vous possédez une île contenant des trésors archéologiques. Vous avez décidé d’en financer la préservation en construisant un parc sur le thème des richesses mythologiques du site.
 
 <Prehistoric - After the Asteroid>
-STR_SCNR    :Préhistorique — Après l’astéroïde
+STR_SCNR    :Cratère en folie
 STR_PARK    :Cratère en folie
 STR_DTLS    :Vous possédez un vieux cratère météoritique poussiéreux. Avec l’esprit d’entreprise qui vous caractérise, vous avez décidé de construire un parc sur le thème des astéroïdes et de rendre cet endroit rentable.
 
 <Prehistoric - Jurassic Safari>
-STR_SCNR    :Préhistorique — Safari jurassique
+STR_SCNR    :Le retour des dinosaures
 STR_PARK    :Le retour des dinosaures
 STR_DTLS    :Vous êtes chargé(e) de construire un parc sur le thème du jurassique. Pour optimiser l’accès des visiteurs aux plantes exotiques et aux exhibitions d’animaux, vous allez devoir construire des montagnes russes parcourant la vallée.
 
 <Prehistoric - Stone Age>
-STR_SCNR    :Préhistorique — L’âge de pierre
+STR_SCNR    :Promenade rocailleuse
 STR_PARK    :Promenade rocailleuse
 STR_DTLS    :Pour concurrencer les promoteurs d’autoroutes et préserver la beauté du site, vous devrez construire un parc sur le thème de l’âge de pierre et le rentabiliser. Attirer les visiteurs ne sera pas facile dans un contexte aussi inhospitalier.
 
 <Roaring Twenties - Prison Island>
-STR_SCNR    :Les années folles — Le Rocher
+STR_SCNR    :Alcatraz
 STR_PARK    :Alcatraz
 STR_DTLS    :La fameuse prison, autrefois remplie de trafiquants et de racketteurs, est aujourd’hui à vendre. Vous avez décidé de la transformer en attraction touristique, sans restriction financière.
 
 <Roaring Twenties - Schneider Cup>
-STR_SCNR    :Les années folles — La Coupe Schneider
+STR_SCNR    :Course d’hydravions
 STR_PARK    :Course d’hydravions
 STR_DTLS    :Dans quelques années, ce sera le 75e anniversaire de la victoire de votre grand-père dans la Coupe Schneider. Vous allez lui rendre hommage en construisant un parc sur le thème de cette course légendaire d’hydravions.
 
 <Roaring Twenties - Skyscrapers>
-STR_SCNR    :Les années folles — Gratte-ciel
+STR_SCNR    :Métropolis
 STR_PARK    :Métropolis
 STR_DTLS    :Vous possédez un terrain nu dans les faubourgs de la ville. Pour en tirer un maximum de revenus, construisez un parc sur le thème des gratte-ciel en vous inspirant de l’architecture art déco des années folles.
 
 <Rock 'n' Roll - Flower Power>
-STR_SCNR    :Rock & Roll — Flower Power
+STR_SCNR    :Woodstock
 STR_PARK    :Woodstock
 STR_DTLS    :Un grand festival de musique se tient sur votre terrain chaque année. Construisez un parc sur le thème du mouvement hippie qui satisfera les amateurs du genre.
 
 <Rock 'n' Roll - Rock 'n' Roll>
-STR_SCNR    :Rock & Roll — Rock & Roll
+STR_SCNR    :La renaissance du Rock & Roll
 STR_PARK    :La renaissance du Rock & Roll
 STR_DTLS    :Ce parc sur le thème du Rock & Roll a connu son heure de gloire. Aidez son propriétaire à le réaménager et à lui donner un second souffle.
 

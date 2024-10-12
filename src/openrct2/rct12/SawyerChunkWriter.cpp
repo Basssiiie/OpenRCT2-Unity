@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,6 +12,8 @@
 #include "../core/IStream.hpp"
 #include "../core/Numerics.hpp"
 #include "../util/SawyerCoding.h"
+
+using namespace OpenRCT2;
 
 // Maximum buffer size to store compressed data, maximum of 16 MiB
 constexpr size_t MAX_COMPRESSED_CHUNK_SIZE = 16 * 1024 * 1024;

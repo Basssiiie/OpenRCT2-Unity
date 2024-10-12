@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -31,7 +31,6 @@
 #include "../ride/Vehicle.h"
 #include "ObjectRepository.h"
 
-#include <algorithm>
 #include <iterator>
 #include <unordered_map>
 
@@ -108,7 +107,7 @@ static LegacyAnimationParameters GetDefaultAnimationParameters(uint8_t legacyAni
     return VehicleEntryDefaultAnimation[legacyAnimationType];
 }
 
-static constexpr SpritePrecision PrecisionFromNumFrames(uint8_t numRotationFrames)
+static constexpr SpritePrecision PrecisionFromNumFrames(uint32_t numRotationFrames)
 {
     if (numRotationFrames == 0)
         return SpritePrecision::None;
@@ -640,7 +639,6 @@ void RideObject::ReadJson(IReadObjectContext* context, json_t& root)
             });
     }
 
-    RideObjectUpdateRideType(_legacyType);
     PopulateTablesFromJson(context, root);
 }
 
@@ -714,7 +712,7 @@ CarEntry RideObject::ReadJsonCar([[maybe_unused]] IReadObjectContext* context, j
     car.num_seats = Json::GetNumber<uint8_t>(jCar["numSeats"]);
     if (Json::GetBoolean(jCar["seatsInPairs"], true) && car.num_seats > 1)
     {
-        car.num_seats |= VEHICLE_SEAT_PAIR_FLAG;
+        car.num_seats |= kVehicleSeatPairFlag;
     }
 
     car.sprite_width = Json::GetNumber<uint8_t>(jCar["spriteWidth"]);
@@ -818,7 +816,7 @@ CarEntry RideObject::ReadJsonCar([[maybe_unused]] IReadObjectContext* context, j
             { "isReverserPassengerCar", CAR_ENTRY_FLAG_REVERSER_PASSENGER_CAR },
             { "hasInvertedSpriteSet", CAR_ENTRY_FLAG_HAS_INVERTED_SPRITE_SET },
             { "hasDodgemInUseLights", CAR_ENTRY_FLAG_DODGEM_INUSE_LIGHTS },
-            { "hasAdditionalColour2", CAR_ENTRY_FLAG_ENABLE_TERNARY_COLOUR },
+            { "hasAdditionalColour2", CAR_ENTRY_FLAG_ENABLE_TERTIARY_COLOUR },
             { "recalculateSpriteBounds", CAR_ENTRY_FLAG_RECALCULATE_SPRITE_BOUNDS },
             { "overrideNumberOfVerticalFrames", CAR_ENTRY_FLAG_OVERRIDE_NUM_VERTICAL_FRAMES },
             { "spriteBoundsIncludeInvertedSet", CAR_ENTRY_FLAG_SPRITE_BOUNDS_INCLUDE_INVERTED_SET },
@@ -966,7 +964,7 @@ std::vector<VehicleColour> RideObject::ReadJsonColourConfiguration(json_t& jColo
 
 bool RideObject::IsRideTypeShopOrFacility(ride_type_t rideType)
 {
-    return GetRideTypeDescriptor(rideType).HasFlag(RIDE_TYPE_FLAG_IS_SHOP_OR_FACILITY);
+    return GetRideTypeDescriptor(rideType).HasFlag(RtdFlag::isShopOrFacility);
 }
 
 ride_type_t RideObject::ParseRideType(const std::string& s)

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,7 +12,7 @@
 #ifdef ENABLE_SCRIPTING
 
 #    include "../../../Context.h"
-#    include "../../../common.h"
+#    include "../../../object/LargeSceneryObject.h"
 #    include "../../../object/ObjectManager.h"
 #    include "../../../object/RideObject.h"
 #    include "../../../object/SceneryGroupObject.h"
@@ -864,7 +864,7 @@ namespace OpenRCT2::Scripting
             return 0;
         }
 
-        uint8_t price_get() const
+        money64 price_get() const
         {
             auto sceneryEntry = GetLegacyData();
             if (sceneryEntry != nullptr)
@@ -874,7 +874,7 @@ namespace OpenRCT2::Scripting
             return 0;
         }
 
-        uint8_t removalPrice_get() const
+        money64 removalPrice_get() const
         {
             auto sceneryEntry = GetLegacyData();
             if (sceneryEntry != nullptr)
@@ -901,6 +901,62 @@ namespace OpenRCT2::Scripting
         }
     };
 
+    class ScLargeSceneryObjectTile
+    {
+    private:
+        LargeSceneryTile _tile{};
+
+    public:
+        ScLargeSceneryObjectTile(const LargeSceneryTile& tile)
+            : _tile(tile)
+        {
+        }
+
+        static void Register(duk_context* ctx)
+        {
+            dukglue_register_property(ctx, &ScLargeSceneryObjectTile::offset_get, nullptr, "offset");
+            dukglue_register_property(ctx, &ScLargeSceneryObjectTile::zClearance_get, nullptr, "zClearance");
+            dukglue_register_property(ctx, &ScLargeSceneryObjectTile::hasSupports_get, nullptr, "hasSupports");
+            dukglue_register_property(ctx, &ScLargeSceneryObjectTile::allowSupportsAbove_get, nullptr, "allowSupportsAbove");
+            dukglue_register_property(ctx, &ScLargeSceneryObjectTile::corners_get, nullptr, "corners");
+            dukglue_register_property(ctx, &ScLargeSceneryObjectTile::walls_get, nullptr, "walls");
+        }
+
+    private:
+        DukValue offset_get() const
+        {
+            auto ctx = GetContext()->GetScriptEngine().GetContext();
+
+            auto start = CoordsXYZ(_tile.x_offset, _tile.y_offset, _tile.z_offset);
+            return ToDuk(ctx, start);
+        }
+
+        int32_t zClearance_get() const
+        {
+            return _tile.z_clearance;
+        }
+
+        bool hasSupports_get() const
+        {
+            return !(_tile.flags & LARGE_SCENERY_TILE_FLAG_NO_SUPPORTS);
+        }
+
+        bool allowSupportsAbove_get() const
+        {
+            return _tile.flags & LARGE_SCENERY_TILE_FLAG_ALLOW_SUPPORTS_ABOVE;
+        }
+
+        uint8_t corners_get() const
+        {
+            return (_tile.flags >> 12) & 0xF;
+        }
+
+        uint8_t walls_get() const
+        {
+            return (_tile.flags >> 8) & 0xF;
+        }
+    };
+
     class ScLargeSceneryObject : public ScSceneryObject
     {
     public:
@@ -912,6 +968,38 @@ namespace OpenRCT2::Scripting
         static void Register(duk_context* ctx)
         {
             dukglue_set_base_class<ScSceneryObject, ScLargeSceneryObject>(ctx);
+
+            dukglue_register_property(ctx, &ScLargeSceneryObject::tiles_get, nullptr, "tiles");
+        }
+
+    private:
+        std::vector<std::shared_ptr<ScLargeSceneryObjectTile>> tiles_get() const
+        {
+            std::vector<std::shared_ptr<ScLargeSceneryObjectTile>> result;
+            auto entry = GetEntry();
+            if (entry != nullptr)
+            {
+                for (auto* tile = entry->tiles; tile->x_offset != -1; ++tile)
+                {
+                    result.push_back(std::make_shared<ScLargeSceneryObjectTile>(*tile));
+                }
+            }
+            return result;
+        }
+
+        LargeSceneryObject* GetObject() const
+        {
+            return static_cast<LargeSceneryObject*>(ScObject::GetObject());
+        }
+
+        const LargeSceneryEntry* GetEntry() const
+        {
+            auto obj = GetObject();
+            if (obj != nullptr)
+            {
+                return static_cast<LargeSceneryEntry*>(obj->GetLegacyData());
+            }
+            return nullptr;
         }
     };
 

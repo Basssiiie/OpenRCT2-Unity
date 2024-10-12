@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,7 +12,6 @@
 #ifdef ENABLE_SCRIPTING
 
 #    include "../../../Context.h"
-#    include "../../../common.h"
 #    include "../../../core/Guard.hpp"
 #    include "../../../entity/EntityRegistry.h"
 #    include "../../../ride/Track.h"
@@ -202,12 +201,20 @@ namespace OpenRCT2::Scripting
         DukValue direction_get() const;
         void direction_set(uint8_t value);
 
-        DukValue owner_get() const;
-        void owner_set(uint8_t value);
+        DukValue bannerText_get() const;
+        void bannerText_set(std::string value);
+
+        DukValue isNoEntry_get() const;
+        void isNoEntry_set(bool value);
 
         void Invalidate();
 
+        void RemoveBannerEntryIfNeeded();
+        void CreateBannerEntryIfNeeded();
+
     public:
+        static const LargeSceneryElement* GetOtherLargeSceneryElement(
+            const CoordsXY& loc, const LargeSceneryElement* const largeScenery);
         static void Register(duk_context* ctx);
     };
 

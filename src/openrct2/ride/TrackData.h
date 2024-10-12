@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,109 +9,122 @@
 
 #pragma once
 
-#include "../common.h"
+#include "../paint/support/MetalSupports.h"
+#include "../paint/support/WoodenSupports.h"
 #include "Track.h"
-#include "TrackPaint.h"
 
-constexpr uint8_t MaxSequencesPerPiece = 16;
+using namespace OpenRCT2;
 
-// 0x009968BB, 0x009968BC, 0x009968BD, 0x009968BF, 0x009968C1, 0x009968C3
-
-struct TrackCurveChain
+namespace OpenRCT2::TrackMetaData
 {
-    int32_t next;
-    int32_t previous;
-};
+    constexpr uint8_t kMaxSequencesPerPiece = 16;
 
-struct TrackDescriptor
-{
-    bool starts_diagonal;
-    uint8_t slope_start;
-    uint8_t bank_start;
-    uint8_t track_curve;
-    uint8_t slope_end;
-    uint8_t bank_end;
-    track_type_t track_element;
-};
+    // 0x009968BB, 0x009968BC, 0x009968BD, 0x009968BF, 0x009968C1, 0x009968C3
 
-enum
-{
-    NO_SPIN,
-    L8_SPIN,
-    R8_SPIN,
-    LR_SPIN,
-    RL_SPIN,
-    L7_SPIN,
-    R7_SPIN,
-    L5_SPIN,
-    R5_SPIN,
-    RC_SPIN, // Rotation Control Spin
-    SP_SPIN, // Special rapids Spin
-    L9_SPIN,
-    R9_SPIN
-};
-
-extern const TrackDescriptor gTrackDescriptors[186];
-
-struct DodgemsTrackSize
-{
-    uint8_t left;
-    uint8_t top;
-    uint8_t right;
-    uint8_t bottom;
-};
-
-constexpr DodgemsTrackSize GetDodgemsTrackSize(track_type_t type)
-{
-    if (type == TrackElemType::FlatTrack2x2)
-        return { 4, 4, 59, 59 };
-    if (type == TrackElemType::FlatTrack4x4)
-        return { 4, 4, 123, 123 };
-    if (type == TrackElemType::FlatTrack2x4)
-        return { 4, 4, 59, 123 };
-    return { 0, 0, 0, 0 };
-}
-
-using TrackComputeFunction = int32_t (*)(const int16_t);
-struct TrackElementDescriptor
-{
-    StringId Description;
-    TrackCoordinates Coordinates;
-
-    PreviewTrack* Block;
-    uint8_t PieceLength;
-    TrackCurveChain CurveChain;
-    track_type_t AlternativeType;
-    // Price Modifier should be used as in the following calculation:
-    // (RideTrackPrice * TED::PriceModifier) / 65536
-    uint32_t PriceModifier;
-    track_type_t MirrorElement;
-    uint32_t HeightMarkerPositions;
-    uint16_t Flags;
-
-    std::array<uint8_t, MaxSequencesPerPiece> SequenceElementAllowedWallEdges;
-    std::array<uint8_t, MaxSequencesPerPiece> SequenceProperties;
-
-    TrackDefinition Definition;
-    uint8_t SpinFunction;
-
-    TrackComputeFunction VerticalFactor;
-    TrackComputeFunction LateralFactor;
-
-    /**
-     * Retrieves the block for the given sequence. This method safely handles
-     * out-of-bounds sequence indices.
-     *
-     * @param sequenceIndex
-     * @return The track block, or nullptr if it doesn’t exist.
-     */
-    const PreviewTrack* GetBlockForSequence(uint8_t sequenceIndex) const;
-};
-
-namespace OpenRCT2
-{
-    namespace TrackMetaData
+    struct TrackCurveChain
     {
-        const TrackElementDescriptor& GetTrackElementDescriptor(const uint32_t type);
-    } // namespace TrackMetaData
-} // namespace OpenRCT2
+        TypeOrCurve next;
+        TypeOrCurve previous;
+    };
+
+    struct TrackDescriptor
+    {
+        bool startsDiagonally;
+        TrackPitch slopeStart;
+        TrackRoll rollStart;
+        TrackCurve trackCurve;
+        TrackPitch slopeEnd;
+        TrackRoll rollEnd;
+        track_type_t trackElement;
+    };
+
+    enum class SpinFunction : uint8_t
+    {
+        None,
+        L8,
+        R8,
+        LR,
+        RL,
+        L7,
+        R7,
+        L5,
+        R5,
+        RC, // Rotation Control Spin
+        SP, // Special rapids Spin
+        L9,
+        R9
+    };
+
+    extern const TrackDescriptor gTrackDescriptors[186];
+
+    struct DodgemsTrackSize
+    {
+        uint8_t left;
+        uint8_t top;
+        uint8_t right;
+        uint8_t bottom;
+    };
+
+    constexpr DodgemsTrackSize GetDodgemsTrackSize(track_type_t type)
+    {
+        if (type == OpenRCT2::TrackElemType::FlatTrack2x2)
+            return { 4, 4, 59, 59 };
+        if (type == OpenRCT2::TrackElemType::FlatTrack4x4)
+            return { 4, 4, 123, 123 };
+        if (type == OpenRCT2::TrackElemType::FlatTrack2x4)
+            return { 4, 4, 59, 123 };
+        return { 0, 0, 0, 0 };
+    }
+
+    struct SequenceWoodenSupport
+    {
+        WoodenSupportSubType subType = WoodenSupportSubType::Null;
+        WoodenSupportTransitionType transitionType = WoodenSupportTransitionType::None;
+    };
+
+    struct SequenceMetalSupport
+    {
+        MetalSupportPlace place = MetalSupportPlace::None;
+        uint8_t alternates = false;
+    };
+
+    struct SequenceDescriptor
+    {
+        SequenceClearance clearance{};
+        /** rct2: 0x00999A94 */
+        uint8_t allowedWallEdges{};
+        /** rct2: 0x0099BA64 */
+        uint8_t flags{};
+        SequenceWoodenSupport woodenSupports{};
+        SequenceMetalSupport metalSupports{};
+        int8_t extraSupportRotation = 0;
+    };
+
+    using TrackComputeFunction = int32_t (*)(const int16_t);
+    struct TrackElementDescriptor
+    {
+        StringId description;
+        TrackCoordinates coordinates;
+
+        uint8_t pieceLength;
+        TrackCurveChain curveChain;
+        track_type_t alternativeType;
+        // Price Modifier should be used as in the following calculation:
+        // (RideTrackPrice * TED::PriceModifier) / 65536
+        uint32_t priceModifier;
+        track_type_t mirrorElement;
+        uint32_t heightMarkerPositions;
+        uint32_t flags;
+
+        uint8_t numSequences{};
+        std::array<SequenceDescriptor, kMaxSequencesPerPiece> sequences;
+
+        TrackDefinition definition;
+        SpinFunction spinFunction;
+
+        TrackComputeFunction verticalFactor;
+        TrackComputeFunction lateralFactor;
+    };
+
+    const TrackElementDescriptor& GetTrackElementDescriptor(const uint32_t type);
+} // namespace OpenRCT2::TrackMetaData

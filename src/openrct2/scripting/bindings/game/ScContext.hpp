@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -126,6 +126,18 @@ namespace OpenRCT2::Scripting
             return "normal";
         }
 
+        bool paused_get()
+        {
+            return GameIsPaused();
+        }
+
+        void paused_set(const bool& value)
+        {
+            ThrowIfGameStateNotMutable();
+            if (value != GameIsPaused())
+                PauseToggle();
+        }
+
         void captureImage(const DukValue& options)
         {
             auto ctx = GetContext()->GetScriptEngine().GetContext();
@@ -133,8 +145,8 @@ namespace OpenRCT2::Scripting
             {
                 CaptureOptions captureOptions;
                 captureOptions.Filename = fs::u8path(AsOrDefault(options["filename"], ""));
-                captureOptions.Rotation = options["rotation"].as_int() & 3;
-                captureOptions.Zoom = ZoomLevel(options["zoom"].as_int());
+                captureOptions.Rotation = options["rotation"].as_uint() & 3;
+                captureOptions.Zoom = ZoomLevel(options["zoom"].as_uint());
                 captureOptions.Transparent = AsOrDefault(options["transparent"], false);
 
                 auto dukPosition = options["position"];
@@ -261,7 +273,8 @@ namespace OpenRCT2::Scripting
         //      Only ensuring it was not in the same generated method fixed it.
         __declspec(noinline)
 #    endif
-            std::shared_ptr<ScDisposable> CreateSubscription(HOOK_TYPE hookType, const DukValue& callback)
+        std::shared_ptr<ScDisposable>
+            CreateSubscription(HOOK_TYPE hookType, const DukValue& callback)
         {
             auto owner = _execInfo.GetCurrentPlugin();
             auto cookie = _hookEngine.Subscribe(hookType, owner, callback);
@@ -433,6 +446,7 @@ namespace OpenRCT2::Scripting
             dukglue_register_property(ctx, &ScContext::sharedStorage_get, nullptr, "sharedStorage");
             dukglue_register_method(ctx, &ScContext::getParkStorage, "getParkStorage");
             dukglue_register_property(ctx, &ScContext::mode_get, nullptr, "mode");
+            dukglue_register_property(ctx, &ScContext::paused_get, &ScContext::paused_set, "paused");
             dukglue_register_method(ctx, &ScContext::captureImage, "captureImage");
             dukglue_register_method(ctx, &ScContext::getObject, "getObject");
             dukglue_register_method(ctx, &ScContext::getAllObjects, "getAllObjects");

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,6 +9,7 @@
 
 #include "Image.h"
 
+#include "../Diagnostic.h"
 #include "../OpenRCT2.h"
 #include "../core/Console.hpp"
 #include "../core/Guard.hpp"
@@ -18,9 +19,10 @@
 #include <algorithm>
 #include <list>
 
+using namespace OpenRCT2;
+
 constexpr uint32_t BASE_IMAGE_ID = SPR_IMAGE_LIST_BEGIN;
 constexpr uint32_t MAX_IMAGES = SPR_IMAGE_LIST_END - BASE_IMAGE_ID;
-constexpr uint32_t INVALID_IMAGE_ID = UINT32_MAX;
 
 static bool _initialised = false;
 static std::list<ImageList> _freeLists;
@@ -127,7 +129,7 @@ static uint32_t TryAllocateImageList(uint32_t count)
             return imageList.BaseId;
         }
     }
-    return INVALID_IMAGE_ID;
+    return ImageIndexUndefined;
 }
 
 static uint32_t AllocateImageList(uint32_t count)
@@ -139,12 +141,12 @@ static uint32_t AllocateImageList(uint32_t count)
         InitialiseImageList();
     }
 
-    uint32_t baseImageId = INVALID_IMAGE_ID;
+    uint32_t baseImageId = ImageIndexUndefined;
     uint32_t freeImagesRemaining = GetNumFreeImagesRemaining();
     if (freeImagesRemaining >= count)
     {
         baseImageId = TryAllocateImageList(count);
-        if (baseImageId == INVALID_IMAGE_ID)
+        if (baseImageId == ImageIndexUndefined)
         {
             // Defragment and try again
             MergeFreeLists();
@@ -190,14 +192,14 @@ uint32_t GfxObjectAllocateImages(const G1Element* images, uint32_t count)
 {
     if (count == 0 || gOpenRCT2NoGraphics)
     {
-        return INVALID_IMAGE_ID;
+        return ImageIndexUndefined;
     }
 
     uint32_t baseImageId = AllocateImageList(count);
-    if (baseImageId == INVALID_IMAGE_ID)
+    if (baseImageId == ImageIndexUndefined)
     {
         LOG_ERROR("Reached maximum image limit.");
-        return INVALID_IMAGE_ID;
+        return ImageIndexUndefined;
     }
 
     uint32_t imageId = baseImageId;
@@ -213,7 +215,7 @@ uint32_t GfxObjectAllocateImages(const G1Element* images, uint32_t count)
 
 void GfxObjectFreeImages(uint32_t baseImageId, uint32_t count)
 {
-    if (baseImageId != 0 && baseImageId != INVALID_IMAGE_ID)
+    if (baseImageId != 0 && baseImageId != ImageIndexUndefined)
     {
         // Zero the G1 elements so we don't have invalid pointers
         // and data lying about

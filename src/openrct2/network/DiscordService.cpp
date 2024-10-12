@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,17 +11,20 @@
 #    include "DiscordService.h"
 
 #    include "../Context.h"
+#    include "../Diagnostic.h"
 #    include "../GameState.h"
 #    include "../OpenRCT2.h"
 #    include "../core/Console.hpp"
 #    include "../core/String.hpp"
+#    include "../core/UTF8.h"
 #    include "../localisation/Formatting.h"
-#    include "../localisation/Localisation.h"
 #    include "../world/Park.h"
 #    include "network.h"
 
 #    include <chrono>
 #    include <discord_rpc.h>
+
+using namespace OpenRCT2;
 
 namespace
 {
@@ -63,12 +66,8 @@ DiscordService::~DiscordService()
 
 static std::string GetParkName()
 {
-    auto gameState = OpenRCT2::GetContext()->GetGameState();
-    if (gameState != nullptr)
-    {
-        return gameState->GetPark().Name;
-    }
-    return {};
+    auto& gameState = GetGameState();
+    return gameState.Park.Name;
 }
 
 void DiscordService::Tick()

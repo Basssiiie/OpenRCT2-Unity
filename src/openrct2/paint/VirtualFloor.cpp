@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,6 +10,8 @@
 #include "VirtualFloor.h"
 
 #include "../Cheats.h"
+#include "../Diagnostic.h"
+#include "../GameState.h"
 #include "../Input.h"
 #include "../config/Config.h"
 #include "../interface/Viewport.h"
@@ -23,7 +25,6 @@
 #include "VirtualFloor.h"
 #include "tile_element/Paint.TileElement.h"
 
-#include <algorithm>
 #include <limits>
 
 using namespace OpenRCT2;
@@ -122,6 +123,11 @@ void VirtualFloorInvalidate()
         }
     }
 
+    bool invalidateNewRegion
+        = (min_position.x != std::numeric_limits<int32_t>::max() && min_position.y != std::numeric_limits<int32_t>::max()
+           && max_position.x != std::numeric_limits<int32_t>::lowest()
+           && max_position.y != std::numeric_limits<int32_t>::lowest());
+
     // Apply the virtual floor size to the computed invalidation area.
     min_position.x -= _virtualFloorBaseSize + 16;
     min_position.y -= _virtualFloorBaseSize + 16;
@@ -157,9 +163,7 @@ void VirtualFloorInvalidate()
 
     LOG_VERBOSE("Min: %d %d, Max: %d %d", min_position.x, min_position.y, max_position.x, max_position.y);
 
-    // Invalidate new region if coordinates are set.
-    if (min_position.x != std::numeric_limits<int32_t>::max() && min_position.y != std::numeric_limits<int32_t>::max()
-        && max_position.x != std::numeric_limits<int32_t>::lowest() && max_position.y != std::numeric_limits<int32_t>::lowest())
+    if (invalidateNewRegion)
     {
         MapInvalidateRegion(min_position, max_position);
 
@@ -241,7 +245,7 @@ static void VirtualFloorGetTileProperties(
 
     *tileOwned = MapIsLocationOwned({ loc, height });
 
-    if (gCheatsSandboxMode)
+    if (GetGameState().Cheats.SandboxMode)
         *tileOwned = true;
 
     // Iterate through the map elements of the current tile to find:
@@ -297,13 +301,13 @@ void VirtualFloorPaint(PaintSession& session)
     PROFILED_FUNCTION();
 
     static constexpr CoordsXY scenery_half_tile_offsets[4] = {
-        { -COORDS_XY_STEP, 0 },
-        { 0, COORDS_XY_STEP },
-        { COORDS_XY_STEP, 0 },
-        { 0, -COORDS_XY_STEP },
+        { -kCoordsXYStep, 0 },
+        { 0, kCoordsXYStep },
+        { kCoordsXYStep, 0 },
+        { 0, -kCoordsXYStep },
     };
 
-    if (_virtualFloorHeight < MINIMUM_LAND_HEIGHT)
+    if (_virtualFloorHeight < kMinimumLandHeight)
         return;
 
     uint8_t direction = session.CurrentRotation;
@@ -333,9 +337,9 @@ void VirtualFloorPaint(PaintSession& session)
 
     // Try the four tiles next to us for the same parameters as above,
     //  if our parameters differ we set an edge towards that tile
-    for (uint8_t i = 0; i < NumOrthogonalDirections; i++)
+    for (uint8_t i = 0; i < kNumOrthogonalDirections; i++)
     {
-        uint8_t effectiveRotation = (NumOrthogonalDirections + i - direction) % NumOrthogonalDirections;
+        uint8_t effectiveRotation = (kNumOrthogonalDirections + i - direction) % kNumOrthogonalDirections;
         CoordsXY theirLocation = session.MapPosition + scenery_half_tile_offsets[effectiveRotation];
 
         bool theyAreOccupied;
@@ -349,7 +353,7 @@ void VirtualFloorPaint(PaintSession& session)
             theirLocation, virtualFloorClipHeight, &theyAreOccupied, &theyAreOwned, &theirOccupiedEdges, &theyAreBelowGround,
             &theyAreAboveGround, &theyAreLit);
 
-        if (theirOccupiedEdges & (1 << ((effectiveRotation + 2) % NumOrthogonalDirections)) && (weAreOwned && !theyAreOwned))
+        if (theirOccupiedEdges & (1 << ((effectiveRotation + 2) % kNumOrthogonalDirections)) && (weAreOwned && !theyAreOwned))
         {
             occupiedEdges |= 1 << i;
         }
@@ -402,7 +406,7 @@ void VirtualFloorPaint(PaintSession& session)
             { { 5, 5, _virtualFloorHeight + ((dullEdges & EDGE_NW) ? -2 : 0) }, { 0, 0, 1 } });
     }
 
-    if (gConfigGeneral.VirtualFloorStyle != VirtualFloorStyles::Glassy)
+    if (Config::Get().general.VirtualFloorStyle != VirtualFloorStyles::Glassy)
         return;
 
     if (!weAreOccupied && !weAreLit && weAreAboveGround && weAreOwned)

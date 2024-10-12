@@ -23,6 +23,8 @@ using namespace OpenRCT2::TrackMetaData;
 std::shared_ptr<ScTrackIterator> ScTrackIterator::FromElement(const CoordsXY& position, int32_t elementIndex)
 {
     auto el = MapGetNthElementAt(position, elementIndex);
+    if (el == nullptr)
+        return nullptr;
     auto origin = GetTrackSegmentOrigin(CoordsXYE(position, el));
     if (!origin)
         return nullptr;
@@ -72,8 +74,8 @@ DukValue ScTrackIterator::previousPosition_get() const
     auto ctx = scriptEngine.GetContext();
 
     auto& ted = GetTrackElementDescriptor(_type);
-    auto& seq0 = ted.Block;
-    auto pos = _position + CoordsXYZ(seq0->x, seq0->y, seq0->z);
+    const auto& seq0 = ted.sequences[0].clearance;
+    auto pos = _position + CoordsXYZ(seq0.x, seq0.y, seq0.z);
 
     auto el = MapGetTrackElementAtOfTypeSeq(pos, _type, 0);
     if (el == nullptr)
@@ -92,8 +94,8 @@ DukValue ScTrackIterator::nextPosition_get() const
     auto ctx = scriptEngine.GetContext();
 
     auto& ted = GetTrackElementDescriptor(_type);
-    auto& seq0 = ted.Block;
-    auto pos = _position + CoordsXYZ(seq0->x, seq0->y, seq0->z);
+    const auto& seq0 = ted.sequences[0].clearance;
+    auto pos = _position + CoordsXYZ(seq0.x, seq0.y, seq0.z);
 
     auto el = MapGetTrackElementAtOfTypeSeq(pos, _type, 0);
     if (el == nullptr)
@@ -111,8 +113,8 @@ DukValue ScTrackIterator::nextPosition_get() const
 bool ScTrackIterator::previous()
 {
     auto& ted = GetTrackElementDescriptor(_type);
-    auto& seq0 = ted.Block;
-    auto pos = _position + CoordsXYZ(seq0->x, seq0->y, seq0->z);
+    const auto& seq0 = ted.sequences[0].clearance;
+    auto pos = _position + CoordsXYZ(seq0.x, seq0.y, seq0.z);
 
     auto el = MapGetTrackElementAtOfTypeSeq(pos, _type, 0);
     if (el == nullptr)
@@ -137,8 +139,8 @@ bool ScTrackIterator::previous()
 bool ScTrackIterator::next()
 {
     auto& ted = GetTrackElementDescriptor(_type);
-    auto& seq0 = ted.Block;
-    auto pos = _position + CoordsXYZ(seq0->x, seq0->y, seq0->z);
+    const auto& seq0 = ted.sequences[0].clearance;
+    auto pos = _position + CoordsXYZ(seq0.x, seq0.y, seq0.z);
 
     auto el = MapGetTrackElementAtOfTypeSeq(pos, _type, 0);
     if (el == nullptr)

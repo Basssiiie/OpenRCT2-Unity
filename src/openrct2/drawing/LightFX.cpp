@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,8 +9,9 @@
 
 #include "LightFX.h"
 
+#include "../Diagnostic.h"
 #include "../Game.h"
-#include "../common.h"
+#include "../GameState.h"
 #include "../config/Config.h"
 #include "../entity/EntityRegistry.h"
 #include "../interface/Viewport.h"
@@ -20,14 +21,13 @@
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
 #include "../ride/Vehicle.h"
-#include "../util/Util.h"
-#include "../world/Climate.h"
 #include "../world/Map.h"
 #include "Drawing.h"
 
-#include <algorithm>
 #include <cmath>
 #include <cstring>
+
+using namespace OpenRCT2;
 
 static uint8_t _bakedLightTexture_lantern_0[32 * 32];
 static uint8_t _bakedLightTexture_lantern_1[64 * 64];
@@ -131,12 +131,12 @@ void LightFXSetAvailable(bool available)
 
 bool LightFXIsAvailable()
 {
-    return _lightfxAvailable && gConfigGeneral.EnableLightFx != 0;
+    return _lightfxAvailable && Config::Get().general.EnableLightFx;
 }
 
 bool LightFXForVehiclesIsAvailable()
 {
-    return LightFXIsAvailable() && gConfigGeneral.EnableLightFxForVehicles != 0;
+    return LightFXIsAvailable() && Config::Get().general.EnableLightFxForVehicles;
 }
 
 void LightFXInit()
@@ -263,8 +263,6 @@ void LightFXPrepareLightList()
                 break;
         }
 
-        int32_t mapFrontDiv = _current_view_zoom_front.ApplyTo(1);
-
         // clang-format off
         static int16_t offsetPattern[26] = {
             0, 0,
@@ -299,13 +297,13 @@ void LightFXPrepareLightList()
                 {
                     // based on GetMapCoordinatesFromPosWindow
                     DrawPixelInfo dpi;
-                    dpi.x = entry->ViewCoords.x + offsetPattern[0 + pat * 2] / mapFrontDiv;
-                    dpi.y = entry->ViewCoords.y + offsetPattern[1 + pat * 2] / mapFrontDiv;
-                    dpi.height = 1;
                     dpi.zoom_level = _current_view_zoom_front;
+                    dpi.x = _current_view_zoom_front.ApplyInversedTo(entry->ViewCoords.x + offsetPattern[0 + pat * 2]);
+                    dpi.y = _current_view_zoom_front.ApplyInversedTo(entry->ViewCoords.y + offsetPattern[1 + pat * 2]);
+                    dpi.height = 1;
                     dpi.width = 1;
 
-                    PaintSession* session = PaintSessionAlloc(dpi, w->viewport->flags);
+                    PaintSession* session = PaintSessionAlloc(dpi, w->viewport->flags, w->viewport->rotation);
                     PaintSessionGenerate(*session);
                     PaintSessionArrange(*session);
                     auto info = SetInteractionInfoFromPaintSession(session, w->viewport->flags, ViewportInteractionItemAll);
@@ -316,12 +314,12 @@ void LightFXPrepareLightList()
                     mapCoord = info.Loc;
                     mapCoord.x += tileOffsetX;
                     mapCoord.y += tileOffsetY;
-                    interactionType = info.SpriteType;
+                    interactionType = info.interactionType;
                     tileElement = info.Element;
                 }
 
                 int32_t minDist = 0;
-                int32_t baseHeight = (-999) * COORDS_Z_STEP;
+                int32_t baseHeight = (-999) * kCoordsZStep;
 
                 if (interactionType != ViewportInteractionItem::Entity && tileElement != nullptr)
                 {
@@ -384,19 +382,18 @@ void LightFXPrepareLightList()
             entry->LightIntensity = static_cast<uint8_t>(
                 std::min<uint32_t>(0xFF, (entry->LightIntensity * lightIntensityOccluded) / (totalSamplePoints * 100)));
         }
-        entry->LightIntensity = static_cast<uint8_t>(
-            std::max<uint32_t>(0x00, entry->LightIntensity - static_cast<int8_t>(_current_view_zoom_front) * 5));
 
         if (_current_view_zoom_front > ZoomLevel{ 0 })
         {
-            if (GetLightTypeSize(entry->Type) < static_cast<int8_t>(_current_view_zoom_front))
+            const int8_t zoomNumber = static_cast<int8_t>(_current_view_zoom_front);
+            entry->LightIntensity -= 5 * zoomNumber;
+            if (GetLightTypeSize(entry->Type) < zoomNumber)
             {
                 entry->Type = LightType::None;
                 continue;
             }
 
-            entry->Type = SetLightTypeSize(
-                entry->Type, GetLightTypeSize(entry->Type) - static_cast<int8_t>(_current_view_zoom_front));
+            entry->Type = SetLightTypeSize(entry->Type, GetLightTypeSize(entry->Type) - zoomNumber);
         }
     }
 }
@@ -437,7 +434,7 @@ void LightFXUpdateViewportSettings()
         Viewport* viewport = WindowGetViewport(mainWindow);
         _current_view_x_back = viewport->viewPos.x;
         _current_view_y_back = viewport->viewPos.y;
-        _current_view_rotation_back = GetCurrentRotation();
+        _current_view_rotation_back = viewport->rotation;
         _current_view_zoom_back = viewport->zoom;
     }
 }
@@ -838,6 +835,8 @@ void LightFxAddShopLights(const CoordsXY& mapPosition, const uint8_t direction, 
 
 void LightFXApplyPaletteFilter(uint8_t i, uint8_t* r, uint8_t* g, uint8_t* b)
 {
+    auto& gameState = GetGameState();
+
     float night = static_cast<float>(pow(gDayNightCycle, 1.5));
 
     float natLightR = 1.0f;
@@ -867,9 +866,9 @@ void LightFXApplyPaletteFilter(uint8_t i, uint8_t* r, uint8_t* g, uint8_t* b)
 
     //  overExpose += ((lightMax - lightAvg) / lightMax) * 0.01f;
 
-    if (gClimateCurrent.Temperature > 20)
+    if (gameState.ClimateCurrent.Temperature > 20)
     {
-        float offset = (static_cast<float>(gClimateCurrent.Temperature - 20)) * 0.04f;
+        float offset = (static_cast<float>(gameState.ClimateCurrent.Temperature - 20)) * 0.04f;
         offset *= 1.0f - night;
         lightAvg /= 1.0f + offset;
         //      overExpose += offset * 0.1f;
@@ -891,12 +890,12 @@ void LightFXApplyPaletteFilter(uint8_t i, uint8_t* r, uint8_t* g, uint8_t* b)
     natLightB *= 1.0f + overExpose;
     overExpose *= 255.0f;
 
-    float targetFogginess = static_cast<float>(gClimateCurrent.Level) / 8.0f;
+    float targetFogginess = static_cast<float>(gameState.ClimateCurrent.Level) / 8.0f;
     targetFogginess += (night * night) * 0.15f;
 
-    if (gClimateCurrent.Temperature < 10)
+    if (gameState.ClimateCurrent.Temperature < 10)
     {
-        targetFogginess += (static_cast<float>(10 - gClimateCurrent.Temperature)) * 0.01f;
+        targetFogginess += (static_cast<float>(10 - gameState.ClimateCurrent.Temperature)) * 0.01f;
     }
 
     fogginess -= (fogginess - targetFogginess) * 0.00001f;
@@ -934,7 +933,7 @@ void LightFXApplyPaletteFilter(uint8_t i, uint8_t* r, uint8_t* g, uint8_t* b)
     natLightG /= 1.0f + lightPolution;
     natLightB /= 1.0f + lightPolution;
 
-    reduceColourLit += static_cast<float>(gClimateCurrent.Level) / 2.0f;
+    reduceColourLit += static_cast<float>(gameState.ClimateCurrent.Level) / 2.0f;
 
     reduceColourNat /= 1.0f + fogginess;
     reduceColourLit /= 1.0f + fogginess;

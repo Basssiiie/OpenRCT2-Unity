@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,7 +10,6 @@
 #pragma once
 
 #include "../Identifiers.h"
-#include "../common.h"
 #include "../ride/RideTypes.h"
 #include "../ride/Station.h"
 #include "Banner.h"
@@ -31,10 +30,12 @@ class TerrainEdgeObject;
 class FootpathObject;
 class FootpathSurfaceObject;
 class FootpathRailingsObject;
+enum class RideColourScheme : uint8_t;
 using track_type_t = uint16_t;
 
 constexpr uint8_t MAX_ELEMENT_HEIGHT = 255;
 constexpr uint8_t OWNER_MASK = 0b00001111;
+constexpr uint8_t kTileElementSize = 16;
 
 #pragma pack(push, 1)
 
@@ -100,70 +101,22 @@ struct TileElementBase
             return GetType() == TType::ElementType ? reinterpret_cast<TType*>(this) : nullptr;
     }
 
-    const SurfaceElement* AsSurface() const
-    {
-        return as<SurfaceElement>();
-    }
-    SurfaceElement* AsSurface()
-    {
-        return as<SurfaceElement>();
-    }
-    const PathElement* AsPath() const
-    {
-        return as<PathElement>();
-    }
-    PathElement* AsPath()
-    {
-        return as<PathElement>();
-    }
-    const TrackElement* AsTrack() const
-    {
-        return as<TrackElement>();
-    }
-    TrackElement* AsTrack()
-    {
-        return as<TrackElement>();
-    }
-    const SmallSceneryElement* AsSmallScenery() const
-    {
-        return as<SmallSceneryElement>();
-    }
-    SmallSceneryElement* AsSmallScenery()
-    {
-        return as<SmallSceneryElement>();
-    }
-    const LargeSceneryElement* AsLargeScenery() const
-    {
-        return as<LargeSceneryElement>();
-    }
-    LargeSceneryElement* AsLargeScenery()
-    {
-        return as<LargeSceneryElement>();
-    }
-    const WallElement* AsWall() const
-    {
-        return as<WallElement>();
-    }
-    WallElement* AsWall()
-    {
-        return as<WallElement>();
-    }
-    const EntranceElement* AsEntrance() const
-    {
-        return as<EntranceElement>();
-    }
-    EntranceElement* AsEntrance()
-    {
-        return as<EntranceElement>();
-    }
-    const BannerElement* AsBanner() const
-    {
-        return as<BannerElement>();
-    }
-    BannerElement* AsBanner()
-    {
-        return as<BannerElement>();
-    }
+    const SurfaceElement* AsSurface() const;
+    SurfaceElement* AsSurface();
+    const PathElement* AsPath() const;
+    PathElement* AsPath();
+    const TrackElement* AsTrack() const;
+    TrackElement* AsTrack();
+    const SmallSceneryElement* AsSmallScenery() const;
+    SmallSceneryElement* AsSmallScenery();
+    const LargeSceneryElement* AsLargeScenery() const;
+    LargeSceneryElement* AsLargeScenery();
+    const WallElement* AsWall() const;
+    WallElement* AsWall();
+    const EntranceElement* AsEntrance() const;
+    EntranceElement* AsEntrance();
+    const BannerElement* AsBanner() const;
+    BannerElement* AsBanner();
 };
 
 /**
@@ -183,7 +136,7 @@ struct TileElement : public TileElementBase
     void RemoveBannerEntry();
     BannerIndex GetBannerIndex() const;
 };
-assert_struct_size(TileElement, 16);
+static_assert(sizeof(TileElement) == 16);
 
 struct SurfaceElement : TileElementBase
 {
@@ -231,7 +184,7 @@ public:
     bool HasTrackThatNeedsWater() const;
     void SetHasTrackThatNeedsWater(bool on);
 };
-assert_struct_size(SurfaceElement, 16);
+static_assert(sizeof(SurfaceElement) == 16);
 
 struct PathElement : TileElementBase
 {
@@ -325,7 +278,7 @@ public:
 
     bool IsLevelCrossing(const CoordsXY& coords) const;
 };
-assert_struct_size(PathElement, 16);
+static_assert(sizeof(PathElement) == 16);
 
 struct TrackElement : TileElementBase
 {
@@ -373,7 +326,7 @@ public:
     void SetRideIndex(RideId newRideIndex);
 
     uint8_t GetColourScheme() const;
-    void SetColourScheme(uint8_t newColourScheme);
+    void SetColourScheme(RideColourScheme newColourScheme);
 
     StationIndex GetStationIndex() const;
     void SetStationIndex(StationIndex newStationIndex);
@@ -426,7 +379,7 @@ public:
     bool IsStation() const;
     bool IsBlockStart() const;
 };
-assert_struct_size(TrackElement, 16);
+static_assert(sizeof(TrackElement) == 16);
 
 struct SmallSceneryElement : TileElementBase
 {
@@ -461,7 +414,7 @@ public:
     void SetNeedsSupports();
     void UpdateAge(const CoordsXY& sceneryPos);
 };
-assert_struct_size(SmallSceneryElement, 16);
+static_assert(sizeof(SmallSceneryElement) == 16);
 
 struct LargeSceneryElement : TileElementBase
 {
@@ -501,7 +454,7 @@ public:
     bool IsAccounted() const;
     void SetIsAccounted(bool isAccounted);
 };
-assert_struct_size(LargeSceneryElement, 16);
+static_assert(sizeof(LargeSceneryElement) == 16);
 
 struct WallElement : TileElementBase
 {
@@ -546,52 +499,7 @@ public:
     bool AnimationIsBackwards() const;
     void SetAnimationIsBackwards(bool isBackwards);
 };
-assert_struct_size(WallElement, 16);
-
-struct EntranceElement : TileElementBase
-{
-    static constexpr TileElementType ElementType = TileElementType::Entrance;
-
-private:
-    uint8_t entranceType;      // 5
-    uint8_t SequenceIndex;     // 6. Only uses the lower nibble.
-    StationIndex stationIndex; // 7
-    ObjectEntryIndex PathType; // 8
-    RideId rideIndex;          // A
-    uint8_t flags2;            // C
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-private-field"
-    uint8_t Pad0D[3];
-#pragma clang diagnostic pop
-
-public:
-    uint8_t GetEntranceType() const;
-    void SetEntranceType(uint8_t newType);
-
-    RideId GetRideIndex() const;
-    void SetRideIndex(RideId newRideIndex);
-
-    StationIndex GetStationIndex() const;
-    void SetStationIndex(StationIndex newStationIndex);
-
-    uint8_t GetSequenceIndex() const;
-    void SetSequenceIndex(uint8_t newSequenceIndex);
-
-    bool HasLegacyPathEntry() const;
-
-    ObjectEntryIndex GetLegacyPathEntryIndex() const;
-    const FootpathObject* GetLegacyPathEntry() const;
-    void SetLegacyPathEntryIndex(ObjectEntryIndex newPathType);
-
-    ObjectEntryIndex GetSurfaceEntryIndex() const;
-    const FootpathSurfaceObject* GetSurfaceEntry() const;
-    void SetSurfaceEntryIndex(ObjectEntryIndex newIndex);
-
-    const PathSurfaceDescriptor* GetPathSurfaceDescriptor() const;
-
-    int32_t GetDirections() const;
-};
-assert_struct_size(EntranceElement, 16);
+static_assert(sizeof(WallElement) == 16);
 
 struct BannerElement : TileElementBase
 {
@@ -619,47 +527,9 @@ public:
     void SetAllowedEdges(uint8_t newEdges);
     void ResetAllowedEdges();
 };
-assert_struct_size(BannerElement, 16);
+static_assert(sizeof(BannerElement) == 16);
 
 #pragma pack(pop)
-
-class QuarterTile
-{
-private:
-    uint8_t _val{ 0 };
-
-public:
-    constexpr QuarterTile(uint8_t tileQuarter, uint8_t zQuarter)
-        : _val(tileQuarter | (zQuarter << 4))
-    {
-    }
-
-    QuarterTile(uint8_t tileAndZQuarter)
-        : _val(tileAndZQuarter)
-    {
-    }
-
-    // Rotate both of the values amount. Returns new RValue QuarterTile
-    const QuarterTile Rotate(uint8_t amount) const;
-
-    uint8_t GetBaseQuarterOccupied() const
-    {
-        return _val & 0xF;
-    }
-
-    uint8_t GetZQuarterOccupied() const
-    {
-        return (_val >> 4) & 0xF;
-    }
-};
-
-enum
-{
-    TILE_ELEMENT_QUADRANT_SW,
-    TILE_ELEMENT_QUADRANT_NW,
-    TILE_ELEMENT_QUADRANT_NE,
-    TILE_ELEMENT_QUADRANT_SE
-};
 
 enum
 {
@@ -683,13 +553,6 @@ enum
 
 enum
 {
-    ENTRANCE_TYPE_RIDE_ENTRANCE,
-    ENTRANCE_TYPE_RIDE_EXIT,
-    ENTRANCE_TYPE_PARK_ENTRANCE
-};
-
-enum
-{
     ELEMENT_IS_ABOVE_GROUND = 1 << 0,
     ELEMENT_IS_UNDERGROUND = 1 << 1,
     ELEMENT_IS_UNDERWATER = 1 << 2,
@@ -700,10 +563,10 @@ enum
     MAP_ELEM_TRACK_SEQUENCE_GREEN_LIGHT = (1 << 7),
 };
 
-#define TILE_ELEMENT_QUADRANT_MASK 0b11000000
-#define TILE_ELEMENT_TYPE_MASK 0b00111100
-#define TILE_ELEMENT_DIRECTION_MASK 0b00000011
-#define TILE_ELEMENT_OCCUPIED_QUADRANTS_MASK 0b00001111
+constexpr uint8_t kTileElementQuadrantMask = 0b11000000;
+constexpr uint8_t kTileElementTypeMask = 0b00111100;
+constexpr uint8_t kTileElementDirectionMask = 0b00000011;
+constexpr uint8_t kTileElementOccupiedQuadrantsMask = 0b00001111;
 
 enum
 {

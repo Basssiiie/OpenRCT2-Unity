@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,12 +10,13 @@
 #include "LargeScenery.h"
 
 #include "../Context.h"
-#include "../common.h"
 #include "../object/LargeSceneryObject.h"
 #include "../object/ObjectEntryManager.h"
 #include "../object/ObjectManager.h"
 #include "../world/Banner.h"
 #include "TileElement.h"
+
+#include <cassert>
 
 colour_t LargeSceneryElement::GetPrimaryColour() const
 {

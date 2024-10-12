@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -15,7 +15,6 @@
 #include "../../core/Numerics.hpp"
 #include "../../drawing/Drawing.h"
 #include "../../interface/Viewport.h"
-#include "../../localisation/Localisation.h"
 #include "../../profiling/Profiling.h"
 #include "../../ride/RideData.h"
 #include "../../ride/TrackData.h"
@@ -27,19 +26,17 @@
 #include "../../world/Map.h"
 #include "../../world/Scenery.h"
 #include "../../world/Surface.h"
+#include "../../world/tile_element/Slope.h"
 #include "../Paint.SessionFlags.h"
 #include "../Paint.h"
-#include "../Supports.h"
 #include "../VirtualFloor.h"
 #include "Paint.Surface.h"
+#include "Segment.h"
 
-#include <algorithm>
+using namespace OpenRCT2;
 
 static void BlankTilesPaint(PaintSession& session, int32_t x, int32_t y);
 static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoords);
-
-const int32_t SEGMENTS_ALL = SEGMENT_B4 | SEGMENT_B8 | SEGMENT_BC | SEGMENT_C0 | SEGMENT_C4 | SEGMENT_C8 | SEGMENT_CC
-    | SEGMENT_D0 | SEGMENT_D4;
 
 /**
  *
@@ -51,7 +48,7 @@ void TileElementPaintSetup(PaintSession& session, const CoordsXY& mapCoords, boo
 
     if (!MapIsEdge(mapCoords))
     {
-        PaintUtilSetSegmentSupportHeight(session, SEGMENTS_ALL, 0xFFFF, 0);
+        PaintUtilSetSegmentSupportHeight(session, kSegmentsAll, 0xFFFF, 0);
         PaintUtilForceSetGeneralSupportHeight(session, -1, 0);
         session.Flags = isTrackPiecePreview ? PaintSessionFlags::IsTrackPiecePreview : 0;
         session.WaterHeight = 0xFFFF;
@@ -94,11 +91,11 @@ static void BlankTilesPaint(PaintSession& session, int32_t x, int32_t y)
     dx -= 16;
     int32_t bx = dx + 32;
 
-    if (bx <= session.DPI.y)
+    if (bx <= session.DPI.WorldY())
         return;
     dx -= 20;
-    dx -= session.DPI.height;
-    if (dx >= session.DPI.y)
+    dx -= session.DPI.WorldHeight();
+    if (dx >= session.DPI.WorldY())
         return;
 
     session.SpritePosition.x = x;
@@ -129,8 +126,8 @@ static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoor
 
     session.LeftTunnelCount = 0;
     session.RightTunnelCount = 0;
-    session.LeftTunnels[0] = { 0xFF, 0xFF };
-    session.RightTunnels[0] = { 0xFF, 0xFF };
+    session.LeftTunnels[0] = { 0xFF, TunnelType::Null };
+    session.RightTunnels[0] = { 0xFF, TunnelType::Null };
     session.VerticalTunnelHeight = 0xFF;
     session.MapPosition.x = coords.x;
     session.MapPosition.y = coords.y;
@@ -142,7 +139,7 @@ static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoor
 
     bool partOfVirtualFloor = false;
 
-    if (gConfigGeneral.VirtualFloorStyle != VirtualFloorStyles::Off)
+    if (Config::Get().general.VirtualFloorStyle != VirtualFloorStyles::Off)
     {
         partOfVirtualFloor = VirtualFloorTileIsFloor(session.MapPosition);
     }
@@ -152,14 +149,14 @@ static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoor
         case 0:
             break;
         case 1:
-            coords.x += COORDS_XY_STEP;
+            coords.x += kCoordsXYStep;
             break;
         case 2:
-            coords.x += COORDS_XY_STEP;
-            coords.y += COORDS_XY_STEP;
+            coords.x += kCoordsXYStep;
+            coords.y += kCoordsXYStep;
             break;
         case 3:
-            coords.y += COORDS_XY_STEP;
+            coords.y += kCoordsXYStep;
             break;
     }
 
@@ -182,7 +179,7 @@ static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoor
         PaintAddImageAsParent(session, imageId, { 0, 0, arrowZ }, { { 0, 0, arrowZ + 18 }, { 32, 32, -1 } });
     }
 
-    if (screenMinY + 52 <= session.DPI.y)
+    if (screenMinY + 52 <= session.DPI.WorldY())
         return;
 
     const TileElement* element = tile_element; // push tile_element
@@ -206,7 +203,7 @@ static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoor
         max_height = std::max(max_height, VirtualFloorGetHeight());
     }
 
-    if (screenMinY - (max_height + 32) >= session.DPI.y + session.DPI.height)
+    if (screenMinY - (max_height + 32) >= session.DPI.WorldY() + session.DPI.WorldHeight())
         return;
 
     session.SpritePosition.x = coords.x;
@@ -222,7 +219,7 @@ static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoor
         }
 
         // Only paint tile_elements below the clip height.
-        if ((session.ViewFlags & VIEWPORT_FLAG_CLIP_VIEW) && (tile_element->GetBaseZ() > gClipHeight * COORDS_Z_STEP))
+        if ((session.ViewFlags & VIEWPORT_FLAG_CLIP_VIEW) && (tile_element->GetBaseZ() > gClipHeight * kCoordsZStep))
             continue;
 
         Direction direction = tile_element->GetDirectionWithOffset(rotation);
@@ -288,7 +285,7 @@ static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoor
         session.MapPosition = mapPosition;
     } while (!(tile_element++)->IsLastForTile());
 
-    if (gConfigGeneral.VirtualFloorStyle != VirtualFloorStyles::Off && partOfVirtualFloor)
+    if (Config::Get().general.VirtualFloorStyle != VirtualFloorStyles::Off && partOfVirtualFloor)
     {
         VirtualFloorPaint(session);
     }
@@ -336,39 +333,14 @@ static void PaintTileElementBase(PaintSession& session, const CoordsXY& origCoor
     }
 }
 
-void PaintUtilPushTunnelLeft(PaintSession& session, uint16_t height, uint8_t type)
-{
-    session.LeftTunnels[session.LeftTunnelCount] = { static_cast<uint8_t>((height / 16)), type };
-    if (session.LeftTunnelCount < TUNNEL_MAX_COUNT - 1)
-    {
-        session.LeftTunnels[session.LeftTunnelCount + 1] = { 0xFF, 0xFF };
-        session.LeftTunnelCount++;
-    }
-}
-
-void PaintUtilPushTunnelRight(PaintSession& session, uint16_t height, uint8_t type)
-{
-    session.RightTunnels[session.RightTunnelCount] = { static_cast<uint8_t>((height / 16)), type };
-    if (session.RightTunnelCount < TUNNEL_MAX_COUNT - 1)
-    {
-        session.RightTunnels[session.RightTunnelCount + 1] = { 0xFF, 0xFF };
-        session.RightTunnelCount++;
-    }
-}
-
-void PaintUtilSetVerticalTunnel(PaintSession& session, uint16_t height)
-{
-    session.VerticalTunnelHeight = height / 16;
-}
-
-void PaintUtilSetGeneralSupportHeight(PaintSession& session, int16_t height, uint8_t slope)
+void PaintUtilSetGeneralSupportHeight(PaintSession& session, int16_t height)
 {
     if (session.Support.height >= height)
     {
         return;
     }
 
-    PaintUtilForceSetGeneralSupportHeight(session, height, slope);
+    PaintUtilForceSetGeneralSupportHeight(session, height, kTileSlopeAboveTrackOrScenery);
 }
 
 void PaintUtilForceSetGeneralSupportHeight(PaintSession& session, int16_t height, uint8_t slope)
@@ -378,7 +350,9 @@ void PaintUtilForceSetGeneralSupportHeight(PaintSession& session, int16_t height
 }
 
 const uint16_t segment_offsets[9] = {
-    SEGMENT_B4, SEGMENT_B8, SEGMENT_BC, SEGMENT_C0, SEGMENT_C4, SEGMENT_C8, SEGMENT_CC, SEGMENT_D0, SEGMENT_D4,
+    EnumToFlag(PaintSegment::topCorner),    EnumToFlag(PaintSegment::leftCorner),     EnumToFlag(PaintSegment::rightCorner),
+    EnumToFlag(PaintSegment::bottomCorner), EnumToFlag(PaintSegment::centre),         EnumToFlag(PaintSegment::topLeftSide),
+    EnumToFlag(PaintSegment::topRightSide), EnumToFlag(PaintSegment::bottomLeftSide), EnumToFlag(PaintSegment::bottomRightSide),
 };
 
 void PaintUtilSetSegmentSupportHeight(PaintSession& session, int32_t segments, uint16_t height, uint8_t slope)
@@ -399,6 +373,7 @@ void PaintUtilSetSegmentSupportHeight(PaintSession& session, int32_t segments, u
 
 uint16_t PaintUtilRotateSegments(uint16_t segments, uint8_t rotation)
 {
+    // Only the value representing PaintSegment::centre falls beyond 0xFF, so this will be kept in place.
     uint8_t temp = segments & 0xFF;
     temp = Numerics::rol8(temp, rotation * 2);
 

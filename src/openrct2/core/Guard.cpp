@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -8,23 +8,23 @@
  *****************************************************************************/
 
 #ifdef _WIN32
+#    include <cassert>
 #    include <windows.h>
 #endif
 
 #include "../Version.h"
-#include "../common.h"
 #include "Console.hpp"
 #include "Diagnostics.hpp"
 #include "Guard.hpp"
+#include "String.hpp"
 #include "StringBuilder.h"
 
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
-#include <string>
 
-namespace Guard
+namespace OpenRCT2::Guard
 {
     constexpr const utf8* ASSERTION_MESSAGE = "An assertion failed, please report this to the OpenRCT2 developers.";
 
@@ -152,4 +152,4 @@ namespace Guard
 #    endif
     }
 #endif
-} // namespace Guard
+} // namespace OpenRCT2::Guard

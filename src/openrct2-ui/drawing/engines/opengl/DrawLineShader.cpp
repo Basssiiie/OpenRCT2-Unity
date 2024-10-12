@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,6 +12,8 @@
 #    include "DrawLineShader.h"
 
 #    include "OpenGLFramebuffer.h"
+
+using namespace OpenRCT2::Ui;
 
 namespace
 {
@@ -49,7 +51,6 @@ DrawLineShader::DrawLineShader()
         vVertMat + 3, 2, GL_FLOAT, GL_FALSE, sizeof(VDStruct), reinterpret_cast<void*>(offsetof(VDStruct, mat[3])));
 
     glBindBuffer(GL_ARRAY_BUFFER, _vboInstances);
-    glVertexAttribIPointer(vClip, 4, GL_INT, sizeof(DrawLineCommand), reinterpret_cast<void*>(offsetof(DrawLineCommand, clip)));
     glVertexAttribIPointer(
         vBounds, 4, GL_INT, sizeof(DrawLineCommand), reinterpret_cast<void*>(offsetof(DrawLineCommand, bounds)));
     glVertexAttribIPointer(
@@ -67,7 +68,6 @@ DrawLineShader::DrawLineShader()
     glEnableVertexAttribArray(vColour);
     glEnableVertexAttribArray(vDepth);
 
-    glVertexAttribDivisor(vClip, 1);
     glVertexAttribDivisor(vBounds, 1);
     glVertexAttribDivisor(vColour, 1);
     glVertexAttribDivisor(vDepth, 1);
@@ -85,7 +85,6 @@ void DrawLineShader::GetLocations()
 {
     uScreenSize = GetUniformLocation("uScreenSize");
 
-    vClip = GetAttributeLocation("vClip");
     vBounds = GetAttributeLocation("vBounds");
     vColour = GetAttributeLocation("vColour");
     vDepth = GetAttributeLocation("vDepth");

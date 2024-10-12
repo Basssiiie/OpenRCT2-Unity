@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,52 +14,44 @@
 #include "../object/Object.h"
 #include "../util/SawyerCoding.h"
 #include "../util/Util.h"
+#include "ObjectLimits.h"
 #include "ObjectManager.h"
 #include "ObjectRepository.h"
 
-#include <algorithm>
 #include <array>
 #include <cstring>
 
-// 98DA00
-int32_t object_entry_group_counts[] = {
-    MAX_RIDE_OBJECTS,          // rides
-    MAX_SMALL_SCENERY_OBJECTS, // small scenery
-    MAX_LARGE_SCENERY_OBJECTS, // large scenery
-    MAX_WALL_SCENERY_OBJECTS,  // walls
-    MAX_BANNER_OBJECTS,        // banners
-    MAX_PATH_OBJECTS,          // paths
-    MAX_PATH_ADDITION_OBJECTS, // path additions
-    MAX_SCENERY_GROUP_OBJECTS, // scenery sets
-    MAX_PARK_ENTRANCE_OBJECTS, // park entrance
-    MAX_WATER_OBJECTS,         // water
-    MAX_SCENARIO_TEXT_OBJECTS, // scenario text
-    MAX_TERRAIN_SURFACE_OBJECTS,
-    MAX_TERRAIN_EDGE_OBJECTS,
-    MAX_STATION_OBJECTS,
-    MAX_MUSIC_OBJECTS,
-    MAX_FOOTPATH_SURFACE_OBJECTS,
-    MAX_FOOTPATH_RAILINGS_OBJECTS,
-    MAX_AUDIO_OBJECTS,
+// 0x0098DA00
+static constexpr std::array<int32_t, EnumValue(ObjectType::Count)> kObjectEntryGroupCounts = {
+    kMaxRideObjects,         // rides
+    kMaxSmallSceneryObjects, // small scenery
+    kMaxLargeSceneryObjects, // large scenery
+    kMaxWallSceneryObjects,  // walls
+    kMaxBannerObjects,       // banners
+    kMaxPathObjects,         // paths
+    kMaxPathAdditionObjects, // path additions
+    kMaxSceneryGroupObjects, // scenery sets
+    kMaxParkEntranceObjects, // park entrance
+    kMaxWaterObjects,        // water
+    kMaxScenarioTextObjects, // scenario text
+    kMaxTerrainSurfaceObjects, kMaxTerrainEdgeObjects,     kMaxStationObjects,
+    kMaxMusicObjects,          kMaxFootpathSurfaceObjects, kMaxFootpathRailingsObjects,
+    kMaxAudioObjects,          kMaxPeepNamesObjects,
 };
-static_assert(std::size(object_entry_group_counts) == EnumValue(ObjectType::Count));
+static_assert(std::size(kObjectEntryGroupCounts) == EnumValue(ObjectType::Count));
 
-// 98DA2C
-// clang-format off
-int32_t object_entry_group_encoding[] = {
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_RLE,
-    CHUNK_ENCODING_ROTATE,
-};
-// clang-format on
+size_t getObjectEntryGroupCount(ObjectType objectType)
+{
+    return kObjectEntryGroupCounts[EnumValue(objectType)];
+}
+
+size_t getObjectTypeLimit(ObjectType type)
+{
+    auto index = EnumValue(type);
+    if (index >= EnumValue(ObjectType::Count))
+        return 0;
+    return static_cast<size_t>(kObjectEntryGroupCounts[index]);
+}
 
 ObjectList::const_iterator::const_iterator(const ObjectList* parent, bool end)
 {
@@ -203,7 +195,7 @@ void ObjectCreateIdentifierName(char* string_buffer, size_t size, const RCTObjec
 void ObjectGetTypeEntryIndex(size_t index, ObjectType* outObjectType, ObjectEntryIndex* outEntryIndex)
 {
     uint8_t objectType = EnumValue(ObjectType::Ride);
-    for (size_t groupCount : object_entry_group_counts)
+    for (size_t groupCount : kObjectEntryGroupCounts)
     {
         if (index >= groupCount)
         {
@@ -224,7 +216,7 @@ void ObjectGetTypeEntryIndex(size_t index, ObjectType* outObjectType, ObjectEntr
 
 void ObjectEntryGetNameFixed(utf8* buffer, size_t bufferSize, const RCTObjectEntry* entry)
 {
-    bufferSize = std::min(static_cast<size_t>(DAT_NAME_LENGTH) + 1, bufferSize);
+    bufferSize = std::min(static_cast<size_t>(kDatNameLength) + 1, bufferSize);
     std::memcpy(buffer, entry->name, bufferSize - 1);
     buffer[bufferSize - 1] = 0;
 }

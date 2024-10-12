@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,9 +11,12 @@
 
 #include "../../core/Numerics.hpp"
 #include "../../drawing/LightFX.h"
+#include "../../interface/Viewport.h"
 #include "../../object/PathAdditionEntry.h"
 #include "../../profiling/Profiling.h"
 #include "Paint.TileElement.h"
+
+using namespace OpenRCT2;
 
 static ImageIndex GetEdgeImageOffset(edge_t edge)
 {

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,10 +10,13 @@
 #include "NetworkBase.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../Game.h"
+#include "../GameState.h"
 #include "../GameStateSnapshots.h"
 #include "../OpenRCT2.h"
 #include "../PlatformEnvironment.h"
+#include "../Version.h"
 #include "../actions/LoadOrQuitAction.h"
 #include "../actions/NetworkModifyGroupAction.h"
 #include "../actions/PeepPickupAction.h"
@@ -25,6 +28,7 @@
 #include "../entity/EntityTweener.h"
 #include "../localisation/Formatter.h"
 #include "../localisation/Formatting.h"
+#include "../localisation/LocalisationService.h"
 #include "../park/ParkFile.h"
 #include "../platform/Platform.h"
 #include "../scenario/Scenario.h"
@@ -35,30 +39,32 @@
 #include "../world/Location.hpp"
 #include "network.h"
 
-#include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <stdexcept>
+
+using namespace OpenRCT2;
 
 // This string specifies which version of network stream current build uses.
 // It is used for making sure only compatible builds get connected, even within
 // single OpenRCT2 version.
 
-#define NETWORK_STREAM_VERSION "10"
+constexpr uint8_t kNetworkStreamVersion = 5;
 
-#define NETWORK_STREAM_ID OPENRCT2_VERSION "-" NETWORK_STREAM_VERSION
+const std::string kNetworkStreamID = std::string(OPENRCT2_VERSION) + "-" + std::to_string(kNetworkStreamVersion);
 
 static Peep* _pickup_peep = nullptr;
-static int32_t _pickup_peep_old_x = LOCATION_NULL;
+static int32_t _pickup_peep_old_x = kLocationNull;
 
 #ifndef DISABLE_NETWORK
 
 // General chunk size is 63 KiB, this can not be any larger because the packet size is encoded
 // with uint16_t and needs some spare room for other data in the packet.
-static constexpr uint32_t CHUNK_SIZE = 1024 * 63;
+static constexpr uint32_t kChunkSize = 1024 * 63;
 
 // If data is sent fast enough it would halt the entire server, process only a maximum amount.
 // This limit is per connection, the current value was determined by tests with fuzzing.
-static constexpr uint32_t MaxPacketsPerUpdate = 100;
+static constexpr uint32_t kMaxPacketsPerUpdate = 100;
 
 #    include "../Cheats.h"
 #    include "../ParkImporter.h"
@@ -72,8 +78,7 @@ static constexpr uint32_t MaxPacketsPerUpdate = 100;
 #    include "../core/String.hpp"
 #    include "../interface/Chat.h"
 #    include "../interface/Window.h"
-#    include "../localisation/Date.h"
-#    include "../localisation/Localisation.h"
+#    include "../localisation/Localisation.Date.h"
 #    include "../object/ObjectManager.h"
 #    include "../object/ObjectRepository.h"
 #    include "../scenario/Scenario.h"
@@ -89,7 +94,6 @@ static constexpr uint32_t MaxPacketsPerUpdate = 100;
 #    include "NetworkUser.h"
 #    include "Socket.h"
 
-#    include <algorithm>
 #    include <array>
 #    include <cerrno>
 #    include <cmath>
@@ -283,7 +287,7 @@ bool NetworkBase::BeginClient(const std::string& host, uint16_t port)
     // risk of tick collision with the server map and title screen map.
     GameActions::SuspendQueue();
 
-    auto keyPath = NetworkGetPrivateKeyPath(gConfigNetwork.PlayerName);
+    auto keyPath = NetworkGetPrivateKeyPath(Config::Get().network.PlayerName);
     if (!File::Exists(keyPath))
     {
         Console::WriteLine("Generating key... This may take a while");
@@ -311,7 +315,7 @@ bool NetworkBase::BeginClient(const std::string& host, uint16_t port)
 
         const std::string hash = _key.PublicKeyHash();
         const utf8* publicKeyHash = hash.c_str();
-        keyPath = NetworkGetPublicKeyPath(gConfigNetwork.PlayerName, publicKeyHash);
+        keyPath = NetworkGetPublicKeyPath(Config::Get().network.PlayerName, publicKeyHash);
         Console::WriteLine("Key generated, saving public bits as %s", keyPath.c_str());
 
         try
@@ -373,21 +377,20 @@ bool NetworkBase::BeginServer(uint16_t port, const std::string& address)
         return false;
     }
 
-    ServerName = gConfigNetwork.ServerName;
-    ServerDescription = gConfigNetwork.ServerDescription;
-    ServerGreeting = gConfigNetwork.ServerGreeting;
-    ServerProviderName = gConfigNetwork.ProviderName;
-    ServerProviderEmail = gConfigNetwork.ProviderEmail;
-    ServerProviderWebsite = gConfigNetwork.ProviderWebsite;
+    ServerName = Config::Get().network.ServerName;
+    ServerDescription = Config::Get().network.ServerDescription;
+    ServerGreeting = Config::Get().network.ServerGreeting;
+    ServerProviderName = Config::Get().network.ProviderName;
+    ServerProviderEmail = Config::Get().network.ProviderEmail;
+    ServerProviderWebsite = Config::Get().network.ProviderWebsite;
 
     IsServerPlayerInvisible = gOpenRCT2Headless;
 
-    CheatsReset();
     LoadGroups();
     BeginChatLog();
     BeginServerLog();
 
-    NetworkPlayer* player = AddPlayer(gConfigNetwork.PlayerName, "");
+    NetworkPlayer* player = AddPlayer(Config::Get().network.PlayerName, "");
     player->Flags |= NETWORK_PLAYER_FLAG_ISSERVER;
     player->Group = 0;
     player_id = player->Id;
@@ -408,7 +411,7 @@ bool NetworkBase::BeginServer(uint16_t port, const std::string& address)
 
     status = NETWORK_STATUS_CONNECTED;
     listening_port = port;
-    _serverState.gamestateSnapshotsEnabled = gConfigNetwork.DesyncDebugging;
+    _serverState.gamestateSnapshotsEnabled = Config::Get().network.DesyncDebugging;
     _advertiser = CreateServerAdvertiser(listening_port);
 
     GameLoadScripts();
@@ -708,15 +711,70 @@ int32_t NetworkBase::GetNumVisiblePlayers() const noexcept
     return static_cast<int32_t>(player_list.size());
 }
 
-const char* NetworkBase::FormatChat(NetworkPlayer* fromplayer, const char* text)
+const char* NetworkBase::FormatChat(NetworkPlayer* fromPlayer, const char* text)
 {
     static std::string formatted;
     formatted.clear();
-    formatted += "{OUTLINE}";
-    if (fromplayer != nullptr)
+
+    if (fromPlayer != nullptr)
     {
-        formatted += "{BABYBLUE}";
-        formatted += fromplayer->Name;
+        auto& network = OpenRCT2::GetContext()->GetNetwork();
+        auto it = network.GetGroupByID(fromPlayer->Id);
+        std::string groupName = "";
+        std::vector<std::string> colours;
+        if (it != nullptr)
+        {
+            groupName = it->GetName();
+            if (groupName[0] != '{')
+            {
+                colours.push_back("{WHITE}");
+            }
+        }
+
+        for (size_t i = 0; i < groupName.size(); ++i)
+        {
+            if (groupName[i] == '{')
+            {
+                std::string colour = "{";
+                ++i;
+                while (i < groupName.size() && groupName[i] != '}' && groupName[i] != '{')
+                {
+                    colour += groupName[i];
+                    ++i;
+                }
+                colour += '}';
+                if (groupName[i] == '}' && i < groupName.size())
+                {
+                    colours.push_back(colour);
+                }
+            }
+        }
+
+        if (colours.size() == 0 || (colours.size() == 1 && colours[0] == "{WHITE}"))
+        {
+            formatted += "{BABYBLUE}";
+            formatted += fromPlayer->Name;
+        }
+        else
+        {
+            size_t j = 0;
+            size_t proportionalSize = fromPlayer->Name.size() / colours.size();
+            for (size_t i = 0; i < colours.size(); ++i)
+            {
+                formatted += colours[i];
+                size_t numCharacters = proportionalSize + j;
+                for (; j < numCharacters && j < fromPlayer->Name.size(); ++j)
+                {
+                    formatted += fromPlayer->Name[j];
+                }
+            }
+            while (j < fromPlayer->Name.size())
+            {
+                formatted += fromPlayer->Name[j];
+                j++;
+            }
+        }
+
         formatted += ": ";
     }
     formatted += "{WHITE}";
@@ -783,12 +841,14 @@ bool NetworkBase::IsDesynchronised() const noexcept
 
 bool NetworkBase::CheckDesynchronizaton()
 {
+    const auto currentTicks = GetGameState().CurrentTicks;
+
     // Check synchronisation
     if (GetMode() == NETWORK_MODE_CLIENT && _serverState.state != NetworkServerStatus::Desynced
-        && !CheckSRAND(gCurrentTicks, ScenarioRandState().s0))
+        && !CheckSRAND(currentTicks, ScenarioRandState().s0))
     {
         _serverState.state = NetworkServerStatus::Desynced;
-        _serverState.desyncTick = gCurrentTicks;
+        _serverState.desyncTick = currentTicks;
 
         char str_desync[256];
         FormatStringLegacy(str_desync, 256, STR_MULTIPLAYER_DESYNC, nullptr);
@@ -797,7 +857,7 @@ bool NetworkBase::CheckDesynchronizaton()
         intent.PutExtra(INTENT_EXTRA_MESSAGE, std::string{ str_desync });
         ContextOpenIntent(&intent);
 
-        if (!gConfigNetwork.StayConnected)
+        if (!Config::Get().network.StayConnected)
         {
             Close();
         }
@@ -869,12 +929,12 @@ std::string NetworkBase::GenerateAdvertiseKey()
 
 std::string NetworkBase::GetMasterServerUrl()
 {
-    if (gConfigNetwork.MasterServerUrl.empty())
+    if (Config::Get().network.MasterServerUrl.empty())
     {
-        return OPENRCT2_MASTER_SERVER_URL;
+        return kMasterServerURL;
     }
 
-    return gConfigNetwork.MasterServerUrl;
+    return Config::Get().network.MasterServerUrl;
 }
 
 NetworkGroup* NetworkBase::AddGroup()
@@ -1113,7 +1173,7 @@ void NetworkBase::BeginChatLog()
 
 void NetworkBase::AppendChatLog(std::string_view s)
 {
-    if (gConfigNetwork.LogChat && _chat_log_fs.is_open())
+    if (Config::Get().network.LogChat && _chat_log_fs.is_open())
     {
         AppendLog(_chat_log_fs, s);
     }
@@ -1151,7 +1211,7 @@ void NetworkBase::BeginServerLog()
 
 void NetworkBase::AppendServerLog(const std::string& s)
 {
-    if (gConfigNetwork.LogServerActions && _server_log_fs.is_open())
+    if (Config::Get().network.LogServerActions && _server_log_fs.is_open())
     {
         AppendLog(_server_log_fs, s);
     }
@@ -1321,7 +1381,7 @@ void NetworkBase::ServerSendScripts(NetworkConnection& connection)
     uint32_t dataOffset = 0;
     while (dataOffset < pluginData.GetLength())
     {
-        const uint32_t chunkSize = std::min<uint32_t>(pluginData.GetLength() - dataOffset, CHUNK_SIZE);
+        const uint32_t chunkSize = std::min<uint32_t>(pluginData.GetLength() - dataOffset, kChunkSize);
 
         NetworkPacket packet(NetworkCommand::ScriptsData);
         packet << chunkSize;
@@ -1335,8 +1395,8 @@ void NetworkBase::ServerSendScripts(NetworkConnection& connection)
 
 #    else
     NetworkPacket packetScriptHeader(NetworkCommand::ScriptsHeader);
-    packetScriptHeader << static_cast<uint32_t>(0U);
-    packetScriptHeader << static_cast<uint32_t>(0U);
+    packetScriptHeader << static_cast<uint32_t>(0u);
+    packetScriptHeader << static_cast<uint32_t>(0u);
 #    endif
 }
 
@@ -1415,7 +1475,7 @@ void NetworkBase::ServerSendMap(NetworkConnection* connection)
         }
         return;
     }
-    size_t chunksize = CHUNK_SIZE;
+    size_t chunksize = kChunkSize;
     for (size_t i = 0; i < header.size(); i += chunksize)
     {
         size_t datasize = std::min(chunksize, header.size() - i);
@@ -1496,7 +1556,7 @@ void NetworkBase::Client_Send_GAME_ACTION(const GameAction* action)
     DataSerialiser stream(true);
     action->Serialise(stream);
 
-    packet << gCurrentTicks << action->GetType() << stream;
+    packet << GetGameState().CurrentTicks << action->GetType() << stream;
     _serverConnection->QueuePacket(std::move(packet));
 }
 
@@ -1507,7 +1567,7 @@ void NetworkBase::ServerSendGameAction(const GameAction* action)
     DataSerialiser stream(true);
     action->Serialise(stream);
 
-    packet << gCurrentTicks << action->GetType() << stream;
+    packet << GetGameState().CurrentTicks << action->GetType() << stream;
 
     SendPacketToClients(packet);
 }
@@ -1515,7 +1575,7 @@ void NetworkBase::ServerSendGameAction(const GameAction* action)
 void NetworkBase::ServerSendTick()
 {
     NetworkPacket packet(NetworkCommand::Tick);
-    packet << gCurrentTicks << ScenarioRandState().s0;
+    packet << GetGameState().CurrentTicks << ScenarioRandState().s0;
     uint32_t flags = 0;
     // Simple counter which limits how often a sprite checksum gets sent.
     // This can get somewhat expensive, so we don't want to push it every tick in release,
@@ -1542,7 +1602,7 @@ void NetworkBase::ServerSendTick()
 void NetworkBase::ServerSendPlayerInfo(int32_t playerId)
 {
     NetworkPacket packet(NetworkCommand::PlayerInfo);
-    packet << gCurrentTicks;
+    packet << GetGameState().CurrentTicks;
 
     auto* player = GetPlayerByID(playerId);
     if (player == nullptr)
@@ -1555,7 +1615,7 @@ void NetworkBase::ServerSendPlayerInfo(int32_t playerId)
 void NetworkBase::ServerSendPlayerList()
 {
     NetworkPacket packet(NetworkCommand::PlayerList);
-    packet << gCurrentTicks << static_cast<uint8_t>(player_list.size());
+    packet << GetGameState().CurrentTicks << static_cast<uint8_t>(player_list.size());
     for (auto& player : player_list)
     {
         player->Write(packet);
@@ -1601,13 +1661,13 @@ void NetworkBase::ServerSendSetDisconnectMsg(NetworkConnection& connection, cons
 json_t NetworkBase::GetServerInfoAsJson() const
 {
     json_t jsonObj = {
-        { "name", gConfigNetwork.ServerName },
+        { "name", Config::Get().network.ServerName },
         { "requiresPassword", _password.size() > 0 },
         { "version", NetworkGetVersion() },
         { "players", GetNumVisiblePlayers() },
-        { "maxPlayers", gConfigNetwork.Maxplayers },
-        { "description", gConfigNetwork.ServerDescription },
-        { "greeting", gConfigNetwork.ServerGreeting },
+        { "maxPlayers", Config::Get().network.Maxplayers },
+        { "description", Config::Get().network.ServerDescription },
+        { "greeting", Config::Get().network.ServerGreeting },
         { "dedicated", gOpenRCT2Headless },
     };
     return jsonObj;
@@ -1621,9 +1681,9 @@ void NetworkBase::ServerSendGameInfo(NetworkConnection& connection)
 
     // Provider details
     json_t jsonProvider = {
-        { "name", gConfigNetwork.ProviderName },
-        { "email", gConfigNetwork.ProviderEmail },
-        { "website", gConfigNetwork.ProviderWebsite },
+        { "name", Config::Get().network.ProviderName },
+        { "email", Config::Get().network.ProviderEmail },
+        { "website", Config::Get().network.ProviderWebsite },
     };
 
     jsonObj["provider"] = jsonProvider;
@@ -1704,7 +1764,7 @@ bool NetworkBase::ProcessConnection(NetworkConnection& connection)
                 // could not read anything from socket
                 break;
         }
-    } while (packetStatus == NetworkReadPacket::Success && countProcessed < MaxPacketsPerUpdate);
+    } while (packetStatus == NetworkReadPacket::Success && countProcessed < kMaxPacketsPerUpdate);
 
     if (!connection.ReceivedPacketRecently())
     {
@@ -1849,7 +1909,7 @@ void NetworkBase::ProcessPlayerList()
         auto itPending = _pendingPlayerLists.begin();
         while (itPending != _pendingPlayerLists.end())
         {
-            if (itPending->first > gCurrentTicks)
+            if (itPending->first > GetGameState().CurrentTicks)
                 break;
 
             // List of active players found in the list.
@@ -1921,7 +1981,9 @@ void NetworkBase::ProcessPlayerList()
 
 void NetworkBase::ProcessPlayerInfo()
 {
-    auto range = _pendingPlayerInfo.equal_range(gCurrentTicks);
+    const auto currentTicks = GetGameState().CurrentTicks;
+
+    auto range = _pendingPlayerInfo.equal_range(currentTicks);
     for (auto it = range.first; it != range.second; it++)
     {
         auto* player = GetPlayerByID(it->second.Id);
@@ -1936,7 +1998,7 @@ void NetworkBase::ProcessPlayerInfo()
             player->CommandsRan = networkedInfo.CommandsRan;
         }
     }
-    _pendingPlayerInfo.erase(gCurrentTicks);
+    _pendingPlayerInfo.erase(currentTicks);
 }
 
 void NetworkBase::ProcessDisconnectedClients()
@@ -2141,7 +2203,7 @@ std::string NetworkBase::MakePlayerNameUnique(const std::string& name)
 
 void NetworkBase::Client_Handle_TOKEN(NetworkConnection& connection, NetworkPacket& packet)
 {
-    auto keyPath = NetworkGetPrivateKeyPath(gConfigNetwork.PlayerName);
+    auto keyPath = NetworkGetPrivateKeyPath(Config::Get().network.PlayerName);
     if (!File::Exists(keyPath))
     {
         LOG_ERROR("Key file (%s) was not found. Restart client to re-generate it.", keyPath.c_str());
@@ -2184,7 +2246,7 @@ void NetworkBase::Client_Handle_TOKEN(NetworkConnection& connection, NetworkPack
     // when process dump gets collected at some point in future.
     _key.Unload();
 
-    Client_Send_AUTH(gConfigNetwork.PlayerName, gCustomPassword, pubkey, signature);
+    Client_Send_AUTH(Config::Get().network.PlayerName, gCustomPassword, pubkey, signature);
 }
 
 void NetworkBase::ServerHandleRequestGamestate(NetworkConnection& connection, NetworkPacket& packet)
@@ -2212,7 +2274,7 @@ void NetworkBase::ServerHandleRequestGamestate(NetworkConnection& connection, Ne
         uint32_t length = static_cast<uint32_t>(snapshotMemory.GetLength());
         while (bytesSent < length)
         {
-            uint32_t dataSize = CHUNK_SIZE;
+            uint32_t dataSize = kChunkSize;
             if (bytesSent + dataSize > snapshotMemory.GetLength())
             {
                 dataSize = snapshotMemory.GetLength() - bytesSent;
@@ -2321,6 +2383,15 @@ void NetworkBase::ServerHandleToken(NetworkConnection& connection, [[maybe_unuse
     ServerSendToken(connection);
 }
 
+static void OpenNetworkProgress(StringId captionStringId)
+{
+    auto captionString = GetContext()->GetLocalisationService().GetString(captionStringId);
+    auto intent = Intent(INTENT_ACTION_PROGRESS_OPEN);
+    intent.PutExtra(INTENT_EXTRA_MESSAGE, captionString);
+    intent.PutExtra(INTENT_EXTRA_CALLBACK, []() -> void { ::GetContext()->GetNetwork().Close(); });
+    ContextOpenIntent(&intent);
+}
+
 void NetworkBase::Client_Handle_OBJECTS_LIST(NetworkConnection& connection, NetworkPacket& packet)
 {
     auto& repo = GetContext().GetObjectRepository();
@@ -2337,17 +2408,8 @@ void NetworkBase::Client_Handle_OBJECTS_LIST(NetworkConnection& connection, Netw
 
     if (totalObjects > 0)
     {
-        char objectListMsg[256];
-        const uint32_t args[] = {
-            index + 1,
-            totalObjects,
-        };
-        FormatStringLegacy(objectListMsg, 256, STR_MULTIPLAYER_RECEIVING_OBJECTS_LIST, &args);
-
-        auto intent = Intent(WindowClass::NetworkStatus);
-        intent.PutExtra(INTENT_EXTRA_MESSAGE, std::string{ objectListMsg });
-        intent.PutExtra(INTENT_EXTRA_CALLBACK, []() -> void { ::GetContext()->GetNetwork().Close(); });
-        ContextOpenIntent(&intent);
+        OpenNetworkProgress(STR_MULTIPLAYER_RECEIVING_OBJECTS_LIST);
+        GetContext().SetProgress(index + 1, totalObjects);
 
         uint8_t objectType{};
         packet >> objectType;
@@ -2616,7 +2678,7 @@ void NetworkBase::ServerHandleAuth(NetworkConnection& connection, NetworkPacket&
                 if (verified)
                 {
                     LOG_VERBOSE("Connection %s: Signature verification ok. Hash %s", hostName, hash.c_str());
-                    if (gConfigNetwork.KnownKeysOnly && _userManager.GetUserByHash(hash) == nullptr)
+                    if (Config::Get().network.KnownKeysOnly && _userManager.GetUserByHash(hash) == nullptr)
                     {
                         LOG_VERBOSE("Connection %s: Hash %s, not known", hostName, hash.c_str());
                         connection.AuthStatus = NetworkAuth::UnknownKeyDisallowed;
@@ -2672,7 +2734,7 @@ void NetworkBase::ServerHandleAuth(NetworkConnection& connection, NetworkPacket&
             }
         }
 
-        if (GetNumVisiblePlayers() >= gConfigNetwork.Maxplayers)
+        if (GetNumVisiblePlayers() >= Config::Get().network.Maxplayers)
         {
             connection.AuthStatus = NetworkAuth::Full;
             LOG_INFO("Connection %s: Server is full.", hostName);
@@ -2719,17 +2781,12 @@ void NetworkBase::Client_Handle_MAP([[maybe_unused]] NetworkConnection& connecti
     {
         chunk_buffer.resize(size);
     }
-    char str_downloading_map[256];
-    uint32_t downloading_map_args[2] = {
-        (offset + chunksize) / 1024,
-        size / 1024,
-    };
-    FormatStringLegacy(str_downloading_map, 256, STR_MULTIPLAYER_DOWNLOADING_MAP, downloading_map_args);
 
-    auto intent = Intent(WindowClass::NetworkStatus);
-    intent.PutExtra(INTENT_EXTRA_MESSAGE, std::string{ str_downloading_map });
-    intent.PutExtra(INTENT_EXTRA_CALLBACK, []() -> void { ::GetContext()->GetNetwork().Close(); });
-    ContextOpenIntent(&intent);
+    const auto currentProgressKiB = (offset + chunksize) / 1024;
+    const auto totalSizeKiB = size / 1024;
+
+    OpenNetworkProgress(STR_MULTIPLAYER_DOWNLOADING_MAP);
+    GetContext().SetProgress(currentProgressKiB, totalSizeKiB, STR_STRING_M_OF_N_KIB);
 
     std::memcpy(&chunk_buffer[offset], const_cast<void*>(static_cast<const void*>(packet.Read(chunksize))), chunksize);
     if (offset + chunksize == size)
@@ -2737,7 +2794,7 @@ void NetworkBase::Client_Handle_MAP([[maybe_unused]] NetworkConnection& connecti
         // Allow queue processing of game actions again.
         GameActions::ResumeQueue();
 
-        ContextForceCloseWindowByClass(WindowClass::NetworkStatus);
+        ContextForceCloseWindowByClass(WindowClass::ProgressWindow);
         GameUnloadScripts();
         GameNotifyMapChange();
 
@@ -2750,8 +2807,8 @@ void NetworkBase::Client_Handle_MAP([[maybe_unused]] NetworkConnection& connecti
             GameLoadInit();
             GameLoadScripts();
             GameNotifyMapChanged();
-            _serverState.tick = gCurrentTicks;
-            // WindowNetworkStatusOpen("Loaded new map from network");
+            _serverState.tick = GetGameState().CurrentTicks;
+            // NetworkStatusOpen("Loaded new map from network");
             _serverState.state = NetworkServerStatus::Ok;
             _clientMapLoaded = true;
             gFirstTimeSaving = true;
@@ -2790,12 +2847,15 @@ bool NetworkBase::LoadMap(IStream* stream)
         auto importer = ParkImporter::CreateParkFile(context.GetObjectRepository());
         auto loadResult = importer->LoadFromStream(stream, false);
         objManager.LoadObjects(loadResult.RequiredObjects);
-        importer->Import();
+
+        // TODO: Have a separate GameState and exchange once loaded.
+        auto& gameState = GetGameState();
+        importer->Import(gameState);
 
         EntityTweener::Get().Reset();
         MapAnimationAutoCreate();
 
-        gLastAutoSaveUpdate = AUTOSAVE_PAUSE;
+        gLastAutoSaveUpdate = kAutosavePause;
         result = true;
     }
     catch (const std::exception& e)
@@ -2813,7 +2873,9 @@ bool NetworkBase::SaveMap(IStream* stream, const std::vector<const ObjectReposit
     {
         auto exporter = std::make_unique<ParkFileExporter>();
         exporter->ExportObjectsList = objects;
-        exporter->Export(*stream);
+
+        auto& gameState = GetGameState();
+        exporter->Export(gameState, *stream);
         result = true;
     }
     catch (const std::exception& e)
@@ -3693,7 +3755,8 @@ GameActions::Result NetworkModifyGroups(
         break;
         default:
             LOG_ERROR("Invalid Modify Group Type: %u", static_cast<uint8_t>(type));
-            return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+            return GameActions::Result(
+                GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_VALUE_OUT_OF_RANGE);
     }
 
     network.SaveGroups();
@@ -3709,7 +3772,7 @@ GameActions::Result NetworkKickPlayer(NetworkPlayerId_t playerId, bool isExecuti
     {
         // Player might be already removed by the PLAYERLIST command, need to refactor non-game commands executing too
         // early.
-        return GameActions::Result(GameActions::Status::Unknown, STR_NONE, STR_NONE);
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_PLAYER_NOT_FOUND);
     }
 
     if (player->Flags & NETWORK_PLAYER_FLAG_ISSERVER)
@@ -3896,7 +3959,7 @@ void NetworkSendGameAction(const GameAction* action)
 void NetworkSendPassword(const std::string& password)
 {
     auto& network = OpenRCT2::GetContext()->GetNetwork();
-    const auto keyPath = NetworkGetPrivateKeyPath(gConfigNetwork.PlayerName);
+    const auto keyPath = NetworkGetPrivateKeyPath(Config::Get().network.PlayerName);
     if (!File::Exists(keyPath))
     {
         LOG_ERROR("Private key %s missing! Restart the game to generate it.", keyPath.c_str());
@@ -3919,7 +3982,7 @@ void NetworkSendPassword(const std::string& password)
     // Don't keep private key in memory. There's no need and it may get leaked
     // when process dump gets collected at some point in future.
     network._key.Unload();
-    network.Client_Send_AUTH(gConfigNetwork.PlayerName, password, pubkey, signature);
+    network.Client_Send_AUTH(Config::Get().network.PlayerName, password, pubkey, signature);
 }
 
 void NetworkSetPassword(const char* password)
@@ -3990,7 +4053,7 @@ u8string NetworkGetServerProviderWebsite()
 
 std::string NetworkGetVersion()
 {
-    return NETWORK_STREAM_ID;
+    return kNetworkStreamID;
 }
 
 NetworkStats NetworkGetStats()
@@ -4030,7 +4093,7 @@ NetworkAuth NetworkGetAuthstatus()
 }
 uint32_t NetworkGetServerTick()
 {
-    return gCurrentTicks;
+    return GetGameState().CurrentTicks;
 }
 void NetworkFlush()
 {

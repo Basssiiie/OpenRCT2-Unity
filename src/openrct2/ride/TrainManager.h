@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -15,7 +15,7 @@
 
 struct Vehicle;
 
-namespace TrainManager
+namespace OpenRCT2::TrainManager
 {
     // Iteration of heads of trains
     class View
@@ -77,4 +77,4 @@ namespace TrainManager
             return Iterator(std::cend(*vec), std::cend(*vec));
         }
     };
-} // namespace TrainManager
+} // namespace OpenRCT2::TrainManager

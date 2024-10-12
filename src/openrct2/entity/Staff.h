@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "../common.h"
 #include "../world/Map.h"
 #include "Peep.h"
 
@@ -51,8 +50,6 @@ public:
     bool IsLocationInPatrol(const CoordsXY& loc) const;
     bool IsLocationOnPatrolEdge(const CoordsXY& loc) const;
     bool DoPathFinding();
-    uint8_t GetCostume() const;
-    void SetCostume(uint8_t value);
     void SetHireDate(int32_t hireDate);
     int32_t GetHireDate() const;
 
@@ -142,18 +139,14 @@ enum class EntertainerCostume : uint8_t
     Count
 };
 
-extern const StringId StaffCostumeNames[static_cast<uint8_t>(EntertainerCostume::Count)];
-
-extern colour_t gStaffHandymanColour;
-extern colour_t gStaffMechanicColour;
-extern colour_t gStaffSecurityColour;
+extern const StringId StaffCostumeNames[EnumValue(EntertainerCostume::Count)];
 
 colour_t StaffGetColour(StaffType staffType);
-bool StaffSetColour(StaffType staffType, colour_t value);
+OpenRCT2::GameActions::Result StaffSetColour(StaffType staffType, colour_t value);
 uint32_t StaffGetAvailableEntertainerCostumes();
 int32_t StaffGetAvailableEntertainerCostumeList(EntertainerCostume* costumeList);
 
 money64 GetStaffWage(StaffType type);
-PeepSpriteType EntertainerCostumeToSprite(EntertainerCostume entertainerType);
+PeepAnimationGroup EntertainerCostumeToSprite(EntertainerCostume entertainerType);
 
 const PatrolArea& GetMergedPatrolArea(const StaffType type);

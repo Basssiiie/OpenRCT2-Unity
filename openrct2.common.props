@@ -65,7 +65,7 @@
       <RuntimeLibrary Condition="'$(UseSharedLibs)'=='true'">MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalOptions>/utf-8 /std:c++17 /permissive- /Zc:externConstexpr</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /std:c++20 /permissive- /Zc:externConstexpr /Zc:char8_t-</AdditionalOptions>
     </ClCompile>
     <Link>
       <LargeAddressAware Condition="'$(Platform)'=='Win32'">true</LargeAddressAware>
@@ -86,7 +86,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <AdditionalDependencies>brotlicommon-static.lib;brotlidec-static.lib;brotlienc-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>brotlicommon.lib;brotlidec.lib;brotlienc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Breakpad)'=='true' and ('$(Platform)'=='Win32' or '$(Platform)'=='x64')">libbreakpadd.lib;libbreakpad_clientd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies>bz2d.lib;discord-rpc.lib;flac.lib;freetyped.lib;libpng16d.lib;ogg.lib;speexdsp.lib;SDL2-staticd.lib;vorbis.lib;vorbisfile.lib;zip.lib;zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -107,7 +107,7 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>brotlicommon-static.lib;brotlidec-static.lib;brotlienc-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>brotlicommon.lib;brotlidec.lib;brotlienc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Breakpad)'=='true' and ('$(Platform)'=='Win32' or '$(Platform)'=='x64')">libbreakpad.lib;libbreakpad_client.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies>bz2.lib;discord-rpc.lib;flac.lib;freetype.lib;libpng16.lib;ogg.lib;speexdsp.lib;SDL2-static.lib;vorbis.lib;vorbisfile.lib;zip.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -115,7 +115,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 
   <PropertyGroup>
-    <IncludePath>$(SolutionDir)src;$(SolutionDir)src\thirdparty;$(SolutionDir)src\thirdparty\duktape;$(SolutionDir)lib\$(Platform)\include;$(SolutionDir)lib\$(Platform)\include\SDL2;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)src;$(SolutionDir)src\thirdparty;$(SolutionDir)src\thirdparty\duktape;$(SolutionDir)lib\$(Platform)\include;$(SolutionDir)lib\$(Platform)\include\SDL2;$(SolutionDir)lib\$(Platform)\include\crashpad;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)'=='Debug'">$(SolutionDir)lib\$(Platform)\debug\lib;$(LibraryPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)'!='Debug'">$(SolutionDir)lib\$(Platform)\lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental />

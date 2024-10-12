@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,8 +10,11 @@
 #include "GuestSetFlagsAction.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../OpenRCT2.h"
 #include "../entity/EntityRegistry.h"
+
+using namespace OpenRCT2;
 
 GuestSetFlagsAction::GuestSetFlagsAction(EntityId peepId, uint32_t flags)
     : _peepId(peepId)
@@ -42,7 +45,7 @@ GameActions::Result GuestSetFlagsAction::Query() const
     auto* peep = TryGetEntity<Guest>(_peepId);
     if (peep == nullptr)
     {
-        LOG_ERROR("Used invalid sprite index for peep: %u", _peepId.ToUnderlying());
+        LOG_ERROR("Guest entity not found for peepID %u", _peepId.ToUnderlying());
         return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_CHANGE_THIS, STR_NONE);
     }
     return GameActions::Result();
@@ -53,7 +56,7 @@ GameActions::Result GuestSetFlagsAction::Execute() const
     auto* peep = TryGetEntity<Guest>(_peepId);
     if (peep == nullptr)
     {
-        LOG_ERROR("Used invalid sprite index for peep: %u", _peepId.ToUnderlying());
+        LOG_ERROR("Guest entity not found for peepID %u", _peepId.ToUnderlying());
         return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_CHANGE_THIS, STR_NONE);
     }
 

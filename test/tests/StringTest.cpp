@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,11 +11,14 @@
 #include "helpers/StringHelpers.hpp"
 
 #include <gtest/gtest.h>
+#include <openrct2/core/CodepointView.hpp>
 #include <openrct2/core/String.hpp>
 #include <openrct2/util/Util.h>
 #include <string>
 #include <tuple>
 #include <utility>
+
+using namespace OpenRCT2;
 
 using TCase = std::tuple<std::string, std::string, std::string>;
 

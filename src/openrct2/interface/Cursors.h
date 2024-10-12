@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,8 +9,7 @@
 
 #pragma once
 
-#include "../common.h"
-
+#include <cstdint>
 #include <string>
 
 enum class CursorID : uint8_t
@@ -42,28 +41,13 @@ enum class CursorID : uint8_t
     EntranceDown,
     HandOpen,
     HandClosed,
+    Bulldozer,
     Count,
 
     Undefined = 0xFF
 };
 
-namespace Cursor
+namespace OpenRCT2::Cursor
 {
     CursorID FromString(const std::string& s, CursorID defaultValue);
 }
-
-namespace OpenRCT2::Ui
-{
-    constexpr size_t CURSOR_BIT_WIDTH = 32;
-    constexpr size_t CURSOR_HEIGHT = 4;
-    struct CursorData
-    {
-        struct HotSpot
-        {
-            int16_t X;
-            int16_t Y;
-        } HotSpot;
-        uint8_t Data[CURSOR_BIT_WIDTH * CURSOR_HEIGHT];
-        uint8_t Mask[CURSOR_BIT_WIDTH * CURSOR_HEIGHT];
-    };
-} // namespace OpenRCT2::Ui

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,6 +10,7 @@
 #include "PeepSpawnPlaceAction.h"
 
 #include "../Cheats.h"
+#include "../GameState.h"
 #include "../OpenRCT2.h"
 #include "../core/MemoryStream.h"
 #include "../localisation/StringIds.h"
@@ -17,6 +18,8 @@
 #include "../world/Footpath.h"
 #include "../world/Park.h"
 #include "../world/Surface.h"
+
+using namespace OpenRCT2;
 
 PeepSpawnPlaceAction::PeepSpawnPlaceAction(const CoordsXYZD& location)
     : _location(location)
@@ -42,7 +45,7 @@ void PeepSpawnPlaceAction::Serialise(DataSerialiser& stream)
 
 GameActions::Result PeepSpawnPlaceAction::Query() const
 {
-    if (!(gScreenFlags & SCREEN_FLAGS_EDITOR) && !gCheatsSandboxMode)
+    if (!(gScreenFlags & SCREEN_FLAGS_EDITOR) && !GetGameState().Cheats.SandboxMode)
     {
         return GameActions::Result(GameActions::Status::NotInEditorMode, STR_ERR_CANT_PLACE_PEEP_SPAWN_HERE, STR_NONE);
     }
@@ -71,7 +74,8 @@ GameActions::Result PeepSpawnPlaceAction::Query() const
     auto surfaceMapElement = MapGetSurfaceElementAt(_location);
     if (surfaceMapElement == nullptr)
     {
-        return GameActions::Result(GameActions::Status::Unknown, STR_ERR_CANT_PLACE_PEEP_SPAWN_HERE, STR_NONE);
+        return GameActions::Result(
+            GameActions::Status::Unknown, STR_ERR_CANT_PLACE_PEEP_SPAWN_HERE, STR_ERR_SURFACE_ELEMENT_NOT_FOUND);
     }
     if (surfaceMapElement->GetOwnership() != OWNERSHIP_UNOWNED)
     {
@@ -99,35 +103,37 @@ GameActions::Result PeepSpawnPlaceAction::Execute() const
     spawn.z = _location.z;
     spawn.direction = _location.direction;
 
+    auto& gameState = GetGameState();
     // When attempting to place a peep spawn on a tile that already contains it,
     // remove that peep spawn instead.
-    if (!gPeepSpawns.empty())
+    if (!gameState.PeepSpawns.empty())
     {
         // When searching for existing spawns, ignore the direction.
-        auto foundSpawn = std::find_if(gPeepSpawns.begin(), gPeepSpawns.end(), [spawn](const CoordsXYZ& existingSpawn) {
-            {
-                return existingSpawn.ToTileStart() == spawn.ToTileStart();
-            }
-        });
+        auto foundSpawn = std::find_if(
+            gameState.PeepSpawns.begin(), gameState.PeepSpawns.end(), [spawn](const CoordsXYZ& existingSpawn) {
+                {
+                    return existingSpawn.ToTileStart() == spawn.ToTileStart();
+                }
+            });
 
-        if (foundSpawn != std::end(gPeepSpawns))
+        if (foundSpawn != std::end(gameState.PeepSpawns))
         {
-            gPeepSpawns.erase(foundSpawn);
+            gameState.PeepSpawns.erase(foundSpawn);
             MapInvalidateTileFull(spawn);
             return res;
         }
     }
 
     // If we have reached our max peep spawns, remove the oldest spawns
-    while (gPeepSpawns.size() >= OpenRCT2::Limits::MaxPeepSpawns)
+    while (gameState.PeepSpawns.size() >= Limits::kMaxPeepSpawns)
     {
-        PeepSpawn oldestSpawn = *gPeepSpawns.begin();
-        gPeepSpawns.erase(gPeepSpawns.begin());
+        PeepSpawn oldestSpawn = *gameState.PeepSpawns.begin();
+        gameState.PeepSpawns.erase(gameState.PeepSpawns.begin());
         MapInvalidateTileFull(oldestSpawn);
     }
 
     // Set peep spawn
-    gPeepSpawns.push_back(spawn);
+    gameState.PeepSpawns.push_back(spawn);
 
     // Invalidate tile
     MapInvalidateTileFull(_location);

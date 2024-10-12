@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,10 +10,13 @@
 #include "BannerSetColourAction.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../management/Finance.h"
 #include "../windows/Intent.h"
 #include "../world/Banner.h"
 #include "GameAction.h"
+
+using namespace OpenRCT2;
 
 BannerSetColourAction::BannerSetColourAction(const CoordsXYZD& loc, uint8_t primaryColour)
     : _loc(loc)
@@ -61,13 +64,13 @@ GameActions::Result BannerSetColourAction::QueryExecute(bool isExecuting) const
     if (!LocationValid(_loc))
     {
         LOG_ERROR("Invalid x / y coordinates: x = %d, y = %d", _loc.x, _loc.y);
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_NONE);
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_OFF_EDGE_OF_MAP);
     }
 
     if (_primaryColour > 31)
     {
-        LOG_ERROR("Invalid primary colour: colour = %u", _primaryColour);
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_NONE);
+        LOG_ERROR("Invalid primary colour %u", _primaryColour);
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_ERR_INVALID_COLOUR);
     }
 
     if (!MapCanBuildAt({ _loc.x, _loc.y, _loc.z - 16 }))
@@ -79,15 +82,15 @@ GameActions::Result BannerSetColourAction::QueryExecute(bool isExecuting) const
 
     if (bannerElement == nullptr)
     {
-        LOG_ERROR("Could not find banner at: x = %d, y = %d, z = %d, direction = %u", _loc.x, _loc.y, _loc.z, _loc.direction);
-        return GameActions::Result(GameActions::Status::Unknown, STR_CANT_REPAINT_THIS, STR_NONE);
+        LOG_ERROR("No banner at x = %d, y = %d, z = %d, direction = %u", _loc.x, _loc.y, _loc.z, _loc.direction);
+        return GameActions::Result(GameActions::Status::Unknown, STR_CANT_REPAINT_THIS, STR_ERR_BANNER_ELEMENT_NOT_FOUND);
     }
 
     auto index = bannerElement->GetIndex();
     auto banner = GetBanner(index);
     if (banner == nullptr)
     {
-        LOG_ERROR("Invalid banner index: index = %u", index);
+        LOG_ERROR("Invalid banner index %u", index);
         return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_REPAINT_THIS, STR_NONE);
     }
 

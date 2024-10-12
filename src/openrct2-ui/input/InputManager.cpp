@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -13,6 +13,7 @@
 
 #include <SDL.h>
 #include <openrct2-ui/UiContext.h>
+#include <openrct2-ui/input/MouseInput.h>
 #include <openrct2-ui/input/ShortcutManager.h>
 #include <openrct2-ui/interface/InGameConsole.h>
 #include <openrct2-ui/windows/Window.h>
@@ -25,6 +26,11 @@
 #include <openrct2/ui/UiContext.h>
 
 using namespace OpenRCT2::Ui;
+
+InputManager::InputManager()
+{
+    _modifierKeyState = EnumValue(ModifierKey::none);
+}
 
 void InputManager::QueueInputEvent(const SDL_Event& e)
 {
@@ -120,12 +126,12 @@ void InputManager::HandleViewScrolling()
     InputScrollViewport(_viewScroll);
 
     // Mouse edge scrolling
-    if (gConfigGeneral.EdgeScrolling)
+    if (Config::Get().general.EdgeScrolling)
     {
         if (InputGetState() != InputState::Normal)
             return;
 
-        if (gInputPlaceObjectModifier & (PLACE_OBJECT_MODIFIER_SHIFT_Z | PLACE_OBJECT_MODIFIER_COPY_Z))
+        if (IsModifierKeyPressed(ModifierKey::shift) || IsModifierKeyPressed(ModifierKey::ctrl))
             return;
 
         GameHandleEdgeScroll();
@@ -134,34 +140,40 @@ void InputManager::HandleViewScrolling()
 
 void InputManager::HandleModifiers()
 {
+    _modifierKeyState = EnumValue(ModifierKey::none);
+
     auto modifiers = SDL_GetModState();
-    gInputPlaceObjectModifier = PLACE_OBJECT_MODIFIER_NONE;
     if (modifiers & KMOD_SHIFT)
     {
-        gInputPlaceObjectModifier |= PLACE_OBJECT_MODIFIER_SHIFT_Z;
+        _modifierKeyState |= EnumValue(ModifierKey::shift);
     }
     if (modifiers & KMOD_CTRL)
     {
-        gInputPlaceObjectModifier |= PLACE_OBJECT_MODIFIER_COPY_Z;
+        _modifierKeyState |= EnumValue(ModifierKey::ctrl);
     }
     if (modifiers & KMOD_ALT)
     {
-        gInputPlaceObjectModifier |= 4;
+        _modifierKeyState |= EnumValue(ModifierKey::alt);
     }
 #ifdef __MACOSX__
     if (modifiers & KMOD_GUI)
     {
-        gInputPlaceObjectModifier |= 8;
+        _modifierKeyState |= EnumValue(ModifierKey::cmd);
     }
 #endif
 
-    if (gConfigGeneral.VirtualFloorStyle != VirtualFloorStyles::Off)
+    if (Config::Get().general.VirtualFloorStyle != VirtualFloorStyles::Off)
     {
-        if (gInputPlaceObjectModifier & (PLACE_OBJECT_MODIFIER_COPY_Z | PLACE_OBJECT_MODIFIER_SHIFT_Z))
+        if (IsModifierKeyPressed(ModifierKey::ctrl) || IsModifierKeyPressed(ModifierKey::shift))
             VirtualFloorEnable();
         else
             VirtualFloorDisable();
     }
+}
+
+bool InputManager::IsModifierKeyPressed(ModifierKey modifier) const
+{
+    return _modifierKeyState & EnumValue(modifier);
 }
 
 void InputManager::ProcessEvents()
@@ -182,7 +194,7 @@ void InputManager::Process(const InputEvent& e)
         auto& console = GetInGameConsole();
         if (console.IsOpen())
         {
-            if (!shortcutManager.ProcessEventForSpecificShortcut(e, ShortcutId::DebugToggleConsole))
+            if (!shortcutManager.ProcessEventForSpecificShortcut(e, ShortcutId::kDebugToggleConsole))
             {
                 ProcessInGameConsole(e);
             }
@@ -202,12 +214,12 @@ void InputManager::Process(const InputEvent& e)
             {
                 if (e.State == InputEventState::Release)
                 {
-                    WindowTextInputKey(w, e.Button);
+                    OpenRCT2::Ui::Windows::WindowTextInputKey(w, e.Button);
                 }
                 return;
             }
 
-            if (gUsingWidgetTextBox)
+            if (OpenRCT2::Ui::Windows::IsUsingWidgetTextBox())
             {
                 return;
             }
@@ -293,10 +305,10 @@ void InputManager::ProcessHoldEvents()
         auto& shortcutManager = GetShortcutManager();
         if (!shortcutManager.IsPendingShortcutChange())
         {
-            ProcessViewScrollEvent(ShortcutId::ViewScrollUp, { 0, -1 });
-            ProcessViewScrollEvent(ShortcutId::ViewScrollDown, { 0, 1 });
-            ProcessViewScrollEvent(ShortcutId::ViewScrollLeft, { -1, 0 });
-            ProcessViewScrollEvent(ShortcutId::ViewScrollRight, { 1, 0 });
+            ProcessViewScrollEvent(ShortcutId::kViewScrollUp, { 0, -1 });
+            ProcessViewScrollEvent(ShortcutId::kViewScrollDown, { 0, 1 });
+            ProcessViewScrollEvent(ShortcutId::kViewScrollLeft, { -1, 0 });
+            ProcessViewScrollEvent(ShortcutId::kViewScrollRight, { 1, 0 });
         }
     }
 }
@@ -383,7 +395,7 @@ bool InputManager::GetState(const ShortcutInput& shortcut) const
 
 bool InputManager::HasTextInputFocus() const
 {
-    if (gUsingWidgetTextBox || gChatOpen)
+    if (OpenRCT2::Ui::Windows::IsUsingWidgetTextBox() || gChatOpen)
         return true;
 
     auto w = WindowFindByClass(WindowClass::Textinput);

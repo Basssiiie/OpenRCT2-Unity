@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,10 +9,12 @@
 
 #pragma once
 
-#include "../common.h"
+#include "../core/StringTypes.h"
 
+#include <cstdint>
 #include <string_view>
 
+using colour_t = uint8_t;
 using PaletteIndex = uint8_t;
 
 /**
@@ -185,70 +187,87 @@ enum : PaletteIndex
     PALETTE_INDEX_254 = 254, // Primary remap 11
 };
 
-constexpr size_t PALETTE_COUNT = 256;
+constexpr size_t kPaletteCount = 256;
 
-constexpr uint8_t PALETTE_OFFSET_DYNAMIC = PALETTE_INDEX_10;
-constexpr uint8_t PALETTE_LENGTH_DYNAMIC = 236;
+constexpr uint8_t kPaletteOffsetDynamic = PALETTE_INDEX_10;
+constexpr uint8_t kPaletteLengthDynamic = 236;
 
-constexpr uint8_t PALETTE_OFFSET_WATER_WAVES = PALETTE_INDEX_230;
-constexpr uint8_t PALETTE_OFFSET_WATER_SPARKLES = PALETTE_INDEX_235;
-constexpr uint8_t PALETTE_LENGTH_WATER_WAVES = 5;
-constexpr uint8_t PALETTE_LENGTH_WATER_SPARKLES = 5;
+constexpr uint8_t kPaletteOffsetWaterWaves = PALETTE_INDEX_230;
+constexpr uint8_t kPaletteOffsetWaterSparkles = PALETTE_INDEX_235;
+constexpr uint8_t kPaletteLengthWaterWaves = 5;
+constexpr uint8_t kPaletteLengthWaterSparkles = 5;
 
-constexpr uint8_t PALETTE_OFFSET_TRACK_RAILS = PALETTE_INDEX_240;
-constexpr uint8_t PALETTE_LENGTH_TRACK_RAILS = 3;
+constexpr uint8_t kPaletteOffsetTrackRails = PALETTE_INDEX_240;
+constexpr uint8_t kPaletteLengthTrackRails = 3;
 
-constexpr uint8_t PALETTE_OFFSET_REMAP_PRIMARY = PALETTE_INDEX_243;
-constexpr uint8_t PALETTE_OFFSET_REMAP_SECONDARY = PALETTE_INDEX_202;
-constexpr uint8_t PALETTE_OFFSET_REMAP_TERTIARY = PALETTE_INDEX_46;
-constexpr uint8_t PALETTE_LENGTH_REMAP = 12;
+constexpr uint8_t kPaletteOffsetRemapPrimary = PALETTE_INDEX_243;
+constexpr uint8_t kPaletteOffsetRemapSecondary = PALETTE_INDEX_202;
+constexpr uint8_t kPaletteOffsetRemapTertiary = PALETTE_INDEX_46;
+constexpr uint8_t kPaletteLengthRemap = 12;
 
-constexpr uint8_t PALETTE_OFFSET_ANIMATED = PALETTE_INDEX_230;
-constexpr uint8_t PALETTE_LENGTH_ANIMATED = 16;
+constexpr uint8_t kPaletteOffsetAnimated = PALETTE_INDEX_230;
+constexpr uint8_t kPaletteLengthAnimated = 16;
 
-constexpr uint8_t COLOUR_NUM_ORIGINAL = 32;
-constexpr uint8_t COLOUR_NUM_NORMAL = 54;
+constexpr uint8_t kColourNumOriginal = 32;
+constexpr uint8_t kColourNumNormal = 54;
+
+static constexpr uint8_t kLegacyColourFlagTranslucent = (1 << 7);
 
 #define TEXT_COLOUR_254 (254)
 #define TEXT_COLOUR_255 (255)
 
-enum
+enum class ColourFlag : uint8_t
 {
-    COLOUR_FLAG_OUTLINE = (1 << 5),
-    COLOUR_FLAG_INSET = (1 << 6), // 64, 0x40
-    COLOUR_FLAG_TRANSLUCENT = (1 << 7),
-    COLOUR_FLAG_8 = (1 << 8)
+    translucent,
+    inset,
+    withOutline,
 };
 
-#define TRANSLUCENT(x) ((x) | static_cast<uint8_t>(COLOUR_FLAG_TRANSLUCENT))
-#define NOT_TRANSLUCENT(x) ((x) & ~static_cast<uint8_t>(COLOUR_FLAG_TRANSLUCENT))
-#define BASE_COLOUR(x) ((x)&0x1F)
+struct ColourWithFlags
+{
+    colour_t colour{};
+    uint8_t flags{};
+
+    bool hasFlag(ColourFlag flag) const;
+
+    void setFlag(ColourFlag flag, bool on);
+
+    ColourWithFlags withFlag(ColourFlag flag, bool on) const;
+
+    static ColourWithFlags fromLegacy(uint8_t legacy);
+
+    ColourWithFlags& operator=(colour_t rhs);
+};
 
 struct ColourShadeMap
 {
-    uint8_t colour_0;
-    uint8_t colour_1;
-    uint8_t darkest;
-    uint8_t darker;
-    uint8_t dark;
-    uint8_t mid_dark;
-    uint8_t mid_light;
-    uint8_t light;
-    uint8_t lighter;
-    uint8_t lightest;
-    uint8_t colour_10;
-    uint8_t colour_11;
+    PaletteIndex colour_0;
+    PaletteIndex colour_1;
+    PaletteIndex darkest;
+    PaletteIndex darker;
+    PaletteIndex dark;
+    PaletteIndex mid_dark;
+    PaletteIndex mid_light;
+    PaletteIndex light;
+    PaletteIndex lighter;
+    PaletteIndex lightest;
+    PaletteIndex colour_10;
+    PaletteIndex colour_11;
 };
 
 extern ColourShadeMap ColourMapA[COLOUR_COUNT];
 
 void ColoursInitMaps();
 
-namespace Colour
+namespace OpenRCT2::Colour
 {
     colour_t FromString(std::string_view s, colour_t defaultValue = COLOUR_BLACK);
-}
+    u8string ToString(colour_t colour);
+} // namespace OpenRCT2::Colour
 
 #ifndef NO_TTF
 uint8_t BlendColours(const uint8_t paletteIndex1, const uint8_t paletteIndex2);
 #endif
+
+typedef uint8_t BlendColourMapType[kPaletteCount][kPaletteCount];
+BlendColourMapType* GetBlendColourMap();

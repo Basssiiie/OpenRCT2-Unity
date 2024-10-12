@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,7 +12,6 @@
 #ifdef ENABLE_SCRIPTING
 
 #    include "../../../Context.h"
-#    include "../../../common.h"
 #    include "../../../entity/EntityList.h"
 #    include "../../../entity/EntityRegistry.h"
 #    include "../../../entity/Peep.h"
@@ -20,7 +19,6 @@
 #    include "../../Duktape.hpp"
 #    include "../../ScriptEngine.h"
 
-#    include <algorithm>
 #    include <string_view>
 #    include <unordered_map>
 

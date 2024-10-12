@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -16,6 +16,7 @@
 #include "../scenario/Scenario.h"
 #include "Location.hpp"
 #include "Map.h"
+#include "tile_element/Slope.h"
 
 ObjectEntryIndex SurfaceElement::GetSurfaceObjectIndex() const
 {
@@ -135,7 +136,7 @@ void SurfaceElement::UpdateGrassLength(const CoordsXY& coords)
 
     int32_t baseZ = GetBaseZ();
     int32_t clearZ = GetBaseZ() + LAND_HEIGHT_STEP;
-    if (Slope & TILE_ELEMENT_SLOPE_DOUBLE_HEIGHT)
+    if (Slope & kTileSlopeDiagonalFlag)
         clearZ += LAND_HEIGHT_STEP;
 
     // Check objects above grass
@@ -192,24 +193,24 @@ void SurfaceElement::UpdateGrassLength(const CoordsXY& coords)
 
 uint8_t SurfaceElement::GetOwnership() const
 {
-    return (Ownership & TILE_ELEMENT_SURFACE_OWNERSHIP_MASK);
+    return (Ownership & kTileElementSurfaceOwnershipMask);
 }
 
 void SurfaceElement::SetOwnership(uint8_t newOwnership)
 {
-    Ownership &= ~TILE_ELEMENT_SURFACE_OWNERSHIP_MASK;
-    Ownership |= (newOwnership & TILE_ELEMENT_SURFACE_OWNERSHIP_MASK);
+    Ownership &= ~kTileElementSurfaceOwnershipMask;
+    Ownership |= (newOwnership & kTileElementSurfaceOwnershipMask);
 }
 
 uint8_t SurfaceElement::GetParkFences() const
 {
-    return (Ownership & TILE_ELEMENT_SURFACE_PARK_FENCE_MASK);
+    return (Ownership & kTileElementSurfaceParkFenceMask);
 }
 
 void SurfaceElement::SetParkFences(uint8_t newParkFences)
 {
-    Ownership &= ~TILE_ELEMENT_SURFACE_PARK_FENCE_MASK;
-    Ownership |= (newParkFences & TILE_ELEMENT_SURFACE_PARK_FENCE_MASK);
+    Ownership &= ~kTileElementSurfaceParkFenceMask;
+    Ownership |= (newParkFences & kTileElementSurfaceParkFenceMask);
 }
 
 uint8_t SurfaceElement::GetSlope() const

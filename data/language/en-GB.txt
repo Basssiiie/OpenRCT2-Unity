@@ -98,6 +98,7 @@ STR_0093    :Hybrid Coaster
 STR_0094    :Single Rail Roller Coaster
 STR_0095    :Alpine Coaster
 STR_0096    :Classic Wooden Roller Coaster
+STR_0097    :Classic Stand-up Roller Coaster
 STR_0512    :A compact roller coaster with a spiral lift hill and smooth, twisting drops.
 STR_0513    :A looping roller coaster where the riders ride in a standing position
 STR_0514    :Trains suspended beneath the roller coaster track swing out to the side around corners
@@ -181,12 +182,13 @@ STR_0603    :A wooden style roller coaster with a steel track, allowing for stee
 STR_0604    :Riders ride single file on a narrow monorail track, as they race through tight inversions and direction changes
 STR_0605    :Riders toboggan down a meandering steel track, braking to control their speed
 STR_0606    :An older-style wooden roller coaster with a fast and rough ride, with plenty of air-time, some lateral G’s, and designed to feel ‘out-of-control’
+STR_0607    :An intense, older-style steel looping roller coaster where the riders ride in a standing position
 STR_0767    :Guest {INT32}
 STR_0768    :Handyman {INT32}
 STR_0769    :Mechanic {INT32}
 STR_0770    :Security Guard {INT32}
 STR_0771    :Entertainer {INT32}
-STR_0777    :Unnamed park{POP16}{POP16}
+STR_0777    :Unnamed park
 STR_0778    :Sign
 STR_0779    :1st
 STR_0780    :2nd
@@ -1737,12 +1739,12 @@ STR_2382    :Land
 STR_2383    :Water
 STR_2384    :{WINDOW_COLOUR_2}Your objective:
 STR_2385    :{BLACK}None
-STR_2386    :{BLACK}To have at least {COMMA16} guests in your park at the end of {MONTHYEAR}, with a park rating of at least 600
-STR_2387    :{BLACK}To achieve a park value of at least {POP16}{POP16}{CURRENCY} at the end of {PUSH16}{PUSH16}{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR}
+STR_2386    :{BLACK}To have at least {COMMA32} guests in your park at the end of {MONTHYEAR_SENTENCE}, with a park rating of at least 600
+STR_2387    :{BLACK}To achieve a park value of at least {POP16}{POP16}{CURRENCY} at the end of {PUSH16}{PUSH16}{PUSH16}{PUSH16}{PUSH16}{MONTHYEAR_SENTENCE}
 STR_2388    :{BLACK}Have Fun!
 STR_2389    :{BLACK}Build the best {STRINGID} you can!
 STR_2390    :{BLACK}To have 10 different types of roller coasters operating in your park, each with an excitement value of at least 6.00
-STR_2391    :{BLACK}To have at least {COMMA16} guests in your park. You must not let the park rating drop below 700 at any time!
+STR_2391    :{BLACK}To have at least {COMMA32} guests in your park. You must not let the park rating drop below 700 at any time!
 STR_2392    :{BLACK}To achieve a monthly income from ride tickets of at least {POP16}{POP16}{CURRENCY}
 STR_2393    :{BLACK}To have 10 different types of roller coasters operating in your park, each with a minimum length of {LENGTH}, and an excitement rating of at least 7.00
 STR_2394    :{BLACK}To finish building all 5 of the partially built roller coasters in this park, designing them to achieve excitement ratings of at least {POP16}{POP16}{COMMA2DP32} each
@@ -1797,7 +1799,6 @@ STR_2450    :{YELLOW}Your advertising campaign for the park has finished
 STR_2451    :{YELLOW}Your advertising campaign for {STRINGID} has finished
 STR_2452    :{WINDOW_COLOUR_2}Cash (less loan): {BLACK}{CURRENCY2DP}
 STR_2453    :{WINDOW_COLOUR_2}Cash (less loan): {RED}{CURRENCY2DP}
-STR_2454    :{BLACK}{CURRENCY2DP} -
 STR_2457    :Show financial accounts
 STR_2458    :Show graph of cash (less loan) over time
 STR_2459    :Show graph of park value over time
@@ -1909,8 +1910,8 @@ STR_2670    :Scroll
 STR_2680    :All research complete
 STR_2684    :Large group of guests arrive
 STR_2685    :Simplex Noise Parameters
-STR_2686    :Low:
-STR_2687    :High:
+STR_2686    :Min. land height:
+STR_2687    :Max. land height:
 STR_2688    :Base Frequency:
 STR_2689    :Octaves:
 STR_2690    :Map Generation
@@ -1949,6 +1950,7 @@ STR_2732    :{COMMA32} ft
 STR_2733    :{COMMA32} m
 STR_2734    :{COMMA16} mph
 STR_2735    :{COMMA16} km/h
+# Used only as part of label-value pair.
 STR_2736    :{MONTH}, Year {COMMA16}
 STR_2737    :{STRINGID} {MONTH}, Year {COMMA16}
 STR_2738    :Title screen music:
@@ -2097,39 +2099,6 @@ STR_3008    :{PEARLAQUA}ABC
 STR_3009    :{PALESILVER}ABC
 STR_3010    :Unable to load file…
 STR_3011    :File contains invalid data
-STR_3012    :Dodgems beat style
-STR_3013    :Fairground organ style
-STR_3014    :Roman fanfare style
-STR_3015    :Oriental style
-STR_3016    :Martian style
-STR_3017    :Jungle drums style
-STR_3018    :Egyptian style
-STR_3019    :Toyland style
-STR_3020    :
-STR_3021    :Space style
-STR_3022    :Horror style
-STR_3023    :Techno style
-STR_3024    :Gentle style
-STR_3025    :Summer style
-STR_3026    :Water style
-STR_3027    :Wild west style
-STR_3028    :Jurassic style
-STR_3029    :Rock style
-STR_3030    :Ragtime style
-STR_3031    :Fantasy style
-STR_3032    :Rock style 2
-STR_3033    :Ice style
-STR_3034    :Snow style
-STR_3035    :Custom music 1
-STR_3036    :Custom music 2
-STR_3037    :Medieval style
-STR_3038    :Urban style
-STR_3039    :Organ style
-STR_3040    :Mechanical style
-STR_3041    :Modern style
-STR_3042    :Pirates style
-STR_3043    :Rock style 3
-STR_3044    :Candy style
 STR_3045    :Select style of music to play
 STR_3047    :Local authority forbids demolition or modifications to this ride
 STR_3048    :Marketing campaigns forbidden by local authority
@@ -2356,7 +2325,7 @@ STR_3305    :{WINDOW_COLOUR_2}Monthly income:
 STR_3306    :{WINDOW_COLOUR_2}Monthly profit:
 STR_3307    :{WINDOW_COLOUR_2}Minimum length:
 STR_3308    :{WINDOW_COLOUR_2}Excitement rating:
-STR_3309    :{WINDOW_COLOUR_2}{COMMA16}
+STR_3309    :{WINDOW_COLOUR_2}{COMMA32}
 STR_3310    :{WINDOW_COLOUR_2}{LENGTH}
 STR_3311    :{WINDOW_COLOUR_2}{COMMA2DP32}
 STR_3312    :{WINDOW_COLOUR_2}Rides/attractions under a preservation order:
@@ -2634,8 +2603,8 @@ STR_5357    :{BLACK}Nausea tolerance:
 STR_5358    :{BLACK}Toilet:
 STR_5359    :Remove guests
 STR_5360    :Removes all guests from the map
-STR_5361    :Give all guests:
-STR_5362    :{BLACK}Set all guests’ preferred ride intensity to:
+STR_5361    :Add to guest inventory
+STR_5362    :{BLACK}Preferred ride intensity:
 STR_5363    :More than 1
 STR_5364    :Less than 15
 STR_5365    :{BLACK}Staff speed:
@@ -2665,7 +2634,7 @@ STR_5457    :Disable support limits
 STR_5458    :Rotate clockwise
 STR_5459    :Rotate anti-clockwise
 STR_5460    :Rotate view anti-clockwise
-STR_5461    :Set guests’ parameters
+STR_5461    :Set parameters for all guests
 STR_5462    :{CURRENCY}
 STR_5463    :Goal: Have fun!
 STR_5464    :General
@@ -2916,7 +2885,7 @@ STR_5755    :Incorrect Software Version (Server is using {STRING})
 STR_5756    :Bad Password
 STR_5757    :Server Full
 STR_5758    :{OUTLINE}{GREEN}{STRING} has joined the game
-STR_5759    :Downloading map … ({INT32} / {INT32}) KiB
+STR_5759    :Downloading map …
 STR_5760    :Hong Kong Dollars (HK$)
 STR_5761    :New Taiwan Dollar (NT$)
 STR_5762    :Chinese Yuan (CN¥)
@@ -3197,9 +3166,9 @@ STR_6041    :{BLACK}No mechanics are hired!
 STR_6042    :Load height map
 STR_6043    :Select height map
 STR_6044    :Smooth height map
-STR_6045    :Strength
+STR_6045    :Strength:
 STR_6046    :Normalise height map
-STR_6047    :Smooth tiles
+STR_6047    :Smooth tile edges
 STR_6048    :Height map error
 STR_6049    :Error reading PNG
 STR_6050    :Error reading bitmap
@@ -3462,7 +3431,6 @@ STR_6356    :Spawns ducks if park contains water
 STR_6357    :Removes all ducks from the map
 STR_6358    :Page {UINT16}
 STR_6359    :{POP16}{POP16}Page {UINT16}
-STR_6360    :{BLACK}{COMMA32}
 STR_6361    :Enable lighting effects on rides (experimental)
 STR_6362    :If enabled, vehicles for tracked rides will be lit up at night.
 STR_6363    :Copied text to clipboard
@@ -3480,7 +3448,7 @@ STR_6374    :C
 STR_6375    :Unknown Ride
 STR_6376    :{WINDOW_COLOUR_2}Ride vehicle:{NEWLINE}{BLACK}{STRINGID} for {STRINGID}
 STR_6377    :{WINDOW_COLOUR_2}Type: {BLACK}{STRINGID} for {STRINGID}
-STR_6378    :Receiving objects list: {INT32} / {INT32}
+STR_6378    :Receiving objects list…
 STR_6379    :Received invalid data
 STR_6380    :Update available!
 STR_6381    :Join OpenRCT2 Discord!
@@ -3697,6 +3665,122 @@ STR_6591    :Staff member is currently fixing a ride and can’t be fired.
 STR_6592    :Staff member is currently inspecting a ride and can’t be fired.
 STR_6593    :Remove park fences
 STR_6594    :Tile Inspector: Toggle wall slope
+STR_6595    :{WINDOW_COLOUR_2}Author: {BLACK}{STRING}
+STR_6596    :{WINDOW_COLOUR_2}Authors: {BLACK}{STRING}
+STR_6597    :Invalid parameter
+STR_6598    :Value out of range
+STR_6599    :Ghost element not found
+STR_6600    :Balloon not found
+STR_6601    :Staff not found
+STR_6602    :Ride not found
+STR_6603    :Ride object entry not found
+STR_6604    :Player not found
+STR_6605    :Entrance element not found
+STR_6606    :Surface element not found
+STR_6607    :Tile element not found
+STR_6608    :Track element not found
+STR_6609    :Track block not found
+STR_6610    :Path element not found
+STR_6611    :Wall element not found
+STR_6612    :Banner element not found
+STR_6613    :Reload object
+STR_6614    :Can’t change park entrance fee
+STR_6615    :Track on this tile needs water
+STR_6616    :Action invalid for that staff type
+STR_6617    :Can’t swap tile element with itself
+STR_6618    :Can’t restrict or derestrict object…
+STR_6619    :Object type cannot be restricted!
+STR_6620    :Object not found!
+STR_6621    :Restrict
+STR_6622    :Restrict object to the Scenario Editor and Sandbox mode.
+STR_6623    :Type ‘help’ for a list of available commands. Type ‘hide’ to hide the console.
+STR_6624    :Tile Inspector: Sort elements
+STR_6625    :Invalid colour
+STR_6626    :Animation is backwards
+STR_6627    :Track speed too high!
+STR_6628    :Can only be placed on path edges!
+STR_6629    :Align toolbar buttons horizontally centred
+STR_6630    :This setting will align the toolbar buttons horizontally in the centre of the screen. The traditional way of aligning them is in the left and right corner.
+STR_6631    :Loading…
+STR_6632    :Checking object files…
+STR_6633    :Checking scenario files…
+STR_6634    :Checking track design files…
+STR_6635    :Checking asset packs…
+STR_6636    :Checking title sequences…
+STR_6637    :Loading title sequence…
+STR_6638    :Enlarged UI
+STR_6639    :Modifies the interface to be more suitable for touch usage
+STR_6640    :Edit asset packs…
+STR_6641    :Loading/progress window
+STR_6642    :{STRING} ({COMMA32} / {COMMA32})
+STR_6643    :{STRING} ({COMMA32} / {COMMA32} KiB)
+STR_6644    :Touch enhancements
+STR_6645    :Makes some UI elements bigger so they are easier to click or tap.
+STR_6646    :Author: {STRING}
+STR_6647    :Authors: {STRING}
+STR_6648    :Loading plugin engine…
+STR_6649    :Loading scenario…
+STR_6650    :Loading saved game…
+STR_6651    :{STRING} ({COMMA32}%)
+STR_6652    :Error Window
+STR_6653    :All sources shown
+STR_6654    :Showing {POP16}{UINT16} sources
+STR_6655    :Only ‘{POP16}{STRINGID}’
+STR_6656    :Remove all fences from the park
+STR_6657    :Land Not Owned
+STR_6658    :Set land to be not owned by the park, nor available for purchase
+STR_6659    :Guests ignore prices
+STR_6660    :Guests will ignore the price of rides and stalls.
+STR_6661    :Randomise all
+STR_6662    :Randomise colours for every train or vehicle.
+STR_6663    :Date cheats
+STR_6664    :Show date cheats
+STR_6665    :Nature/weather cheats
+STR_6666    :Show nature/weather cheats
+STR_6667    :Fauna
+STR_6668    :Staff cheats
+STR_6669    :Show staff cheats
+STR_6670    :Guest behaviour
+STR_6671    :Show ‘real’ names of staff
+STR_6672    :Toggle between showing ‘real’ names of staff and staff numbers
+STR_6673    :Transparent
+# Used as part of a sentence (see https://github.com/OpenRCT2/OpenRCT2/issues/22072).
+STR_6674    :{MONTH}, Year {COMMA16}
+STR_6675    :Peep Names
+STR_6676    :At least one peep names object must be selected
+STR_6677    :Add beaches around water bodies
+STR_6678    :Heightmap source:
+STR_6679    :Flatland
+STR_6680    :Simplex noise
+STR_6681    :Heightmap file
+STR_6682    :Map Generator - Generator
+STR_6683    :Map Generator - Terrain
+STR_6684    :Map Generator - Water
+STR_6685    :Map Generator - Forests
+STR_6686    :Tree to land ratio:
+STR_6687    :Min. tree altitude:
+STR_6688    :Max. tree altitude:
+STR_6689    :{UINT16}%
+STR_6690    :Minimum land height
+STR_6691    :Enter min. land height between {COMMA16} and {COMMA16}
+STR_6692    :Maximum land height
+STR_6693    :Enter max. land height between {COMMA16} and {COMMA16}
+STR_6694    :Minimum tree altitude
+STR_6695    :Enter min. tree altitude between {COMMA16} and {COMMA16}
+STR_6696    :Maximum tree altitude
+STR_6697    :Enter max. tree altitude between {COMMA16} and {COMMA16}
+STR_6698    :Tree to land ratio
+STR_6699    :Enter tree to land ratio between {COMMA16} and {COMMA16}
+STR_6700    :Simplex Base Frequency
+STR_6701    :Enter Base Frequency between {COMMA2DP32} and {COMMA2DP32}
+STR_6702    :Simplex Octaves
+STR_6703    :Enter Octaves between {COMMA16} and {COMMA16}
+STR_6704    :{COMMA2DP32}
+STR_6705    :Browse...
+STR_6706    :{WINDOW_COLOUR_2}Current image file: {BLACK}{STRING}
+STR_6707    :(none selected)
+STR_6708    :Smooth Strength
+STR_6709    :Enter Smooth Strength between {COMMA16} and {COMMA16}
 
 #############
 # Scenarios #
@@ -4277,87 +4361,87 @@ STR_DTLS    :Build the missing Six Flags rides, or create your own designs to im
 ## Wacky Worlds Scenarios
 ###############################################################################
 <Africa - African Diamond Mine>
-STR_SCNR    :Africa - African Diamond Mine
+STR_SCNR    :Mines of Africa
 STR_PARK    :Mines of Africa
 STR_DTLS    :You inherited a disused diamond mine, and find a valuable diamond.  You decide to invest that money to build a world-famous theme park.
 
 <Africa - Oasis>
-STR_SCNR    :Africa - Oasis
+STR_SCNR    :Mirage Madness
 STR_PARK    :Mirage Madness
 STR_DTLS    :A desert Oasis has been discovered and would provide a beautiful location for a park. Transport to the oasis has been provided.
 
 <Africa - Victoria Falls>
-STR_SCNR    :Africa - Victoria Falls
+STR_SCNR    :Over The Edge
 STR_PARK    :Over The Edge
 STR_DTLS    :A dam has been built offering abundant, cheap hydroelectric power with which to run a park. You need to reach a high park value to help repay the loan for the dam.
 
 <Antarctic - Ecological Salvage>
-STR_SCNR    :Antarctic - Ecological Salvage
+STR_SCNR    :Icy Adventures
 STR_PARK    :Icy Adventures
 STR_DTLS    :The environment agency has turned to you to transform an old oil refinery ecological eyesore into a top tourist attraction. Land is cheap but loan interest is high. You can sell the old buildings for salvage.
 
 <Asia - Great Wall of China Tourism Enhancement>
-STR_SCNR    :Asia - Great Wall of China Tourism Enhancement
+STR_SCNR    :Great Wall of China
 STR_PARK    :Great Wall of China
 STR_DTLS    :The authorities have decided to enhance tourism around the Great Wall by building a theme park on the adjacent land. Money is no object!
 
 <Asia - Japanese Coastal Reclaim>
-STR_SCNR    :Asia - Japanese Coastal Reclaim
+STR_SCNR    :Okinawa Coast
 STR_PARK    :Okinawa Coast
 STR_DTLS    :An existing park has run out of space. Your only option is to build out into the sea, and so you have taken out a loan. Height restrictions on your building are enforced due to foundations and earthquake risk.
 
 <Asia - Maharaja Palace>
-STR_SCNR    :Asia - Maharaja Palace
+STR_SCNR    :Park Maharaja
 STR_PARK    :Park Maharaja
 STR_DTLS    :You have been commissioned by the Maharaja to bring entertainment to the large local population. Build a park inspired by the Maharaja’s palace.
 
 <Australasia - Ayers Rock>
-STR_SCNR    :Australasia - Ayers Rock
+STR_SCNR    :Ayers Adventure
 STR_PARK    :Ayers Adventure
 STR_DTLS    :You are helping Aboriginal people to build a park as part of a cultural awareness program. You need to get a large number of guests to educate them in the unique heritage of the Aboriginal people.
 
 <Australasia - Fun at the Beach>
-STR_SCNR    :Australasia - Fun at the Beach
+STR_SCNR    :Beach Barbecue Blast
 STR_PARK    :Beach Barbecue Blast
 STR_DTLS    :A local entrepreneur’s sealife park has gone bust. You already operate a small park and buy the other park from the construction company. Develop a big combined park.
 
 <Europe - European Cultural Festival>
-STR_SCNR    :Europe - European Cultural Festival
+STR_SCNR    :European Extravaganza
 STR_PARK    :European Extravaganza
 STR_DTLS    :You have been brought in to take over a European Cultural Visitor Attraction and must increase the number of guests in order to pay back the EU subsidy by the end of the current European parliament term.
 
 <Europe - Renovation>
-STR_SCNR    :Europe - Renovation
+STR_SCNR    :From The Ashes
 STR_PARK    :From The Ashes
 STR_DTLS    :An old park has fallen into disrepair. You gain a European Union grant to return this deprived area to its former glory! You need to renovate the park and repay the grant.
 
 <N. America - Extreme Hawaiian Island>
-STR_SCNR    :North America - Extreme Hawaiian Island
+STR_SCNR    :Wacky Waikiki
 STR_PARK    :Wacky Waikiki
 STR_DTLS    :The people of Hawaii are bored of surfing and are looking for something more intense. You need to build a park with this in mind to keep the area’s tourist attraction rating high.
 
 <North America - Grand Canyon>
-STR_SCNR    :North America - Grand Canyon
+STR_SCNR    :Canyon Calamities
 STR_PARK    :Canyon Calamities
 STR_DTLS    :You have to build a park on limited land either side of this natural treasure - you do have the opportunity to buy neighbouring land from the Native American Indians. You need to complete the objective to sustain the local town’s population.
 
 <North America - Rollercoaster Heaven>
-STR_SCNR    :North America - Rollercoaster Heaven
+STR_SCNR    :Rollercoaster Heaven
 STR_PARK    :Rollercoaster Heaven
 STR_DTLS    :You are a successful business tycoon on long sabbatical who desires to use this time transforming the city park into Rollercoaster Heaven. Money is no object!
 
 <South America - Inca Lost City>
-STR_SCNR    :South America - Inca Lost City
+STR_SCNR    :Lost City Founder
 STR_PARK    :Lost City Founder
-STR_DTLS    :To further boost local tourism you must construct a park that is in tune with its surroundings, and has height restrictions.
+STR_DTLS    :To further boost local tourism you must construct a park that is in tune with its surroundings.
 
 <South America - Rain Forest Plateau>
-STR_SCNR    :South America - Rain Forest Plateau
+STR_SCNR    :Rainforest Romp
 STR_PARK    :Rainforest Romp
 STR_DTLS    :Space is limited in the precious rainforest - you must cram as much as possible into the existing clearing, in order to provide a viable alternative to the local timber industry.
 
 <South America - Rio Carnival>
-STR_SCNR    :South America - Rio Carnival
+STR_SCNR    :Sugarloaf Shores
 STR_PARK    :Sugarloaf Shores
 STR_DTLS    :You run a small park near Rio but the bank has called in your loan. You need to quickly increase your earning capacity to repay this unexpected debt.
 
@@ -4365,72 +4449,72 @@ STR_DTLS    :You run a small park near Rio but the bank has called in your loan.
 ## Time Twister Scenarios
 ###############################################################################
 <Dark Age - Castle>
-STR_SCNR    :Dark Age - Castle
+STR_SCNR    :Cliffside Castle
 STR_PARK    :Cliffside Castle
 STR_DTLS    :Local members of the battle re-enactment society are rather serious about their hobby. They’ve entrusted you with the job of constructing a Dark Age theme park on the grounds of Cliffside Castle.
 
 <Dark Age - Robin Hood>
-STR_SCNR    :Dark Age - Robin Hood
+STR_SCNR    :Sherwood Forest
 STR_PARK    :Sherwood Forest
 STR_DTLS    :To liberate wealth from the rich and distribute it to the needy, you and your Merry Men have decided to build a theme park in Sherwood Forest.
 
 <Future - First Encounters>
-STR_SCNR    :Future - First Encounters
+STR_SCNR    :Extraterrestrial Extravaganza
 STR_PARK    :Extraterrestrial Extravaganza
 STR_DTLS    :Life has been discovered on a distant planet Build an alien theme park to cash in on the unprecedented wave of interest.
 
 <Future - Future World>
-STR_SCNR    :Future - Future World
+STR_SCNR    :Gemini City
 STR_PARK    :Gemini City
 STR_DTLS    :Show off your inventive, utopian vision of the future - come up with a futuristic park design that incorporates state-of-the-art attractions.
 
 <Mythological - Animatronic Film Set>
-STR_SCNR    :Mythological - Animatronic Film Set
+STR_SCNR    :Animatronic Antics
 STR_PARK    :Animatronic Antics
 STR_DTLS    :You have been given the task of running and improving an existing theme park, which has been built on an old film set. Build a tribute to the pioneering stop-motion animators who first brought mythical creatures to life on the silver screen.
 
 <Mythological - Cradle of Civilisation>
-STR_SCNR    :Mythological - Cradle of Civilisation
+STR_SCNR    :Mythological Madness
 STR_PARK    :Mythological Madness
 STR_DTLS    :You own an island of particular archaeological value. You’ve decided to fund its preservation by constructing a theme park based on the area’s rich Mythological heritage.
 
 <Prehistoric - After the Asteroid>
-STR_SCNR    :Prehistoric - After the Asteroid
+STR_SCNR    :Crater Carnage
 STR_PARK    :Crater Carnage
 STR_DTLS    :You own a dusty old meteor crater. In the true entrepreneurial spirit, you’ve decided to construct an asteroid theme park and convert your seemingly worthless land into a sizeable fortune.
 
 <Prehistoric - Jurassic Safari>
-STR_SCNR    :Prehistoric - Jurassic Safari
+STR_SCNR    :Coastersaurus
 STR_PARK    :Coastersaurus
 STR_DTLS    :You’ve been given the task of constructing a Jurassic era theme park. To optimize your visitors’ access to the exotic plant and animal exhibits, you will need to build rides going over and into the valley.
 
 <Prehistoric - Stone Age>
-STR_SCNR    :Prehistoric - Stone Age
+STR_SCNR    :Rocky Rambles
 STR_PARK    :Rocky Rambles
 STR_DTLS    :To thwart the highway developers and preserve the mysterious ancient stone circles, you will need to construct a Stone Age theme park and turn a profit. However, attracting visitors may pose a challenge, as the terrain is a tad inhospitable.
 
 <Roaring Twenties - Prison Island>
-STR_SCNR    :Roaring Twenties - Prison Island
+STR_SCNR    :Alcatraz
 STR_PARK    :Alcatraz
 STR_DTLS    :The infamous Prison Island - whose population once swelled with bootleggers and racketeers - is now up for sale. You’ve decided to convert it into a top tourist attraction, and money is no object
 
 <Roaring Twenties - Schneider Cup>
-STR_SCNR    :Roaring Twenties - Schneider Cup
+STR_SCNR    :Schneider Shores
 STR_PARK    :Schneider Shores
 STR_DTLS    :The 75th anniversary of your grandfather’s Schneider Cup victory is coming up in a few years. You’re going to honour his achievement by building a theme park based on the famous seaplane race.
 
 <Roaring Twenties - Skyscrapers>
-STR_SCNR    :Roaring Twenties - Skyscrapers
+STR_SCNR    :Metropolis
 STR_PARK    :Metropolis
 STR_DTLS    :You own an empty lot near the low-rise part of town. To squeeze the most out of your urban property, build a skyscraper theme park inspired by the soaring art deco architecture of the twenties.
 
 <Rock 'n' Roll - Flower Power>
-STR_SCNR    :Rock ‘n’ Roll - Flower Power
+STR_SCNR    :Woodstock
 STR_PARK    :Woodstock
 STR_DTLS    :A large annual music festival takes place on your land. Build a hip theme park to keep the free-spirited audience entertained.
 
 <Rock 'n' Roll - Rock 'n' Roll>
-STR_SCNR    :Rock ‘n’ Roll - Rock ‘n’ Roll
+STR_SCNR    :Rock ‘n’ Roll Revival
 STR_PARK    :Rock ‘n’ Roll Revival
 STR_DTLS    :This aging theme park has seen better days. Help the owner give it a retro rock ‘n’ roll makeover and turn the place into a successful venue.
 

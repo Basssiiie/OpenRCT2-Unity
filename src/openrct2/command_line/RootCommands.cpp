@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -31,6 +31,8 @@
 #include <iterator>
 #include <string>
 
+using namespace OpenRCT2;
+
 #ifdef USE_BREAKPAD
 #    define IMPLIES_SILENT_BREAKPAD ", implies --silent-breakpad"
 #else
@@ -40,7 +42,7 @@
 #ifndef DISABLE_NETWORK
 int32_t gNetworkStart = NETWORK_MODE_NONE;
 std::string gNetworkStartHost;
-int32_t gNetworkStartPort = NETWORK_DEFAULT_PORT;
+int32_t gNetworkStartPort = kNetworkDefaultPort;
 std::string gNetworkStartAddress;
 
 static uint32_t _port = 0;
@@ -54,6 +56,7 @@ static bool _all = false;
 static bool _about = false;
 static bool _verbose = false;
 static bool _headless = false;
+static bool _silentReplays = false;
 static u8string _password = {};
 static u8string _userDataPath = {};
 static u8string _openrct2DataPath = {};
@@ -71,10 +74,11 @@ static constexpr CommandLineOptionDefinition StandardOptions[]
     { CMDLINE_TYPE_SWITCH,  &_about,            NAC, "about",              "show information about " OPENRCT2_NAME                      },
     { CMDLINE_TYPE_SWITCH,  &_verbose,          NAC, "verbose",            "log verbose messages"                                       },
     { CMDLINE_TYPE_SWITCH,  &_headless,         NAC, "headless",           "run " OPENRCT2_NAME " headless" IMPLIES_SILENT_BREAKPAD     },
-#ifndef DISABLE_NETWORK                                                    
+    { CMDLINE_TYPE_SWITCH,  &_silentReplays,    NAC, "silent-replays",     "use unobtrusive replays"                                    },
+#ifndef DISABLE_NETWORK
     { CMDLINE_TYPE_INTEGER, &_port,             NAC, "port",               "port to use for hosting or joining a server"                },
     { CMDLINE_TYPE_STRING,  &_address,          NAC, "address",            "address to listen on when hosting a server"                 },
-#endif                                                                     
+#endif
     { CMDLINE_TYPE_STRING,  &_password,         NAC, "password",           "password needed to join the server"                         },
     { CMDLINE_TYPE_STRING,  &_userDataPath,     NAC, "user-data-path",     "path to the user data directory (containing config.ini)"    },
     { CMDLINE_TYPE_STRING,  &_openrct2DataPath, NAC, "openrct2-data-path", "path to the OpenRCT2 data directory (containing languages)" },
@@ -83,7 +87,7 @@ static constexpr CommandLineOptionDefinition StandardOptions[]
 #ifdef USE_BREAKPAD
     { CMDLINE_TYPE_SWITCH,  &_silentBreakpad,  NAC, "silent-breakpad",   "make breakpad crash reporting silent"                       },
 #endif // USE_BREAKPAD
-    OptionTableEnd
+    kOptionTableEnd
 };
 
 static exitcode_t HandleNoCommand(CommandLineArgEnumerator * enumerator);
@@ -142,7 +146,7 @@ const CommandLineCommand CommandLine::RootCommands[]
     DefineSubCommand("sprite",          CommandLine::SpriteCommands           ),
     DefineSubCommand("simulate",        CommandLine::SimulateCommands         ),
     DefineSubCommand("parkinfo",        CommandLine::ParkInfoCommands         ),
-    CommandTableEnd
+    kCommandTableEnd
 };
 
 const CommandLineExample CommandLine::RootExamples[]
@@ -156,7 +160,7 @@ const CommandLineExample CommandLine::RootExamples[]
 #ifndef DISABLE_NETWORK
     { "host ./my_park.sv6 --port 11753 --headless",   "run a headless server for a saved park" },
 #endif
-    ExampleTableEnd
+    kExampleTableEnd
 };
 // clang-format on
 
@@ -173,7 +177,7 @@ exitcode_t CommandLine::HandleCommandDefault()
     {
         if (_verbose)
         {
-            _log_levels[static_cast<uint8_t>(DiagnosticLevel::Verbose)] = true;
+            _log_levels[EnumValue(DiagnosticLevel::Verbose)] = true;
             PrintLaunchInformation();
         }
 
@@ -220,6 +224,11 @@ exitcode_t CommandLine::HandleCommandDefault()
     if (!_password.empty())
     {
         gCustomPassword = _password;
+    }
+
+    if (_silentReplays)
+    {
+        gSilentReplays = _silentReplays;
     }
 
     return result;
@@ -365,10 +374,10 @@ static exitcode_t HandleCommandSetRCT2(CommandLineArgEnumerator* enumerator)
     // Update RCT2 path in config
     auto env = OpenRCT2::CreatePlatformEnvironment();
     auto configPath = env->GetFilePath(OpenRCT2::PATHID::CONFIG);
-    ConfigSetDefaults();
-    ConfigOpen(configPath);
-    gConfigGeneral.RCT2Path = path;
-    if (ConfigSave(configPath))
+    Config::SetDefaults();
+    Config::OpenFromPath(configPath);
+    Config::Get().general.RCT2Path = path;
+    if (Config::SaveToPath(configPath))
     {
         Console::WriteFormat("Updating RCT2 path to '%s'.", path.c_str());
         Console::WriteLine();
@@ -394,7 +403,7 @@ static exitcode_t HandleCommandScanObjects([[maybe_unused]] CommandLineArgEnumer
     auto context = OpenRCT2::CreateContext();
     auto env = context->GetPlatformEnvironment();
     auto objectRepository = CreateObjectRepository(env);
-    objectRepository->Construct(gConfigGeneral.Language);
+    objectRepository->Construct(Config::Get().general.Language);
     return EXITCODE_OK;
 }
 

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,17 +10,18 @@
 #include "RideSetStatusAction.h"
 
 #include "../Cheats.h"
-#include "../common.h"
+#include "../Diagnostic.h"
 #include "../core/MemoryStream.h"
 #include "../interface/Window.h"
 #include "../localisation/Formatter.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
 #include "../ride/Ride.h"
 #include "../ui/UiContext.h"
 #include "../ui/WindowManager.h"
 #include "../world/Park.h"
+
+using namespace OpenRCT2;
 
 static StringId _StatusErrorTitles[] = {
     STR_CANT_CLOSE,
@@ -60,16 +61,16 @@ GameActions::Result RideSetStatusAction::Query() const
     auto ride = GetRide(_rideIndex);
     if (ride == nullptr)
     {
-        LOG_WARNING("Invalid game command for ride %u", _rideIndex.ToUnderlying());
+        LOG_ERROR("Ride not found for rideIndex %u", _rideIndex.ToUnderlying());
         res.Error = GameActions::Status::InvalidParameters;
         res.ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
-        res.ErrorMessage = STR_NONE;
+        res.ErrorMessage = STR_ERR_RIDE_NOT_FOUND;
         return res;
     }
 
     if (_status >= RideStatus::Count)
     {
-        LOG_WARNING("Invalid ride status %u for ride %u", EnumValue(_status), _rideIndex.ToUnderlying());
+        LOG_ERROR("Invalid ride status %u for ride %u", EnumValue(_status), _rideIndex.ToUnderlying());
         res.Error = GameActions::Status::InvalidParameters;
         res.ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
         res.ErrorMessage = STR_NONE;
@@ -124,14 +125,14 @@ GameActions::Result RideSetStatusAction::Execute() const
     auto ride = GetRide(_rideIndex);
     if (ride == nullptr)
     {
-        LOG_WARNING("Invalid game command for ride %u", _rideIndex.ToUnderlying());
+        LOG_ERROR("Ride not found for rideIndex %u", _rideIndex.ToUnderlying());
         res.Error = GameActions::Status::InvalidParameters;
         res.ErrorTitle = STR_RIDE_DESCRIPTION_UNKNOWN;
-        res.ErrorMessage = STR_NONE;
+        res.ErrorMessage = STR_ERR_RIDE_NOT_FOUND;
         return res;
     }
 
-    res.ErrorTitle = _StatusErrorTitles[static_cast<uint8_t>(_status)];
+    res.ErrorTitle = _StatusErrorTitles[EnumValue(_status)];
 
     Formatter ft(res.ErrorMessageArgs.data());
     ft.Increment(6);
@@ -238,7 +239,7 @@ GameActions::Result RideSetStatusAction::Execute() const
             break;
         }
         default:
-            Guard::Assert(false, "Invalid status passed: %u", _status);
+            Guard::Assert(false, "Invalid ride status %u", _status);
             break;
     }
     auto windowManager = OpenRCT2::GetContext()->GetUiContext()->GetWindowManager();

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,16 +10,17 @@
 #include "RideSetPriceAction.h"
 
 #include "../Cheats.h"
-#include "../common.h"
+#include "../Diagnostic.h"
 #include "../core/MemoryStream.h"
 #include "../interface/Window.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../management/Finance.h"
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
 #include "../ride/ShopItem.h"
 #include "../world/Park.h"
+
+using namespace OpenRCT2;
 
 RideSetPriceAction::RideSetPriceAction(RideId rideIndex, money64 price, bool primaryPrice)
     : _rideIndex(rideIndex)
@@ -49,23 +50,28 @@ void RideSetPriceAction::Serialise(DataSerialiser& stream)
 
 GameActions::Result RideSetPriceAction::Query() const
 {
-    GameActions::Result res = GameActions::Result();
-
     auto ride = GetRide(_rideIndex);
     if (ride == nullptr)
     {
-        LOG_WARNING("Invalid game command, ride_id = %u", _rideIndex.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Ride not found for rideIndex %u", _rideIndex.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_RIDE_NOT_FOUND);
     }
 
     const auto* rideEntry = GetRideEntryByIndex(ride->subtype);
     if (rideEntry == nullptr)
     {
-        LOG_WARNING("Invalid game command for ride %u", _rideIndex.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Ride entry not found for ride subtype %u", ride->subtype);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_RIDE_OBJECT_ENTRY_NOT_FOUND);
     }
 
-    return res;
+    if (_price < kRideMinPrice || _price > kRideMaxPrice)
+    {
+        LOG_ERROR("Attempting to set an invalid price for rideIndex %u", _rideIndex.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_EMPTY);
+    }
+
+    return GameActions::Result();
 }
 
 GameActions::Result RideSetPriceAction::Execute() const
@@ -76,15 +82,22 @@ GameActions::Result RideSetPriceAction::Execute() const
     auto ride = GetRide(_rideIndex);
     if (ride == nullptr)
     {
-        LOG_WARNING("Invalid game command, ride_id = %u", _rideIndex.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Ride not found for rideIndex %u", _rideIndex.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_RIDE_NOT_FOUND);
     }
 
     const auto* rideEntry = GetRideEntryByIndex(ride->subtype);
     if (rideEntry == nullptr)
     {
-        LOG_WARNING("Invalid game command for ride %u", _rideIndex.ToUnderlying());
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_NONE, STR_NONE);
+        LOG_ERROR("Ride entry not found for ride subtype %u", ride->subtype);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_RIDE_OBJECT_ENTRY_NOT_FOUND);
+    }
+
+    if (_price < kRideMinPrice || _price > kRideMaxPrice)
+    {
+        LOG_ERROR("Attempting to set an invalid price for rideIndex %u", _rideIndex.ToUnderlying());
+        return GameActions::Result(GameActions::Status::InvalidParameters, STR_ERR_INVALID_PARAMETER, STR_EMPTY);
     }
 
     if (!ride->overall_view.IsNull())
@@ -99,7 +112,7 @@ GameActions::Result RideSetPriceAction::Execute() const
         shopItem = ShopItem::Admission;
 
         const auto& rtd = ride->GetRideTypeDescriptor();
-        if (!rtd.HasFlag(RIDE_TYPE_FLAG_IS_TOILET))
+        if (!rtd.HasFlag(RtdFlag::isToilet))
         {
             shopItem = rideEntry->shop_item[0];
             if (shopItem == ShopItem::None)
@@ -152,7 +165,7 @@ void RideSetPriceAction::RideSetCommonPrice(ShopItem shopItem) const
         auto invalidate = false;
         auto rideEntry = GetRideEntryByIndex(ride.subtype);
         const auto& rtd = ride.GetRideTypeDescriptor();
-        if (rtd.HasFlag(RIDE_TYPE_FLAG_IS_TOILET) && shopItem == ShopItem::Admission)
+        if (rtd.HasFlag(RtdFlag::isToilet) && shopItem == ShopItem::Admission)
         {
             if (ride.price[0] != _price)
             {

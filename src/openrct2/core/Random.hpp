@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -20,7 +20,7 @@
 #include <random>
 #include <type_traits>
 
-namespace Random
+namespace OpenRCT2::Random
 {
     using namespace Numerics;
 
@@ -118,7 +118,9 @@ namespace Random
             return std::numeric_limits<result_type>::max();
         }
 
-        explicit RotateEngine(result_type seed_value = default_seed)
+        RotateEngine() = default;
+
+        explicit RotateEngine(result_type seed_value)
         {
             seed(seed_value);
         }
@@ -192,4 +194,4 @@ namespace Random
         using Seed = FixedSeedSequence<2>;
         using State = Engine::state_type;
     } // namespace RCT2
-} // namespace Random
+} // namespace OpenRCT2::Random

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,10 @@
 
 #include "ObjectFactory.h"
 
+#include "../Context.h"
+#include "../Diagnostic.h"
 #include "../OpenRCT2.h"
+#include "../PlatformEnvironment.h"
 #include "../audio/audio.h"
 #include "../core/Console.hpp"
 #include "../core/File.h"
@@ -33,6 +36,7 @@
 #include "ObjectLimits.h"
 #include "ObjectList.h"
 #include "PathAdditionObject.h"
+#include "PeepNamesObject.h"
 #include "RideObject.h"
 #include "SceneryGroupObject.h"
 #include "SmallSceneryObject.h"
@@ -42,15 +46,16 @@
 #include "WallObject.h"
 #include "WaterObject.h"
 
-#include <algorithm>
 #include <memory>
 #include <unordered_map>
+
+using namespace OpenRCT2;
 
 struct IFileDataRetriever
 {
     virtual ~IFileDataRetriever() = default;
-    virtual std::vector<uint8_t> GetData(std::string_view path) const abstract;
-    virtual ObjectAsset GetAsset(std::string_view path) const abstract;
+    virtual std::vector<uint8_t> GetData(std::string_view path) const = 0;
+    virtual ObjectAsset GetAsset(std::string_view path) const = 0;
 };
 
 class FileSystemDataRetriever : public IFileDataRetriever
@@ -209,7 +214,7 @@ public:
     }
 };
 
-namespace ObjectFactory
+namespace OpenRCT2::ObjectFactory
 {
     /**
      * @param jRoot Must be JSON node of type object
@@ -268,7 +273,7 @@ namespace ObjectFactory
                 result = CreateObject(entry.GetType());
                 result->SetDescriptor(ObjectEntryDescriptor(entry));
 
-                utf8 objectName[DAT_NAME_LENGTH + 1] = { 0 };
+                utf8 objectName[kDatNameLength + 1] = { 0 };
                 ObjectEntryGetNameFixed(objectName, sizeof(objectName), &entry);
                 LOG_VERBOSE("  entry: { 0x%08X, \"%s\", 0x%08X }", entry.flags, objectName, entry.checksum);
 
@@ -303,7 +308,7 @@ namespace ObjectFactory
         {
             result->SetDescriptor(ObjectEntryDescriptor(*entry));
 
-            utf8 objectName[DAT_NAME_LENGTH + 1];
+            utf8 objectName[kDatNameLength + 1];
             ObjectEntryGetNameFixed(objectName, sizeof(objectName), entry);
 
             auto readContext = ReadObjectContext(objectRepository, objectName, !gOpenRCT2NoGraphics, nullptr);
@@ -380,6 +385,9 @@ namespace ObjectFactory
             case ObjectType::Audio:
                 result = std::make_unique<AudioObject>();
                 break;
+            case ObjectType::PeepNames:
+                result = std::make_unique<PeepNamesObject>();
+                break;
             default:
                 throw std::runtime_error("Invalid object type");
         }
@@ -420,6 +428,8 @@ namespace ObjectFactory
             return ObjectType::FootpathRailings;
         if (s == "audio")
             return ObjectType::Audio;
+        if (s == "peep_names")
+            return ObjectType::PeepNames;
         return ObjectType::None;
     }
 
@@ -500,6 +510,12 @@ namespace ObjectFactory
         }
     }
 
+    static bool isUsingClassic()
+    {
+        auto env = OpenRCT2::GetContext()->GetPlatformEnvironment();
+        return env->IsUsingClassic();
+    }
+
     std::unique_ptr<Object> CreateObjectFromJson(
         IObjectRepository& objectRepository, json_t& jRoot, const IFileDataRetriever* fileRetriever, bool loadImageTable)
     {
@@ -517,9 +533,13 @@ namespace ObjectFactory
         {
             auto id = Json::GetString(jRoot["id"]);
 
-            // HACK Disguise RCT Classic audio as RCT2 audio so asset packs override correctly
-            if (id == OpenRCT2::Audio::AudioObjectIdentifiers::RCTCBase)
-                id = OpenRCT2::Audio::AudioObjectIdentifiers::RCT2Base;
+            // Base audio files are renamed to a common, virtual name so asset packs can override it correctly.
+            const bool isRCT2BaseAudio = id == OpenRCT2::Audio::AudioObjectIdentifiers::kRCT2Base && !isUsingClassic();
+            const bool isRCTCBaseAudio = id == OpenRCT2::Audio::AudioObjectIdentifiers::kRCTCBase && isUsingClassic();
+            if (isRCT2BaseAudio || isRCTCBaseAudio)
+            {
+                id = OpenRCT2::Audio::AudioObjectIdentifiers::kRCT2;
+            }
 
             auto version = VersionTuple(Json::GetString(jRoot["version"]));
             ObjectEntryDescriptor descriptor;
@@ -579,4 +599,4 @@ namespace ObjectFactory
         }
         return result;
     }
-} // namespace ObjectFactory
+} // namespace OpenRCT2::ObjectFactory

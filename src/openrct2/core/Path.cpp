@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -17,10 +17,9 @@
 #include "Memory.hpp"
 #include "String.hpp"
 
-#include <algorithm>
 #include <iterator>
 
-namespace Path
+namespace OpenRCT2::Path
 {
     u8string Combine(u8string_view a, u8string_view b)
     {
@@ -136,4 +135,4 @@ namespace Path
         const auto result = fs::remove_all(fs::u8path(path), ec);
         return (result > 0) && ec.value() == 0;
     }
-} // namespace Path
+} // namespace OpenRCT2::Path

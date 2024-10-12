@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,7 +14,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace Numerics
+namespace OpenRCT2::Numerics
 {
     /**
      * Bitwise left rotate
@@ -77,4 +77,4 @@ namespace Numerics
     const constexpr auto rol64 = rol<uint64_t>;
     const constexpr auto ror64 = ror<uint64_t>;
 
-} // namespace Numerics
+} // namespace OpenRCT2::Numerics

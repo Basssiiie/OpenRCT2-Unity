@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,12 +9,12 @@
 
 #pragma once
 
-#include "../common.h"
 #include "../entity/Peep.h"
+#include "RCT1.h"
 
 #include <vector>
 
-namespace RCT1
+namespace OpenRCT2::RCT1
 {
     struct VehicleColourSchemeCopyDescriptor
     {
@@ -22,23 +22,28 @@ namespace RCT1
     };
 
     enum class RideType : uint8_t;
-    enum class PeepSpriteType : uint8_t;
+    enum class PeepAnimationGroup : uint8_t;
 
     colour_t GetColour(colour_t colour);
-    ::PeepSpriteType GetPeepSpriteType(PeepSpriteType rct1SpriteType);
+    ::PeepAnimationGroup GetPeepAnimationGroup(PeepAnimationGroup rct1AnimationGroup);
 
-    uint8_t GetRideType(RideType rideType, uint8_t vehicleType);
-    VehicleColourSchemeCopyDescriptor GetColourSchemeCopyDescriptor(uint8_t vehicleType);
+    uint8_t GetRideType(RideType rideType, VehicleType vehicleType);
+    VehicleColourSchemeCopyDescriptor GetColourSchemeCopyDescriptor(VehicleType vehicleType);
     bool RideTypeUsesVehicles(RideType rideType);
     bool PathIsQueue(uint8_t pathType);
     uint8_t NormalisePathAddition(uint8_t pathAdditionType);
-    uint8_t GetVehicleSubEntryIndex(uint8_t rct1VehicleType, uint8_t vehicleSubEntry);
+    uint8_t GetVehicleSubEntryIndex(VehicleType rct1VehicleType, uint8_t vehicleSubEntry);
 
-    std::string_view GetRideTypeObject(RideType rideType);
-    std::string_view GetVehicleObject(uint8_t vehicleType);
+    std::string_view GetRideTypeObject(RideType rideType, bool isLL);
+    std::string_view GetVehicleObject(VehicleType vehicleType);
     std::string_view GetSmallSceneryObject(uint8_t smallSceneryType);
     std::string_view GetLargeSceneryObject(uint8_t largeSceneryType);
+    /**
+     * Most sloped gates look like their ungated counterpart. This function maps these gates.
+     */
+    int32_t MapSlopedWall(uint8_t wallType);
     std::string_view GetWallObject(uint8_t wallType);
+    std::string_view GetBannerObject(BannerType bannerType);
     std::string_view GetPathSurfaceObject(uint8_t pathType);
     std::string_view GetPathAddtionObject(uint8_t pathAdditionType);
     std::string_view GetFootpathRailingsObject(uint8_t footpathRailingsType);
@@ -48,4 +53,6 @@ namespace RCT1
     std::string_view GetTerrainEdgeObject(uint8_t terrainEdge);
 
     const std::vector<const char*> GetSceneryObjects(uint8_t sceneryType);
-} // namespace RCT1
+
+    bool VehicleTypeIsReversed(const VehicleType vehicleType);
+} // namespace OpenRCT2::RCT1

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -8,6 +8,8 @@
  *****************************************************************************/
 
 #pragma once
+
+#include "../util/Util.h"
 
 #include <cstdint>
 
@@ -63,7 +65,7 @@ namespace OpenRCT2::Entity::Yaw
 
     [[nodiscard]] constexpr int32_t YawToPrecision(int32_t yaw, SpritePrecision precision)
     {
-        return yaw >> PrecisionOffset[static_cast<uint8_t>(precision)];
+        return yaw >> PrecisionOffset[EnumValue(precision)];
     }
 
     [[nodiscard]] constexpr uint8_t NumSpritesPrecision(SpritePrecision precision)

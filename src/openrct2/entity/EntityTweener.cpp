@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,6 +14,7 @@
 #include "EntityList.h"
 #include "EntityRegistry.h"
 
+#include <algorithm>
 #include <cmath>
 
 void EntityTweener::AddEntity(EntityBase* entity)
@@ -96,6 +97,7 @@ void EntityTweener::Tween(float alpha)
         if (posA == posB)
             continue;
 
+        ent->Invalidate();
         EntitySetCoordinates(
             { static_cast<int32_t>(std::round(posB.x * alpha + posA.x * inv)),
               static_cast<int32_t>(std::round(posB.y * alpha + posA.y * inv)),
@@ -113,6 +115,7 @@ void EntityTweener::Restore()
         if (ent == nullptr)
             continue;
 
+        ent->Invalidate();
         EntitySetCoordinates(PostPos[i], ent);
         ent->Invalidate();
     }

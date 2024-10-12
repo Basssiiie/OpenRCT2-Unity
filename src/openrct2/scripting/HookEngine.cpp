@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -34,6 +34,7 @@ static const EnumMap<HOOK_TYPE> HooksLookupTable({
     { "map.change", HOOK_TYPE::MAP_CHANGE },
     { "map.changed", HOOK_TYPE::MAP_CHANGED },
     { "map.save", HOOK_TYPE::MAP_SAVE },
+    { "park.guest.softcap.calculate", HOOK_TYPE::PARK_CALCULATE_GUEST_CAP },
 });
 
 HOOK_TYPE OpenRCT2::Scripting::GetHookType(const std::string& name)

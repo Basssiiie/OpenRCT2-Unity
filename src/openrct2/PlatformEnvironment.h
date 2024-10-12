@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,11 +9,10 @@
 
 #pragma once
 
-#include "common.h"
-#include "core/String.hpp"
+#include "Diagnostic.h"
+#include "core/StringTypes.h"
 
 #include <memory>
-#include <string>
 
 namespace OpenRCT2
 {
@@ -32,26 +31,27 @@ namespace OpenRCT2
 
     enum class DIRID
     {
-        DATA,        // Contains g1.dat, music etc.
-        LANDSCAPE,   // Contains scenario editor landscapes (SC6).
-        LANGUAGE,    // Contains language packs.
-        LOG_CHAT,    // Contains chat logs.
-        LOG_SERVER,  // Contains server logs.
-        NETWORK_KEY, // Contains the user's public and private keys.
-        OBJECT,      // Contains objects.
-        PLUGIN,      // Contains plugins (.js).
-        SAVE,        // Contains saved games (SV6).
-        SCENARIO,    // Contains scenarios (SC6).
-        SCREENSHOT,  // Contains screenshots.
-        SEQUENCE,    // Contains title sequences.
-        SHADER,      // Contains OpenGL shaders.
-        THEME,       // Contains interface themes.
-        TRACK,       // Contains track designs.
-        HEIGHTMAP,   // Contains heightmap data.
-        REPLAY,      // Contains recorded replays.
-        LOG_DESYNCS, // Contains desync reports.
-        CRASH,       // Contains crash dumps.
-        ASSET_PACK,  // Contains asset packs.
+        DATA,             // Contains g1.dat, music etc.
+        LANDSCAPE,        // Contains scenario editor landscapes (SC6).
+        LANGUAGE,         // Contains language packs.
+        LOG_CHAT,         // Contains chat logs.
+        LOG_SERVER,       // Contains server logs.
+        NETWORK_KEY,      // Contains the user's public and private keys.
+        OBJECT,           // Contains objects.
+        PLUGIN,           // Contains plugins (.js).
+        SAVE,             // Contains saved games (SV6).
+        SCENARIO,         // Contains scenarios (SC6).
+        SCREENSHOT,       // Contains screenshots.
+        SEQUENCE,         // Contains title sequences.
+        SHADER,           // Contains OpenGL shaders.
+        THEME,            // Contains interface themes.
+        TRACK,            // Contains track designs.
+        HEIGHTMAP,        // Contains heightmap data.
+        REPLAY,           // Contains recorded replays.
+        LOG_DESYNCS,      // Contains desync reports.
+        CRASH,            // Contains crash dumps.
+        ASSET_PACK,       // Contains asset packs.
+        SCENARIO_PATCHES, // Contains scenario patches.
     };
 
     enum class PATHID
@@ -80,12 +80,12 @@ namespace OpenRCT2
     {
         virtual ~IPlatformEnvironment() = default;
 
-        virtual u8string GetDirectoryPath(DIRBASE base) const abstract;
-        virtual u8string GetDirectoryPath(DIRBASE base, DIRID did) const abstract;
-        virtual u8string GetFilePath(PATHID pathid) const abstract;
-        virtual u8string FindFile(DIRBASE base, DIRID did, u8string_view fileName) const abstract;
-        virtual void SetBasePath(DIRBASE base, u8string_view path) abstract;
-        virtual bool IsUsingClassic() const abstract;
+        virtual u8string GetDirectoryPath(DIRBASE base) const = 0;
+        virtual u8string GetDirectoryPath(DIRBASE base, DIRID did) const = 0;
+        virtual u8string GetFilePath(PATHID pathid) const = 0;
+        virtual u8string FindFile(DIRBASE base, DIRID did, u8string_view fileName) const = 0;
+        virtual void SetBasePath(DIRBASE base, u8string_view path) = 0;
+        virtual bool IsUsingClassic() const = 0;
     };
 
     [[nodiscard]] std::unique_ptr<IPlatformEnvironment> CreatePlatformEnvironment(DIRBASE_VALUES basePaths);

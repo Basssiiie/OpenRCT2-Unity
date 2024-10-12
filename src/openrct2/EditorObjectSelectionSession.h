@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "common.h"
 #include "object/Object.h"
 #include "util/Util.h"
 
@@ -27,7 +26,7 @@ enum EDITOR_INPUT_FLAGS
 
 extern std::optional<StringId> _gSceneryGroupPartialSelectError;
 extern std::vector<uint8_t> _objectSelectionFlags;
-extern int32_t _numSelectedObjectsForType[EnumValue(ObjectType::Count)];
+extern uint32_t _numSelectedObjectsForType[EnumValue(ObjectType::Count)];
 
 bool EditorCheckObjectGroupAtLeastOneSelected(ObjectType checkObjectType);
 bool EditorCheckObjectGroupAtLeastOneSurfaceSelected(bool queue);

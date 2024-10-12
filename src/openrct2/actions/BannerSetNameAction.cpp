@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2023 OpenRCT2 developers
+ * Copyright (c) 2014-2024 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,14 +10,16 @@
 #include "BannerSetNameAction.h"
 
 #include "../Context.h"
+#include "../Diagnostic.h"
 #include "../core/String.hpp"
 #include "../drawing/Drawing.h"
-#include "../localisation/Localisation.h"
 #include "../localisation/StringIds.h"
 #include "../ui/UiContext.h"
 #include "../windows/Intent.h"
 #include "../world/Banner.h"
 #include "GameAction.h"
+
+using namespace OpenRCT2;
 
 BannerSetNameAction::BannerSetNameAction(BannerIndex bannerIndex, const std::string& name)
     : _bannerIndex(bannerIndex)
@@ -47,8 +49,9 @@ GameActions::Result BannerSetNameAction::Query() const
     auto banner = GetBanner(_bannerIndex);
     if (banner == nullptr)
     {
-        LOG_WARNING("Invalid banner id, banner id = %d", _bannerIndex);
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_RENAME_BANNER, STR_NONE);
+        LOG_ERROR("Banner not found for bannerIndex %d", _bannerIndex);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_CANT_RENAME_BANNER, STR_ERR_BANNER_ELEMENT_NOT_FOUND);
     }
     return GameActions::Result();
 }
@@ -58,8 +61,9 @@ GameActions::Result BannerSetNameAction::Execute() const
     auto banner = GetBanner(_bannerIndex);
     if (banner == nullptr)
     {
-        LOG_WARNING("Invalid banner id, banner id = %d", _bannerIndex);
-        return GameActions::Result(GameActions::Status::InvalidParameters, STR_CANT_RENAME_BANNER, STR_NONE);
+        LOG_ERROR("Banner not found for bannerIndex %d", _bannerIndex);
+        return GameActions::Result(
+            GameActions::Status::InvalidParameters, STR_CANT_RENAME_BANNER, STR_ERR_BANNER_ELEMENT_NOT_FOUND);
     }
 
     banner->text = _name;
