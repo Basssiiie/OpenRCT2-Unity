@@ -1,8 +1,10 @@
 using System;
 using OpenRCT2.Behaviours.Generators.Objects;
+using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Map;
 using OpenRCT2.Generators.Map.Retro;
 using OpenRCT2.Generators.Map.Retro.Data;
+using OpenRCT2.Generators.Map.Retro.Providers;
 using OpenRCT2.Utilities;
 using UnityEngine;
 
@@ -19,21 +21,15 @@ namespace OpenRCT2.Behaviours.Generators
         [SerializeField] Shader? _animationShader;
         [SerializeField, Required] GameObject _defaultPrefab = null!;
         [SerializeField] ObjectScaleMode _defaultScaleMode;
-        [SerializeField] PrefabEntryObject[] _prefabOverrides = Array.Empty<PrefabEntryObject>();
 
+        [SerializeField] ProviderObject<SmallSceneryInfo>[] _providers = Array.Empty<ProviderObject<SmallSceneryInfo>>();
 
         public override ITileElementGenerator CreateGenerator()
         {
-            var prefabs = _prefabOverrides;
-            var length = prefabs.Length;
-            var entries = new ObjectEntry[length];
+            var defaultProvider = new SmallScenerySpriteObjectProvider(_defaultPrefab, _animationShader, _defaultScaleMode);
+            var providers = ProviderHelper.CreateLookup(_providers);
 
-            for ( var i = 0; i < length; i++)
-            {
-                entries[i] = prefabs[i].GetObjectEntry();
-            }
-
-            return new SmallSceneryGenerator(_animationShader, _defaultPrefab, _defaultScaleMode, entries);
+            return new SmallSceneryGenerator(defaultProvider, providers);
         }
     }
 }

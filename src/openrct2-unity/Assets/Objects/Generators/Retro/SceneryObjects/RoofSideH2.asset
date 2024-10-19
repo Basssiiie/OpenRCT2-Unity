@@ -9,12 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 400ccd377ed0b7746b3c567d74b00408, type: 3}
+  m_Script: {fileID: 11500000, guid: 6d3333843e8ee344b86e1249398ab337, type: 3}
   m_Name: RoofSideH2
   m_EditorClassIdentifier: 
   _prefab: {fileID: 6135319879212020766, guid: 7cc5bdbf00434d64f9262b8c98536bcd, type: 3}
+  _animationShader: {fileID: -6465566751694194690, guid: 51e8f198c20324141b9b85da080dd22b,
+    type: 3}
   _scaleMode: 0
-  _objectIds:
+  _identifiers:
   - rct2.scenery_small.roof1
   - rct2.scenery_small.roof2
   - rct2.scenery_small.roof5
