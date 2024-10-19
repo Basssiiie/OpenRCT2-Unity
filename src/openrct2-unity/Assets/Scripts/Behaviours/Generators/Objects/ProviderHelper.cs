@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using OpenRCT2.Generators.Map.Retro.Providers;
+using OpenRCT2.Generators.Map.Providers;
 
 #nullable enable
 

@@ -3,7 +3,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace OpenRCT2.Generators.Map.Retro.Providers
+namespace OpenRCT2.Generators.Map.Providers
 {
     public interface IObjectProvider<T> where T : struct
     {

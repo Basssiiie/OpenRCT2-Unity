@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace OpenRCT2.Generators.Map.Retro.Data
+namespace OpenRCT2.Generators.Map.Data
 {
     /// <summary>
     /// Object with all the options required to generate rides.

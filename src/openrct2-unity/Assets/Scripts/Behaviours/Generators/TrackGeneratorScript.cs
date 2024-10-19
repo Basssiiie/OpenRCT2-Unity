@@ -1,5 +1,4 @@
 using OpenRCT2.Generators.Map;
-using OpenRCT2.Generators.Map.Retro;
 using OpenRCT2.Utilities;
 using UnityEngine;
 
@@ -7,7 +6,7 @@ using UnityEngine;
 
 namespace OpenRCT2.Behaviours.Generators
 {
-    [CreateAssetMenu(menuName = (menuPath + "Retro/" + nameof(TrackGeneratorScript)))]
+    [CreateAssetMenu(menuName = (menuPath + nameof(TrackGeneratorScript)))]
     public class TrackGeneratorScript : TileElementGeneratorScript
     {
         [SerializeField, Required] GameObject _prefab = null!;

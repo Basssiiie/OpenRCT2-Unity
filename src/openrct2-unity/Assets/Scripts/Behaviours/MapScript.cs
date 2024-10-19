@@ -24,7 +24,6 @@ namespace OpenRCT2.Behaviours
 
         [SerializeField] GeneratorTypes _enabledGenerators;
         [SerializeField] LoaderScript? _loader;
-        [SerializeField] Behaviour[] _controllers = Array.Empty<Behaviour>();
 
 
         public void Generate()

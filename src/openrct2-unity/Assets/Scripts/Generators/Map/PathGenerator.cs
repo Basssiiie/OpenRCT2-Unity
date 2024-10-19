@@ -9,7 +9,7 @@ using UnityEngine;
 
 #nullable enable
 
-namespace OpenRCT2.Generators.Map.Retro
+namespace OpenRCT2.Generators.Map
 {
     public class PathGenerator : ITileElementGenerator
     {

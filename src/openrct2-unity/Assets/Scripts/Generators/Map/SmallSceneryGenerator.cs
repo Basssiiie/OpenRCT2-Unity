@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Extensions;
-using OpenRCT2.Generators.Map.Retro.Providers;
+using OpenRCT2.Generators.Map.Providers;
 using UnityEngine;
 
 #nullable enable
 
-namespace OpenRCT2.Generators.Map.Retro
+namespace OpenRCT2.Generators.Map
 {
     /// <summary>
     /// A generator for small scenery tile elements.

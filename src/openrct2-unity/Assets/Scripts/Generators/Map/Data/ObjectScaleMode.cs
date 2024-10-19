@@ -1,7 +1,7 @@
 #nullable enable
 
 
-namespace OpenRCT2.Generators.Map.Retro.Data
+namespace OpenRCT2.Generators.Map.Data
 {
     /// <summary>
     /// Defines how to scale this mesh.

@@ -1,12 +1,12 @@
 using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
-using OpenRCT2.Generators.Map.Retro.Data;
+using OpenRCT2.Generators.Map.Data;
 using OpenRCT2.Generators.Sprites;
 using UnityEngine;
 
 #nullable enable
 
-namespace OpenRCT2.Generators.Map.Retro.Providers
+namespace OpenRCT2.Generators.Map.Providers
 {
     /// <summary>
     /// A provider that creates small scenery objects with original sprite textures.

@@ -1,6 +1,5 @@
 using OpenRCT2.Behaviours.Generators;
 using OpenRCT2.Generators.Map;
-using OpenRCT2.Generators.Map.Retro;
 using UnityEngine;
 
 #nullable enable
@@ -10,7 +9,7 @@ namespace OpenRCT2.Behaviours
     /// <summary>
     /// A generator that generates the surface of a map.
     /// </summary>
-    [CreateAssetMenu(menuName = (menuPath + "Retro/" + nameof(SurfaceGeneratorScript)))]
+    [CreateAssetMenu(menuName = (menuPath + nameof(SurfaceGeneratorScript)))]
     public class SurfaceGeneratorScript : TileElementGeneratorScript
     {
         [SerializeField] int _chunkSize = 64;

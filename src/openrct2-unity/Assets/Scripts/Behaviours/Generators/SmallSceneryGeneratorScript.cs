@@ -2,9 +2,8 @@ using System;
 using OpenRCT2.Behaviours.Generators.Objects;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Map;
-using OpenRCT2.Generators.Map.Retro;
-using OpenRCT2.Generators.Map.Retro.Data;
-using OpenRCT2.Generators.Map.Retro.Providers;
+using OpenRCT2.Generators.Map.Data;
+using OpenRCT2.Generators.Map.Providers;
 using OpenRCT2.Utilities;
 using UnityEngine;
 
@@ -15,7 +14,7 @@ namespace OpenRCT2.Behaviours.Generators
     /// <summary>
     /// A generator for small scenery tile elements.
     /// </summary>
-    [CreateAssetMenu(menuName = (menuPath + "Retro/" + nameof(SmallSceneryGeneratorScript)))]
+    [CreateAssetMenu(menuName = (menuPath + nameof(SmallSceneryGeneratorScript)))]
     public class SmallSceneryGeneratorScript : TileElementGeneratorScript
     {
         [SerializeField] Shader? _animationShader;

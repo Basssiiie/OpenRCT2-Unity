@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using OpenRCT2.Generators.Map.Retro.Data;
+using OpenRCT2.Generators.Map.Data;
 using OpenRCT2.Utilities;
 using UnityEngine;
 
