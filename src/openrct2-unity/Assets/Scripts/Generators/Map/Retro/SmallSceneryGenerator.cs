@@ -5,7 +5,6 @@ using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Generators.Map.Retro.Data;
 using OpenRCT2.Generators.Sprites;
-using OpenRCT2.Utilities;
 using UnityEngine;
 
 #nullable enable
@@ -175,13 +174,17 @@ namespace OpenRCT2.Generators.Map.Retro
         {
             int animationDelay = scenery.animationFrameDelay;
             int animationFrameCount = scenery.animationFrameCount;
-            Assert.IsTrue(animationFrameCount > 0);
-
             uint[] imageIndices = GraphicsDataFactory.GetSmallSceneryAnimationIndices(x, y, index, animationFrameCount);
 
             obj.name = $"SmallScenery (ID: {identifier}, frames: {animationFrameCount}, delay: {animationDelay})";
 
             SpriteTexture[] graphics = SpriteFactory.ForAnimationIndices(imageIndices);
+            if (graphics.Length == 0)
+            {
+                Debug.LogError("Small scenery: animation load failed with 0 frames");
+                return false;
+            }
+
             Texture2DArray flipbook = TextureFactory.CreatePalettedArray(graphics);
             // TODO: cache flipbooks for multiple instances.
 

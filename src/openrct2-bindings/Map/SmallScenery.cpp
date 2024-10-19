@@ -31,7 +31,7 @@ extern "C"
     // Adjusts the image index if the scenery element has colours or withering.
     uint32_t GetIndexWithWither(const SmallSceneryElement* element, const SmallSceneryEntry* entry)
     {
-        uint32_t imageIndex = entry->image + element->GetDirection();
+        uint32_t imageIndex = entry->image;
 
         // Wither flowers
         if (entry->HasFlag(SMALL_SCENERY_FLAG_CAN_WITHER))
