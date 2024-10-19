@@ -29,11 +29,13 @@ namespace OpenRCT2.Bindings
         /// </summary>
         public void OpenPark(string parkPath)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
             StartGame(_openRCT2DataPath, _rct2Path, _rct1Path);
             LoadPark(parkPath);
 
             string parkname = Park.GetName();
-            Debug.Log($"OpenRCT2 started on park: {parkname}.");
+            Debug.Log($"OpenRCT2 started on park: '{parkname}' (startup time: {watch.Elapsed})");
         }
 
 

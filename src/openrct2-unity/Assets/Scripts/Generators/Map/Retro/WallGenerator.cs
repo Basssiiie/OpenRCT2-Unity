@@ -46,15 +46,15 @@ namespace OpenRCT2.Generators.Map.Retro
             obj.isStatic = true;
 
             // Apply the wall sprite
-            SpriteTexture sprite = SpriteFactory.ForImageIndex(wall.imageIndex);
+            SpriteTexture sprite = SpriteFactory.GetOrCreate(wall.imageIndex, wall.colour1, wall.colour2, wall.colour3);
 
             MeshRenderer renderer = obj.GetComponentInChildren<MeshRenderer>();
-            renderer.material.SetTexture(_textureField, sprite.GetTexture(TextureWrapMode.Repeat));
+            renderer.material.SetTexture(_textureField, TextureFactory.CreateFullColour(sprite, TextureWrapMode.Repeat));
 
             // Set the visual scale of the model.
             const int diagonalPixelHeight = 15;
 
-            obj.transform.localScale = new Vector3(1, (sprite.Height - diagonalPixelHeight) / 10f, 1);
+            obj.transform.localScale = new Vector3(1, (sprite.height - diagonalPixelHeight) / 10f, 1);
         }
     }
 }

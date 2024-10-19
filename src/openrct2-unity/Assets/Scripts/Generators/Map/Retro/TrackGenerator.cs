@@ -69,7 +69,7 @@ namespace OpenRCT2.Generators.Map.Retro
 
             MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
             byte paletteIndex = GraphicsDataFactory.GetPaletteIndexForColourId(track.mainColour);
-            renderer.material.color = SpriteFactory.PaletteToColor(paletteIndex);
+            renderer.material.color = PaletteFactory.IndexToColor(paletteIndex);
         }
 
         Mesh CreateNewMesh(in TrackInfo track)

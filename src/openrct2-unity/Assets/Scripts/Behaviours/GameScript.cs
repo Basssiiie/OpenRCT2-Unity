@@ -1,6 +1,7 @@
 using System.IO;
 using OpenRCT2.Behaviours.Editor;
 using OpenRCT2.Bindings;
+using OpenRCT2.Generators.Sprites;
 using UnityEngine;
 
 #nullable enable
@@ -53,6 +54,8 @@ namespace OpenRCT2.Behaviours
 
             Debug.Log($"Starting OpenRCT2... ({parkFilePath})");
             game.OpenPark(parkFilePath);
+
+            PaletteFactory.ReloadPalette();
 
             var map = GetComponent<MapScript>();
             map.Generate();

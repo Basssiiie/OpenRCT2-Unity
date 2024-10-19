@@ -31,9 +31,7 @@ namespace UI
 
         void UpdateData()
         {
-            GuestStats stats = new GuestStats();
-
-            if (!EntityRegistry.GetGuestStats(_peepId, ref stats))
+            if (!EntityRegistry.GetGuestStats(_peepId, out GuestStats stats))
             {
                 Destroy(gameObject);
                 return;

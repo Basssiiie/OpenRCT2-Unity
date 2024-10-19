@@ -1,5 +1,5 @@
+using System;
 using OpenRCT2.Bindings.Graphics;
-using UnityEngine;
 
 #nullable enable
 
@@ -13,114 +13,122 @@ namespace OpenRCT2.Generators.Sprites
         /// <summary>
         /// The image index of the specific graphic, that is used in the OpenRCT2 lib.
         /// </summary>
-        public uint ImageIndex { get; }
-
+        public readonly uint imageIndex;
 
         /// <summary>
         /// Width of the graphic in pixels.
         /// </summary>
-        public short Width { get; }
-
+        public readonly int width;
 
         /// <summary>
         /// Height of the graphic in pixels.
         /// </summary>
-        public short Height { get; }
-
+        public readonly int height;
 
         /// <summary>
         /// X offset of the graphic in pixels.
         /// </summary>
-        public short OffsetX { get; }
-
+        public readonly int offsetX;
 
         /// <summary>
         /// Y offset of the graphic in pixels.
         /// </summary>
-        public short OffsetY { get; }
-
-
-        /// <summary>
-        /// Returns the total amount of pixels in this graphic.
-        /// </summary>
-        public int PixelCount
-            => (Width * Height);
-
+        public readonly int offsetY;
 
         /// <summary>
         /// The actual byte data of the graphic. Each byte represents a palette color index.
         /// </summary>
-        public byte[] ColorData { get; }
+        public readonly byte[] colorData;
 
-
-        Texture2D? _texture;
+        /// <summary>
+        /// Returns the total amount of pixels in this graphic.
+        /// </summary>
+        public int pixelCount => (width * height);
 
 
         /// <summary>
         /// Creates a new graphic structure based on the input.
         /// </summary>
-        public SpriteTexture(uint imageId, short width, short height, short offsetX, short offsetY, byte[] colorData)
+        public SpriteTexture(uint imageId, int width, int height, int offsetX, int offsetY, byte[] colorData)
         {
-            ImageIndex = imageId;
-            Width = width;
-            Height = height;
-            OffsetX = offsetX;
-            OffsetY = offsetY;
-            ColorData = colorData;
+            imageIndex = imageId;
+            this.width = width;
+            this.height = height;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            this.colorData = colorData;
         }
-
 
         /// <summary>
         /// Creates a new graphic structure based on the input.
         /// </summary>
         public SpriteTexture(uint imageId, in SpriteData spriteData, byte[] colorData)
         {
-            ImageIndex = imageId;
-            Width = spriteData.width;
-            Height = spriteData.height;
-            OffsetX = spriteData.offsetX;
-            OffsetY = spriteData.offsetY;
-            ColorData = colorData;
+            imageIndex = imageId;
+            width = spriteData.width;
+            height = spriteData.height;
+            offsetX = spriteData.offsetX;
+            offsetY = spriteData.offsetY;
+            this.colorData = colorData;
         }
 
+        /// <summary>
+        /// Copies the sprite into the target buffer with the specified bounds on the target.
+        /// </summary>
+        public void CopyTo(byte[] target, in SpriteBounds bounds)
+            => CopyTo(this, target, in bounds, Array.Copy);
 
         /// <summary>
-        /// Gets the texture for this graphic.
+        /// Overlay another sprite over the current sprite.
+        /// Returns a new sprite object with the original id but combined data.
         /// </summary>
-        public Texture2D GetTexture(TextureWrapMode wrapMode = TextureWrapMode.Clamp, bool makeTextureReadable = false)
+        public SpriteTexture Overlay(SpriteTexture overlay)
         {
-            if (_texture != null
-                // if caller requires a readable texture, but cached is not; do not return the cached.
-                && (!makeTextureReadable || _texture.isReadable)) 
+            var bounds = SpriteBounds.From(new[] { this, overlay });
+
+            var buffer = new byte[bounds.width * bounds.height];
+            CopyTo(this, buffer, in bounds, Array.Copy);
+            CopyTo(overlay, buffer, in bounds, CopyNonZeroBytes);
+
+            return new SpriteTexture(imageIndex, bounds.width, bounds.height, -bounds.left, -bounds.top, buffer);
+        }
+
+        /// <summary>
+        /// Copies the current sprite into the target array using the specified sprite bounds and row copy method.
+        /// </summary>
+        private static void CopyTo(SpriteTexture source, byte[] target, in SpriteBounds bounds, Action<byte[], int, byte[], int, int> copyRow)
+        {
+            var targetX = bounds.left + source.offsetX;
+            var targetY = bounds.bottom - (source.height + source.offsetY);
+            var targetWidth = bounds.width;
+            var sourceWidth = source.width;
+            var sourceHeight = source.height;
+            var sourceData = source.colorData;
+
+            // Go through all rows and copy them over.
+            for (var row = 0; row < sourceHeight; row++)
             {
-                return _texture;
+                var sourceRowIdx = row * sourceWidth;
+                var targetRowIdx = (targetY + row) * targetWidth + targetX;
+
+                copyRow(sourceData, sourceRowIdx, target, targetRowIdx, sourceWidth);
             }
+        }
 
-            uint imageIndex = ImageIndex;
-            int pixelCount = PixelCount;
-            int width = Width;
-            int height = Height;
-
-            // Convert to color and mirror sprite vertically
-            Color32[] colors = new Color32[pixelCount];
-            for (int outRow = 0, inRow = (pixelCount - width); outRow < pixelCount; outRow += width, inRow -= width)
+        /// <summary>
+        /// Apply bytes from source to destination only if the byte value is not 0.
+        /// </summary>
+        private static void CopyNonZeroBytes(byte[] sourceArray, int sourceIndex, byte[] destinationArray, int destinationIndex, int length)
+        {
+            for (var idx = 0; idx < length; idx++)
             {
-                for (int column = 0; column < width; ++column)
+                var source = sourceArray[idx + sourceIndex];
+
+                if (source != 0)
                 {
-                    colors[outRow + column] = SpriteFactory.PaletteToColor(ColorData[inRow + column]);
+                    destinationArray[idx + destinationIndex] = source;
                 }
             }
-
-            // Export as Texture2D image.
-            _texture = new Texture2D(width, height, TextureFormat.RGBA32, mipChain: false)
-            {
-                name = $"sprite{imageIndex & 0x7FFFF}(unmasked{imageIndex})",
-                filterMode = FilterMode.Point,
-                wrapMode = wrapMode
-            };
-            _texture.SetPixels32(colors);
-            _texture.Apply(updateMipmaps: false, makeNoLongerReadable: !makeTextureReadable);
-            return _texture;
         }
     }
 }

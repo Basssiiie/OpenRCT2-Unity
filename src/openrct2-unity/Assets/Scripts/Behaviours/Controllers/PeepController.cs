@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using OpenRCT2.Bindings.Entities;
 using OpenRCT2.Generators;
 using OpenRCT2.Generators.Sprites;
@@ -10,109 +9,87 @@ using UnityEngine;
 namespace OpenRCT2.Behaviours.Controllers
 {
     /// <summary>
-    /// Controller which moves and updates all the peeps in the park.
+    /// Abstract controller which moves and updates all the peeps in the park.
     /// </summary>
-    public class PeepController : SpriteController<Peep>
+    public abstract class PeepController : EntityController<PeepEntity>
     {
-        readonly Dictionary<uint, SpriteTexture> _flipbookCache = new Dictionary<uint, SpriteTexture>();
-
-
-        /// <summary>
-        /// Find the associated peep id for the specified gameobject.
-        /// </summary>
-        public ushort FindPeepIdForGameObject(GameObject peepObject)
+        struct PeepState
         {
-            KeyValuePair<ushort, SpriteObject> entry = _spriteObjects.FirstOrDefault(p => p.Value.gameObject == peepObject);
-
-            int bufferIndex = entry.Value.bufferIndex;
-            return _spriteBuffer[bufferIndex].id;
+            public MeshRenderer renderer;
+            public int animation;
         }
 
+        static readonly int _paletteKey = Shader.PropertyToID("_Palette");
+        static readonly int _animationKey = Shader.PropertyToID("_Animation");
+        static readonly int _lengthKey = Shader.PropertyToID("_Length");
+        static readonly int _sizeKey = Shader.PropertyToID("_Size");
+        static readonly int _rotationsCountKey = Shader.PropertyToID("_RotationsCount");
+        static readonly int _rotationKey = Shader.PropertyToID("_Rotation");
+        static readonly int _offsetKey = Shader.PropertyToID("_Offset");
 
-        /// <summary>
-        /// Find the associated peep struct for the specified id, or
-        /// null if the gameobject is not a peep.
-        /// </summary>
-        public Peep? GetPeepById(ushort peepId)
-        {
-            if (!_spriteObjects.TryGetValue(peepId, out SpriteObject peepObject))
-                return null;
+        readonly EntityType _type;
+        readonly GameObject _prefab;
 
-            int bufferIndex = peepObject.bufferIndex;
-            return _spriteBuffer[bufferIndex];
-        }
-
-
-        /// <summary>
-        /// Gets all the peep sprites from the dll hook.
-        /// </summary>
-        protected override int FillSpriteBuffer(Peep[] buffer)
-            => EntityRegistry.GetAllPeeps(buffer);
-
-
-        /// <summary>
-        /// Returns an id of the peep, currently based on the sprite index.
-        /// </summary>
-        protected override ushort GetId(in Peep peep)
-            => peep.id;
-
-
-        /// <summary>
-        /// Returns the peep's position in Unity coordinates.
-        /// </summary>
-        protected override Vector3 GetPosition(in Peep peep)
-            => World.CoordsToVector3(peep.x, peep.z, peep.y);
-
-
-        /// <summary>
-        /// Sets the name and colors of the peep sprite.
-        /// </summary>
-        protected override SpriteObject AddSprite(int index, in Peep sprite)
-        {
-            SpriteObject spriteObject = base.AddSprite(index, sprite);
-            GameObject obj = spriteObject.gameObject;
-
-            ushort id = sprite.id;
-            obj.name = $"Peep sprite {id}";
-
-            return spriteObject;
-        }
+        PeepState[] _state = Array.Empty<PeepState>();
 
 
         /// <inheritdoc/>
-        protected override SpriteObject UpdateSprite(int index, in Peep sprite)
+        protected PeepController(EntityType type, Transform parent, GameObject prefab)
+            : base(type, parent)
         {
-            var obj = base.UpdateSprite(index, sprite);
+            _type = type;
+            _prefab = prefab;
+        }
 
-            SetPeepBillboard(obj.gameObject, sprite);
+        /// <inheritdoc/>
+        protected override bool IsActive(in PeepEntity entity)
+        {
+            return entity.x > 0;
+        }
+
+        /// <inheritdoc/>
+        protected override GameObject CreateEntity(int index)
+        {
+            var obj = GameObject.Instantiate(_prefab);
+            obj.name = $"{_type} {index}";
+
+            var renderer = obj.GetComponent<MeshRenderer>();
+            renderer.material.SetTexture(_paletteKey, PaletteFactory.GetPalette());
+
+            _state[index].renderer = renderer;
             return obj;
         }
 
-
-        void SetPeepBillboard(GameObject peepObj, in Peep sprite)
+        /// <inheritdoc/>
+        protected override void UpdateEntity(int index, in PeepEntity entity, GameObject gameObject)
         {
-            uint imageId = sprite.imageId;
+            gameObject.transform.localPosition = World.CoordsToVector3(entity.x, entity.z, entity.y);
 
-            if (!_flipbookCache.TryGetValue(imageId, out SpriteTexture flipbook))
+            ref var state = ref _state[index];
+            var material = state.renderer.material;
+            var animationKey = HashCode.Combine(entity.animationGroup, entity.animationType, entity.tshirtColour, entity.trousersColour, entity.accessoryColour);
+
+            if (animationKey != state.animation)
             {
-                SpriteTexture[] rotations = new SpriteTexture[]
-                {
-                    SpriteFactory.ForImageIndex(imageId),
-                    SpriteFactory.ForImageIndex(imageId + 1),
-                    SpriteFactory.ForImageIndex(imageId + 2),
-                    SpriteFactory.ForImageIndex(imageId + 3)
-                };
+                var animation = PeepAnimationsFactory.GetOrCreate(entity.animationGroup, entity.animationType, entity.tshirtColour, entity.trousersColour, entity.accessoryColour);
+                var frames = animation.frames;
 
-                flipbook = FlipbookFactory.CreateFlipbookGraphic(rotations);
-                _flipbookCache.Add(imageId, flipbook);
+                material.SetTexture(_animationKey, frames);
+                material.SetFloat(_lengthKey, animation.data.length);
+                material.SetVector(_sizeKey, new Vector2(frames.width, frames.height));
+                material.SetFloat(_rotationsCountKey, animation.data.rotations);
+
+                state.animation = animationKey;
             }
 
-            var renderer = peepObj.GetComponent<MeshRenderer>();
+            material.SetFloat(_rotationKey, entity.direction);
+            material.SetFloat(_offsetKey, entity.animationOffset);
+        }
 
-            Material material = renderer.material;
-            material.mainTexture = flipbook.GetTexture(TextureWrapMode.Repeat);
-            material.SetInt("_StartIndex", sprite.direction);
-            material.SetVector("_SpriteSizeOffset", new Vector4((flipbook.Width / 4), flipbook.Height, flipbook.OffsetX, flipbook.OffsetY));
+        /// <inheritdoc/>
+        protected override void SetCapacity(int capacity)
+        {
+            Array.Resize(ref _state, capacity);
         }
     }
 }

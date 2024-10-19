@@ -55,7 +55,7 @@
     <TargetName>openrct2-bindings</TargetName>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup>
     <OutDir>$(SolutionDir)bin\bindings\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -73,7 +73,7 @@
       <TargetMachine Condition="'$(Platform)'=='arm64'">MachineARM64</TargetMachine>
     </Lib>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      <Command>
 del /f /s /q "$(SolutionDir)src\openrct2-unity\Assets\Plugins\$(PlatformTarget)\"
 xcopy /i /y /f "$(SolutionDir)bin\bindings\*" "$(SolutionDir)src\openrct2-unity\Assets\Plugins\$(PlatformTarget)\"
       </Command>
@@ -83,6 +83,7 @@ xcopy /i /y /f "$(SolutionDir)bin\bindings\*" "$(SolutionDir)src\openrct2-unity\
     <ResourceCompile Include="..\..\resources\OpenRCT2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Entities\Entities.cpp" />
     <ClCompile Include="Map\Tile.cpp" />
     <ClCompile Include="Map\Track.cpp" />
     <ClCompile Include="Utilities\Logging.cpp" />
@@ -92,7 +93,6 @@ xcopy /i /y /f "$(SolutionDir)bin\bindings\*" "$(SolutionDir)src\openrct2-unity\
     <ClCompile Include="Bindings\Game.cpp" />
     <ClCompile Include="Map\Map.cpp" />
     <ClCompile Include="Entities\Peeps.cpp" />
-    <ClCompile Include="Entities\Sprites.cpp" />
     <ClCompile Include="Map\Wall.cpp" />
     <ClCompile Include="Map\Path.cpp" />
     <ClCompile Include="Map\Surface.cpp" />

@@ -1,5 +1,4 @@
 using System.IO;
-using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Generators.Sprites;
 using UnityEditor;
 using UnityEngine;
@@ -17,6 +16,7 @@ namespace EditorExtensions
         int _imageIndexOffset = 0;
         int _horizontalCount = 10;
         int _verticalCount = 10;
+        Vector3Int _colours;
         Vector2 _scrollPosition;
 
 
@@ -32,6 +32,8 @@ namespace EditorExtensions
         void OnGUI()
         {
             _imageIndexOffset = Mathf.Clamp(EditorGUILayout.IntField("Image index offset", _imageIndexOffset), 0, 0x7FFFE);
+            _colours = EditorGUILayout.Vector3IntField("Colours", _colours);
+            _colours.Clamp(Vector3Int.zero, new Vector3Int(255, 255, 255));
             _horizontalCount = EditorGUILayout.IntSlider("Horizontal sprite count", _horizontalCount, 1, 20);
             _verticalCount = EditorGUILayout.IntSlider("Vertical sprite count", _verticalCount, 1, 20);
 
@@ -53,20 +55,17 @@ namespace EditorExtensions
                 EditorGUILayout.BeginHorizontal();
                 for (int x = 0; x < _horizontalCount; x++)
                 {
-                    SpriteTexture graphic = SpriteFactory.ForImageIndex(offset);
-
-                    SpriteData data = GraphicsDataFactory.GetTextureData(offset);
-                    string information = $"Index:\t{offset}\nSize:\t{data.width}x{data.height} px\nOffset:\t({data.offsetX}, {data.offsetY})";
-
+                    SpriteTexture graphic = SpriteFactory.GetOrCreate(offset, (byte)_colours.x, (byte)_colours.y, (byte)_colours.z);
+                    
                     GUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.ExpandHeight(true));
 
-                    if (graphic == null)
+                    if (graphic.pixelCount == 0)
                     {
-                        GUILayout.Box("Not found");
+                        GUILayout.Box("Empty sprite");
                     }
                     else
                     {
-                        Texture2D texture = graphic.GetTexture(makeTextureReadable: true);
+                        Texture2D texture = TextureFactory.CreateFullColour(graphic, makeTextureReadable: true);
                         GUIContent icon = EditorGUIUtility.IconContent("SavePassive", "Save sprite");
 
                         GUILayout.BeginHorizontal();
@@ -74,11 +73,12 @@ namespace EditorExtensions
                         GUILayout.FlexibleSpace();
 
                         if (GUILayout.Button(icon, GUILayout.ExpandWidth(false)))
-                            DownloadSprite(texture, $"sprite{offset}({data.offsetX},{data.offsetY})");
+                            DownloadSprite(texture, $"sprite{offset}({graphic.offsetX},{graphic.offsetY})");
 
                         GUILayout.EndHorizontal();
                     }
 
+                    string information = $"Index:\t{offset}\nSize:\t{graphic.width}x{graphic.height} px\nOffset:\t({graphic.offsetX}, {graphic.offsetY})";
                     GUILayout.Label(information, new GUIStyle { alignment = TextAnchor.LowerLeft }, GUILayout.ExpandHeight(true));
 
                     GUILayout.EndVertical();
@@ -109,21 +109,5 @@ namespace EditorExtensions
             byte[] pngBytes = texture.EncodeToPNG();
             File.WriteAllBytes(path, pngBytes);
         }
-
-
-        /*void Awake()
-        {
-            // Only start if currently not already running OpenRCT2.
-            if (!EditorApplication.isPlaying)
-                OpenRCT2.StartGame();
-        }
-
-
-        void OnDestroy()
-        {
-            // Only stop if currently not already running OpenRCT2.
-            if (!EditorApplication.isPlaying)
-                OpenRCT2.StopGame();
-        }*/
     }
 }

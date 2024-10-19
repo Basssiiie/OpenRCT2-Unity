@@ -2,7 +2,7 @@
 
 namespace OpenRCT2.Bindings.Entities
 {
-    public enum SpriteType
+    public enum EntityType
     {
         Vehicle,
         Guest,

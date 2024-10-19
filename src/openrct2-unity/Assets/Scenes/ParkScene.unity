@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 0ffaa0b7117ba8c47a9d05ae701d4b4d, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -304,7 +304,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -353,13 +353,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440946295}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
-  m_LocalPosition: {x: 25, y: 20, z: 5}
+  m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
+  m_LocalPosition: {x: 5, y: 20, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 50, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 30, y: 45, z: 0}
 --- !u!114 &440946299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -436,7 +436,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _windowManager: {fileID: 1779574330}
-  _peepController: {fileID: 1491562773}
 --- !u!850595691 &626272836
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -908,8 +907,8 @@ GameObject:
   - component: {fileID: 1491562774}
   - component: {fileID: 1491562776}
   - component: {fileID: 1491562769}
-  - component: {fileID: 1491562773}
-  - component: {fileID: 1491562775}
+  - component: {fileID: 1491562778}
+  - component: {fileID: 1491562777}
   m_Layer: 0
   m_Name: Map
   m_TagString: Untagged
@@ -940,9 +939,6 @@ MonoBehaviour:
   _bannerGenerator: {fileID: 0}
   _enabledGenerators: 239
   _loader: {fileID: 1291969764}
-  _controllers:
-  - {fileID: 1491562773}
-  - {fileID: 1491562775}
 --- !u!4 &1491562770
 Transform:
   m_ObjectHideFlags: 0
@@ -958,20 +954,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1491562773
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1491562768}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de2efdd2375eda2479574799bba2de79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _spritePrefab: {fileID: 4013945455800788704, guid: f7506ca24f3b99a49898e9ec122adf29,
-    type: 3}
 --- !u!65 &1491562774
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -993,20 +975,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 100000000, y: 1, z: 100000000}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1491562775
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1491562768}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce5c6edf3d4246c41b9dd8be02d5846c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _spritePrefab: {fileID: 3497475327691341381, guid: 93889bcee0f99db4da5b6c078f25b97f,
-    type: 3}
 --- !u!114 &1491562776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1019,7 +987,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f58090d8844c91e45a2a0d888eb8d265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPark: Evergreen Gardens.sv6
+  selectedPark: Six Flags Magic Mountain.SC6
+--- !u!114 &1491562777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1491562768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96474b6d35fae074dbbd1fc7db96522a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _prefab: {fileID: 4013945455800788704, guid: f7506ca24f3b99a49898e9ec122adf29, type: 3}
+--- !u!114 &1491562778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1491562768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d33bb462dd91dfa42b1d274684429c31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _prefab: {fileID: 3497475327691341381, guid: 93889bcee0f99db4da5b6c078f25b97f, type: 3}
 --- !u!1 &1675223600
 GameObject:
   m_ObjectHideFlags: 0

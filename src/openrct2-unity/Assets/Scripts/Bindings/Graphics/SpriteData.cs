@@ -19,7 +19,6 @@ namespace OpenRCT2.Bindings.Graphics
         public readonly short offsetX;
         public readonly short offsetY;
 
-
         /// <summary>
         /// Total amount of pixels in this sprite.
         /// </summary>

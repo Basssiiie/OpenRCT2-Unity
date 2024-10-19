@@ -49,14 +49,27 @@ extern "C"
     }
 
     // Returns the actual texture data based on the image index.
-    EXPORT void GetTexturePixels(uint32_t imageIndex, uint8_t* pixels, int arraySize)
+    EXPORT void GetTexturePixels(
+        uint32_t imageIndex, uint8_t colour1, uint8_t colour2, uint8_t colour3, uint8_t* pixels, int length)
     {
-        const int32_t maskedImageId = imageIndex & 0x7FFFF;
-        const G1Element* g1 = GfxGetG1Element(maskedImageId);
+        auto imageId = ImageId(imageIndex & 0x7FFFF);
+        if (colour1 != COLOUR_NULL)
+        {
+            imageId = imageId.WithPrimary(colour1);
+        }
+        if (colour2 != COLOUR_NULL)
+        {
+            imageId = imageId.WithSecondary(colour2);
+        }
+        if (colour3 != COLOUR_NULL)
+        {
+            imageId = imageId.WithTertiary(colour3);
+        }
+        const G1Element* g1 = GfxGetG1Element(imageId);
 
         if (g1 == nullptr)
         {
-            dll_log("Could not find g1 element pixels for %i. (Unmasked: %i)", maskedImageId, imageIndex);
+            dll_log("Could not find g1 element pixels for %i (combined: %i).", imageIndex, imageId.ToUInt32());
             return;
         }
 
@@ -76,8 +89,14 @@ extern "C"
         dpi.pitch = 0;
         dpi.zoom_level = ZoomLevel(0);
 
-        GfxDrawSpriteSoftware(dpi, ImageId::FromUInt32(imageIndex), { 0, 0 });
-        memcpy(pixels, dpi.bits, std::min(numPixels, (size_t)arraySize));
+        GfxDrawSpriteSoftware(dpi, imageId, { 0, 0 });
+
+        // Flip the render up-side-down
+        int lastRow = (height - 1);
+        for (int y = 0; y <= lastRow; y++)
+        {
+            memcpy(pixels + (lastRow - y) * width, dpi.bits + y * width, width);
+        }
 
         delete[] dpi.bits;
     }

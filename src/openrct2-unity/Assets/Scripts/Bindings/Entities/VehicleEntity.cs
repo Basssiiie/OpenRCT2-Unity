@@ -8,17 +8,16 @@ namespace OpenRCT2.Bindings.Entities
     /// The struct of a ride vehicle.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public readonly struct Vehicle //: ISprite
+    public readonly struct VehicleEntity
     {
-        public readonly ushort id;
         public readonly int x;
         public readonly int y;
         public readonly int z;
         public readonly byte direction; // 0-31 to indicate direction, 0 = negative x axis direction
-        public readonly byte bankRotation;
-        public readonly byte vehicleSprite; // this is a index describing what sprite should be used; maybe useless for pitch?
+        public readonly byte banking;
+        public readonly byte pitch; // this is a index describing what sprite should be used, so not always pitch
 
-        public readonly byte trackType; // current track type its on.
+        public readonly ushort trackType; // current track type its on.
         public readonly byte trackDirection; // the direction this track type is in.
         public readonly ushort trackProgress; // current track node index.
     }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
@@ -229,7 +230,6 @@ namespace OpenRCT2.Generators.Map.Retro
             SurfaceInfo otherSurface = default;
 
             if (TryGetTile(map, x + offsetX, y + offsetY, out var tile)
-                && tile is not null // todo: nullable attribute?
                 && tile.TryGetFirst(TileElementType.Surface, out var element))
             {
                 baseHeight = element.baseHeight;
@@ -360,8 +360,8 @@ namespace OpenRCT2.Generators.Map.Retro
             {
                 RequestedImage image = images[i];
 
-                SpriteTexture sprite = SpriteFactory.ForImageIndex(image.ImageIndex);
-                Texture2D texture = sprite.GetTexture(TextureWrapMode.Repeat);
+                SpriteTexture sprite = SpriteFactory.GetOrCreate(image.ImageIndex);
+                Texture2D texture = TextureFactory.CreateFullColour(sprite, TextureWrapMode.Repeat);
                 Material material;
 
                 switch (image.Type)
@@ -381,8 +381,8 @@ namespace OpenRCT2.Generators.Map.Retro
                         material.SetTexture(_waterTextureField, texture);
 
                         // HACK: injection of the refraction sprite shouldnt be here.
-                        SpriteTexture refraction = SpriteFactory.ForImageIndex(_waterRefractionImageIndex);
-                        material.SetTexture(_waterRefractionField, refraction.GetTexture(TextureWrapMode.Repeat));
+                        SpriteTexture refraction = SpriteFactory.GetOrCreate(_waterRefractionImageIndex);
+                        material.SetTexture(_waterRefractionField, TextureFactory.CreateFullColour(refraction, TextureWrapMode.Repeat));
                         break;
 
                     default:
@@ -396,7 +396,7 @@ namespace OpenRCT2.Generators.Map.Retro
             return materials;
         }
 
-        bool TryGetTile(Map map, int x, int y, out Tile? tile)
+        bool TryGetTile(Map map, int x, int y, [MaybeNullWhen(false)] out Tile tile)
         {
             if (x < 0 || y < 0 || x >= map.width || y >= map.height)
             {
@@ -408,7 +408,6 @@ namespace OpenRCT2.Generators.Map.Retro
             return true;
         }
 
-
         enum TextureType : byte
         {
             Surface = 1,
@@ -416,30 +415,10 @@ namespace OpenRCT2.Generators.Map.Retro
             Water = 3
         }
 
-
-        /// <summary>
-        /// Cached data for a surface position
-        /// </summary>
-        readonly struct TileCache
-        {
-            public readonly ushort index;
-            public readonly int baseHeight;
-            public readonly SurfaceInfo surface;
-
-            public TileCache(ushort index, int baseHeight, SurfaceInfo surface)
-            {
-                this.index = index;
-                this.baseHeight = baseHeight;
-                this.surface = surface;
-            }
-        }
-
-
         readonly struct RequestedImage
         {
             public readonly uint ImageIndex;
             public readonly TextureType Type;
-
 
             public RequestedImage(uint imageIndex, TextureType type)
             {
@@ -447,10 +426,8 @@ namespace OpenRCT2.Generators.Map.Retro
                 Type = type;
             }
 
-
             public override bool Equals(object obj)
                 => obj is RequestedImage image && ImageIndex == image.ImageIndex;
-
 
             public override int GetHashCode()
                 => (int)ImageIndex;

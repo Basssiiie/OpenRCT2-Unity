@@ -2,39 +2,31 @@
 #define Billboard
 
 
-void Billboard_float(float3 position, float scale, out float3 Out)
+void BilboardVertex_float(float3 cameraDirection, float3 size, out float3 Out)
 {
-    Out = mul(UNITY_MATRIX_P,
-        mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0))
-        + float4(position.x, position.y, 0.0, 0.0)
-        * float4(scale, scale, 1.0, 1.0));
+    float3 up = float3(0, 1, 0);
+    float3 horizontalNormalised = normalize(cross(up, cameraDirection));
+    float3 verticalNormalised = cross(cameraDirection, horizontalNormalised);
+
+    float3 horizontal = horizontalNormalised * size.x;
+    float3 vertical = verticalNormalised * size.y;
+    float3 forward = cameraDirection * size.z;
+
+    Out = horizontal + vertical + forward;
 }
 
-
-void Billboard2_float(float3 position, float2 uvs, float scale, out float3 Out)
+void BilboardRotation_float(float3 objectPosition, float3 cameraPosition, float rotation, float rotationsCount, out float Out)
 {
-    float3 upVector = float3(0, 1, 0);
+    float3 directionToObject = normalize(objectPosition - cameraPosition);
+
+    float3 up = float3(0, 1, 0);
+    float3 startingNormal = float3(-0.7071, 0, 0.7071); // normal of rotation 0
     
-    // Direction we are viewing the billboard from
-    float3 viewDirection = UNITY_MATRIX_V._m02_m12_m22;
-    float3 rightVector = normalize(cross(viewDirection, upVector));
+    float crossProd = dot(cross(directionToObject, startingNormal), up);
+    float dotProd = dot(directionToObject, startingNormal);
 
-	// Transform billboard normal for lighting support
-	// Comment out this line to stop light changing as billboards rotate
-    //v.normal = mul((float3x3) UNITY_MATRIX_V, v.normal);
-
-	// Offset vertices based on corners scaled by size
-    position += rightVector * (uvs.x - 0.5) * 1;
-    position += upVector * (uvs.y - 0.5) * 1;
-
-    Out = position;
-}
-
-
-void Billboard3_float()
-{
-    float3 _Camera_Direction = -1 * mul(UNITY_MATRIX_M, transpose(mul(UNITY_MATRIX_I_M, UNITY_MATRIX_I_V))[2].xyz);
-
+    float index = round(degrees(atan2(dotProd, crossProd)) / (-360 / rotationsCount));
+    Out = (index + rotationsCount + rotation) % rotationsCount; // wrap potential negative numbers
 }
 
 #endif

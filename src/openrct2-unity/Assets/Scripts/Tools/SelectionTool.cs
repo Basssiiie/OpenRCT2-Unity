@@ -47,8 +47,8 @@ namespace Tools
                     Assert.IsNotNull(_peepController, nameof(_peepController));
                     Assert.IsNotNull(_windowManager, nameof(_windowManager));
 
-                    ushort peepId = _peepController.FindPeepIdForGameObject(obj);
-                    _windowManager.CreatePeepWindow(peepId);
+                    //ushort peepId = _peepController.FindPeepIdForGameObject(obj);
+                    //_windowManager.CreatePeepWindow(peepId);
                     break;
             }
         }

@@ -6,77 +6,132 @@
 #include <openrct2/entity/Peep.h>
 #include <openrct2/entity/Staff.h>
 #include <openrct2/peep/PeepAnimationData.h>
+#include <openrct2/peep/PeepSpriteIds.h>
 
 extern "C"
 {
+    EXPORT 
+
     struct PeepEntity
     {
-        uint16_t id;
         int32_t x;
         int32_t y;
         int32_t z;
         uint8_t direction;
-        uint32_t imageId;
+        uint8_t tshirtColour;
+        uint8_t trousersColour;
+        uint8_t accessoryColour;
+        PeepAnimationGroup animationGroup;
+        PeepAnimationType animationType;
+        uint8_t animationOffset;
     };
 
-    // Gets the current sprite image id of this peep, excluding rotation.
-    //  Inspired by: Peep.cpp/Peep::Paint()
-    uint32_t GetCurrentImageId(const Peep* peep)
+    static void SetPeepInfo(PeepEntity* entity, const Peep* peep)
     {
-        PeepAnimationType actionAnimationGroup = peep->AnimationType;
-        uint8_t imageOffset = peep->AnimationImageIdOffset;
-
-        if (peep->Action == PeepActionType::Idle)
-        {
-            actionAnimationGroup = peep->NextAnimationType;
-            imageOffset = 0;
-        }
-
-        PeepAnimationGroup animationGroup = peep->AnimationGroup;
-        uint32_t baseImageId = GetPeepAnimation(animationGroup, actionAnimationGroup).base_image;
-        // + (imageDirection >> 3)
-
-        if (actionAnimationGroup != PeepAnimationType::Hanging)
-            baseImageId += imageOffset * 4;
-        else
-            baseImageId += imageOffset;
-
-        auto imageId = ImageId(baseImageId, peep->TshirtColour, peep->TrousersColour);
-        return imageId.ToUInt32();
-    }
-
-    void SetPeepInfo(PeepEntity* entity, const Peep* peep)
-    {
-        entity->id = peep->Id.ToUnderlying();
         entity->x = peep->x;
         entity->y = peep->y;
         entity->z = peep->z;
         entity->direction = peep->PeepDirection;
-        entity->imageId = GetCurrentImageId(peep);
+        entity->tshirtColour = peep->TshirtColour;
+        entity->trousersColour = peep->TrousersColour;
+
+        const auto group = peep->AnimationGroup;
+        entity->animationGroup = group;
+
+        if (peep->Action == PeepActionType::Idle)
+        {
+            entity->animationType = peep->NextAnimationType;
+            entity->animationOffset = 0;
+        }
+        else
+        {
+            entity->animationType = peep->AnimationType;
+            entity->animationOffset = peep->AnimationImageIdOffset;
+        }
+
+        auto* guest = peep->As<Guest>();
+        if (guest == nullptr)
+        {
+            return;
+        }
+
+        switch (group) 
+        {
+            case PeepAnimationGroup::Umbrella:
+                entity->accessoryColour = guest->UmbrellaColour;
+                return;
+
+            case PeepAnimationGroup::Balloon:
+                entity->accessoryColour = guest->BalloonColour;
+                return;
+
+            case PeepAnimationGroup::Hat:
+                entity->accessoryColour = guest->HatColour;
+                return;
+        }
     }
 
-    // Loads all the peeps into the specified buffer, returns the total amount of peeps loaded.
-    EXPORT int32_t GetAllPeeps(PeepEntity* peeps, int32_t arraySize)
+    // Loads all the guests into the specified buffer, returns the total amount of guests loaded.
+    EXPORT int32_t GetAllGuests(PeepEntity* peeps, int32_t length)
     {
         int32_t peepCount = 0;
 
         for (const Guest* guest : EntityList<Guest>())
         {
-            if (peepCount >= arraySize)
+            if (peepCount >= length)
                 break;
 
             SetPeepInfo(&peeps[peepCount], guest);
             peepCount++;
         }
+
+        return peepCount;
+    }
+            
+    // Loads all the staff into the specified buffer, returns the total amount of staff loaded.
+    EXPORT int32_t GetAllStaff(PeepEntity* peeps, int32_t length)
+    {
+        int32_t peepCount = 0;
+
         for (const Staff* staff : EntityList<Staff>())
         {
-            if (peepCount >= arraySize)
+            if (peepCount >= length)
                 break;
 
             SetPeepInfo(&peeps[peepCount], staff);
             peepCount++;
         }
         return peepCount;
+    }
+
+    struct PeepAnimationData
+    {
+        uint32_t baseImageId;
+        uint8_t accessoryImageOffset;
+        uint8_t length;
+        uint8_t rotations;
+    };
+
+    EXPORT void GetPeepAnimationData(PeepAnimationGroup group, PeepAnimationType type, PeepAnimationData* out)
+    {
+        const auto& animation = GetPeepAnimation(group, type);
+        const auto& frames = animation.frame_offsets;
+        const auto baseImageId = animation.base_image;
+
+        out->baseImageId = baseImageId;
+        out->length = (*std::max_element(frames.begin(), frames.end())) + 1;
+        out->rotations = (type == PeepAnimationType::Hanging) ? 1 : 4;
+
+        if ((baseImageId >= kPeepSpriteHatStateWatchRideId && baseImageId < (kPeepSpriteHatStateSittingIdleId + 4))
+            || (baseImageId >= kPeepSpriteBalloonStateWatchRideId && baseImageId < (kPeepSpriteBalloonStateSittingIdleId + 4))
+            || (baseImageId >= kPeepSpriteUmbrellaStateNoneId && baseImageId < (kPeepSpriteUmbrellaStateSittingIdleId + 4)))
+        {
+            out->accessoryImageOffset = 32;
+        }
+        else
+        {
+            out->accessoryImageOffset = 0;
+        }
     }
 
     struct GuestStats

@@ -19,14 +19,17 @@ extern "C"
         ObjectEntryIndex objectIndex;
         uint8_t quadrant;
         bool fullTile;
+        uint8_t colour1;
+        uint8_t colour2;
+        uint8_t colour3;
+        bool animated;
         uint16_t animationFrameCount;
         uint16_t animationFrameDelay;
-        bool animated;
         char identifier[IdentifierSize];
     };
 
     // Adjusts the image index if the scenery element has colours or withering.
-    uint32_t GetIndexWithColourAndWither(const SmallSceneryElement* element, const SmallSceneryEntry* entry)
+    uint32_t GetIndexWithWither(const SmallSceneryElement* element, const SmallSceneryEntry* entry)
     {
         uint32_t imageIndex = entry->image + element->GetDirection();
 
@@ -45,22 +48,7 @@ extern "C"
             }
         }
 
-        // Scenery colours
-        ImageId imageId = ImageId(imageIndex);
-        if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_PRIMARY_COLOUR))
-        {
-            imageId = imageId.WithPrimary(element->GetPrimaryColour());
-
-            if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_SECONDARY_COLOUR))
-            {
-                imageId = imageId.WithSecondary(element->GetSecondaryColour());
-            }
-        }
-        if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_TERTIARY_COLOUR))
-        {
-            imageId = imageId.WithTertiary(element->GetTertiaryColour());
-        }
-        return imageId.ToUInt32();
+        return imageIndex;
     }
 
     static void SetSmallSceneryInfo(int x, int y, int index, const TileElement* source, SmallSceneryInfo* target)
@@ -76,12 +64,24 @@ extern "C"
         const SmallSceneryEntry* entry = scenery->GetEntry();
 
         target->objectIndex = scenery->GetEntryIndex();
-        target->imageIndex = GetIndexWithColourAndWither(scenery, entry);
+        target->imageIndex = GetIndexWithWither(scenery, entry);
         target->quadrant = scenery->GetSceneryQuadrant();
         target->fullTile = entry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE);
+        target->colour1 = scenery->GetPrimaryColour();
+        target->colour2 = scenery->GetSecondaryColour();
+        target->colour3 = scenery->GetTertiaryColour();
         target->animated = entry->HasFlag(SMALL_SCENERY_FLAG_ANIMATED);
-        target->animationFrameCount = (entry->num_frames != 0) ? entry->num_frames : 0xF;
-        target->animationFrameDelay = entry->animation_delay;
+
+        if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_FRAME_OFFSETS))
+        {
+            target->animationFrameCount = entry->FrameOffsetCount;
+            target->animationFrameDelay = entry->animation_delay & 0xFF;
+        }
+        else
+        {
+            target->animationFrameCount = 0xF;
+            target->animationFrameDelay = 1;
+        }
 
         const Object* object = ObjectEntryGetObject(ObjectType::SmallScenery, scenery->GetEntryIndex());
         object->GetIdentifier().copy(target->identifier, IdentifierSize);
@@ -119,7 +119,7 @@ extern "C"
     }
 
     // Get all indices of the animation of this small scenery element, returns the amount of animation frames.
-    EXPORT int32_t GetSmallSceneryAnimationIndices(int x, int y, int index, uint32_t* indices, int32_t arraySize)
+    EXPORT int32_t GetSmallSceneryAnimationIndices(int x, int y, int index, uint32_t* indices, int32_t length)
     {
         const TileElement* source = GetTileElementAt(x, y, index, TileElementType::SmallScenery);
         const SmallSceneryElement* sceneryElement = source->AsSmallScenery();
@@ -152,7 +152,7 @@ extern "C"
         else if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_FRAME_OFFSETS))
         {
             uint16_t frame = 0;
-            uint16_t max_frames = std::min(entry->num_frames, (uint16_t)arraySize);
+            uint16_t max_frames = std::min(entry->FrameOffsetCount, (uint16_t)length);
 
             for (; frame < max_frames; frame++)
             {
@@ -164,7 +164,7 @@ extern "C"
                     image_offset += 4;
                 }
 
-                indices[frame] = (image_offset + GetIndexWithColourAndWither(sceneryElement, entry));
+                indices[frame] = (image_offset + GetIndexWithWither(sceneryElement, entry));
             }
 
             return frame;
@@ -173,37 +173,4 @@ extern "C"
         dll_log("This small scenery entry is animated in a way that is not supported yet (flags = %i).", entry->flags);
         return 0;
     }
-
-    /*
-    struct SmallSceneryEntryInfo
-    {
-    public:
-        char identifier[IdentifierSize + 1]; // extra byte for null terminator
-        uint32_t flags;
-        uint16_t animationDelay;
-        uint16_t animationFrameCount;
-    };
-
-    // Returns the RCT object entry for the specified small scenery.
-    EXPORT void GetSmallSceneryEntry(uint32_t entryIndex, SmallSceneryEntryInfo* entry)
-    {
-        IObjectManager& objManager = OpenRCT2::GetContext()->GetObjectManager();
-        Object* obj = objManager.GetLoadedObject(ObjectType::SmallScenery, entryIndex);
-
-        if (obj == nullptr)
-        {
-            dll_log("Small scenery object entry = null");
-            return;
-        }
-
-        SmallSceneryEntry* sceneryEntry = static_cast<SmallSceneryEntry*>(obj->GetLegacyData());
-
-        entry->flags = sceneryEntry->flags;
-        entry->animationDelay = sceneryEntry->animation_delay;
-        entry->animationFrameCount = sceneryEntry->num_frames;
-
-        const RCTObjectEntry objectEntry = obj->GetObjectEntry();
-        std::memcpy(entry->identifier, objectEntry.name, IdentifierSize);
-    }
-    */
 }

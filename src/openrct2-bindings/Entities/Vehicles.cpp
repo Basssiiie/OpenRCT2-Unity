@@ -7,35 +7,33 @@ extern "C"
 {
     struct VehicleEntity
     {
-        uint16_t id;
         int32_t x;
         int32_t y;
         int32_t z;
         uint8_t direction;
-        uint8_t bankRotation;
-        uint8_t pitchRotation;
-        uint8_t trackType;
+        uint8_t banking;
+        uint8_t pitch;
+        track_type_t trackType;
         uint8_t trackDirection;
         uint16_t trackProgress;
     };
 
     // Loads all the vehicles into the specified buffer, returns the total amount of vehicles loaded.
-    EXPORT int32_t GetAllVehicles(VehicleEntity* vehicles, int32_t arraySize)
+    EXPORT int32_t GetAllVehicles(VehicleEntity* vehicles, int32_t length)
     {
         int vehicleCount = 0;
 
-        for (Vehicle* vehicle : EntityList<Vehicle>())
+        for (const Vehicle* vehicle : EntityList<Vehicle>())
         {
             VehicleEntity* target = &vehicles[vehicleCount];
-            target->id = vehicle->Id.ToUnderlying();
 
             target->x = vehicle->x;
             target->y = vehicle->y;
             target->z = vehicle->z;
 
             target->direction = vehicle->Orientation;
-            target->bankRotation = vehicle->bank_rotation;
-            target->pitchRotation = vehicle->Pitch;
+            target->banking = vehicle->bank_rotation;
+            target->pitch = vehicle->Pitch;
 
             target->trackType = vehicle->GetTrackType();
             target->trackDirection = vehicle->GetTrackDirection();
@@ -43,9 +41,10 @@ extern "C"
 
             vehicleCount++;
 
-            if (vehicleCount >= arraySize)
+            if (vehicleCount >= length)
                 break;
         }
+
         return vehicleCount;
     }
 }

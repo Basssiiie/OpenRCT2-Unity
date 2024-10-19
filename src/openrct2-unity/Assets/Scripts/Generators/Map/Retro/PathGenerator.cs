@@ -42,6 +42,13 @@ namespace OpenRCT2.Generators.Map.Retro
         public void CreateElement(Transform transform, int x, int y, in TileElementInfo element, in PathInfo path)
         {
             uint surfaceIndex = path.surfaceIndex;
+            SpriteTexture graphic = SpriteFactory.GetOrCreate(surfaceIndex);
+
+            if (graphic.pixelCount == 0)
+            {
+                return;
+            }
+
             var pathObject = new GameObject
             {
                 name = $"Path (index: {surfaceIndex})",
@@ -58,9 +65,9 @@ namespace OpenRCT2.Generators.Map.Retro
             renderer.staticShadowCaster = true;
             renderer.material = _pathMaterial;
 
-            SpriteTexture graphic = SpriteFactory.ForImageIndex(surfaceIndex);
+            Texture2D texture = TextureFactory.CreateFullColour(graphic);
             Material material = renderer.material;
-            material.SetTexture(_pathTextureName, graphic.GetTexture());
+            material.SetTexture(_pathTextureName, texture);
 
             SpriteData data = GraphicsDataFactory.GetTextureData(surfaceIndex);
             material.SetVector("ImageOffset", new Vector2(data.offsetX, data.offsetY));

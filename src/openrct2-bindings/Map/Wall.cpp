@@ -11,31 +11,18 @@ extern "C"
     {
         uint32_t imageIndex;
         uint8_t slope;
-        bool animated;
+        uint8_t colour1;
+        uint8_t colour2;
+        uint8_t colour3;
         uint16_t animationFrameCount;
         uint16_t animationFrameDelay;
+        bool animated;
     };
 
     // Returns the sprite image index for a small scenery tile element.
     //  Inspired by: PaintWall(), PaintWallWall()
     uint32_t GetWallImageIndex(const WallElement* element, const WallSceneryEntry* entry)
     {
-        // Colours
-        uint8_t wallFlags = entry->flags;
-        ImageId imageId;
-        if (wallFlags & WALL_SCENERY_HAS_PRIMARY_COLOUR)
-        {
-            imageId = imageId.WithPrimary(element->GetPrimaryColour());
-        }
-        if (wallFlags & WALL_SCENERY_HAS_SECONDARY_COLOUR)
-        {
-            imageId = imageId.WithSecondary(element->GetSecondaryColour());
-        }
-        if (wallFlags & WALL_SCENERY_HAS_TERTIARY_COLOUR)
-        {
-            imageId = imageId.WithTertiary(element->GetTertiaryColour());
-        }
-
         // Slopes
         uint8_t slope = element->GetSlope();
         uint32_t imageOffset;
@@ -53,6 +40,7 @@ extern "C"
             imageOffset = 0;
         }
 
+        uint8_t wallFlags = entry->flags;
         if (wallFlags & WALL_SCENERY_HAS_GLASS)
         {
             if (wallFlags & WALL_SCENERY_IS_DOUBLE_SIDED)
@@ -67,7 +55,7 @@ extern "C"
                 imageOffset += 6;
             }
         }
-        return imageId.WithIndex(entry->image + imageOffset).ToUInt32();
+        return entry->image + imageOffset;
     }
 
     static void SetWallInfo(int x, int y, int index, const TileElement* source, WallInfo* target)
@@ -84,6 +72,9 @@ extern "C"
 
         target->imageIndex = GetWallImageIndex(wall, entry);
         target->slope = wall->GetSlope();
+        target->colour1 = wall->GetPrimaryColour();
+        target->colour2 = wall->GetSecondaryColour();
+        target->colour3 = wall->GetTertiaryColour();
         target->animated = (entry->flags2 & WALL_SCENERY_2_ANIMATED);
     }
 

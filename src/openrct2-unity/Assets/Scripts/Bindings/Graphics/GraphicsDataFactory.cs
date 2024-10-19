@@ -57,7 +57,7 @@ namespace OpenRCT2.Bindings.Graphics
         /// Gets the texture size for the specified image index.
         /// </summary>
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl)]
-        static extern void GetTextureData(uint imageIndex, ref SpriteData data);
+        static extern void GetTextureData(uint imageIndex, out SpriteData data);
 
 
         /// <summary>
@@ -65,8 +65,7 @@ namespace OpenRCT2.Bindings.Graphics
         /// </summary>
         public static SpriteData GetTextureData(uint imageIndex)
         {
-            var data = new SpriteData();
-            GetTextureData(imageIndex, ref data);
+            GetTextureData(imageIndex, out SpriteData data);
             return data;
         }
 
@@ -75,26 +74,26 @@ namespace OpenRCT2.Bindings.Graphics
         /// Gets the pixel bytes of a texture specified by its image index.
         /// </summary>
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl)]
-        static extern void GetTexturePixels(uint imageIndex, [Out] byte[] bytes, int amountOfBytes);
+        static extern void GetTexturePixels(uint imageIndex, byte colour1, byte colour2, byte colour3, [Out] byte[] bytes, int length);
 
 
         /// <summary>
         /// Writes the pixel bytes of a texture specified by its image index to the buffer.
         /// </summary>
-        public static void GetTexturePixels(uint imageIndex, byte[] buffer)
-            => GetTexturePixels(imageIndex, buffer, buffer.Length);
+        public static void GetTexturePixels(uint imageIndex, byte colour1, byte colour2, byte colour3, byte[] buffer)
+            => GetTexturePixels(imageIndex, colour1, colour2, colour3, buffer, buffer.Length);
 
 
         /// <summary>
         /// Gets the pixel bytes of a texture specified by its image index.
         /// </summary>
-        public static byte[] GetTexturePixels(uint imageIndex)
+        public static byte[] GetTexturePixels(uint imageIndex, byte colour1, byte colour2, byte colour3)
         {
             SpriteData data = GetTextureData(imageIndex);
 
             int total = data.PixelCount;
             byte[] byteBuffer = new byte[total];
-            GetTexturePixels(imageIndex, byteBuffer, total);
+            GetTexturePixels(imageIndex, colour1, colour2, colour3, byteBuffer, total);
             return byteBuffer;
         }
     }

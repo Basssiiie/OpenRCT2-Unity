@@ -1,56 +1,53 @@
-#nullable enable
-
 using OpenRCT2.Bindings.Entities;
 using OpenRCT2.Generators;
 using OpenRCT2.Generators.Tracks;
 using UnityEngine;
+
+#nullable enable
 
 namespace OpenRCT2.Behaviours.Controllers
 {
     /// <summary>
     /// Controller which moves and updates all ride vehicles in the park.
     /// </summary>
-    public class VehicleController : SpriteController<Vehicle>
+    public class VehicleController : EntityController<VehicleEntity>
     {
-        /// <summary>
-        /// Reads all vehicles into the buffer from the dll hook.
-        /// </summary>
-        protected override int FillSpriteBuffer(Vehicle[] buffer)
-            => EntityRegistry.GetAllVehicles(buffer);
+        readonly GameObject _prefab;
 
-
-        /// <summary>
-        /// Returns an id of the vehicle, currently based on the sprite index.
-        /// </summary>
-        protected override ushort GetId(in Vehicle sprite)
-            => sprite.id;
-
-
-        /// <summary>
-        /// Returns the vehicle's position in Unity coordinates.
-        /// </summary>
-        protected override Vector3 GetPosition(in Vehicle sprite)
-            => World.CoordsToVector3(sprite.x, sprite.z, sprite.y);
-
-
-        /// <summary>
-        /// Updates the vehicle with the correct rotation.
-        /// </summary>
-        protected override SpriteObject UpdateSprite(int index, in Vehicle sprite)
+        /// <inheritdoc/>
+        public VehicleController(Transform parent, GameObject prefab)
+            : base(EntityType.Vehicle, parent)
         {
-            var obj = base.UpdateSprite(index, sprite);
+            _prefab = prefab;
+        }
 
-            obj.gameObject.transform.rotation = GetRotation(sprite);
+        /// <inheritdoc/>
+        protected override int UpdateEntities(VehicleEntity[] entities)
+            => EntityRegistry.GetAllVehicles(entities);
+
+        /// <inheritdoc/>
+        protected override bool IsActive(in VehicleEntity entity)
+        {
+            return entity.x > 0;
+        }
+
+        /// <inheritdoc/>
+        protected override GameObject CreateEntity(int index)
+        {
+            var obj = Object.Instantiate(_prefab);
+            obj.name = $"Vehicle {index}";
             return obj;
         }
 
+        /// <inheritdoc/>
+        protected override void UpdateEntity(int index, in VehicleEntity entity, GameObject gameObject)
+        {
+            var position = World.CoordsToVector3(entity.x, entity.z, entity.y);
+            var rotation = TrackDataFactory
+                .GetTrackPiece(entity.trackType)
+                .GetVehicleRotation(entity.trackDirection, entity.trackProgress);
 
-        /// <summary>
-        /// Gets the vehicles rotation as a quaternion.
-        /// </summary>
-        Quaternion GetRotation(in Vehicle vehicle)
-            => TrackDataFactory
-                .GetTrackPiece(vehicle.trackType)
-                .GetVehicleRotation(vehicle.trackDirection, vehicle.trackProgress);
+            gameObject.transform.SetLocalPositionAndRotation(position, rotation);
+        }
     }
 }
