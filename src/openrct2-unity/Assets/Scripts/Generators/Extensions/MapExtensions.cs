@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
-using OpenRCT2.Generators.Map;
 
 #nullable enable
 
@@ -30,7 +29,11 @@ namespace OpenRCT2.Generators.Extensions
 
                     for (var i = 0; i < elements.Length; i++)
                     {
-                        callback(tile, i, in elements[i]);
+                        var element = elements[i];
+                        if (!element.invisible)
+                        {
+                            callback(tile, i, in element);
+                        }
                     }
 
                     yield return new LoadStatus(loader, current++, total);
