@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b3ee7f603a4f1a469e1cca4d62ca44c, type: 3}
   m_Name: SmallSceneryGenerator
   m_EditorClassIdentifier: 
-  _defaultPrefab: {fileID: 4503080842329074919, guid: 3be8c3c47c6fc4d408867ddcee62b87c,
-    type: 3}
   _animationShader: {fileID: -6465566751694194690, guid: 51e8f198c20324141b9b85da080dd22b,
+    type: 3}
+  _defaultPrefab: {fileID: 4503080842329074919, guid: 3be8c3c47c6fc4d408867ddcee62b87c,
     type: 3}
   _defaultScaleMode: 2
   _providers:
   - {fileID: 11400000, guid: ea70123090ff11a4e8d273b55c83a0a8, type: 2}
   - {fileID: 11400000, guid: 25206f02ab45cd84db64c0e66266a2bb, type: 2}
+  - {fileID: 11400000, guid: b2d267b743959aa4ab3cd375339e803a, type: 2}
+  - {fileID: 11400000, guid: 79b34c0ea31e3c44d90ac7286951d10b, type: 2}

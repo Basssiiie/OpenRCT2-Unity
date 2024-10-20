@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 295662048b9710f44924fa686bb3301c, type: 3}
+  m_Name: MineTheming
+  m_EditorClassIdentifier: 
+  _prefabs:
+  - identifier: rct2.scenery_small.tbr1
+    prefab: {fileID: 919132149155446097, guid: d2fca3f8bbf761545b5f402f1812a407, type: 3}
+  - identifier: rct2.scenery_small.tbr2
+    prefab: {fileID: 919132149155446097, guid: 077003979f07a46428f67f3fda782cb3, type: 3}
+  - identifier: rct2.scenery_small.tbr3
+    prefab: {fileID: 919132149155446097, guid: 0b1cda1754ebf684aacfae37820cdf97, type: 3}
+  - identifier: rct2.scenery_small.tbr4
+    prefab: {fileID: 919132149155446097, guid: 7a0c35d1a5ed9154ea3dc59f1c0ca28c, type: 3}
+  - identifier: rct2.scenery_small.tml
+    prefab: {fileID: 919132149155446097, guid: cc491141b535ee54b82da82821318d85, type: 3}
+  - identifier: rct2.scenery_small.tmw
+    prefab: {fileID: 919132149155446097, guid: 83cec684dbd72be408cac45455900380, type: 3}

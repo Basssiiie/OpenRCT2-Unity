@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: RoofSideH2
   m_EditorClassIdentifier: 
   _prefab: {fileID: 6135319879212020766, guid: 7cc5bdbf00434d64f9262b8c98536bcd, type: 3}
-  _animationShader: {fileID: -6465566751694194690, guid: 51e8f198c20324141b9b85da080dd22b,
-    type: 3}
+  _animationShader: {fileID: 0}
   _scaleMode: 0
   _identifiers:
   - rct2.scenery_small.roof1

@@ -15,9 +15,9 @@ namespace OpenRCT2.Behaviours.Generators.Objects
             {
                 var entries = provider.GetEntries();
 
-                foreach (var identifier in entries.identifiers)
+                foreach (var entry in entries)
                 {
-                    lookup.Add(identifier, entries.provider);
+                    lookup.Add(entry.identifier, entry.provider);
                 }
             }
 

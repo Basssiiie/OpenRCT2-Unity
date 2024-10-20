@@ -12,6 +12,6 @@ namespace OpenRCT2.Generators.Map.Providers
         /// <summary>
         /// Get all identifiers and their object provider.
         /// </summary>
-        public abstract (string[] identifiers, IObjectProvider<T> provider) GetEntries();
+        public abstract (string identifier, IObjectProvider<T> provider)[] GetEntries();
     }
 }

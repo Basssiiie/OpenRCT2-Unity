@@ -40,7 +40,7 @@ namespace OpenRCT2.Generators.Map.Providers
             if (data.animated && _animationShader != null)
             {
                 // Animate if possible
-                spriteApplied = TryApplyAnimation(obj, _scaleMode, x, y, index, data, data.identifier);
+                spriteApplied = TryApplyAnimation(obj, _scaleMode, x, y, index, data);
             }
 
             if (!spriteApplied)
@@ -97,13 +97,13 @@ namespace OpenRCT2.Generators.Map.Providers
         /// <summary>
         /// Applies a sprite animation to the specified gameobject.
         /// </summary>
-        bool TryApplyAnimation(GameObject obj, ObjectScaleMode scaleMode, int x, int y, int index, in SmallSceneryInfo scenery, string identifier)
+        bool TryApplyAnimation(GameObject obj, ObjectScaleMode scaleMode, int x, int y, int index, in SmallSceneryInfo scenery)
         {
             int animationDelay = scenery.animationFrameDelay;
             int animationFrameCount = scenery.animationFrameCount;
             uint[] imageIndices = GraphicsDataFactory.GetSmallSceneryAnimationIndices(x, y, index, animationFrameCount);
 
-            obj.name = $"SmallScenery (ID: {identifier}, frames: {animationFrameCount}, delay: {animationDelay})";
+            obj.name = $"SmallScenery (ID: {scenery.identifier}, frames: {animationFrameCount}, delay: {animationDelay})";
 
             SpriteTexture[] graphics = SpriteFactory.ForAnimationIndices(imageIndices);
             if (graphics.Length == 0)

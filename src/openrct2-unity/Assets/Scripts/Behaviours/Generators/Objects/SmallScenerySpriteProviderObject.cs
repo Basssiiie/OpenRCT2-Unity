@@ -15,15 +15,23 @@ namespace OpenRCT2.Generators.Map.Providers
         [SerializeField] Shader? _animationShader;
         [SerializeField] ObjectScaleMode _scaleMode;
 
-        [ContextMenuItem("Sort Alphabetically ", nameof(SortObjectIds))]
+        [ContextMenuItem("Sort Alphabetically", nameof(SortObjectIds))]
         [SerializeField] string[] _identifiers = Array.Empty<string>();
 
-        public override (string[] identifiers, IObjectProvider<SmallSceneryInfo> provider) GetEntries()
+        public override (string identifier, IObjectProvider<SmallSceneryInfo> provider)[] GetEntries()
         {
             Assert.IsNotNull(_prefab);
 
+            var length = _identifiers.Length;
+            var array = new (string identifiers, IObjectProvider<SmallSceneryInfo> provider)[length];
             var provider = new SmallScenerySpriteObjectProvider(_prefab, _animationShader, _scaleMode);
-            return (_identifiers, provider);
+
+            for (var i = 0; i < length; i++)
+            {
+                array[i] = (_identifiers[i], provider);
+            }
+
+            return array;
         }
 
         /// <summary>

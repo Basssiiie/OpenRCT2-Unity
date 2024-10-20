@@ -28,14 +28,14 @@ namespace OpenRCT2.Generators.Map
         {
             return map.ForEach("Creating small scenery...", (Tile tile, int index, in TileElementInfo element, in SmallSceneryInfo scenery) =>
             {
-                CreateElement(transform, tile.x, tile.y, index, element, scenery);
+                CreateElement(transform, tile, index, element, scenery);
             });
         }
 
-        void CreateElement(Transform parent, int x, int y, int index, in TileElementInfo element, in SmallSceneryInfo scenery)
+        void CreateElement(Transform parent, Tile tile, int index, in TileElementInfo element, in SmallSceneryInfo scenery)
         {
-            float pos_x = x;
-            float pos_y = y;
+            float pos_x = tile.x;
+            float pos_y = tile.y;
             float height = element.baseHeight;
 
             // If not a full tile, move small scenery to the correct quadrant.
@@ -60,7 +60,7 @@ namespace OpenRCT2.Generators.Map
                 provider = _defaultProvider;
             }
 
-            var obj = provider.CreateObject(x, y, index, in element, in scenery);
+            var obj = provider.CreateObject(tile.x, tile.y, index, in element, in scenery);
             obj.isStatic = true;
 
             var position = World.TileCoordsToUnity(pos_x, pos_y, height);
@@ -69,6 +69,6 @@ namespace OpenRCT2.Generators.Map
             var transform = obj.transform;
             transform.parent = parent;
             transform.SetLocalPositionAndRotation(position, rotation);
-        }
+        }        
     }
 }
