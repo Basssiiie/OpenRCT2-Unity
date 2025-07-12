@@ -13,6 +13,16 @@ namespace OpenRCT2.Behaviours
 {
     public class MapScript : MonoBehaviour
     {
+        //[Serializable]
+        //sealed class MapGeneratorOption
+        //{
+        //    public bool enabled;
+        //    public TileElementGeneratorScript? generator;
+        //}
+
+        //[SerializeField] MapGeneratorOption[] _generators;
+
+
         [SerializeField] TileElementGeneratorScript? _surfaceGenerator;
         [SerializeField] TileElementGeneratorScript? _pathGenerator;
         [SerializeField] TileElementGeneratorScript? _trackGenerator;
@@ -66,11 +76,6 @@ namespace OpenRCT2.Behaviours
 
                 nextUpdate = currentTick + 250;
                 yield return null;
-            }
-
-            foreach (var controller in _controllers)
-            {
-                controller.enabled = true;
             }
         }
 
