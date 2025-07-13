@@ -25,6 +25,7 @@ extern "C"
         uint32_t railingIndex;
         bool sloped;
         uint8_t slopeDirection;
+        uint8_t edges;
     };
 
     // Returns the sprite image index for a small scenery tile element.
@@ -67,6 +68,7 @@ extern "C"
         target->surfaceIndex = GetPathSurfaceImageIndex(path);
         target->sloped = path->IsSloped();
         target->slopeDirection = path->GetSlopeDirection();
+        target->edges = path->GetEdges();
     }
 
     // Writes the path element details to the specified buffer.

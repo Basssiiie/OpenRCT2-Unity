@@ -11,11 +11,11 @@ namespace OpenRCT2.Unity.Utilities
             var type = typeof(T);
             var builder = new StringBuilder();
 
-            builder.Append("[");
+            builder.Append("struct ");
             builder.Append(type.Name);
-            builder.Append("] Size = ");
+            builder.Append("[Size = ");
             builder.Append(Marshal.SizeOf(type));
-            builder.AppendLine();
+            builder.AppendLine("]:");
 
             foreach (var field in type.GetFields())
             {

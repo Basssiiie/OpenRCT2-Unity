@@ -12,5 +12,6 @@ namespace OpenRCT2.Bindings.TileElements
         [MarshalAs(UnmanagedType.I1)]
         public readonly bool sloped;
         public readonly byte slopeDirection;
+        public readonly byte edges;
     };
 }
