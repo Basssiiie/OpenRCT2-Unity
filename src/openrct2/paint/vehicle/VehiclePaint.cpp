@@ -4783,5 +4783,8 @@ void Vehicle::Paint(PaintSession& session, int32_t imageDirection) const
         case VEHICLE_VISUAL_SUBMARINE:
             VehicleVisualSubmarine(session, x, imageDirection, y, z + zOffset, this, carEntry);
             break;
+        case VEHICLE_VISUAL_SPINNING_CARS:
+            VehicleVisualClassicMiniSpinning(session, x, imageDirection, y, z + zOffset, this, carEntry);
+            break;
     }
 }
