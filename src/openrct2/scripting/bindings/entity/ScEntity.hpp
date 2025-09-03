@@ -94,7 +94,7 @@ namespace OpenRCT2::Scripting
         {
             auto entity = GetEntity(thisVal);
             auto type = EntityTypeToString(entity);
-            return JS_NewString(ctx, type.c_str());
+            return JSFromStdString(ctx, type);
         }
 
         // x getter and setter

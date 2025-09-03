@@ -278,6 +278,33 @@ namespace OpenRCT2::Scripting
         return output;
     }
 
+    inline uint32_t JSToUint(JSContext* ctx, JSValue val)
+    {
+        uint32_t output = 0;
+        if (JS_IsNumber(val))
+        {
+            JS_ToUint32(ctx, &output, val);
+        }
+        return output;
+    }
+
+    inline uint32_t JSToUint(JSContext* ctx, JSValue obj, const char* property)
+    {
+        JSValue val = JS_GetPropertyStr(ctx, obj, property);
+        uint32_t output = JSToUint(ctx, val);
+        JS_FreeValue(ctx, val);
+        return output;
+    }
+
+    inline CoordsXYZ JSToCoordXYZ(JSContext* ctx, JSValue obj)
+    {
+        return {
+            JSToInt(ctx, obj, "x"),
+            JSToInt(ctx, obj, "y"),
+            JSToInt(ctx, obj, "z")
+        };
+    }
+
     inline JSValue ToJSValue(JSContext* ctx, uint8_t val)
     {
         return JS_NewInt32(ctx, val);

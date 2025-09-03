@@ -57,7 +57,7 @@ namespace OpenRCT2::Scripting
             auto it = LitterTypeMap.find(litter->SubType);
             if (it != LitterTypeMap.end())
             {
-                return JS_NewString(ctx, it->first.data());
+                return JSFromStdString(ctx, it->first);
             }
         }
         return JS_UNDEFINED;
