@@ -9,14 +9,13 @@
 
 #pragma once
 
-#ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING_REFACTOR
 
     #include "../../../Context.h"
     #include "../../../GameState.h"
     #include "../../../entity/EntityList.h"
     #include "../../../entity/EntityRegistry.h"
     #include "../../../entity/Peep.h"
-    #include "../../Duktape.hpp"
     #include "../../ScriptEngine.h"
 
     #include <string_view>
@@ -24,136 +23,144 @@
 
 namespace OpenRCT2::Scripting
 {
-    class ScEntity
+    inline std::string EntityTypeToString(const EntityBase* entity)
     {
-    protected:
-        EntityId _id{ EntityId::GetNull() };
+        const auto targetApiVersion = GetTargetAPIVersion();
 
-    public:
-        ScEntity(EntityId id)
-            : _id(id)
+        if (entity != nullptr)
         {
-        }
-
-    private:
-        DukValue id_get() const
-        {
-            auto ctx = GetContext()->GetScriptEngine().GetContext();
-
-            auto entity = GetEntity();
-            if (entity == nullptr)
-                return ToDuk(ctx, nullptr);
-
-            return ToDuk(ctx, entity->Id.ToUnderlying());
-        }
-
-        std::string type_get() const
-        {
-            const auto targetApiVersion = GetTargetAPIVersion();
-
-            auto entity = GetEntity();
-            if (entity != nullptr)
+            switch (entity->Type)
             {
-                switch (entity->Type)
-                {
-                    case EntityType::Vehicle:
-                        return "car";
-                    case EntityType::Guest:
-                        if (targetApiVersion <= kApiVersionPeepDeprecation)
-                            return "peep";
-                        return "guest";
-                    case EntityType::Staff:
-                        if (targetApiVersion <= kApiVersionPeepDeprecation)
-                            return "peep";
-                        return "staff";
-                    case EntityType::SteamParticle:
-                        return "steam_particle";
-                    case EntityType::MoneyEffect:
-                        return "money_effect";
-                    case EntityType::CrashedVehicleParticle:
-                        return "crashed_vehicle_particle";
-                    case EntityType::ExplosionCloud:
-                        return "explosion_cloud";
-                    case EntityType::CrashSplash:
-                        return "crash_splash";
-                    case EntityType::ExplosionFlare:
-                        return "explosion_flare";
-                    case EntityType::Balloon:
-                        return "balloon";
-                    case EntityType::Duck:
-                        return "duck";
-                    case EntityType::JumpingFountain:
-                        return "jumping_fountain";
-                    case EntityType::Litter:
-                        return "litter";
-                    case EntityType::Null:
-                        return "unknown";
-                    default:
-                        break;
-                }
+                case EntityType::Vehicle:
+                    return "car";
+                case EntityType::Guest:
+                    if (targetApiVersion <= kApiVersionPeepDeprecation)
+                        return "peep";
+                    return "guest";
+                case EntityType::Staff:
+                    if (targetApiVersion <= kApiVersionPeepDeprecation)
+                        return "peep";
+                    return "staff";
+                case EntityType::SteamParticle:
+                    return "steam_particle";
+                case EntityType::MoneyEffect:
+                    return "money_effect";
+                case EntityType::CrashedVehicleParticle:
+                    return "crashed_vehicle_particle";
+                case EntityType::ExplosionCloud:
+                    return "explosion_cloud";
+                case EntityType::CrashSplash:
+                    return "crash_splash";
+                case EntityType::ExplosionFlare:
+                    return "explosion_flare";
+                case EntityType::Balloon:
+                    return "balloon";
+                case EntityType::Duck:
+                    return "duck";
+                case EntityType::JumpingFountain:
+                    return "jumping_fountain";
+                case EntityType::Litter:
+                    return "litter";
+                case EntityType::Null:
+                    return "unknown";
+                default:
+                    break;
             }
-            return "unknown";
+        }
+        return "unknown";
+    }
+
+    class ScEntity;
+    extern ScEntity gScEntity;
+
+    using OpaqueEntityData = struct
+    {
+        EntityId id;
+    };
+
+    class ScEntity : public ScBase
+    {
+    private:
+        static JSValue id_get(JSContext* ctx, JSValue thisVal)
+        {
+            auto entity = GetEntity(thisVal);
+            if (entity == nullptr)
+                return JS_UNDEFINED;
+
+            return JS_NewInt32(ctx, entity->Id.ToUnderlying());
+        }
+
+        static JSValue type_get(JSContext* ctx, JSValue thisVal)
+        {
+            auto entity = GetEntity(thisVal);
+            auto type = EntityTypeToString(entity);
+            return JS_NewString(ctx, type.c_str());
         }
 
         // x getter and setter
-        int32_t x_get() const
+        static JSValue x_get(JSContext* ctx, JSValue thisVal)
         {
-            auto entity = GetEntity();
-            return entity != nullptr ? entity->x : 0;
+            auto entity = GetEntity(thisVal);
+            return JS_NewInt32(ctx, entity != nullptr ? entity->x : 0);
         }
-        void x_set(int32_t value)
+        static JSValue x_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
         {
-            ThrowIfGameStateNotMutable();
-            auto entity = GetEntity();
+            JS_UNPACK_INT32(value, ctx, jsValue);
+            JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
+            auto entity = GetEntity(thisVal);
             if (entity != nullptr)
             {
                 entity->MoveTo({ value, entity->y, entity->z });
             }
+            return JS_UNDEFINED;
         }
 
         // y getter and setter
-        int32_t y_get() const
+        static JSValue y_get(JSContext* ctx, JSValue thisVal)
         {
-            auto entity = GetEntity();
-            return entity != nullptr ? entity->y : 0;
+            auto entity = GetEntity(thisVal);
+            return JS_NewInt32(ctx, entity != nullptr ? entity->y : 0);
         }
-        void y_set(int32_t value)
+        static JSValue y_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
         {
-            ThrowIfGameStateNotMutable();
-            auto entity = GetEntity();
+            JS_UNPACK_INT32(value, ctx, jsValue);
+            JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
+            auto entity = GetEntity(thisVal);
             if (entity != nullptr)
             {
                 entity->MoveTo({ entity->x, value, entity->z });
             }
+            return JS_UNDEFINED;
         }
 
         // z getter and setter
-        int16_t z_get() const
+        static JSValue z_get(JSContext* ctx, JSValue thisVal)
         {
-            auto entity = GetEntity();
-            return entity != nullptr ? entity->z : 0;
+            auto entity = GetEntity(thisVal);
+            return JS_NewInt32(ctx, entity != nullptr ? entity->z : 0);
         }
-        void z_set(int16_t value)
+        static JSValue z_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
         {
-            ThrowIfGameStateNotMutable();
-            auto entity = GetEntity();
+            JS_UNPACK_INT32(value, ctx, jsValue);
+            JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
+            auto entity = GetEntity(thisVal);
             if (entity != nullptr)
             {
                 entity->MoveTo({ entity->x, entity->y, value });
             }
+            return JS_UNDEFINED;
         }
 
-        void remove()
+        static JSValue remove(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
         {
-            auto ctx = GetContext()->GetScriptEngine().GetContext();
-            auto entity = GetEntity();
+            auto entity = GetEntity(thisVal);
             if (entity != nullptr)
             {
                 entity->Invalidate();
                 switch (entity->Type)
                 {
                     case EntityType::Vehicle:
-                        duk_error(ctx, DUK_ERR_ERROR, "Removing a vehicle is currently unsupported.");
+                        JS_ThrowPlainError(ctx, "Removing a vehicle is currently unsupported.");
                         break;
                     case EntityType::Guest:
                     case EntityType::Staff:
@@ -163,7 +170,7 @@ namespace OpenRCT2::Scripting
                         // vehicle car having an unsupported peep capacity.
                         if (peep == nullptr || peep->State == PeepState::OnRide || peep->State == PeepState::EnteringRide)
                         {
-                            duk_error(ctx, DUK_ERR_ERROR, "Removing a peep that is on a ride is currently unsupported.");
+                            JS_ThrowPlainError(ctx, "Removing a peep that is on a ride is currently unsupported.");
                         }
                         else
                         {
@@ -189,22 +196,32 @@ namespace OpenRCT2::Scripting
                         break;
                 }
             }
+            return JS_UNDEFINED;
         }
 
-        EntityBase* GetEntity() const
+        static EntityBase* GetEntity(JSValue thisVal) 
         {
+            OpaqueEntityData* data = gScEntity.GetOpaque<OpaqueEntityData*>(thisVal);
             return OpenRCT2::getGameState().entities.GetEntity(_id);
         }
 
     public:
-        static void Register(duk_context* ctx)
+        JSValue New(JSContext* ctx)
         {
-            dukglue_register_property(ctx, &ScEntity::id_get, nullptr, "id");
-            dukglue_register_property(ctx, &ScEntity::type_get, nullptr, "type");
-            dukglue_register_property(ctx, &ScEntity::x_get, &ScEntity::x_set, "x");
-            dukglue_register_property(ctx, &ScEntity::y_get, &ScEntity::y_set, "y");
-            dukglue_register_property(ctx, &ScEntity::z_get, &ScEntity::z_set, "z");
-            dukglue_register_method(ctx, &ScEntity::remove, "remove");
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CGETSET_DEF("id", &ScEntity::id_get, nullptr),
+                JS_CGETSET_DEF("type", &ScEntity::type_get, nullptr),
+                JS_CGETSET_DEF("x", &ScEntity::x_get, &ScEntity::x_set),
+                JS_CGETSET_DEF("y", &ScEntity::y_get, &ScEntity::y_set),
+                JS_CGETSET_DEF("z", &ScEntity::z_get, &ScEntity::z_set),
+                JS_CFUNC_DEF("remove", 0, &ScEntity::remove)
+            };
+            return MakeWithOpaque(ctx, funcs, nullptr);
+        }
+
+        void Register(JSContext* ctx)
+        {
+            RegisterBaseStr(ctx, "Cheats");
         }
     };
 
