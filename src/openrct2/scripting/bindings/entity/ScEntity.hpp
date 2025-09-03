@@ -221,7 +221,15 @@ namespace OpenRCT2::Scripting
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Cheats");
+            RegisterBaseStr(ctx, "Entity", Finalize);
+        }
+
+    private: 
+        static void Finalize(JSRuntime* rt, JSValue thisVal)
+        {
+            OpaqueEntityData* data = gScEntity.GetOpaque<OpaqueEntityData*>(thisVal);
+            if (data)
+                delete data;
         }
     };
 
