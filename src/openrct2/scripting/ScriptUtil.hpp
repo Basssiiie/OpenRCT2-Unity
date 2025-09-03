@@ -354,6 +354,18 @@ namespace OpenRCT2::Scripting
             return JS_EXCEPTION;                                                                                               \
         }
 
+    #define JS_UNPACK_INT64(var, ctx, val)                                                                                     \
+        int64_t var;                                                                                                           \
+        if (!JS_IsNumber(val))                                                                                                 \
+        {                                                                                                                      \
+            JS_ThrowTypeError(ctx, "Expected number");                                                                         \
+            return JS_EXCEPTION;                                                                                               \
+        }                                                                                                                      \
+        if (JS_ToInt64(ctx, &var, val) < 0)                                                                                    \
+        {                                                                                                                      \
+            return JS_EXCEPTION;                                                                                               \
+        }
+
     #define JS_UNPACK_UINT32(var, ctx, val)                                                                                    \
         uint32_t var;                                                                                                          \
         if (!JS_IsNumber(val))                                                                                                 \

@@ -9,7 +9,7 @@
 
 #pragma once
 
-#ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING_REFACTOR
 
     #include "ScEntity.hpp"
 
@@ -17,20 +17,16 @@ struct MoneyEffect;
 
 namespace OpenRCT2::Scripting
 {
-
-    class ScMoneyEffect : public ScEntity
+    class ScMoneyEffect final : public ScEntity
     {
     public:
-        ScMoneyEffect(EntityId Id);
-
-        static void Register(duk_context* ctx);
+        static void AddFuncs(JSContext* ctx, JSValue obj);
 
     private:
-        MoneyEffect* GetMoneyEffect() const;
+        static MoneyEffect* GetMoneyEffect(JSValue thisVal);
 
-        money64 value_get() const;
-        void value_set(money64);
+        static JSValue value_get(JSContext* ctx, JSValue thisVal);
+        static JSValue value_set(JSContext* ctx, JSValue thisVal, JSValue value);
     };
-
 } // namespace OpenRCT2::Scripting
 #endif
