@@ -7,7 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING_REFACTOR
 
     #include "ScBalloon.hpp"
 
@@ -15,40 +15,40 @@
 
 namespace OpenRCT2::Scripting
 {
-    ScBalloon::ScBalloon(EntityId Id)
-        : ScEntity(Id)
+    class ScEntity;
+    extern ScEntity gScEntity;
+
+    void ScBalloon::AddFuncs(JSContext* ctx, JSValue obj)
     {
+        static constexpr JSCFunctionListEntry funcs[] = {
+            JS_CGETSET_DEF("colour", &ScBalloon::colour_get, &ScBalloon::colour_set)
+        };
+        JS_SetPropertyFunctionList(ctx, obj, funcs, std::size(funcs));
     }
 
-    void ScBalloon::Register(duk_context* ctx)
+    Balloon* ScBalloon::GetBalloon(JSValue thisVal)
     {
-        dukglue_set_base_class<ScEntity, ScBalloon>(ctx);
-        dukglue_register_property(ctx, &ScBalloon::colour_get, &ScBalloon::colour_set, "colour");
-    }
-
-    Balloon* ScBalloon::GetBalloon() const
-    {
+        auto id = GetEntityId(thisVal);
         return OpenRCT2::getGameState().entities.GetEntity<Balloon>(_id);
     }
 
-    uint8_t ScBalloon::colour_get() const
+    JSValue ScBalloon::colour_get(JSContext* ctx, JSValue thisVal)
     {
-        auto balloon = GetBalloon();
-        if (balloon != nullptr)
-        {
-            return balloon->colour;
-        }
-        return 0;
+        auto balloon = GetBalloon(thisVal);
+        return JS_NewUint32(ctx, balloon == nullptr ? 0 : balloon->colour);
     }
 
-    void ScBalloon::colour_set(uint8_t value)
+    JSValue ScBalloon::colour_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
     {
-        auto balloon = GetBalloon();
+        JS_UNPACK_UINT32(value, ctx, jsValue);
+        JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
+        auto balloon = GetBalloon(thisVal);
         if (balloon != nullptr)
         {
             balloon->colour = value;
             balloon->Invalidate();
         }
+        return JS_UNDEFINED;
     }
 
 } // namespace OpenRCT2::Scripting

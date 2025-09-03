@@ -199,14 +199,20 @@ namespace OpenRCT2::Scripting
             return JS_UNDEFINED;
         }
 
+    protected:
+        static EntityId GetEntityId(JSValue thisVal)
+        {
+            return gScEntity.GetOpaque<OpaqueEntityData*>(thisVal)->id;
+        }
+
         static EntityBase* GetEntity(JSValue thisVal) 
         {
-            OpaqueEntityData* data = gScEntity.GetOpaque<OpaqueEntityData*>(thisVal);
-            return OpenRCT2::getGameState().entities.GetEntity(_id);
+            auto id = GetEntityId(thisVal);
+            return OpenRCT2::getGameState().entities.GetEntity(id);
         }
 
     public:
-        JSValue New(JSContext* ctx)
+        JSValue New(JSContext* ctx, EntityBase* entity)
         {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("id", &ScEntity::id_get, nullptr),
@@ -216,7 +222,15 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("z", &ScEntity::z_get, &ScEntity::z_set),
                 JS_CFUNC_DEF("remove", 0, &ScEntity::remove)
             };
-            return MakeWithOpaque(ctx, funcs, nullptr);
+            auto obj = MakeWithOpaque(ctx, funcs, new OpaqueEntityData{ entity->Id });
+            switch (entity->Type)
+            {
+                case EntityType::Balloon:
+                    // TODO: add extra funcs but they're in another file? Is this a circular reference?
+                    //ScBalloon::AddFuncs(ctx, obj);
+                    break;
+            }
+            return obj;
         }
 
         void Register(JSContext* ctx)
