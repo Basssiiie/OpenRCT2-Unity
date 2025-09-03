@@ -7,81 +7,82 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING_REFACTOR
 
     #include "ScLitter.hpp"
 
+    #include "../../../core/EnumMap.hpp"
     #include "../../../entity/Litter.h"
 
 namespace OpenRCT2::Scripting
 {
-    static const DukEnumMap<Litter::Type> LitterTypeMap(
-        {
-            { "vomit", Litter::Type::Vomit },
-            { "vomit_alt", Litter::Type::VomitAlt },
-            { "empty_can", Litter::Type::EmptyCan },
-            { "rubbish", Litter::Type::Rubbish },
-            { "burger_box", Litter::Type::BurgerBox },
-            { "empty_cup", Litter::Type::EmptyCup },
-            { "empty_box", Litter::Type::EmptyBox },
-            { "empty_bottle", Litter::Type::EmptyBottle },
-            { "empty_bowl_red", Litter::Type::EmptyBowlRed },
-            { "empty_drink_carton", Litter::Type::EmptyDrinkCarton },
-            { "empty_juice_cup", Litter::Type::EmptyJuiceCup },
-            { "empty_bowl_blue", Litter::Type::EmptyBowlBlue },
-        });
+    static const EnumMap<Litter::Type> LitterTypeMap({
+        { "vomit", Litter::Type::Vomit },
+        { "vomit_alt", Litter::Type::VomitAlt },
+        { "empty_can", Litter::Type::EmptyCan },
+        { "rubbish", Litter::Type::Rubbish },
+        { "burger_box", Litter::Type::BurgerBox },
+        { "empty_cup", Litter::Type::EmptyCup },
+        { "empty_box", Litter::Type::EmptyBox },
+        { "empty_bottle", Litter::Type::EmptyBottle },
+        { "empty_bowl_red", Litter::Type::EmptyBowlRed },
+        { "empty_drink_carton", Litter::Type::EmptyDrinkCarton },
+        { "empty_juice_cup", Litter::Type::EmptyJuiceCup },
+        { "empty_bowl_blue", Litter::Type::EmptyBowlBlue },
+    });
 
-    ScLitter::ScLitter(EntityId Id)
-        : ScEntity(Id)
+    class ScEntity;
+    extern ScEntity gScEntity;
+
+    void ScLitter::AddFuncs(JSContext* ctx, JSValue obj)
     {
+        static constexpr JSCFunctionListEntry funcs[] = {
+            JS_CGETSET_DEF("litterType", &ScLitter::litterType_get, &ScLitter::litterType_set),
+            JS_CGETSET_DEF("creationTick", &ScLitter::creationTick_get, nullptr)
+        };
+        JS_SetPropertyFunctionList(ctx, obj, funcs, std::size(funcs));
     }
 
-    void ScLitter::Register(duk_context* ctx)
+    Litter* ScLitter::GetLitter(JSValue thisVal)
     {
-        dukglue_set_base_class<ScEntity, ScLitter>(ctx);
-        dukglue_register_property(ctx, &ScLitter::litterType_get, &ScLitter::litterType_set, "litterType");
-        dukglue_register_property(ctx, &ScLitter::creationTick_get, nullptr, "creationTick");
+        auto id = GetEntityId(thisVal);
+        return OpenRCT2::getGameState().entities.GetEntity<Litter>(id);
     }
 
-    Litter* ScLitter::GetLitter() const
+    JSValue ScLitter::litterType_get(JSContext* ctx, JSValue thisVal)
     {
-        return OpenRCT2::getGameState().entities.GetEntity<Litter>(_id);
-    }
-
-    std::string ScLitter::litterType_get() const
-    {
-        auto* litter = GetLitter();
+        auto* litter = GetLitter(thisVal);
         if (litter != nullptr)
         {
             auto it = LitterTypeMap.find(litter->SubType);
             if (it != LitterTypeMap.end())
             {
-                return std::string{ it->first };
+                return JS_NewString(ctx, it->first.data());
             }
         }
-        return {};
+        return JS_UNDEFINED;
     }
 
-    void ScLitter::litterType_set(const std::string& litterType)
+    JSValue ScLitter::litterType_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
     {
-        ThrowIfGameStateNotMutable();
+        JS_UNPACK_STR(litterType, ctx, jsValue);
+        JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
 
         auto it = LitterTypeMap.find(litterType);
-        if (it == LitterTypeMap.end())
-            return;
-        auto* litter = GetLitter();
-        litter->SubType = it->second;
-        litter->Invalidate();
+        if (it != LitterTypeMap.end())
+        {
+            auto* litter = GetLitter(thisVal);
+            litter->SubType = it->second;
+            litter->Invalidate();
+        }
+        return JS_UNDEFINED;
     }
 
-    uint32_t ScLitter::creationTick_get() const
+    JSValue ScLitter::creationTick_get(JSContext* ctx, JSValue thisVal)
     {
-        auto* litter = GetLitter();
-        if (litter == nullptr)
-            return 0;
-        return litter->creationTick;
+        auto* litter = GetLitter(thisVal);
+        return JS_NewUint32(ctx, litter == nullptr ? 0 : litter->creationTick);
     }
-
 } // namespace OpenRCT2::Scripting
 
 #endif

@@ -496,8 +496,6 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     // ScTrackIterator::Register(ctx);
     // ScTrackSegment::Register(ctx);
     gScEntity.Register(ctx);
-    // ScLitter::Register(ctx);
-    // ScBalloon::Register(ctx);
     // ScMoneyEffect::Register(ctx);
     // ScVehicle::Register(ctx);
     // ScCrashedVehicleParticle::Register(ctx);

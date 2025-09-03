@@ -9,7 +9,7 @@
 
 #pragma once
 
-#ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING_REFACTOR
 
     #include "ScEntity.hpp"
 
@@ -17,22 +17,19 @@ struct Litter;
 
 namespace OpenRCT2::Scripting
 {
-    class ScLitter : public ScEntity
+    class ScLitter final : public ScEntity
     {
     public:
-        ScLitter(EntityId Id);
-
-        static void Register(duk_context* ctx);
+        static void AddFuncs(JSContext* ctx, JSValue obj);
 
     private:
-        Litter* GetLitter() const;
+        static Litter* GetLitter(JSValue thisVal);
 
-        std::string litterType_get() const;
-        void litterType_set(const std::string& litterType);
+        static JSValue litterType_get(JSContext* ctx, JSValue thisVal);
+        static JSValue litterType_set(JSContext* ctx, JSValue thisVal, JSValue value);
 
-        uint32_t creationTick_get() const;
+        static JSValue creationTick_get(JSContext* ctx, JSValue thisVal);
     };
-
 } // namespace OpenRCT2::Scripting
 
 #endif
