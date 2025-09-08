@@ -303,6 +303,14 @@ namespace OpenRCT2::Scripting
             JSToInt(ctx, obj, "y")
         };
     }
+    
+    inline CoordsXY JSToCoordXY(JSContext* ctx, JSValue obj, const char* property)
+    {
+        JSValue val = JS_GetPropertyStr(ctx, obj, property);
+        CoordsXY output = JSToCoordXY(ctx, val);
+        JS_FreeValue(ctx, val);
+        return output;
+    }
 
     inline CoordsXYZ JSToCoordXYZ(JSContext* ctx, JSValue obj)
     {
