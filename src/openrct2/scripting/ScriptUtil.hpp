@@ -296,6 +296,14 @@ namespace OpenRCT2::Scripting
         return output;
     }
 
+    inline CoordsXY JSToCoordXY(JSContext* ctx, JSValue obj)
+    {
+        return {
+            JSToInt(ctx, obj, "x"),
+            JSToInt(ctx, obj, "y")
+        };
+    }
+
     inline CoordsXYZ JSToCoordXYZ(JSContext* ctx, JSValue obj)
     {
         return {
@@ -433,7 +441,7 @@ namespace OpenRCT2::Scripting
             return JS_EXCEPTION;                                                                                               \
         }                                                                                                                      \
         {                                                                                                                      \
-            const int result = JS_ToBool(ctx, value);                                                                          \
+            const int result = JS_ToBool(ctx, val);                                                                          \
             if (result == -1)                                                                                                  \
             {                                                                                                                  \
                 return JS_EXCEPTION;                                                                                           \
