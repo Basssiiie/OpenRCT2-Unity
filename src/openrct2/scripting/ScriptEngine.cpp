@@ -455,6 +455,7 @@ ScContext Scripting::gScContext;
 ScDisposable Scripting::gScDisposable;
 ScNetwork Scripting::gScNetwork;
 ScEntity Scripting::gScEntity;
+ScThought Scripting::gScThought;
 ScPatrolArea Scripting::gScPatrolArea;
 
 void ScriptEngine::RegisterClasses(JSContext* ctx)
@@ -502,7 +503,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     // ScCrashedVehicleParticle::Register(ctx);
     // ScPeep::Register(ctx);
     // ScGuest::Register(ctx);
-    // ScThought::Register(ctx);
+    gScThought.Register(ctx);
     // #ifndef DISABLE_NETWORK
     // ScSocket::Register(ctx);
     // ScListener::Register(ctx);

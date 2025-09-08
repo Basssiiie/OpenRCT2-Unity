@@ -168,6 +168,22 @@ namespace OpenRCT2::Scripting
         return output;
     }
 
+    inline std::optional<uint32_t> JSToOptionalUint(JSContext* ctx, JSValue obj, const char* property)
+    {
+        JSValue val = JS_GetPropertyStr(ctx, obj, property);
+        std::optional<uint32_t> output = std::nullopt;
+        if (JS_IsNumber(val))
+        {
+            uint32_t uintVal = 0;
+            if (JS_ToUint32(ctx, &uintVal, val) >= 0)
+            {
+                output = std::make_optional(uintVal);
+            }
+        }
+        JS_FreeValue(ctx, val);
+        return output;
+    }
+
     inline bool AsOrDefault(JSContext* ctx, JSValue obj, const char* property, bool def)
     {
         JSValue val = JS_GetPropertyStr(ctx, obj, property);

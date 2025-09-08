@@ -566,7 +566,7 @@ namespace OpenRCT2::Scripting
 
     void ScPatrolArea::Register(JSContext* ctx)
     {
-        RegisterBaseStr(ctx, "PatrolArea");
+        RegisterBaseStr(ctx, "PatrolArea", Finalize);
     }
 
     void ScPatrolArea::Finalize(JSRuntime* rt, JSValue thisVal)
