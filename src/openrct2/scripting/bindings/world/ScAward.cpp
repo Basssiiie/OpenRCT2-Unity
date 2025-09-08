@@ -65,7 +65,7 @@ namespace OpenRCT2::Scripting
 
         Formatter ft{};
         ft.Add<StringId>(AwardGetText(award->Type));
-        return JS_NewString(ctx, FormatStringIDLegacy(STR_STRINGID, ft.Data()).c_str());
+        return JSFromStdString(ctx, FormatStringIDLegacy(STR_STRINGID, ft.Data()));
     }
 
     JSValue ScAward::monthsRemaining_get(JSContext* ctx, JSValue thisVal)
