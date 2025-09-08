@@ -61,8 +61,8 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("direction", &ScPeep::direction_get, &ScPeep::direction_set),
                 JS_CGETSET_DEF("energy", &ScPeep::energy_get, &ScPeep::energy_set),
                 JS_CGETSET_DEF("energyTarget", &ScPeep::energyTarget_get, &ScPeep::energyTarget_set),
-                JS_CFUNC_DEF("getFlag", 0, &ScPeep::getFlag),
-                JS_CFUNC_DEF("setFlag", 0, &ScPeep::setFlag),
+                JS_CFUNC_DEF("getFlag", 1, &ScPeep::getFlag),
+                JS_CFUNC_DEF("setFlag", 2, &ScPeep::setFlag),
             };
             JS_SetPropertyFunctionList(ctx, obj, funcs, std::size(funcs));
         }

@@ -15,9 +15,6 @@
 
 namespace OpenRCT2::Scripting
 {
-    class ScEntity;
-    extern ScEntity gScEntity;
-
     void ScBalloon::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {

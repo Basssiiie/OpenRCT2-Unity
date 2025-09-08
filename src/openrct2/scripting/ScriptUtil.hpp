@@ -217,6 +217,22 @@ namespace OpenRCT2::Scripting
         return output;
     }
 
+    inline uint32_t AsOrDefault(JSContext* ctx, JSValue obj, const char* property, uint32_t def)
+    {
+        JSValue val = JS_GetPropertyStr(ctx, obj, property);
+        uint32_t output;
+        if (!JS_IsNumber(val))
+        {
+            output = def;
+        }
+        else if (JS_ToUint32(ctx, &output, val) < 0)
+        {
+            output = def;
+        }
+        JS_FreeValue(ctx, val);
+        return output;
+    }
+
     // Note the default parameter needs to be const char*
     // If you use a type like string_view, calls can instead resolve to the boolean version of the function.
     inline std::string AsOrDefault(JSContext* ctx, JSValue obj, const char* property, const char* def)

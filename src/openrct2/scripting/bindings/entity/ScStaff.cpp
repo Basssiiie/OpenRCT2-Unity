@@ -557,9 +557,9 @@ namespace OpenRCT2::Scripting
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("tiles", &ScPatrolArea::tiles_get, &ScPatrolArea::tiles_set),
             JS_CFUNC_DEF("clear", 0, &ScPatrolArea::clear),
-            JS_CFUNC_DEF("add", 0, &ScPatrolArea::add),
-            JS_CFUNC_DEF("remove", 0, &ScPatrolArea::remove),
-            JS_CFUNC_DEF("contains", 0, &ScPatrolArea::contains),
+            JS_CFUNC_DEF("add", 1, &ScPatrolArea::add),
+            JS_CFUNC_DEF("remove", 1, &ScPatrolArea::remove),
+            JS_CFUNC_DEF("contains", 1, &ScPatrolArea::contains),
         };
         return MakeWithOpaque(ctx, funcs, new OpaquePatrolAreaData{ staffId });
     }

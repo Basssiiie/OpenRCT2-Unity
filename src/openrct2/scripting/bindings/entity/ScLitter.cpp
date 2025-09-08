@@ -31,9 +31,6 @@ namespace OpenRCT2::Scripting
         { "empty_bowl_blue", Litter::Type::EmptyBowlBlue },
     });
 
-    class ScEntity;
-    extern ScEntity gScEntity;
-
     void ScLitter::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {
