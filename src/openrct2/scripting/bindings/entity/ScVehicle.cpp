@@ -567,7 +567,7 @@ namespace OpenRCT2::Scripting
 
     JSValue ScVehicle::travelBy(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
     {
-        JS_UNPACK_INT32(value, ctx, argv[1]);
+        JS_UNPACK_INT32(value, ctx, argv[0]);
         JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
         auto vehicle = GetVehicle(thisVal);
         if (vehicle != nullptr)
@@ -580,9 +580,9 @@ namespace OpenRCT2::Scripting
 
     JSValue ScVehicle::moveToTrack(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
     {
-        JS_UNPACK_INT32(x, ctx, argv[1]);
-        JS_UNPACK_INT32(y, ctx, argv[2]);
-        JS_UNPACK_INT32(elementIndex, ctx, argv[3]);
+        JS_UNPACK_INT32(x, ctx, argv[0]);
+        JS_UNPACK_INT32(y, ctx, argv[1]);
+        JS_UNPACK_INT32(elementIndex, ctx, argv[2]);
         JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
         auto vehicle = GetVehicle(thisVal);
         if (vehicle == nullptr)

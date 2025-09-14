@@ -97,7 +97,7 @@ namespace OpenRCT2::Scripting
 
         static JSValue getFlag(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
         {
-            JS_UNPACK_STR(key, ctx, argv[1]); // todo this can go out of bounds?
+            JS_UNPACK_STR(key, ctx, argv[0]);
             auto peep = GetPeep(thisVal);
             if (peep != nullptr)
             {
@@ -109,8 +109,8 @@ namespace OpenRCT2::Scripting
 
         static JSValue setFlag(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
         {
-            JS_UNPACK_STR(key, ctx, argv[1]);    // todo this can go out of bounds?
-            JS_UNPACK_BOOL(value, ctx, argv[2]); // todo this can go out of bounds?
+            JS_UNPACK_STR(key, ctx, argv[0]);
+            JS_UNPACK_BOOL(value, ctx, argv[1]);
             JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
             auto peep = GetPeep(thisVal);
             if (peep != nullptr)

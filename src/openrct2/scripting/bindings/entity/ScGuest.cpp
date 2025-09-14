@@ -744,16 +744,16 @@ namespace OpenRCT2::Scripting
         return true;
     }
 
-    JSValue ScGuest::has_item(JSContext * ctx, JSValue thisVal, int argc, JSValue* argv)
+    JSValue ScGuest::has_item(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
     {
-        JS_UNPACK_OBJECT(item, ctx, argv[1]); // todo out of bounds?
+        JS_UNPACK_OBJECT(item, ctx, argv[0]);
         auto result = has_item(ctx, thisVal, item);
         return JS_NewBool(ctx, result);
     }
 
     JSValue ScGuest::give_item(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
     {
-        JS_UNPACK_OBJECT(item, ctx, argv[1]); // todo out of bounds?
+        JS_UNPACK_OBJECT(item, ctx, argv[0]);
         JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
 
         auto peep = GetGuest(thisVal);
@@ -864,7 +864,7 @@ namespace OpenRCT2::Scripting
 
     JSValue ScGuest::remove_item(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
     {
-        JS_UNPACK_OBJECT(item, ctx, argv[1]); // todo out of bounds?
+        JS_UNPACK_OBJECT(item, ctx, argv[0]);
         JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
         if (has_item(ctx, thisVal, item))
         {
@@ -903,8 +903,8 @@ namespace OpenRCT2::Scripting
 
     JSValue ScGuest::getAnimationSpriteIds(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
     {
-        JS_UNPACK_STR(groupKey, ctx, argv[1]);
-        JS_UNPACK_UINT32(rotation, ctx, argv[2]);
+        JS_UNPACK_STR(groupKey, ctx, argv[0]);
+        JS_UNPACK_UINT32(rotation, ctx, argv[1]);
         JSValue spriteIds = JS_NewArray(ctx);
 
         auto& availableGuestAnimations = getAnimationsByPeepType(AnimationPeepType::Guest);
@@ -931,7 +931,6 @@ namespace OpenRCT2::Scripting
                     imageId += frameOffset;
 
                 JS_SetPropertyInt64(ctx, spriteIds, idx++, JS_NewUint32(ctx, imageId));
-
             }
         }
         return spriteIds;

@@ -156,7 +156,7 @@ namespace OpenRCT2::Scripting
 
     JSValue ScCrashedVehicleParticle::Launch(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
     {
-        JS_UNPACK_OBJECT(obj, ctx, argv[1]); // todo this can go out of bounds?
+        JS_UNPACK_OBJECT(obj, ctx, argv[0]);
         JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
         auto entity = GetCrashedVehicleParticle(thisVal);
         if (entity != nullptr)
