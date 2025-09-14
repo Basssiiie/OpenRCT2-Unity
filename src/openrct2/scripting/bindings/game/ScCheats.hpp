@@ -236,6 +236,8 @@ namespace OpenRCT2::Scripting
             JS_UNPACK_BOOL(valueBool, ctx, value);
             JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
             getGameState().cheats.disableRideValueAging = valueBool;
+
+            return JS_UNDEFINED;
         }
 
         static JSValue disableSupportLimits_get(JSContext* ctx, JSValue thisVal)
