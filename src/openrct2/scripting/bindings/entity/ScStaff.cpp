@@ -545,8 +545,6 @@ namespace OpenRCT2::Scripting
         }
     }
 
-    extern ScPatrolArea gScPatrolArea;
-
     using OpaquePatrolAreaData = struct
     {
         EntityId staffId;

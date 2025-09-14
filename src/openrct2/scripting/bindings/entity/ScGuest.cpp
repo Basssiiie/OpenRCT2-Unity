@@ -1039,8 +1039,6 @@ namespace OpenRCT2::Scripting
         return JS_NewUint32(ctx, static_cast<uint32_t>(animationGroup.frame_offsets.size()));
     }
 
-    extern ScThought gScThought;
-
     using OpaqueThoughtData = struct
     {
         PeepThought thought;

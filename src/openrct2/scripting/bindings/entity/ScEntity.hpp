@@ -23,226 +23,40 @@
 
 namespace OpenRCT2::Scripting
 {
-    inline std::string EntityTypeToString(const EntityBase* entity)
-    {
-        const auto targetApiVersion = GetTargetAPIVersion();
-
-        if (entity != nullptr)
-        {
-            switch (entity->Type)
-            {
-                case EntityType::Vehicle:
-                    return "car";
-                case EntityType::Guest:
-                    if (targetApiVersion <= kApiVersionPeepDeprecation)
-                        return "peep";
-                    return "guest";
-                case EntityType::Staff:
-                    if (targetApiVersion <= kApiVersionPeepDeprecation)
-                        return "peep";
-                    return "staff";
-                case EntityType::SteamParticle:
-                    return "steam_particle";
-                case EntityType::MoneyEffect:
-                    return "money_effect";
-                case EntityType::CrashedVehicleParticle:
-                    return "crashed_vehicle_particle";
-                case EntityType::ExplosionCloud:
-                    return "explosion_cloud";
-                case EntityType::CrashSplash:
-                    return "crash_splash";
-                case EntityType::ExplosionFlare:
-                    return "explosion_flare";
-                case EntityType::Balloon:
-                    return "balloon";
-                case EntityType::Duck:
-                    return "duck";
-                case EntityType::JumpingFountain:
-                    return "jumping_fountain";
-                case EntityType::Litter:
-                    return "litter";
-                case EntityType::Null:
-                    return "unknown";
-                default:
-                    break;
-            }
-        }
-        return "unknown";
-    }
-
     class ScEntity;
     extern ScEntity gScEntity;
-
-    using OpaqueEntityData = struct
-    {
-        EntityId id;
-    };
 
     class ScEntity : public ScBase
     {
     private:
-        static JSValue id_get(JSContext* ctx, JSValue thisVal)
-        {
-            auto entity = GetEntity(thisVal);
-            if (entity == nullptr)
-                return JS_UNDEFINED;
-
-            return JS_NewInt32(ctx, entity->Id.ToUnderlying());
-        }
-
-        static JSValue type_get(JSContext* ctx, JSValue thisVal)
-        {
-            auto entity = GetEntity(thisVal);
-            auto type = EntityTypeToString(entity);
-            return JSFromStdString(ctx, type);
-        }
+        static JSValue id_get(JSContext* ctx, JSValue thisVal);
+        static JSValue type_get(JSContext* ctx, JSValue thisVal);
 
         // x getter and setter
-        static JSValue x_get(JSContext* ctx, JSValue thisVal)
-        {
-            auto entity = GetEntity(thisVal);
-            return JS_NewInt32(ctx, entity != nullptr ? entity->x : 0);
-        }
-        static JSValue x_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
-        {
-            JS_UNPACK_INT32(value, ctx, jsValue);
-            JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
-            auto entity = GetEntity(thisVal);
-            if (entity != nullptr)
-            {
-                entity->MoveTo({ value, entity->y, entity->z });
-            }
-            return JS_UNDEFINED;
-        }
+        static JSValue x_get(JSContext* ctx, JSValue thisVal);
+        static JSValue x_set(JSContext* ctx, JSValue thisVal, JSValue jsValue);
 
         // y getter and setter
-        static JSValue y_get(JSContext* ctx, JSValue thisVal)
-        {
-            auto entity = GetEntity(thisVal);
-            return JS_NewInt32(ctx, entity != nullptr ? entity->y : 0);
-        }
-        static JSValue y_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
-        {
-            JS_UNPACK_INT32(value, ctx, jsValue);
-            JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
-            auto entity = GetEntity(thisVal);
-            if (entity != nullptr)
-            {
-                entity->MoveTo({ entity->x, value, entity->z });
-            }
-            return JS_UNDEFINED;
-        }
+        static JSValue y_get(JSContext* ctx, JSValue thisVal);
+        static JSValue y_set(JSContext* ctx, JSValue thisVal, JSValue jsValue);
 
         // z getter and setter
-        static JSValue z_get(JSContext* ctx, JSValue thisVal)
-        {
-            auto entity = GetEntity(thisVal);
-            return JS_NewInt32(ctx, entity != nullptr ? entity->z : 0);
-        }
-        static JSValue z_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
-        {
-            JS_UNPACK_INT32(value, ctx, jsValue);
-            JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
-            auto entity = GetEntity(thisVal);
-            if (entity != nullptr)
-            {
-                entity->MoveTo({ entity->x, entity->y, value });
-            }
-            return JS_UNDEFINED;
-        }
+        static JSValue z_get(JSContext* ctx, JSValue thisVal);
+        static JSValue z_set(JSContext* ctx, JSValue thisVal, JSValue jsValue);
 
-        static JSValue remove(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
-        {
-            auto entity = GetEntity(thisVal);
-            if (entity != nullptr)
-            {
-                entity->Invalidate();
-                switch (entity->Type)
-                {
-                    case EntityType::Vehicle:
-                        JS_ThrowPlainError(ctx, "Removing a vehicle is currently unsupported.");
-                        return JS_EXCEPTION;
-                    case EntityType::Guest:
-                    case EntityType::Staff:
-                    {
-                        auto peep = entity->As<Peep>();
-                        // We can't remove a single peep from a ride at the moment as this can cause complications with the
-                        // vehicle car having an unsupported peep capacity.
-                        if (peep == nullptr || peep->State == PeepState::OnRide || peep->State == PeepState::EnteringRide)
-                        {
-                            JS_ThrowPlainError(ctx, "Removing a peep that is on a ride is currently unsupported.");
-                            return JS_EXCEPTION;
-                        }
-                        peep->Remove();
-                        break;
-                    }
-                    case EntityType::SteamParticle:
-                    case EntityType::MoneyEffect:
-                    case EntityType::CrashedVehicleParticle:
-                    case EntityType::ExplosionCloud:
-                    case EntityType::CrashSplash:
-                    case EntityType::ExplosionFlare:
-                    case EntityType::JumpingFountain:
-                    case EntityType::Balloon:
-                    case EntityType::Duck:
-                    case EntityType::Litter:
-                        getGameState().entities.EntityRemove(entity);
-                        break;
-                    case EntityType::Null:
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return JS_UNDEFINED;
-        }
+        static JSValue remove(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
 
     protected:
-        static EntityId GetEntityId(JSValue thisVal)
-        {
-            return gScEntity.GetOpaque<OpaqueEntityData*>(thisVal)->id;
-        }
-
-        static EntityBase* GetEntity(JSValue thisVal) 
-        {
-            auto id = GetEntityId(thisVal);
-            return OpenRCT2::getGameState().entities.GetEntity(id);
-        }
+        static EntityId GetEntityId(JSValue thisVal);
+        static EntityBase* GetEntity(JSValue thisVal);
 
     public:
-        JSValue New(JSContext* ctx, EntityBase* entity)
-        {
-            static constexpr JSCFunctionListEntry funcs[] = {
-                JS_CGETSET_DEF("id", &ScEntity::id_get, nullptr),
-                JS_CGETSET_DEF("type", &ScEntity::type_get, nullptr),
-                JS_CGETSET_DEF("x", &ScEntity::x_get, &ScEntity::x_set),
-                JS_CGETSET_DEF("y", &ScEntity::y_get, &ScEntity::y_set),
-                JS_CGETSET_DEF("z", &ScEntity::z_get, &ScEntity::z_set),
-                JS_CFUNC_DEF("remove", 0, &ScEntity::remove)
-            };
-            auto obj = MakeWithOpaque(ctx, funcs, new OpaqueEntityData{ entity->Id });
-            switch (entity->Type)
-            {
-                case EntityType::Balloon:
-                    // TODO: add extra funcs but they're in another file? Is this a circular reference?
-                    //ScBalloon::AddFuncs(ctx, obj);
-                    break;
-            }
-            return obj;
-        }
+        JSValue New(JSContext* ctx, EntityBase* entity);
 
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Entity", Finalize);
-        }
+        void Register(JSContext* ctx);
 
     private: 
-        static void Finalize(JSRuntime* rt, JSValue thisVal)
-        {
-            OpaqueEntityData* data = gScEntity.GetOpaque<OpaqueEntityData*>(thisVal);
-            if (data)
-                delete data;
-        }
+        static void Finalize(JSRuntime* rt, JSValue thisVal);
     };
 
 } // namespace OpenRCT2::Scripting
