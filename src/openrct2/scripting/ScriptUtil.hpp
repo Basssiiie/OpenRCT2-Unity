@@ -453,6 +453,19 @@ namespace OpenRCT2::Scripting
             return JS_EXCEPTION;                                                                                               \
         }
 
+
+    #define JS_UNPACK_MONEY64(var, ctx, val)                                                                                   \
+        money64 var;                                                                                                           \
+        if (!JS_IsNumber(val))                                                                                                 \
+        {                                                                                                                      \
+            JS_ThrowTypeError(ctx, "Expected number");                                                                         \
+            return JS_EXCEPTION;                                                                                               \
+        }                                                                                                                      \
+        if (JS_ToInt64(ctx, &var, val) < 0)                                                                                    \
+        {                                                                                                                      \
+            return JS_EXCEPTION;                                                                                               \
+        }
+
     #define JS_UNPACK_STR(var, ctx, val)                                                                                       \
         std::string var;                                                                                                       \
         if (!JS_IsString(val))                                                                                                 \
@@ -481,7 +494,7 @@ namespace OpenRCT2::Scripting
             return JS_EXCEPTION;                                                                                               \
         }                                                                                                                      \
         {                                                                                                                      \
-            const int result = JS_ToBool(ctx, val);                                                                          \
+            const int result = JS_ToBool(ctx, val);                                                                            \
             if (result == -1)                                                                                                  \
             {                                                                                                                  \
                 return JS_EXCEPTION;                                                                                           \

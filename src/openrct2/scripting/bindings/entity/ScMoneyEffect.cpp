@@ -38,7 +38,7 @@ namespace OpenRCT2::Scripting
 
     JSValue ScMoneyEffect::value_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
     {
-        JS_UNPACK_INT64(value, ctx, jsValue); // TODO: int64 or money64?
+        JS_UNPACK_MONEY64(value, ctx, jsValue);
         JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
         auto moneyEffect = GetMoneyEffect(thisVal);
         if (moneyEffect != nullptr)
