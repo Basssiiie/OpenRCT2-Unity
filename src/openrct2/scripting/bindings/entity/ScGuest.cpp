@@ -149,6 +149,13 @@ namespace OpenRCT2::Scripting
         { "here_we_are", PeepThoughtType::HereWeAre },
     });
 
+    JSValue ScGuest::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScPeep.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScGuest::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {

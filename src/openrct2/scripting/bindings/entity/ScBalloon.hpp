@@ -17,12 +17,16 @@ struct Balloon;
 
 namespace OpenRCT2::Scripting
 {
+    class ScBalloon;
+    extern ScBalloon gScBalloon;
+
     class ScBalloon final : public ScEntity
     {
     public:
-        static void AddFuncs(JSContext* ctx, JSValue obj);
+        JSValue New(JSContext* ctx, EntityBase* entity);
 
     private:
+        static void AddFuncs(JSContext* ctx, JSValue obj);
         static Balloon* GetBalloon(JSValue thisVal);
 
         static JSValue colour_get(JSContext* ctx, JSValue thisVal);

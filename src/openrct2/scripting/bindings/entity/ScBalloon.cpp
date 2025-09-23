@@ -15,6 +15,13 @@
 
 namespace OpenRCT2::Scripting
 {
+    JSValue ScBalloon::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScEntity.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScBalloon::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {

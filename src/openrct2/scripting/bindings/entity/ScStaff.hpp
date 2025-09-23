@@ -43,15 +43,20 @@ namespace OpenRCT2::Scripting
         static JSValue contains(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
     };
 
+    class ScStaff;
+    extern ScStaff gScStaff;
+
     class ScStaff : public ScPeep
     {
     public:
-        static void AddFuncs(JSContext* ctx, JSValue obj);
+        JSValue New(JSContext* ctx, EntityBase* entity);
 
     protected:
         static Staff* GetStaff(JSValue thisVal);
 
     private:
+        static void AddFuncs(JSContext* ctx, JSValue obj);
+
         static JSValue staffType_get(JSContext* ctx, JSValue thisVal);
         static JSValue staffType_set(JSContext* ctx, JSValue thisVal, JSValue jsValue);
 
@@ -78,12 +83,17 @@ namespace OpenRCT2::Scripting
         static JSValue animationLength_get(JSContext* ctx, JSValue thisVal);
     };
 
+    class ScHandyman;
+    extern ScHandyman gScHandyman;
+
     class ScHandyman final : public ScStaff
     {
     public:
-        static void AddFuncs(JSContext* ctx, JSValue obj);
+        JSValue New(JSContext* ctx, EntityBase* entity);
 
     private:
+        static void AddFuncs(JSContext* ctx, JSValue obj);
+
         static JSValue lawnsMown_get(JSContext* ctx, JSValue thisVal);
 
         static JSValue gardensWatered_get(JSContext* ctx, JSValue thisVal);
@@ -93,23 +103,33 @@ namespace OpenRCT2::Scripting
         static JSValue binsEmptied_get(JSContext* ctx, JSValue thisVal);
     };
 
+    class ScMechanic;
+    extern ScMechanic gScMechanic;
+
     class ScMechanic final : public ScStaff
     {
     public:
-        static void AddFuncs(JSContext* ctx, JSValue obj);
+        JSValue New(JSContext* ctx, EntityBase* entity);
 
     private:
+        static void AddFuncs(JSContext* ctx, JSValue obj);
+
         static JSValue ridesFixed_get(JSContext* ctx, JSValue thisVal);
 
         static JSValue ridesInspected_get(JSContext* ctx, JSValue thisVal);
     };
 
+    class ScSecurity;
+    extern ScSecurity gScSecurity;
+
     class ScSecurity final : public ScStaff
     {
     public:
-        static void AddFuncs(JSContext* ctx, JSValue obj);
+        JSValue New(JSContext* ctx, EntityBase* entity);
 
     private:
+        static void AddFuncs(JSContext* ctx, JSValue obj);
+
         static JSValue vandalsStopped_get(JSContext* ctx, JSValue thisVal);
     };
 

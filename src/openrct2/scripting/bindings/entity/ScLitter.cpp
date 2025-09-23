@@ -31,6 +31,13 @@ namespace OpenRCT2::Scripting
         { "empty_bowl_blue", Litter::Type::EmptyBowlBlue },
     });
 
+    JSValue ScLitter::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScEntity.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScLitter::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {

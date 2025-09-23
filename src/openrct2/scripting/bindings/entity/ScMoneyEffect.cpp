@@ -16,6 +16,13 @@
 
 namespace OpenRCT2::Scripting
 {
+    JSValue ScMoneyEffect::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScEntity.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScMoneyEffect::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {

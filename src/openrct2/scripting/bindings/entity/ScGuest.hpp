@@ -104,12 +104,16 @@ namespace OpenRCT2::Scripting
         static JSValue toString(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
     };
 
+    class ScGuest;
+    extern ScGuest gScGuest;
+
     class ScGuest final : public ScPeep
     {
     public:
-        static void AddFuncs(JSContext* ctx, JSValue obj);
+        JSValue New(JSContext* ctx, EntityBase* entity);
 
     private:
+        static void AddFuncs(JSContext* ctx, JSValue obj);
         static Guest* GetGuest(JSValue thisVal);
 
         static JSValue tshirtColour_get(JSContext* ctx, JSValue thisVal);

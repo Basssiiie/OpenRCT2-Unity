@@ -24,6 +24,13 @@ namespace OpenRCT2::Scripting
         { "seat", 4 },
     });
 
+    JSValue ScCrashedVehicleParticle::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScEntity.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScCrashedVehicleParticle::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {

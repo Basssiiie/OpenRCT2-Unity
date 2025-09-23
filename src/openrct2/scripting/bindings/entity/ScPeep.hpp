@@ -46,12 +46,20 @@ namespace OpenRCT2::Scripting
         { "animationFrozen", PEEP_FLAGS_ANIMATION_FROZEN },
     });
 
-    class ScEntity;
-    extern ScEntity gScEntity;
+    class ScPeep;
+    extern ScPeep gScPeep;
 
     class ScPeep : public ScEntity
     {
     public:
+        JSValue New(JSContext* ctx, EntityBase* entity)
+        {
+            JSValue obj = gScEntity.New(ctx, entity);
+            AddFuncs(ctx, obj);
+            return obj;
+        }
+
+    private:
         static void AddFuncs(JSContext* ctx, JSValue obj)
         {
             static constexpr JSCFunctionListEntry funcs[] = {
@@ -67,7 +75,6 @@ namespace OpenRCT2::Scripting
             JS_SetPropertyFunctionList(ctx, obj, funcs, std::size(funcs));
         }
 
-    private:
         static JSValue peepType_get(JSContext* ctx, JSValue thisVal)
         {
             auto peep = GetPeep(thisVal);

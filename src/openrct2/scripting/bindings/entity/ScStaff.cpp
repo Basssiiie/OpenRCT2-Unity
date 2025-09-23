@@ -20,6 +20,13 @@
 
 namespace OpenRCT2::Scripting
 {
+    JSValue ScStaff::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScPeep.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScStaff::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {
@@ -426,6 +433,13 @@ namespace OpenRCT2::Scripting
         return JS_NewUint32(ctx, length);
     }
 
+    JSValue ScHandyman::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScStaff.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScHandyman::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {
@@ -489,6 +503,13 @@ namespace OpenRCT2::Scripting
         }
     }
 
+    JSValue ScMechanic::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScStaff.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScMechanic::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {
@@ -522,6 +543,13 @@ namespace OpenRCT2::Scripting
         {
             return JS_NULL;
         }
+    }
+
+    JSValue ScSecurity::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScStaff.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
     }
 
     void ScSecurity::AddFuncs(JSContext* ctx, JSValue obj)

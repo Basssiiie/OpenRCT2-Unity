@@ -209,66 +209,7 @@ namespace OpenRCT2::Scripting
             JS_CGETSET_DEF("x", &ScEntity::x_get, &ScEntity::x_set), JS_CGETSET_DEF("y", &ScEntity::y_get, &ScEntity::y_set),
             JS_CGETSET_DEF("z", &ScEntity::z_get, &ScEntity::z_set), JS_CFUNC_DEF("remove", 0, &ScEntity::remove)
         };
-        auto entityId = entity->Id;
-        auto obj = MakeWithOpaque(ctx, funcs, new OpaqueEntityData{ entityId });
-        switch (entity->Type)
-        {
-            case EntityType::Balloon:
-            {
-                ScBalloon::AddFuncs(ctx, obj);
-                break;
-            }
-            case EntityType::CrashedVehicleParticle:
-            {
-                ScCrashedVehicleParticle::AddFuncs(ctx, obj);
-                break;
-            }
-            case EntityType::Guest:
-            {
-                ScPeep::AddFuncs(ctx, obj);
-                ScGuest::AddFuncs(ctx, obj);
-                break;
-            }
-            case EntityType::Litter:
-            {
-                ScLitter::AddFuncs(ctx, obj);
-                break;
-            }
-            case EntityType::MoneyEffect:
-            {
-                ScMoneyEffect::AddFuncs(ctx, obj);
-                break;
-            }
-            case EntityType::Staff:
-            {
-                ScPeep::AddFuncs(ctx, obj);
-                ScStaff::AddFuncs(ctx, obj);
-
-                auto staff = OpenRCT2::GetEntity<Staff>(entityId);
-                if (staff != nullptr)
-                {
-                    switch (staff->AssignedStaffType)
-                    {
-                        case StaffType::Handyman:
-                            ScHandyman::AddFuncs(ctx, obj);
-                            break;
-                        case StaffType::Mechanic:
-                            ScMechanic::AddFuncs(ctx, obj);
-                            break;
-                        case StaffType::Security:
-                            ScSecurity::AddFuncs(ctx, obj);
-                            break;
-                    }
-                }
-                break;
-            }
-            case EntityType::Vehicle:
-            {
-                ScVehicle::AddFuncs(ctx, obj);
-                break;
-            }
-        }
-        return obj;
+        return MakeWithOpaque(ctx, funcs, new OpaqueEntityData{ entity->Id });
     }
 
     void ScEntity::Register(JSContext* ctx)

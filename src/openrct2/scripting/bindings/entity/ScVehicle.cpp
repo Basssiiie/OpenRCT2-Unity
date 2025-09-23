@@ -56,6 +56,13 @@ namespace OpenRCT2::Scripting
         { "stopped_by_block_brake", Vehicle::Status::StoppedByBlockBrakes },
     });
 
+    JSValue ScVehicle::New(JSContext* ctx, EntityBase* entity)
+    {
+        JSValue obj = gScEntity.New(ctx, entity);
+        AddFuncs(ctx, obj);
+        return obj;
+    }
+
     void ScVehicle::AddFuncs(JSContext* ctx, JSValue obj)
     {
         static constexpr JSCFunctionListEntry funcs[] = {

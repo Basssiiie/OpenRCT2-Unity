@@ -19,12 +19,16 @@
 
 namespace OpenRCT2::Scripting
 {
+    class ScCrashedVehicleParticle;
+    extern ScCrashedVehicleParticle gScCrashedVehicleParticle;
+
     class ScCrashedVehicleParticle final : public ScEntity
     {
     public:
-        static void AddFuncs(JSContext* ctx, JSValue obj);
+        JSValue New(JSContext* ctx, EntityBase* entity);
 
     private:
+        static void AddFuncs(JSContext* ctx, JSValue obj);
         static VehicleCrashParticle* GetCrashedVehicleParticle(JSValue thisVal);
 
         static JSValue colours_get(JSContext* ctx, JSValue thisVal);
