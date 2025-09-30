@@ -180,7 +180,7 @@ namespace OpenRCT2::Scripting
                 case EntityType::Balloon:
                 case EntityType::Duck:
                 case EntityType::Litter:
-                    EntityRemove(entity);
+                    getGameState().entities.EntityRemove(entity);
                     break;
                 case EntityType::Null:
                     break;
@@ -199,7 +199,7 @@ namespace OpenRCT2::Scripting
     EntityBase* ScEntity::GetEntity(JSValue thisVal)
     {
         auto id = GetEntityId(thisVal);
-        return OpenRCT2::GetEntity(id);
+        return OpenRCT2::getGameState().entities.GetEntity(id);
     }
 
     JSValue ScEntity::New(JSContext* ctx, EntityBase* entity)

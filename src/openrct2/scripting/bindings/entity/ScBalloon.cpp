@@ -33,7 +33,7 @@ namespace OpenRCT2::Scripting
     Balloon* ScBalloon::GetBalloon(JSValue thisVal)
     {
         auto id = GetEntityId(thisVal);
-        return OpenRCT2::getGameState().entities.GetEntity<Balloon>(_id);
+        return OpenRCT2::getGameState().entities.GetEntity<Balloon>(id);
     }
 
     JSValue ScBalloon::colour_get(JSContext* ctx, JSValue thisVal)

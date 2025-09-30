@@ -12,6 +12,7 @@
 #include "../../../core/EnumMap.hpp"
 #include "../../../ride/TrackData.h"
 #include "../../../ride/Vehicle.h"
+#include "../../../world/Map.h"
 #include "../../../world/tile_element/TrackElement.h"
 #include "../ride/ScRide.hpp"
 
@@ -105,7 +106,7 @@ namespace OpenRCT2::Scripting
     Vehicle* ScVehicle::GetVehicle(JSValue thisVal)
     {
         auto id = GetEntityId(thisVal);
-        return ::GetEntity<Vehicle>(id);
+        return OpenRCT2::getGameState().entities.GetEntity<Vehicle>(id);
     }
 
     JSValue ScVehicle::rideObject_get(JSContext* ctx, JSValue thisVal)
