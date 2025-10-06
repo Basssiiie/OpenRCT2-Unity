@@ -47,7 +47,7 @@ namespace OpenRCT2::Scripting
         {
             return JS_NewString(ctx, AwardTypes[index]);
         }
-        return JS_UNDEFINED;
+        return JS_NULL;
     }
 
     inline std::optional<AwardType> StringToAwardType(JSContext* ctx, std::string_view awardType)

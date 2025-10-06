@@ -52,7 +52,7 @@ namespace OpenRCT2::Scripting
     {
         auto award = GetAward(thisVal);
         if (award == nullptr)
-            return {};
+            return JS_UNDEFINED;
 
         return AwardTypeToString(ctx, award->Type);
     }
