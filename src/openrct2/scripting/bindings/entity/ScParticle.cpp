@@ -16,17 +16,18 @@
 
 namespace OpenRCT2::Scripting
 {
-    static const EnumMap<uint8_t> CrashParticleTypeMap({
-        { "corner", 0 },
-        { "rod", 1 },
-        { "wheel", 2 },
-        { "panel", 3 },
-        { "seat", 4 },
-    });
+    static const EnumMap<uint8_t> CrashParticleTypeMap(
+        {
+            { "corner", 0 },
+            { "rod", 1 },
+            { "wheel", 2 },
+            { "panel", 3 },
+            { "seat", 4 },
+        });
 
-    JSValue ScCrashedVehicleParticle::New(JSContext* ctx, EntityBase* entity)
+    JSValue ScCrashedVehicleParticle::New(JSContext* ctx, EntityId entityId)
     {
-        JSValue obj = gScEntity.New(ctx, entity);
+        JSValue obj = gScEntity.New(ctx, entityId);
         AddFuncs(ctx, obj);
         return obj;
     }
@@ -120,7 +121,7 @@ namespace OpenRCT2::Scripting
         auto entity = GetCrashedVehicleParticle(thisVal);
         if (entity != nullptr)
         {
-            auto velocity = JSToCoordXYZ(ctx, obj);
+            auto velocity = JSToCoordsXYZ(ctx, obj);
             entity->velocity_x = velocity.x;
             entity->velocity_y = velocity.y;
             entity->velocity_z = velocity.z;
@@ -144,7 +145,7 @@ namespace OpenRCT2::Scripting
         auto entity = GetCrashedVehicleParticle(thisVal);
         if (entity != nullptr)
         {
-            auto acceleration = JSToCoordXYZ(ctx, obj);
+            auto acceleration = JSToCoordsXYZ(ctx, obj);
             entity->acceleration_x = acceleration.x;
             entity->acceleration_y = acceleration.y;
             entity->acceleration_z = acceleration.z;
@@ -188,14 +189,14 @@ namespace OpenRCT2::Scripting
             }
             if (JS_IsObject(acceleration))
             {
-                auto accelerationXYZ = JSToCoordXYZ(ctx, acceleration);
+                auto accelerationXYZ = JSToCoordsXYZ(ctx, acceleration);
                 entity->acceleration_x = accelerationXYZ.x;
                 entity->acceleration_y = accelerationXYZ.y;
                 entity->acceleration_z = accelerationXYZ.z;
             }
             if (JS_IsObject(velocity))
             {
-                auto velocityXYZ = JSToCoordXYZ(ctx, velocity);
+                auto velocityXYZ = JSToCoordsXYZ(ctx, velocity);
                 entity->velocity_x = velocityXYZ.x;
                 entity->velocity_y = velocityXYZ.y;
                 entity->velocity_z = velocityXYZ.z;

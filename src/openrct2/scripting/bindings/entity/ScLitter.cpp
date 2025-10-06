@@ -16,24 +16,25 @@
 
 namespace OpenRCT2::Scripting
 {
-    static const EnumMap<Litter::Type> LitterTypeMap({
-        { "vomit", Litter::Type::Vomit },
-        { "vomit_alt", Litter::Type::VomitAlt },
-        { "empty_can", Litter::Type::EmptyCan },
-        { "rubbish", Litter::Type::Rubbish },
-        { "burger_box", Litter::Type::BurgerBox },
-        { "empty_cup", Litter::Type::EmptyCup },
-        { "empty_box", Litter::Type::EmptyBox },
-        { "empty_bottle", Litter::Type::EmptyBottle },
-        { "empty_bowl_red", Litter::Type::EmptyBowlRed },
-        { "empty_drink_carton", Litter::Type::EmptyDrinkCarton },
-        { "empty_juice_cup", Litter::Type::EmptyJuiceCup },
-        { "empty_bowl_blue", Litter::Type::EmptyBowlBlue },
-    });
+    static const EnumMap<Litter::Type> LitterTypeMap(
+        {
+            { "vomit", Litter::Type::Vomit },
+            { "vomit_alt", Litter::Type::VomitAlt },
+            { "empty_can", Litter::Type::EmptyCan },
+            { "rubbish", Litter::Type::Rubbish },
+            { "burger_box", Litter::Type::BurgerBox },
+            { "empty_cup", Litter::Type::EmptyCup },
+            { "empty_box", Litter::Type::EmptyBox },
+            { "empty_bottle", Litter::Type::EmptyBottle },
+            { "empty_bowl_red", Litter::Type::EmptyBowlRed },
+            { "empty_drink_carton", Litter::Type::EmptyDrinkCarton },
+            { "empty_juice_cup", Litter::Type::EmptyJuiceCup },
+            { "empty_bowl_blue", Litter::Type::EmptyBowlBlue },
+        });
 
-    JSValue ScLitter::New(JSContext* ctx, EntityBase* entity)
+    JSValue ScLitter::New(JSContext* ctx, EntityId entityId)
     {
-        JSValue obj = gScEntity.New(ctx, entity);
+        JSValue obj = gScEntity.New(ctx, entityId);
         AddFuncs(ctx, obj);
         return obj;
     }

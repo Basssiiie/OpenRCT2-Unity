@@ -453,19 +453,9 @@ ScConfiguration Scripting::gScConfiguration;
 ScConsole Scripting::gScConsole;
 ScContext Scripting::gScContext;
 ScDisposable Scripting::gScDisposable;
+ScMap Scripting::gScMap;
 ScNetwork Scripting::gScNetwork;
 ScEntity Scripting::gScEntity;
-ScLitter Scripting::gScLitter;
-ScBalloon Scripting::gScBalloon;
-ScMoneyEffect Scripting::gScMoneyEffect;
-ScVehicle Scripting::gScVehicle;
-ScCrashedVehicleParticle Scripting::gScCrashedVehicleParticle;
-ScPeep Scripting::gScPeep;
-ScGuest Scripting::gScGuest;
-ScStaff Scripting::gScStaff;
-ScHandyman Scripting::gScHandyman;
-ScMechanic Scripting::gScMechanic;
-ScSecurity Scripting::gScSecurity;
 ScThought Scripting::gScThought;
 ScPatrolArea Scripting::gScPatrolArea;
 
@@ -481,7 +471,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     gScContext.Register(ctx);
     // ScDate::Register(ctx);
     gScDisposable.Register(ctx);
-    // ScMap::Register(ctx);
+    gScMap.Register(ctx);
     gScNetwork.Register(ctx);
     // ScObjectManager::Register(ctx);
     // ScInstalledObject::Register(ctx);
@@ -494,7 +484,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     // ScFootpathAdditionObject::Register(ctx);
     // ScBannerObject::Register(ctx);
     // ScSceneryGroupObject::Register(ctx);
-    // ScPark::Register(ctx);
+    // gScPark.Register(ctx);
     // ScParkMessage::Register(ctx);
     // ScPlayer::Register(ctx);
     // ScPlayerGroup::Register(ctx);
@@ -509,13 +499,6 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     // ScTrackIterator::Register(ctx);
     // ScTrackSegment::Register(ctx);
     gScEntity.Register(ctx);
-    gScLitter.Register(ctx);
-    gScBalloon.Register(ctx);
-    gScMoneyEffect.Register(ctx);
-    gScVehicle.Register(ctx);
-    gScCrashedVehicleParticle.Register(ctx);
-    gScPeep.Register(ctx);
-    gScGuest.Register(ctx);
     gScThought.Register(ctx);
     // #ifndef DISABLE_NETWORK
     // ScSocket::Register(ctx);
@@ -524,10 +507,6 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     // ScScenario::Register(ctx);
     // ScScenarioObjective::Register(ctx);
     gScPatrolArea.Register(ctx);
-    gScStaff.Register(ctx);
-    gScHandyman.Register(ctx);
-    gScMechanic.Register(ctx);
-    gScSecurity.Register(ctx);
     // ScPlugin::Register(ctx);
 }
 
@@ -560,7 +539,7 @@ void ScriptEngine::InitialiseContext(JSContext* ctx) const
     JS_SetPropertyStr(ctx, glb, "console", gScConsole.New(ctx, _console));
     JS_SetPropertyStr(ctx, glb, "context", gScContext.New(ctx));
     // dukglue_register_global(ctx, std::make_shared<ScDate>(), "date");
-    // dukglue_register_global(ctx, std::make_shared<ScMap>(ctx), "map");
+    JS_SetPropertyStr(ctx, glb, "map", gScMap.New(ctx));
     JS_SetPropertyStr(ctx, glb, "network", gScNetwork.New(ctx));
     // dukglue_register_global(ctx, std::make_shared<ScPark>(ctx), "park");
     // dukglue_register_global(ctx, std::make_shared<ScPlugin>(), "pluginManager");

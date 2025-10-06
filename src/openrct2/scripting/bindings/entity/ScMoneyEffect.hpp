@@ -17,13 +17,10 @@ struct MoneyEffect;
 
 namespace OpenRCT2::Scripting
 {
-    class ScMoneyEffect;
-    extern ScMoneyEffect gScMoneyEffect;
-
     class ScMoneyEffect final : public ScEntity
     {
     public:
-        JSValue New(JSContext* ctx, EntityBase* entity);
+        static JSValue New(JSContext* ctx, EntityId entityId);
 
     private:
         static void AddFuncs(JSContext* ctx, JSValue obj);

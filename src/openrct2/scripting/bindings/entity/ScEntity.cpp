@@ -202,14 +202,20 @@ namespace OpenRCT2::Scripting
         return OpenRCT2::getGameState().entities.GetEntity(id);
     }
 
-    JSValue ScEntity::New(JSContext* ctx, EntityBase* entity)
+    JSValue ScEntity::NewInstance(JSContext* ctx, EntityId entityId)
     {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("id", &ScEntity::id_get, nullptr),        JS_CGETSET_DEF("type", &ScEntity::type_get, nullptr),
             JS_CGETSET_DEF("x", &ScEntity::x_get, &ScEntity::x_set), JS_CGETSET_DEF("y", &ScEntity::y_get, &ScEntity::y_set),
             JS_CGETSET_DEF("z", &ScEntity::z_get, &ScEntity::z_set), JS_CFUNC_DEF("remove", 0, &ScEntity::remove)
         };
-        return MakeWithOpaque(ctx, funcs, new OpaqueEntityData{ entity->Id });
+        return MakeWithOpaque(ctx, funcs, new OpaqueEntityData{ entityId });
+    }
+
+    // this one exists as a hack to make a template work in ScMap
+    JSValue ScEntity::New(JSContext* ctx, EntityId entityId)
+    {
+        return gScEntity.NewInstance(ctx, entityId);
     }
 
     void ScEntity::Register(JSContext* ctx)

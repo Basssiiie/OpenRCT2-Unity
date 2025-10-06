@@ -16,18 +16,17 @@
 
 namespace OpenRCT2::Scripting
 {
-    JSValue ScMoneyEffect::New(JSContext* ctx, EntityBase* entity)
+    JSValue ScMoneyEffect::New(JSContext* ctx, EntityId entityId)
     {
-        JSValue obj = gScEntity.New(ctx, entity);
+        JSValue obj = gScEntity.New(ctx, entityId);
         AddFuncs(ctx, obj);
         return obj;
     }
 
     void ScMoneyEffect::AddFuncs(JSContext* ctx, JSValue obj)
     {
-        static constexpr JSCFunctionListEntry funcs[] = {
-            JS_CGETSET_DEF("value", &ScMoneyEffect::value_get, &ScMoneyEffect::value_set)
-        };
+        static constexpr JSCFunctionListEntry funcs[] = { JS_CGETSET_DEF(
+            "value", &ScMoneyEffect::value_get, &ScMoneyEffect::value_set) };
         JS_SetPropertyFunctionList(ctx, obj, funcs, std::size(funcs));
     }
 

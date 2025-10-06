@@ -16,45 +16,43 @@
 
 namespace OpenRCT2::Scripting
 {
-    static const EnumMap<uint32_t> PeepFlagMap({
-        { "leavingPark", PEEP_FLAGS_LEAVING_PARK },
-        { "slowWalk", PEEP_FLAGS_SLOW_WALK },
-        { "tracking", PEEP_FLAGS_TRACKING },
-        { "waving", PEEP_FLAGS_WAVING },
-        { "hasPaidForParkEntry", PEEP_FLAGS_HAS_PAID_FOR_PARK_ENTRY },
-        { "photo", PEEP_FLAGS_PHOTO },
-        { "painting", PEEP_FLAGS_PAINTING },
-        { "wow", PEEP_FLAGS_WOW },
-        { "litter", PEEP_FLAGS_LITTER },
-        { "lost", PEEP_FLAGS_LOST },
-        { "hunger", PEEP_FLAGS_HUNGER },
-        { "toilet", PEEP_FLAGS_TOILET },
-        { "crowded", PEEP_FLAGS_CROWDED },
-        { "happiness", PEEP_FLAGS_HAPPINESS },
-        { "nausea", PEEP_FLAGS_NAUSEA },
-        { "purple", PEEP_FLAGS_PURPLE },
-        { "pizza", PEEP_FLAGS_PIZZA },
-        { "explode", PEEP_FLAGS_EXPLODE },
-        { "rideShouldBeMarkedAsFavourite", PEEP_FLAGS_RIDE_SHOULD_BE_MARKED_AS_FAVOURITE },
-        { "parkEntranceChosen", PEEP_FLAGS_PARK_ENTRANCE_CHOSEN },
-        { "contagious", PEEP_FLAGS_CONTAGIOUS },
-        { "joy", PEEP_FLAGS_JOY },
-        { "angry", PEEP_FLAGS_ANGRY },
-        { "iceCream", PEEP_FLAGS_ICE_CREAM },
-        { "hereWeAre", PEEP_FLAGS_HERE_WE_ARE },
-        { "positionFrozen", PEEP_FLAGS_POSITION_FROZEN },
-        { "animationFrozen", PEEP_FLAGS_ANIMATION_FROZEN },
-    });
-
-    class ScPeep;
-    extern ScPeep gScPeep;
+    static const EnumMap<uint32_t> PeepFlagMap(
+        {
+            { "leavingPark", PEEP_FLAGS_LEAVING_PARK },
+            { "slowWalk", PEEP_FLAGS_SLOW_WALK },
+            { "tracking", PEEP_FLAGS_TRACKING },
+            { "waving", PEEP_FLAGS_WAVING },
+            { "hasPaidForParkEntry", PEEP_FLAGS_HAS_PAID_FOR_PARK_ENTRY },
+            { "photo", PEEP_FLAGS_PHOTO },
+            { "painting", PEEP_FLAGS_PAINTING },
+            { "wow", PEEP_FLAGS_WOW },
+            { "litter", PEEP_FLAGS_LITTER },
+            { "lost", PEEP_FLAGS_LOST },
+            { "hunger", PEEP_FLAGS_HUNGER },
+            { "toilet", PEEP_FLAGS_TOILET },
+            { "crowded", PEEP_FLAGS_CROWDED },
+            { "happiness", PEEP_FLAGS_HAPPINESS },
+            { "nausea", PEEP_FLAGS_NAUSEA },
+            { "purple", PEEP_FLAGS_PURPLE },
+            { "pizza", PEEP_FLAGS_PIZZA },
+            { "explode", PEEP_FLAGS_EXPLODE },
+            { "rideShouldBeMarkedAsFavourite", PEEP_FLAGS_RIDE_SHOULD_BE_MARKED_AS_FAVOURITE },
+            { "parkEntranceChosen", PEEP_FLAGS_PARK_ENTRANCE_CHOSEN },
+            { "contagious", PEEP_FLAGS_CONTAGIOUS },
+            { "joy", PEEP_FLAGS_JOY },
+            { "angry", PEEP_FLAGS_ANGRY },
+            { "iceCream", PEEP_FLAGS_ICE_CREAM },
+            { "hereWeAre", PEEP_FLAGS_HERE_WE_ARE },
+            { "positionFrozen", PEEP_FLAGS_POSITION_FROZEN },
+            { "animationFrozen", PEEP_FLAGS_ANIMATION_FROZEN },
+        });
 
     class ScPeep : public ScEntity
     {
     public:
-        JSValue New(JSContext* ctx, EntityBase* entity)
+        static JSValue New(JSContext* ctx, EntityId entityId)
         {
-            JSValue obj = gScEntity.New(ctx, entity);
+            JSValue obj = gScEntity.New(ctx, entityId);
             AddFuncs(ctx, obj);
             return obj;
         }
@@ -142,14 +140,14 @@ namespace OpenRCT2::Scripting
             return JS_NULL;
         }
 
-        static JSValue destination_set(JSContext* ctx, JSValue thisVal, JSValue jsValue) //(const DukValue& value)
+        static JSValue destination_set(JSContext* ctx, JSValue thisVal, JSValue jsValue)
         {
             JS_UNPACK_OBJECT(value, ctx, jsValue);
             JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
             auto peep = GetPeep(thisVal);
             if (peep != nullptr)
             {
-                auto pos = JSToCoordXY(ctx, value);
+                auto pos = JSToCoordsXY(ctx, value);
                 peep->SetDestination(pos);
                 peep->Invalidate();
             }

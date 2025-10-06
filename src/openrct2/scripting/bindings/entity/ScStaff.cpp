@@ -20,9 +20,9 @@
 
 namespace OpenRCT2::Scripting
 {
-    JSValue ScStaff::New(JSContext* ctx, EntityBase* entity)
+    JSValue ScStaff::New(JSContext* ctx, EntityId entityId)
     {
-        JSValue obj = gScPeep.New(ctx, entity);
+        JSValue obj = ScPeep::New(ctx, entityId);
         AddFuncs(ctx, obj);
         return obj;
     }
@@ -433,9 +433,9 @@ namespace OpenRCT2::Scripting
         return JS_NewUint32(ctx, length);
     }
 
-    JSValue ScHandyman::New(JSContext* ctx, EntityBase* entity)
+    JSValue ScHandyman::New(JSContext* ctx, EntityId entityId)
     {
-        JSValue obj = gScStaff.New(ctx, entity);
+        JSValue obj = ScStaff::New(ctx, entityId);
         AddFuncs(ctx, obj);
         return obj;
     }
@@ -503,9 +503,9 @@ namespace OpenRCT2::Scripting
         }
     }
 
-    JSValue ScMechanic::New(JSContext* ctx, EntityBase* entity)
+    JSValue ScMechanic::New(JSContext* ctx, EntityId entityId)
     {
-        JSValue obj = gScStaff.New(ctx, entity);
+        JSValue obj = ScStaff::New(ctx, entityId);
         AddFuncs(ctx, obj);
         return obj;
     }
@@ -545,9 +545,9 @@ namespace OpenRCT2::Scripting
         }
     }
 
-    JSValue ScSecurity::New(JSContext* ctx, EntityBase* entity)
+    JSValue ScSecurity::New(JSContext* ctx, EntityId entityId)
     {
-        JSValue obj = gScStaff.New(ctx, entity);
+        JSValue obj = ScStaff::New(ctx, entityId);
         AddFuncs(ctx, obj);
         return obj;
     }
@@ -616,7 +616,7 @@ namespace OpenRCT2::Scripting
             if (JS_IsArray(coordsOrRange))
             {
                 JSIterateArray(ctx, coordsOrRange, [staff, reset](JSContext* c, JSValue v) {
-                    auto coord = JSToCoordXY(c, v);
+                    auto coord = JSToCoordsXY(c, v);
                     staff->SetPatrolArea(coord, reset);
                     MapInvalidateTileFull(coord);
                 });
@@ -711,7 +711,7 @@ namespace OpenRCT2::Scripting
         auto staff = GetStaff(thisVal);
         if (staff != nullptr)
         {
-            auto pos = JSToCoordXY(ctx, coord);
+            auto pos = JSToCoordsXY(ctx, coord);
             return JS_NewBool(ctx, staff->IsLocationInPatrol(pos));
         }
         return JS_NewBool(ctx, false);

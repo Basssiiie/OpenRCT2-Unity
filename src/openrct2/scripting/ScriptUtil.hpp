@@ -328,29 +328,33 @@ namespace OpenRCT2::Scripting
         return output;
     }
 
-    inline CoordsXY JSToCoordXY(JSContext* ctx, JSValue obj)
+    inline CoordsXY JSToCoordsXY(JSContext* ctx, JSValue obj)
     {
-        return {
-            JSToInt(ctx, obj, "x"),
-            JSToInt(ctx, obj, "y")
-        };
+        return { AsOrDefault(ctx, obj, "x", 0), AsOrDefault(ctx, obj, "y", 0) };
     }
-    
+
     inline CoordsXY JSToCoordXY(JSContext* ctx, JSValue obj, const char* property)
     {
         JSValue val = JS_GetPropertyStr(ctx, obj, property);
-        CoordsXY output = JSToCoordXY(ctx, val);
+        CoordsXY output = JSToCoordsXY(ctx, val);
         JS_FreeValue(ctx, val);
         return output;
     }
 
-    inline CoordsXYZ JSToCoordXYZ(JSContext* ctx, JSValue obj)
+    inline CoordsXYZ JSToCoordsXYZ(JSContext* ctx, JSValue obj)
     {
-        return {
-            JSToInt(ctx, obj, "x"),
-            JSToInt(ctx, obj, "y"),
-            JSToInt(ctx, obj, "z")
-        };
+        CoordsXYZ result;
+        if (JS_IsObject(obj))
+        {
+            result.x = AsOrDefault(ctx, obj, "x", 0);
+            result.y = AsOrDefault(ctx, obj, "y", 0);
+            result.z = AsOrDefault(ctx, obj, "z", 0);
+        }
+        else
+        {
+            result.SetNull();
+        }
+        return result;
     }
 
     inline JSValue ToJSValue(JSContext* ctx, uint8_t val)
@@ -453,7 +457,6 @@ namespace OpenRCT2::Scripting
             return JS_EXCEPTION;                                                                                               \
         }
 
-
     #define JS_UNPACK_MONEY64(var, ctx, val)                                                                                   \
         money64 var;                                                                                                           \
         if (!JS_IsNumber(val))                                                                                                 \
@@ -524,6 +527,27 @@ namespace OpenRCT2::Scripting
         {                                                                                                                      \
             JS_ThrowTypeError(ctx, "Expected object");                                                                         \
             return JS_EXCEPTION;                                                                                               \
+        }
+
+    #define JS_UNPACK_COORDSXY(var, ctx, val)                                                                                  \
+        CoordsXY var;                                                                                                          \
+        if (!JS_IsObject(var))                                                                                                 \
+        {                                                                                                                      \
+            JS_ThrowTypeError(ctx, "Expected CoordsXY");                                                                       \
+            return JS_EXCEPTION;                                                                                               \
+        }                                                                                                                      \
+        {                                                                                                                      \
+            auto x = JSToOptionalInt(ctx, position, "x");                                                                      \
+            auto y = JSToOptionalInt(ctx, position, "y");                                                                      \
+            if (x.has_value() && y.has_value())                                                                                \
+            {                                                                                                                  \
+                var = CoordsXY(x.value(), y.value());                                                                          \
+            }                                                                                                                  \
+            else                                                                                                               \
+            {                                                                                                                  \
+                JS_ThrowTypeError(ctx, "Expected CoordsXY");                                                                   \
+                return JS_EXCEPTION;                                                                                           \
+            }                                                                                                                  \
         }
 } // namespace OpenRCT2::Scripting
 

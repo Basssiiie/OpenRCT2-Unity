@@ -51,11 +51,12 @@ namespace OpenRCT2::Scripting
         static EntityBase* GetEntity(JSValue thisVal);
 
     public:
-        JSValue New(JSContext* ctx, EntityBase* entity);
+        JSValue NewInstance(JSContext* ctx, EntityId entityId);
+        static JSValue New(JSContext* ctx, EntityId entityId);
 
         void Register(JSContext* ctx);
 
-    private: 
+    private:
         static void Finalize(JSRuntime* rt, JSValue thisVal);
     };
 
