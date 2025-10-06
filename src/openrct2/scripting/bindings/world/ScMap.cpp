@@ -48,7 +48,7 @@ namespace OpenRCT2::Scripting
     JSValue ScMap::numRides_get(JSContext* ctx, JSValue thisVal)
     {
         auto& gameState = getGameState();
-        return JS_NewInt32(ctx, RideManager(gameState).size());
+        return JS_NewInt64(ctx, RideManager(gameState).size());
     }
 
     JSValue ScMap::numEntities_get(JSContext* ctx, JSValue thisVal)

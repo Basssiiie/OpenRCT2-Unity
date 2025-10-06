@@ -187,7 +187,7 @@ namespace OpenRCT2::Scripting
             JS_CGETSET_DEF("animation", &ScGuest::animation_get, &ScGuest::animation_set),
             JS_CGETSET_DEF("animationOffset", &ScGuest::animationOffset_get, &ScGuest::animationOffset_set),
             JS_CGETSET_DEF("animationLength", &ScGuest::animationLength_get, nullptr),
-            JS_CFUNC_DEF("getAnimationSpriteIds", 0, &ScGuest::getAnimationSpriteIds),
+            JS_CFUNC_DEF("getAnimationSpriteIds", 2, &ScGuest::getAnimationSpriteIds),
             JS_CFUNC_DEF("hasItem", 1, &ScGuest::has_item),
             JS_CFUNC_DEF("giveItem", 1, &ScGuest::give_item),
             JS_CFUNC_DEF("removeItem", 1, &ScGuest::remove_item),
