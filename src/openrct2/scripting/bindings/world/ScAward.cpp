@@ -52,16 +52,16 @@ namespace OpenRCT2::Scripting
     {
         auto award = GetAward(thisVal);
         if (award == nullptr)
-            return JS_UNDEFINED;
+            return JSFromStdString(ctx, {});
 
-        return AwardTypeToString(ctx, award->Type);
+        return JSFromStdString(ctx, AwardTypeToString(award->Type).value_or(std::string()));
     }
 
     JSValue ScAward::text_get(JSContext* ctx, JSValue thisVal)
     {
         auto award = GetAward(thisVal);
         if (award == nullptr)
-            return JS_UNDEFINED;
+            return JSFromStdString(ctx, {});
 
         Formatter ft{};
         ft.Add<StringId>(AwardGetText(award->Type));
@@ -72,7 +72,7 @@ namespace OpenRCT2::Scripting
     {
         auto award = GetAward(thisVal);
         if (award == nullptr)
-            return JS_UNDEFINED;
+            return JS_NewInt32(ctx, {});
 
         return JS_NewInt32(ctx, award->Time);
     }
@@ -81,7 +81,7 @@ namespace OpenRCT2::Scripting
     {
         auto award = GetAward(thisVal);
         if (award == nullptr)
-            return JS_UNDEFINED;
+            return JS_NewBool(ctx, {});
 
         return JS_NewBool(ctx, AwardIsPositive(award->Type));
     }
@@ -90,7 +90,7 @@ namespace OpenRCT2::Scripting
     {
         auto award = GetAward(thisVal);
         if (award == nullptr)
-            return JS_UNDEFINED;
+            return JS_NewUint32(ctx, {});
 
         return JS_NewUint32(ctx, AwardGetSprite(award->Type));
     }

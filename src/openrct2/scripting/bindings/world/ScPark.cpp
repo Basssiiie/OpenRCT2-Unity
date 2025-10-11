@@ -504,7 +504,7 @@ namespace OpenRCT2::Scripting
         JS_UNPACK_STR(awardType, ctx, argv[0]);
         JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
 
-        auto optType = StringToAwardType(ctx, awardType);
+        auto optType = StringToAwardType(awardType);
         if (optType.has_value())
         {
             AwardGrant(optType.value());

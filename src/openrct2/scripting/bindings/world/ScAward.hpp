@@ -40,17 +40,17 @@ namespace OpenRCT2::Scripting
         "bestGentleRides",
     };
 
-    inline JSValue AwardTypeToString(JSContext* ctx, AwardType awardType)
+    inline std::optional<std::string> AwardTypeToString(AwardType awardType)
     {
         auto index = static_cast<size_t>(awardType);
         if (index < std::size(AwardTypes))
         {
-            return JS_NewString(ctx, AwardTypes[index]);
+            return AwardTypes[index];
         }
-        return JS_NULL;
+        return std::nullopt;
     }
 
-    inline std::optional<AwardType> StringToAwardType(JSContext* ctx, std::string_view awardType)
+    inline std::optional<AwardType> StringToAwardType(std::string_view awardType)
     {
         auto it = std::find(std::begin(AwardTypes), std::end(AwardTypes), awardType);
         if (it != std::end(AwardTypes))
