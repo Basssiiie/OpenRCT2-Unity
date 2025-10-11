@@ -202,11 +202,12 @@ namespace OpenRCT2::Scripting
         static void RemoveBannerEntryIfNeeded(TileElement* element, CoordsXY& coords);
         static void CreateBannerEntryIfNeeded(TileElement* element, CoordsXY& coords);
 
-        static const LargeSceneryElement* GetOtherLargeSceneryElement(
-            const CoordsXY& loc, const LargeSceneryElement* const largeScenery);
         static TileElement* GetTileElement(JSValue thisValue);
 
     public:
+        static const LargeSceneryElement* GetOtherLargeSceneryElement(
+            const CoordsXY& loc, const LargeSceneryElement* const largeScenery);
+
         JSValue New(JSContext* ctx, TileElement* element, CoordsXY& coords);
         void Register(JSContext* ctx);
 

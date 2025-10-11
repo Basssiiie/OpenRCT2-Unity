@@ -458,6 +458,7 @@ ScMap Scripting::gScMap;
 ScNetwork Scripting::gScNetwork;
 ScPark Scripting::gScPark;
 ScProfiler Scripting::gScProfiler;
+ScTile Scripting::gScTile;
 ScTileElement Scripting::gScTileElement;
 ScEntity Scripting::gScEntity;
 ScThought Scripting::gScThought;
@@ -498,7 +499,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     // ScRideStation::Register(ctx);
     // ScRideObject::Register(ctx);
     // ScRideObjectVehicle::Register(ctx);
-    // ScTile::Register(ctx);
+    gScTile.Register(ctx);
     gScTileElement.Register(ctx);
     // ScTrackIterator::Register(ctx);
     // ScTrackSegment::Register(ctx);

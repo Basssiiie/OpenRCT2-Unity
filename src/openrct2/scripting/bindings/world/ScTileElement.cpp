@@ -66,7 +66,7 @@ namespace OpenRCT2::Scripting
     using OpaqueTileElementData = struct
     {
         TileElement* element;
-        CoordsXY& coords;
+        CoordsXY coords;
     };
 
     static inline void Invalidate(OpaqueTileElementData* data)
@@ -2511,7 +2511,14 @@ namespace OpenRCT2::Scripting
 
     void ScTileElement::Register(JSContext* ctx)
     {
-        RegisterBaseStr(ctx, "TileElement");
+        RegisterBaseStr(ctx, "TileElement", Finalize);
+    }
+
+    void ScTileElement::Finalize(JSRuntime* rt, JSValue thisVal)
+    {
+        OpaqueTileElementData* data = gScTileElement.GetOpaque<OpaqueTileElementData*>(thisVal);
+        if (data)
+            delete data;
     }
 
 } // namespace OpenRCT2::Scripting
