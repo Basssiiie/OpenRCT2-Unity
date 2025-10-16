@@ -7,9 +7,10 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING_REFACTOR
 
-    #include "ScObject.hpp"
+    #include "../../../core/EnumMap.hpp"
+    #include "../../../object/ObjectTypes.h"
 
 namespace OpenRCT2::Scripting
 {

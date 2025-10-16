@@ -457,6 +457,7 @@ ScDate Scripting::gScDate;
 ScDisposable Scripting::gScDisposable;
 ScMap Scripting::gScMap;
 ScNetwork Scripting::gScNetwork;
+ScInstalledObject Scripting::gScInstalledObject;
 ScPark Scripting::gScPark;
 ScProfiler Scripting::gScProfiler;
 ScTile Scripting::gScTile;
@@ -480,7 +481,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     gScMap.Register(ctx);
     gScNetwork.Register(ctx);
     // ScObjectManager::Register(ctx);
-    // ScInstalledObject::Register(ctx);
+    gScInstalledObject.Register(ctx);
     // ScObject::Register(ctx);
     // ScSceneryObject::Register(ctx);
     // ScSmallSceneryObject::Register(ctx);
