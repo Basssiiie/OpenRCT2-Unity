@@ -47,7 +47,7 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "InstalledObject");
+            RegisterBaseStr(ctx, "InstalledObject", Finalize);
         }
 
         JSValue New(JSContext* ctx, size_t index)
@@ -66,6 +66,13 @@ namespace OpenRCT2::Scripting
         }
 
     private:
+        static void Finalize(JSRuntime* rt, JSValue thisVal)
+        {
+            InstalledObjectData* data = gScInstalledObject.GetOpaque<InstalledObjectData*>(thisVal);
+            if (data)
+                delete data;
+        }
+
         static JSValue path_get(JSContext* ctx, JSValue thisVal)
         {
             auto installedObject = GetInstalledObject(thisVal);
