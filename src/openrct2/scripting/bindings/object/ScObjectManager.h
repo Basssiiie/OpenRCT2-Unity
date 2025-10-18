@@ -28,15 +28,15 @@ namespace OpenRCT2::Scripting
         void Register(JSContext* ctx);
         JSValue New(JSContext* ctx);
 
+        static JSValue getObject(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
+        static JSValue getAllObjects(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
+
     private:
         static JSValue installedObjects_get(JSContext* ctx, JSValue thisVal);
         static JSValue getInstalledObject(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
 
         static JSValue load(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
         static JSValue unload(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
-
-        static JSValue getObject(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
-        static JSValue getAllObjects(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv);
 
         static void MarkAsResearched(const Object* object);
         static void RefreshResearchedItems();
