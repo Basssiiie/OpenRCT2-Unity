@@ -457,6 +457,7 @@ ScDate Scripting::gScDate;
 ScDisposable Scripting::gScDisposable;
 ScMap Scripting::gScMap;
 ScNetwork Scripting::gScNetwork;
+ScObjectManager Scripting::gScObjectManager;
 ScInstalledObject Scripting::gScInstalledObject;
 ScLargeSceneryObjectTile Scripting::gScLargeSceneryObjectTile;
 ScObject Scripting::gScObject;
@@ -483,7 +484,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     gScDisposable.Register(ctx);
     gScMap.Register(ctx);
     gScNetwork.Register(ctx);
-    // ScObjectManager::Register(ctx);
+    gScObjectManager.Register(ctx);
     gScInstalledObject.Register(ctx);
     gScObject.Register(ctx);
     gScLargeSceneryObjectTile.Register(ctx);
@@ -547,7 +548,7 @@ void ScriptEngine::InitialiseContext(JSContext* ctx) const
     // dukglue_register_global(ctx, std::make_shared<ScPlugin>(), "pluginManager");
     JS_SetPropertyStr(ctx, glb, "profiler", gScProfiler.New(ctx));
     // dukglue_register_global(ctx, std::make_shared<ScScenario>(), "scenario");
-    // dukglue_register_global(ctx, std::make_shared<ScObjectManager>(), "objectManager");
+    JS_SetPropertyStr(ctx, glb, "objectManager", gScObjectManager.New(ctx));
     JS_FreeValue(ctx, glb);
 
     RegisterConstants(ctx);

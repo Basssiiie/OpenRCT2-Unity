@@ -43,7 +43,7 @@ namespace OpenRCT2::Scripting
             RegisterBaseStr(ctx, "Object", Finalize);
         }
 
-        virtual JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        JSValue NewInstance(JSContext* ctx, ObjectType type, int32_t index)
         {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("installedObject", ScObject::installedObject_get, nullptr),
@@ -56,6 +56,11 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("numImages", ScObject::numImages_get, nullptr),
             };
             return MakeWithOpaque(ctx, funcs, new ObjectData{ type, index });
+        }
+
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        {
+            return gScObject.NewInstance(ctx, type, index);
         }
 
     private:
@@ -96,7 +101,7 @@ namespace OpenRCT2::Scripting
         static JSValue identifier_get(JSContext* ctx, JSValue thisVal)
         {
             auto obj = GetObject(thisVal);
-            std::string_view str;
+            std::string str;
             if (obj != nullptr)
             {
                 if (obj->GetGeneration() == ObjectGeneration::DAT)
@@ -105,7 +110,7 @@ namespace OpenRCT2::Scripting
                 }
                 else
                 {
-                    str = std::string(obj->GetIdentifier());
+                    str = obj->GetIdentifier();
                 }
             }
             else
@@ -428,7 +433,7 @@ namespace OpenRCT2::Scripting
     class ScRideObject final : public ScObject
     {
     public:
-        JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
         {
             JSValue obj = ScObject::New(ctx, type, index);
             AddFuncs(ctx, obj);
@@ -636,7 +641,7 @@ namespace OpenRCT2::Scripting
     class ScSceneryObject : public ScObject
     {
     public:
-        JSValue New(JSContext* ctx, ObjectType type, int32_t index) override
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
         {
             JSValue obj = ScObject::New(ctx, type, index);
             AddFuncs(ctx, obj);
@@ -677,7 +682,7 @@ namespace OpenRCT2::Scripting
     class ScSmallSceneryObject final : public ScSceneryObject
     {
     public:
-        JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
         {
             JSValue obj = ScSceneryObject::New(ctx, type, index);
             AddFuncs(ctx, obj);
@@ -778,7 +783,7 @@ namespace OpenRCT2::Scripting
         static JSValue offset_get(JSContext* ctx, JSValue thisVal)
         {
             TileData* data = GetObjectData(thisVal);
-            return ToJSValue(ctx, CoordsXY{ data->_tile.offset.x, data->_tile.offset.y });
+            return ToJSValue(ctx, data->_tile.offset);
         }
 
         static JSValue zClearance_get(JSContext* ctx, JSValue thisVal)
@@ -820,7 +825,7 @@ namespace OpenRCT2::Scripting
     class ScLargeSceneryObject final : public ScSceneryObject
     {
     public:
-        JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
         {
             JSValue obj = ScSceneryObject::New(ctx, type, index);
             AddFuncs(ctx, obj);
@@ -870,7 +875,7 @@ namespace OpenRCT2::Scripting
     class ScWallObject final : public ScSceneryObject
     {
     public:
-        JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
         {
             return ScSceneryObject::New(ctx, type, index);
         }
@@ -879,7 +884,7 @@ namespace OpenRCT2::Scripting
     class ScFootpathAdditionObject final : public ScSceneryObject
     {
     public:
-        JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
         {
             return ScSceneryObject::New(ctx, type, index);
         }
@@ -888,7 +893,7 @@ namespace OpenRCT2::Scripting
     class ScBannerObject final : public ScSceneryObject
     {
     public:
-        JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
         {
             return ScSceneryObject::New(ctx, type, index);
         }
@@ -897,7 +902,7 @@ namespace OpenRCT2::Scripting
     class ScSceneryGroupObject final : public ScObject
     {
     public:
-        JSValue New(JSContext* ctx, ObjectType type, int32_t index)
+        static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
         {
             JSValue obj = ScObject::New(ctx, type, index);
             AddFuncs(ctx, obj);
