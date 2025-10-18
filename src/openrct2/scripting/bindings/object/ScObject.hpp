@@ -281,11 +281,7 @@ namespace OpenRCT2::Scripting
         static JSValue flags_get(JSContext* ctx, JSValue thisVal)
         {
             auto entry = GetEntry(thisVal);
-            // todo: flags is now 64-bit but JS doesnt support 64-bit bit operations?
-            return JS_NewInt64(
-                ctx,
-                entry != nullptr ? static_cast<int64_t>(entry->flags)
-                                 : 0); 
+            return JS_NewInt64(ctx, entry != nullptr ? static_cast<int64_t>(entry->flags) : 0);
         }
 
         static JSValue baseNumFrames_get(JSContext* ctx, JSValue thisVal)

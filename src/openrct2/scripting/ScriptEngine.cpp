@@ -124,7 +124,7 @@ private:
         {
             _ss << (JS_VALUE_GET_BOOL(val) ? "true" : "false");
         }
-        else if (JS_IsNumber(val))
+        else if (JS_IsNumber(val) || JS_IsBigInt(_context, val))
         {
             StringifyNumber(val);
         }
@@ -348,6 +348,23 @@ private:
             else
             {
                 _ss << std::to_string(d);
+            }
+        }
+        else if (val.tag == JS_TAG_SHORT_BIG_INT)
+        {
+            _ss << std::to_string(JS_VALUE_GET_SHORT_BIG_INT(val));
+        }
+        else if (val.tag == JS_TAG_BIG_INT)
+        {
+            const char* str = JS_ToCString(_context, val);
+            if (str)
+            {
+                _ss << str;
+                JS_FreeCString(_context, str);
+            }
+            else
+            {
+                _ss << "[BitInt error]";
             }
         }
     }
