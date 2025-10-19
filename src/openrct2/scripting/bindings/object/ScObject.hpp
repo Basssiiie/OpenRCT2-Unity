@@ -123,7 +123,11 @@ namespace OpenRCT2::Scripting
         static JSValue legacyIdentifier_get(JSContext* ctx, JSValue thisVal)
         {
             auto obj = GetObject(thisVal);
-            return JSFromStdString(ctx, obj != nullptr ? std::string(obj->GetLegacyIdentifier()) : "");
+            if (obj != nullptr && obj->GetLegacyIdentifier().find('\0') == std::string::npos)
+            {
+                JSFromStdString(ctx, obj->GetLegacyIdentifier());
+            }
+            return JSFromStdString(ctx, {});
         }
 
         static JSValue name_get(JSContext* ctx, JSValue thisVal)
@@ -302,7 +306,7 @@ namespace OpenRCT2::Scripting
             auto entry = GetEntry(thisVal);
             if (entry != nullptr)
             {
-                for (uint8_t g = 0; g < EnumValue<SpriteGroupType>(SpriteGroupType::Count); g++)
+                for (std::underlying_type_t<SpriteGroupType> g = 0; g < EnumValue<SpriteGroupType>(SpriteGroupType::Count); g++)
                 {
                     auto group = entry->SpriteGroups[g];
                     if (group.Enabled())
@@ -496,10 +500,10 @@ namespace OpenRCT2::Scripting
             auto entry = GetEntry(thisVal);
             if (entry != nullptr)
             {
-                uint32_t index = 0;
+                int64_t index = 0;
                 for (auto rideType : entry->ride_type)
                 {
-                    JS_SetPropertyUint32(ctx, result, index++, JS_NewUint32(ctx, rideType));
+                    JS_SetPropertyInt64(ctx, result, index++, JS_NewUint32(ctx, rideType));
                 }
             }
             return result;
@@ -572,10 +576,10 @@ namespace OpenRCT2::Scripting
             if (entry != nullptr)
             {
                 ObjectData* data = GetObjectData(thisVal);
-                uint32_t index = 0;
+                int64_t index = 0;
                 for (size_t i = 0; i < std::size(entry->Cars); i++)
                 {
-                    JS_SetPropertyUint32(ctx, result, index++, gScRideObjectVehicle.New(ctx, data->_index, i));
+                    JS_SetPropertyInt64(ctx, result, index++, gScRideObjectVehicle.New(ctx, data->_index, i));
                 }
             }
             return result;
@@ -662,7 +666,7 @@ namespace OpenRCT2::Scripting
                 auto& scgDescriptor = obj->GetPrimarySceneryGroup();
                 if (scgDescriptor.HasValue())
                 {
-                    JS_SetPropertyUint32(ctx, result, 0, JSFromStdString(ctx, scgDescriptor.ToString()));
+                    JS_SetPropertyInt64(ctx, result, 0, JSFromStdString(ctx, scgDescriptor.ToString()));
                 }
             }
             return result;
@@ -843,10 +847,10 @@ namespace OpenRCT2::Scripting
             auto entry = GetEntry(thisVal);
             if (entry != nullptr)
             {
-                uint32_t index = 0;
+                int64_t index = 0;
                 for (auto& tile : entry->tiles)
                 {
-                    JS_SetPropertyUint32(ctx, result, index++, gScLargeSceneryObjectTile.New(ctx, tile));
+                    JS_SetPropertyInt64(ctx, result, index++, gScLargeSceneryObjectTile.New(ctx, tile));
                 }
             }
             return result;
@@ -921,10 +925,10 @@ namespace OpenRCT2::Scripting
             if (obj != nullptr)
             {
                 auto& items = obj->GetItems();
-                uint32_t index = 0;
+                int64_t index = 0;
                 for (const auto& item : items)
                 {
-                    JS_SetPropertyUint32(ctx, result, index++, JSFromStdString(ctx, item.ToString()));
+                    JS_SetPropertyInt64(ctx, result, index++, JSFromStdString(ctx, item.ToString()));
                 }
             }
             return result;

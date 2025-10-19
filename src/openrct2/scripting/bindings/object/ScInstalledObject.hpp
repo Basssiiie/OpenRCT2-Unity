@@ -103,11 +103,11 @@ namespace OpenRCT2::Scripting
             JSValue array = JS_NewArray(ctx);
             if (installedObject != nullptr)
             {
-                uint32_t index = 0;
+                int64_t index = 0;
                 for (const auto& sourceGame : installedObject->Sources)
                 {
                     JSValue sourceGameStr = JSFromStdString(ctx, std::string(ObjectSourceGameToString(sourceGame)));
-                    JS_SetPropertyUint32(ctx, array, index++, sourceGameStr);
+                    JS_SetPropertyInt64(ctx, array, index++, sourceGameStr);
                 }
             }
             return array;
@@ -147,7 +147,10 @@ namespace OpenRCT2::Scripting
             {
                 if (!installedObject->ObjectEntry.IsEmpty())
                 {
-                    return JSFromStdString(ctx, std::string(installedObject->ObjectEntry.GetName()));
+                    auto str = installedObject->ObjectEntry.GetName();
+                    if (str.find('\0') != std::string::npos)
+                        str = {};
+                    return JSFromStdString(ctx, str);
                 }
             }
             return JS_NULL;

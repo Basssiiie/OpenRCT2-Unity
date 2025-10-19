@@ -42,11 +42,11 @@ JSValue ScObjectManager::installedObjects_get(JSContext* ctx, JSValue thisVal)
 
     auto context = GetContext();
     auto& objectManager = context->GetObjectRepository();
-    auto count = objectManager.GetNumObjects();
-    for (size_t i = 0; i < count; i++)
+    auto count = static_cast<int64_t>(objectManager.GetNumObjects());
+    for (int64_t i = 0; i < count; i++)
     {
         JSValue installedObject = gScInstalledObject.New(ctx, i);
-        JS_SetPropertyUint32(ctx, result, static_cast<uint32_t>(i), installedObject);
+        JS_SetPropertyInt64(ctx, result, i, installedObject);
     }
 
     return result;
@@ -76,15 +76,15 @@ JSValue ScObjectManager::load(JSContext* ctx, JSValue thisVal, int argc, JSValue
         int64_t length;
         JS_GetLength(ctx, array, &length);
 
-        for (uint32_t i = 0; i < length; i++)
+        for (int64_t i = 0; i < length; i++)
         {
-            JSValue item = JS_GetPropertyUint32(ctx, array, i);
+            JSValue item = JS_GetPropertyInt64(ctx, array, i);
             JS_UNPACK_STR(identifier, ctx, item);
             descriptors.push_back(ObjectEntryDescriptor::Parse(identifier));
         }
 
         JSValue result = JS_NewArray(ctx);
-        uint32_t index = 0;
+        int64_t index = 0;
         for (const auto& descriptor : descriptors)
         {
             auto obj = objectManager.LoadObject(descriptor);
@@ -93,11 +93,11 @@ JSValue ScObjectManager::load(JSContext* ctx, JSValue thisVal, int argc, JSValue
                 MarkAsResearched(obj);
                 auto objIndex = objectManager.GetLoadedObjectEntryIndex(obj);
                 auto scLoadedObject = CreateScObject(ctx, obj->GetObjectType(), objIndex);
-                JS_SetPropertyUint32(ctx, result, index, scLoadedObject);
+                JS_SetPropertyInt64(ctx, result, index, scLoadedObject);
             }
             else
             {
-                JS_SetPropertyUint32(ctx, result, index, JS_NULL);
+                JS_SetPropertyInt64(ctx, result, index, JS_NULL);
             }
             index++;
         }
@@ -185,9 +185,9 @@ JSValue ScObjectManager::unload(JSContext* ctx, JSValue thisVal, int argc, JSVal
         JS_GetLength(ctx, array, &length);
 
         std::vector<ObjectEntryDescriptor> descriptors;
-        for (uint32_t i = 0; i < length; i++)
+        for (int64_t i = 0; i < length; i++)
         {
-            JSValue item = JS_GetPropertyUint32(ctx, array, i);
+            JSValue item = JS_GetPropertyInt64(ctx, array, i);
             if (JS_IsString(item))
             {
                 JS_UNPACK_STR(identifier, ctx, item);
@@ -228,27 +228,24 @@ JSValue ScObjectManager::getAllObjects(JSContext* ctx, JSValue thisVal, int argc
 
     auto& objManager = GetContext()->GetObjectManager();
     auto type = objectTypeFromString(typez);
-    JSValue result = JS_NewArray(ctx);
 
     if (type != ObjectType::none)
     {
-        auto count = getObjectEntryGroupCount(type);
-        uint32_t resultIndex = 0;
-        for (auto i = 0u; i < count; i++)
+        JSValue result = JS_NewArray(ctx);
+        size_t count = getObjectEntryGroupCount(type);
+        int64_t resultIndex = 0;
+        for (size_t i = 0; i < count; i++)
         {
             auto obj = objManager.GetLoadedObject(type, i);
             if (obj != nullptr)
             {
                 JSValue scObj = CreateScObject(ctx, type, i);
-                JS_SetPropertyUint32(ctx, result, resultIndex++, scObj);
+                JS_SetPropertyInt64(ctx, result, resultIndex++, scObj);
             }
         }
+        return result;
     }
-    else
-    {
-        return JS_ThrowPlainError(ctx, "Invalid object type.");
-    }
-    return result;
+    return JS_ThrowPlainError(ctx, "Invalid object type.");
 }
 
 void ScObjectManager::MarkAsResearched(const Object* object)
