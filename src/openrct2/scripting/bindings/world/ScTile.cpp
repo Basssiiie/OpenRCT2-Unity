@@ -239,16 +239,14 @@ namespace OpenRCT2::Scripting
 
     JSValue ScTile::New(JSContext* ctx, CoordsXY& coords)
     {
-        static constexpr JSCFunctionListEntry funcs[] = {
-            JS_CGETSET_DEF("x", ScTile::x_get, nullptr),
-            JS_CGETSET_DEF("y", ScTile::y_get, nullptr),
-            JS_CGETSET_DEF("elements", ScTile::elements_get, nullptr),
-            JS_CGETSET_DEF("numElements", ScTile::numElements_get, nullptr),
-            JS_CGETSET_DEF("data", ScTile::data_get, ScTile::data_set),
-            JS_CFUNC_DEF("getElement", 1, ScTile::getElement),
-            JS_CFUNC_DEF("insertElement", 1, ScTile::insertElement),
-            JS_CFUNC_DEF("removeElement", 0, ScTile::removeElement)
-        };
+        static constexpr JSCFunctionListEntry funcs[] = { JS_CGETSET_DEF("x", ScTile::x_get, nullptr),
+                                                          JS_CGETSET_DEF("y", ScTile::y_get, nullptr),
+                                                          JS_CGETSET_DEF("elements", ScTile::elements_get, nullptr),
+                                                          JS_CGETSET_DEF("numElements", ScTile::numElements_get, nullptr),
+                                                          JS_CGETSET_DEF("data", ScTile::data_get, ScTile::data_set),
+                                                          JS_CFUNC_DEF("getElement", 1, ScTile::getElement),
+                                                          JS_CFUNC_DEF("insertElement", 1, ScTile::insertElement),
+                                                          JS_CFUNC_DEF("removeElement", 0, ScTile::removeElement) };
         return MakeWithOpaque(ctx, funcs, new OpaqueTileData{ coords });
     }
 

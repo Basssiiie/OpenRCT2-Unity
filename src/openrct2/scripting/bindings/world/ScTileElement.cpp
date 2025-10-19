@@ -574,8 +574,9 @@ namespace OpenRCT2::Scripting
             default:
             {
                 auto& scriptEngine = GetContext()->GetScriptEngine();
-                scriptEngine.LogPluginInfo("Cannot read 'sequence' property, tile element is not a TrackElement, "
-                                           "LargeSceneryElement, or EntranceElement.");
+                scriptEngine.LogPluginInfo(
+                    "Cannot read 'sequence' property, tile element is not a TrackElement, "
+                    "LargeSceneryElement, or EntranceElement.");
                 return JS_NULL;
             }
         }
@@ -628,8 +629,9 @@ namespace OpenRCT2::Scripting
             default:
             {
                 auto& scriptEngine = GetContext()->GetScriptEngine();
-                scriptEngine.LogPluginInfo("Cannot read 'sequence' property, tile element is not a TrackElement, "
-                                           "LargeSceneryElement, or EntranceElement.");
+                scriptEngine.LogPluginInfo(
+                    "Cannot read 'sequence' property, tile element is not a TrackElement, "
+                    "LargeSceneryElement, or EntranceElement.");
                 break;
             }
         }
@@ -2470,8 +2472,7 @@ namespace OpenRCT2::Scripting
             JS_CGETSET_DEF(
                 "queueBannerDirection", ScTileElement::queueBannerDirection_get, ScTileElement::queueBannerDirection_set),
 
-            JS_CGETSET_DEF(
-                "isBlockedByVehicle", ScTileElement::isBlockedByVehicle_get, ScTileElement::isBlockedByVehicle_set),
+            JS_CGETSET_DEF("isBlockedByVehicle", ScTileElement::isBlockedByVehicle_get, ScTileElement::isBlockedByVehicle_set),
             JS_CGETSET_DEF("isWide", ScTileElement::isWide_get, ScTileElement::isWide_set),
 
             JS_CGETSET_DEF("surfaceObject", ScTileElement::surfaceObject_get, ScTileElement::surfaceObject_set),
