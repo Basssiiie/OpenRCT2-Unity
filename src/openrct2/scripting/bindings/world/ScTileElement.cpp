@@ -2415,96 +2415,96 @@ namespace OpenRCT2::Scripting
     {
         static constexpr JSCFunctionListEntry funcs[] = {
             // All
-            JS_CGETSET_DEF("type", &ScTileElement::type_get, &ScTileElement::type_set),
-            JS_CGETSET_DEF("baseHeight", &ScTileElement::baseHeight_get, &ScTileElement::baseHeight_set),
-            JS_CGETSET_DEF("baseZ", &ScTileElement::baseZ_get, &ScTileElement::baseZ_set),
-            JS_CGETSET_DEF("clearanceHeight", &ScTileElement::clearanceHeight_get, &ScTileElement::clearanceHeight_set),
-            JS_CGETSET_DEF("clearanceZ", &ScTileElement::clearanceZ_get, &ScTileElement::clearanceZ_set),
-            JS_CGETSET_DEF("occupiedQuadrants", &ScTileElement::occupiedQuadrants_get, &ScTileElement::occupiedQuadrants_set),
-            JS_CGETSET_DEF("isGhost", &ScTileElement::isGhost_get, &ScTileElement::isGhost_set),
-            JS_CGETSET_DEF("isHidden", &ScTileElement::isHidden_get, &ScTileElement::isHidden_set),
+            JS_CGETSET_DEF("type", ScTileElement::type_get, ScTileElement::type_set),
+            JS_CGETSET_DEF("baseHeight", ScTileElement::baseHeight_get, ScTileElement::baseHeight_set),
+            JS_CGETSET_DEF("baseZ", ScTileElement::baseZ_get, ScTileElement::baseZ_set),
+            JS_CGETSET_DEF("clearanceHeight", ScTileElement::clearanceHeight_get, ScTileElement::clearanceHeight_set),
+            JS_CGETSET_DEF("clearanceZ", ScTileElement::clearanceZ_get, ScTileElement::clearanceZ_set),
+            JS_CGETSET_DEF("occupiedQuadrants", ScTileElement::occupiedQuadrants_get, ScTileElement::occupiedQuadrants_set),
+            JS_CGETSET_DEF("isGhost", ScTileElement::isGhost_get, ScTileElement::isGhost_set),
+            JS_CGETSET_DEF("isHidden", ScTileElement::isHidden_get, ScTileElement::isHidden_set),
 
             // Track | Small Scenery | Wall | Entrance | Large Scenery | Banner
-            JS_CGETSET_DEF("direction", &ScTileElement::direction_get, &ScTileElement::direction_set),
+            JS_CGETSET_DEF("direction", ScTileElement::direction_get, ScTileElement::direction_set),
 
             // Path | Small Scenery | Wall | Entrance | Large Scenery | Banner
-            JS_CGETSET_DEF("object", &ScTileElement::object_get, &ScTileElement::object_set),
+            JS_CGETSET_DEF("object", ScTileElement::object_get, ScTileElement::object_set),
 
             // Small Scenery | Wall | Large Scenery | Banner
-            JS_CGETSET_DEF("primaryColour", &ScTileElement::primaryColour_get, &ScTileElement::primaryColour_set),
-            JS_CGETSET_DEF("secondaryColour", &ScTileElement::secondaryColour_get, &ScTileElement::secondaryColour_set),
+            JS_CGETSET_DEF("primaryColour", ScTileElement::primaryColour_get, ScTileElement::primaryColour_set),
+            JS_CGETSET_DEF("secondaryColour", ScTileElement::secondaryColour_get, ScTileElement::secondaryColour_set),
 
             // Small Scenery | Wall | Large Scenery
-            JS_CGETSET_DEF("tertiaryColour", &ScTileElement::tertiaryColour_get, &ScTileElement::tertiaryColour_set),
+            JS_CGETSET_DEF("tertiaryColour", ScTileElement::tertiaryColour_get, ScTileElement::tertiaryColour_set),
 
             // Wall | Large Scenery | Banner
-            JS_CGETSET_DEF("bannerText", &ScTileElement::bannerText_get, &ScTileElement::bannerText_set),
-            JS_CGETSET_DEF("bannerIndex", &ScTileElement::bannerIndex_get, &ScTileElement::bannerIndex_set),
+            JS_CGETSET_DEF("bannerText", ScTileElement::bannerText_get, ScTileElement::bannerText_set),
+            JS_CGETSET_DEF("bannerIndex", ScTileElement::bannerIndex_get, ScTileElement::bannerIndex_set),
 
             // Path | Track | Entrance
-            JS_CGETSET_DEF("ride", &ScTileElement::ride_get, &ScTileElement::ride_set),
-            JS_CGETSET_DEF("station", &ScTileElement::station_get, &ScTileElement::station_set),
+            JS_CGETSET_DEF("ride", ScTileElement::ride_get, ScTileElement::ride_set),
+            JS_CGETSET_DEF("station", ScTileElement::station_get, ScTileElement::station_set),
 
             // Track | Entrance | Large Scenery
-            JS_CGETSET_DEF("sequence", &ScTileElement::sequence_get, &ScTileElement::sequence_set),
+            JS_CGETSET_DEF("sequence", ScTileElement::sequence_get, ScTileElement::sequence_set),
 
             // Surface | Wall
-            JS_CGETSET_DEF("slope", &ScTileElement::slope_get, &ScTileElement::slope_set),
+            JS_CGETSET_DEF("slope", ScTileElement::slope_get, ScTileElement::slope_set),
 
             // Surface only
-            JS_CGETSET_DEF("waterHeight", &ScTileElement::waterHeight_get, &ScTileElement::waterHeight_set),
-            JS_CGETSET_DEF("surfaceStyle", &ScTileElement::surfaceStyle_get, &ScTileElement::surfaceStyle_set),
-            JS_CGETSET_DEF("edgeStyle", &ScTileElement::edgeStyle_get, &ScTileElement::edgeStyle_set),
-            JS_CGETSET_DEF("grassLength", &ScTileElement::grassLength_get, &ScTileElement::grassLength_set),
-            JS_CGETSET_DEF("hasOwnership", &ScTileElement::hasOwnership_get, nullptr),
-            JS_CGETSET_DEF("hasConstructionRights", &ScTileElement::hasConstructionRights_get, nullptr),
-            JS_CGETSET_DEF("ownership", &ScTileElement::ownership_get, &ScTileElement::ownership_set),
-            JS_CGETSET_DEF("parkFences", &ScTileElement::parkFences_get, &ScTileElement::parkFences_set),
+            JS_CGETSET_DEF("waterHeight", ScTileElement::waterHeight_get, ScTileElement::waterHeight_set),
+            JS_CGETSET_DEF("surfaceStyle", ScTileElement::surfaceStyle_get, ScTileElement::surfaceStyle_set),
+            JS_CGETSET_DEF("edgeStyle", ScTileElement::edgeStyle_get, ScTileElement::edgeStyle_set),
+            JS_CGETSET_DEF("grassLength", ScTileElement::grassLength_get, ScTileElement::grassLength_set),
+            JS_CGETSET_DEF("hasOwnership", ScTileElement::hasOwnership_get, nullptr),
+            JS_CGETSET_DEF("hasConstructionRights", ScTileElement::hasConstructionRights_get, nullptr),
+            JS_CGETSET_DEF("ownership", ScTileElement::ownership_get, ScTileElement::ownership_set),
+            JS_CGETSET_DEF("parkFences", ScTileElement::parkFences_get, ScTileElement::parkFences_set),
 
             // Footpath only
-            JS_CGETSET_DEF("edgesAndCorners", &ScTileElement::edgesAndCorners_get, &ScTileElement::edgesAndCorners_set),
-            JS_CGETSET_DEF("edges", &ScTileElement::edges_get, &ScTileElement::edges_set),
-            JS_CGETSET_DEF("corners", &ScTileElement::corners_get, &ScTileElement::corners_set),
-            JS_CGETSET_DEF("slopeDirection", &ScTileElement::slopeDirection_get, &ScTileElement::slopeDirection_set),
-            JS_CGETSET_DEF("isQueue", &ScTileElement::isQueue_get, &ScTileElement::isQueue_set),
+            JS_CGETSET_DEF("edgesAndCorners", ScTileElement::edgesAndCorners_get, ScTileElement::edgesAndCorners_set),
+            JS_CGETSET_DEF("edges", ScTileElement::edges_get, ScTileElement::edges_set),
+            JS_CGETSET_DEF("corners", ScTileElement::corners_get, ScTileElement::corners_set),
+            JS_CGETSET_DEF("slopeDirection", ScTileElement::slopeDirection_get, ScTileElement::slopeDirection_set),
+            JS_CGETSET_DEF("isQueue", ScTileElement::isQueue_get, ScTileElement::isQueue_set),
             JS_CGETSET_DEF(
-                "queueBannerDirection", &ScTileElement::queueBannerDirection_get, &ScTileElement::queueBannerDirection_set),
+                "queueBannerDirection", ScTileElement::queueBannerDirection_get, ScTileElement::queueBannerDirection_set),
 
             JS_CGETSET_DEF(
-                "isBlockedByVehicle", &ScTileElement::isBlockedByVehicle_get, &ScTileElement::isBlockedByVehicle_set),
-            JS_CGETSET_DEF("isWide", &ScTileElement::isWide_get, &ScTileElement::isWide_set),
+                "isBlockedByVehicle", ScTileElement::isBlockedByVehicle_get, ScTileElement::isBlockedByVehicle_set),
+            JS_CGETSET_DEF("isWide", ScTileElement::isWide_get, ScTileElement::isWide_set),
 
-            JS_CGETSET_DEF("surfaceObject", &ScTileElement::surfaceObject_get, &ScTileElement::surfaceObject_set),
-            JS_CGETSET_DEF("railingsObject", &ScTileElement::railingsObject_get, &ScTileElement::railingsObject_set),
+            JS_CGETSET_DEF("surfaceObject", ScTileElement::surfaceObject_get, ScTileElement::surfaceObject_set),
+            JS_CGETSET_DEF("railingsObject", ScTileElement::railingsObject_get, ScTileElement::railingsObject_set),
 
-            JS_CGETSET_DEF("addition", &ScTileElement::addition_get, &ScTileElement::addition_set),
-            JS_CGETSET_DEF("additionStatus", &ScTileElement::additionStatus_get, &ScTileElement::additionStatus_set),
-            JS_CGETSET_DEF("isAdditionBroken", &ScTileElement::isAdditionBroken_get, &ScTileElement::isAdditionBroken_set),
-            JS_CGETSET_DEF("isAdditionGhost", &ScTileElement::isAdditionGhost_get, &ScTileElement::isAdditionGhost_set),
+            JS_CGETSET_DEF("addition", ScTileElement::addition_get, ScTileElement::addition_set),
+            JS_CGETSET_DEF("additionStatus", ScTileElement::additionStatus_get, ScTileElement::additionStatus_set),
+            JS_CGETSET_DEF("isAdditionBroken", ScTileElement::isAdditionBroken_get, ScTileElement::isAdditionBroken_set),
+            JS_CGETSET_DEF("isAdditionGhost", ScTileElement::isAdditionGhost_get, ScTileElement::isAdditionGhost_set),
 
             // Track only
-            JS_CGETSET_DEF("trackType", &ScTileElement::trackType_get, &ScTileElement::trackType_set),
-            JS_CGETSET_DEF("rideType", &ScTileElement::rideType_get, &ScTileElement::rideType_set),
-            JS_CGETSET_DEF("mazeEntry", &ScTileElement::mazeEntry_get, &ScTileElement::mazeEntry_set),
-            JS_CGETSET_DEF("colourScheme", &ScTileElement::colourScheme_get, &ScTileElement::colourScheme_set),
-            JS_CGETSET_DEF("seatRotation", &ScTileElement::seatRotation_get, &ScTileElement::seatRotation_set),
-            JS_CGETSET_DEF("brakeBoosterSpeed", &ScTileElement::brakeBoosterSpeed_get, &ScTileElement::brakeBoosterSpeed_set),
-            JS_CGETSET_DEF("hasChainLift", &ScTileElement::hasChainLift_get, &ScTileElement::hasChainLift_set),
-            JS_CGETSET_DEF("isInverted", &ScTileElement::isInverted_get, &ScTileElement::isInverted_set),
-            JS_CGETSET_DEF("hasCableLift", &ScTileElement::hasCableLift_get, &ScTileElement::hasCableLift_set),
-            JS_CGETSET_DEF("isHighlighted", &ScTileElement::isHighlighted_get, &ScTileElement::isHighlighted_set),
+            JS_CGETSET_DEF("trackType", ScTileElement::trackType_get, ScTileElement::trackType_set),
+            JS_CGETSET_DEF("rideType", ScTileElement::rideType_get, ScTileElement::rideType_set),
+            JS_CGETSET_DEF("mazeEntry", ScTileElement::mazeEntry_get, ScTileElement::mazeEntry_set),
+            JS_CGETSET_DEF("colourScheme", ScTileElement::colourScheme_get, ScTileElement::colourScheme_set),
+            JS_CGETSET_DEF("seatRotation", ScTileElement::seatRotation_get, ScTileElement::seatRotation_set),
+            JS_CGETSET_DEF("brakeBoosterSpeed", ScTileElement::brakeBoosterSpeed_get, ScTileElement::brakeBoosterSpeed_set),
+            JS_CGETSET_DEF("hasChainLift", ScTileElement::hasChainLift_get, ScTileElement::hasChainLift_set),
+            JS_CGETSET_DEF("isInverted", ScTileElement::isInverted_get, ScTileElement::isInverted_set),
+            JS_CGETSET_DEF("hasCableLift", ScTileElement::hasCableLift_get, ScTileElement::hasCableLift_set),
+            JS_CGETSET_DEF("isHighlighted", ScTileElement::isHighlighted_get, ScTileElement::isHighlighted_set),
 
             // Small Scenery only
-            JS_CGETSET_DEF("age", &ScTileElement::age_get, &ScTileElement::age_set),
-            JS_CGETSET_DEF("quadrant", &ScTileElement::quadrant_get, &ScTileElement::quadrant_set),
+            JS_CGETSET_DEF("age", ScTileElement::age_get, ScTileElement::age_set),
+            JS_CGETSET_DEF("quadrant", ScTileElement::quadrant_get, ScTileElement::quadrant_set),
 
             // Entrance only
-            JS_CGETSET_DEF("footpathObject", &ScTileElement::footpathObject_get, &ScTileElement::footpathObject_set),
+            JS_CGETSET_DEF("footpathObject", ScTileElement::footpathObject_get, ScTileElement::footpathObject_set),
             JS_CGETSET_DEF(
-                "footpathSurfaceObject", &ScTileElement::footpathSurfaceObject_get, &ScTileElement::footpathSurfaceObject_set),
+                "footpathSurfaceObject", ScTileElement::footpathSurfaceObject_get, ScTileElement::footpathSurfaceObject_set),
 
             // Banner only
-            JS_CGETSET_DEF("isNoEntry", &ScTileElement::isNoEntry_get, &ScTileElement::isNoEntry_set)
+            JS_CGETSET_DEF("isNoEntry", ScTileElement::isNoEntry_get, ScTileElement::isNoEntry_set)
         };
         return MakeWithOpaque(ctx, funcs, new OpaqueTileElementData{ element, coords });
     }
