@@ -617,30 +617,6 @@ namespace OpenRCT2
                 return std::string(name);
             }
         }
-
-        void WritePackedObject(IStream* stream, const RCTObjectEntry* entry)
-        {
-            const ObjectRepositoryItem* item = FindObject(entry);
-            if (item == nullptr)
-            {
-                throw std::runtime_error(String::stdFormat("Unable to find object '%.8s'", entry->name));
-            }
-
-            // Read object data from file
-            auto fs = FileStream(item->Path, FileMode::open);
-            auto fileEntry = fs.ReadValue<RCTObjectEntry>();
-            if (*entry != fileEntry)
-            {
-                throw std::runtime_error("Header found in object file does not match object to pack.");
-            }
-            auto chunkReader = SawyerChunkReader(&fs);
-            auto chunk = chunkReader.ReadChunk();
-
-            // Write object data to stream
-            auto chunkWriter = SawyerChunkWriter(stream);
-            stream->WriteValue(*entry);
-            chunkWriter.WriteChunk(chunk.get());
-        }
     };
 
     std::unique_ptr<IObjectRepository> CreateObjectRepository(IPlatformEnvironment& env)
