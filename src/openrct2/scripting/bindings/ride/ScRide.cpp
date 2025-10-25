@@ -21,14 +21,16 @@
 
 namespace OpenRCT2::Scripting
 {
-    static const EnumMap<uint8_t> BreakdownMap({ { "safety_cut_out", BREAKDOWN_SAFETY_CUT_OUT },
-                                                 { "restraints_stuck_closed", BREAKDOWN_RESTRAINTS_STUCK_CLOSED },
-                                                 { "restraints_stuck_open", BREAKDOWN_RESTRAINTS_STUCK_OPEN },
-                                                 { "doors_stuck_closed", BREAKDOWN_DOORS_STUCK_CLOSED },
-                                                 { "doors_stuck_open", BREAKDOWN_DOORS_STUCK_OPEN },
-                                                 { "vehicle_malfunction", BREAKDOWN_VEHICLE_MALFUNCTION },
-                                                 { "brakes_failure", BREAKDOWN_BRAKES_FAILURE },
-                                                 { "control_failure", BREAKDOWN_CONTROL_FAILURE } });
+    static const EnumMap<uint8_t> BreakdownMap({
+        { "safety_cut_out", BREAKDOWN_SAFETY_CUT_OUT },
+        { "restraints_stuck_closed", BREAKDOWN_RESTRAINTS_STUCK_CLOSED },
+        { "restraints_stuck_open", BREAKDOWN_RESTRAINTS_STUCK_OPEN },
+        { "doors_stuck_closed", BREAKDOWN_DOORS_STUCK_CLOSED },
+        { "doors_stuck_open", BREAKDOWN_DOORS_STUCK_OPEN },
+        { "vehicle_malfunction", BREAKDOWN_VEHICLE_MALFUNCTION },
+        { "brakes_failure", BREAKDOWN_BRAKES_FAILURE },
+        { "control_failure", BREAKDOWN_CONTROL_FAILURE },
+    });
 
     void ScRide::Register(JSContext* ctx)
     {
@@ -121,8 +123,7 @@ namespace OpenRCT2::Scripting
             auto rideObject = GetContext()->GetObjectManager().GetLoadedObject<RideObject>(ride->subtype);
             if (rideObject != nullptr)
             {
-                ScRideObject rideObjectScript;
-                return rideObjectScript.New(ctx, ObjectType::ride, ride->subtype);
+                return ScRideObject::New(ctx, ObjectType::ride, ride->subtype);
             }
         }
         return JS_NULL;
@@ -429,12 +430,11 @@ namespace OpenRCT2::Scripting
         auto ride = GetRide(thisVal);
         if (ride != nullptr)
         {
-            // TODO: Convert ScRideStation to QuickJS
-            // For now return empty array
-            /*for (const auto& station : ride->getStations())
+            int64_t index = 0;
+            for (const auto& station : ride->getStations())
             {
-                result.push_back(std::make_shared<ScRideStation>(ride->id, ride->getStationIndex(&station)));
-            }*/
+                JS_SetPropertyInt64(ctx, result, index++, gScRideStation.New(ctx, ride->id, ride->getStationIndex(&station)));
+            }
         }
         return result;
     }
