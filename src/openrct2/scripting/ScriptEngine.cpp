@@ -482,6 +482,7 @@ ScLargeSceneryObjectTile Scripting::gScLargeSceneryObjectTile;
 ScObject Scripting::gScObject;
 ScPark Scripting::gScPark;
 ScProfiler Scripting::gScProfiler;
+ScRide Scripting::gScRide;
 ScRideObjectVehicle Scripting::gScRideObjectVehicle;
 ScTile Scripting::gScTile;
 ScTileElement Scripting::gScTileElement;
@@ -514,7 +515,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     // ScPlayerGroup::Register(ctx);
     gScProfiler.Register(ctx);
     // ScResearch::Register(ctx);
-    // ScRide::Register(ctx);
+    gScRide.Register(ctx);
     // ScRideStation::Register(ctx);
     gScRideObjectVehicle.Register(ctx);
     gScTile.Register(ctx);
