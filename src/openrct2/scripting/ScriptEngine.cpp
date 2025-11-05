@@ -487,6 +487,7 @@ ScRideStation Scripting::gScRideStation;
 ScRideObjectVehicle Scripting::gScRideObjectVehicle;
 ScTile Scripting::gScTile;
 ScTileElement Scripting::gScTileElement;
+ScTrackIterator Scripting::gScTrackIterator;
 ScEntity Scripting::gScEntity;
 ScThought Scripting::gScThought;
 ScPatrolArea Scripting::gScPatrolArea;
@@ -521,7 +522,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     gScRideObjectVehicle.Register(ctx);
     gScTile.Register(ctx);
     gScTileElement.Register(ctx);
-    // ScTrackIterator::Register(ctx);
+    gScTrackIterator.Register(ctx);
     // ScTrackSegment::Register(ctx);
     gScEntity.Register(ctx);
     gScThought.Register(ctx);
