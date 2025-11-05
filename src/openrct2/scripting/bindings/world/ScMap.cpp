@@ -450,17 +450,11 @@ namespace OpenRCT2::Scripting
 
     JSValue ScMap::getTrackIterator(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
     {
-        // TODO (mber) pending ScTrackIterator conversion
-        JS_ThrowInternalError(ctx, "not implemented yet");
-        return JS_EXCEPTION;
-        /*
-        auto position = FromDuk<CoordsXY>(dukPosition);
-        auto trackIterator = ScTrackIterator::FromElement(position, elementIndex);
-        if (trackIterator == nullptr)
-            return ToDuk(_context, undefined);
+        JS_UNPACK_OBJECT(pos, ctx, argv[0]);
+        JS_UNPACK_UINT32(elementIndex, ctx, argv[1]);
 
-        return GetObjectAsDukValue(_context, trackIterator);
-        */
+        const auto position = JSToCoordsXY(ctx, pos);
+        return ScTrackIterator::FromElement(ctx, position, elementIndex);
     }
 
     void ScMap::Register(JSContext* ctx)
