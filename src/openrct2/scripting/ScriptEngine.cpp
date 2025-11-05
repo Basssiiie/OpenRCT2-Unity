@@ -488,6 +488,7 @@ ScRideObjectVehicle Scripting::gScRideObjectVehicle;
 ScTile Scripting::gScTile;
 ScTileElement Scripting::gScTileElement;
 ScTrackIterator Scripting::gScTrackIterator;
+ScTrackSegment Scripting::gScTrackSegment;
 ScEntity Scripting::gScEntity;
 ScThought Scripting::gScThought;
 ScPatrolArea Scripting::gScPatrolArea;
@@ -523,7 +524,7 @@ void ScriptEngine::RegisterClasses(JSContext* ctx)
     gScTile.Register(ctx);
     gScTileElement.Register(ctx);
     gScTrackIterator.Register(ctx);
-    // ScTrackSegment::Register(ctx);
+    gScTrackSegment.Register(ctx);
     gScEntity.Register(ctx);
     gScThought.Register(ctx);
     // #ifndef DISABLE_NETWORK
