@@ -20,5 +20,3 @@ MonoBehaviour:
   _providers:
   - {fileID: 11400000, guid: ea70123090ff11a4e8d273b55c83a0a8, type: 2}
   - {fileID: 11400000, guid: 25206f02ab45cd84db64c0e66266a2bb, type: 2}
-  - {fileID: 11400000, guid: b2d267b743959aa4ab3cd375339e803a, type: 2}
-  - {fileID: 11400000, guid: 79b34c0ea31e3c44d90ac7286951d10b, type: 2}

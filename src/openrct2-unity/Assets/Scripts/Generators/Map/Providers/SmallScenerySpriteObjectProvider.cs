@@ -1,3 +1,4 @@
+using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Map.Data;
@@ -31,16 +32,19 @@ namespace OpenRCT2.Generators.Map.Providers
         }
 
         /// </inheritdoc>
-        public GameObject CreateObject(int x, int y, int index, in TileElementInfo element, in SmallSceneryInfo data)
+        public GameObject CreateObject(Map map, in Element<SmallSceneryInfo> element)
         {
             GameObject obj = GameObject.Instantiate(_prefab);
 
             // Apply the sprites
+            Tile tile = element.tile;
+            ref SmallSceneryInfo data = ref element.GetData();
             bool spriteApplied = false;
+
             if (data.animated && _animationShader != null)
             {
                 // Animate if possible
-                spriteApplied = TryApplyAnimation(obj, _scaleMode, x, y, index, data);
+                spriteApplied = TryApplyAnimation(obj, _scaleMode, tile.x, tile.y, element.index, data);
             }
 
             if (!spriteApplied)

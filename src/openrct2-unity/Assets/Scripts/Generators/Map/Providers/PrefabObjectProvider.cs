@@ -1,4 +1,4 @@
-using OpenRCT2.Bindings.TileElements;
+using OpenRCT2.Bindings;
 using UnityEngine;
 
 #nullable enable
@@ -17,7 +17,7 @@ namespace OpenRCT2.Generators.Map.Providers
             _prefab = prefab;
         }
 
-        public GameObject CreateObject(int x, int y, int index, in TileElementInfo element, in T data)
+        public GameObject CreateObject(Map map, in Element<T> element)
         {
             var obj = Object.Instantiate(_prefab);
             obj.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);

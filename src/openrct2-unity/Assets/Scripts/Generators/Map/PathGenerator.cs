@@ -1,10 +1,10 @@
-using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Generators.MeshBuilding;
 using OpenRCT2.Generators.Sprites;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -33,14 +33,16 @@ namespace OpenRCT2.Generators.Map
         /// <inheritdoc/>
         public IEnumerator<LoadStatus> Run(Map map, Transform transform)
         {
-            return map.ForEach("Creating paths...", (Tile tile, int index, in TileElementInfo element, in PathInfo path) =>
+            return map.ForEach("Creating paths...", (in Element<PathInfo> element) =>
             {
-                CreateElement(transform, tile.x, tile.y, element, path);
+                CreateElement(map, transform, element);
             });
         }
 
-        public void CreateElement(Transform transform, int x, int y, in TileElementInfo element, in PathInfo path)
+        public void CreateElement(Map map, Transform transform, in Element<PathInfo> element)
         {
+            ref PathInfo path = ref element.GetData();
+
             uint surfaceIndex = path.surfaceIndex;
             SpriteTexture graphic = SpriteFactory.GetOrCreate(surfaceIndex);
 
@@ -54,9 +56,11 @@ namespace OpenRCT2.Generators.Map
                 name = $"Path (index: {surfaceIndex})",
                 isStatic = true
             };
+
+            Tile tile = element.tile;
             Transform pathTF = pathObject.transform;
             pathTF.parent = transform;
-            pathTF.SetLocalPositionAndRotation(World.TileCoordsToUnity(x, y, element.baseHeight), Quaternion.Euler(0, 180, 0));
+            pathTF.SetLocalPositionAndRotation(World.TileCoordsToUnity(tile.x, tile.y, element.info.baseHeight), Quaternion.Euler(0, 180, 0));
 
             MeshFilter filter = pathObject.AddComponent<MeshFilter>();
             filter.sharedMesh = _mesh;

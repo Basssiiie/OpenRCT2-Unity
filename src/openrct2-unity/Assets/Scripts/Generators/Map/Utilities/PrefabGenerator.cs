@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Utilities;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -27,7 +27,7 @@ namespace OpenRCT2.Generators.Map.Utilities
         {
             Assert.IsNotNull(_prefab, nameof(_prefab));
 
-            return map.ForEach("Creating prefabs...", (Tile tile, int index, in TileElementInfo element) =>
+            return map.ForEach("Creating prefabs...", (Tile tile, short index, in TileElementInfo element) =>
             {
                 CreateElement(transform, tile.x, tile.y, element);
             });

@@ -1,17 +1,11 @@
-using System;
-using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Utilities;
+using System;
 using UnityEngine;
 
 #nullable enable
 
 namespace OpenRCT2.Generators.Map.Providers
 {
-    [CreateAssetMenu(menuName = ("OpenRCT2/Objects/" + nameof(SmallSceneryPrefabProviderObject)))]
-    public class SmallSceneryPrefabProviderObject : PrefabProviderObject<SmallSceneryInfo>
-    {
-    }
-
     public abstract class PrefabProviderObject<T> : ProviderObject<T> where T : struct
     {
         [SerializeField]
@@ -21,7 +15,7 @@ namespace OpenRCT2.Generators.Map.Providers
         public override (string identifier, IObjectProvider<T> provider)[] GetEntries()
         {
             var length = _prefabs.Length;
-            var array = new (string identifiers, IObjectProvider<T> provider)[length];
+            var array = new (string, IObjectProvider<T>)[length];
 
             for (var i = 0; i < length; i++)
             {

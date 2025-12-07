@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Generators.Map.Providers;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -26,17 +26,20 @@ namespace OpenRCT2.Generators.Map
         /// <inheritdoc/>
         public IEnumerator<LoadStatus> Run(Map map, Transform transform)
         {
-            return map.ForEach("Creating small scenery...", (Tile tile, int index, in TileElementInfo element, in SmallSceneryInfo scenery) =>
+            return map.ForEach("Creating small scenery...", (in Element<SmallSceneryInfo> element) =>
             {
-                CreateElement(transform, tile, index, element, scenery);
+                CreateElement(map, transform, element);
             });
         }
 
-        void CreateElement(Transform parent, Tile tile, int index, in TileElementInfo element, in SmallSceneryInfo scenery)
+        void CreateElement(Map map, Transform parent, in Element<SmallSceneryInfo> element)
         {
+            Tile tile = element.tile;
+            ref SmallSceneryInfo scenery = ref element.GetData();
+
             float pos_x = tile.x;
             float pos_y = tile.y;
-            float height = element.baseHeight;
+            float height = element.info.baseHeight;
 
             // If not a full tile, move small scenery to the correct quadrant.
             if (!scenery.fullTile)
@@ -60,15 +63,20 @@ namespace OpenRCT2.Generators.Map
                 provider = _defaultProvider;
             }
 
-            var obj = provider.CreateObject(tile.x, tile.y, index, in element, in scenery);
+            var obj = provider.CreateObject(map, in element);
+            if (obj == null)
+            {
+                return;
+            }
+
             obj.isStatic = true;
 
             var position = World.TileCoordsToUnity(pos_x, pos_y, height);
-            var rotation = Quaternion.Euler(0, 90 * element.rotation + 90, 0);
+            var rotation = Quaternion.Euler(0, 90 * element.info.rotation + 90, 0);
 
             var transform = obj.transform;
             transform.parent = parent;
             transform.SetLocalPositionAndRotation(position, rotation);
-        }        
+        }
     }
 }

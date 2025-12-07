@@ -1,6 +1,6 @@
+using OpenRCT2.Bindings.TileElements;
 using System;
 using System.Runtime.InteropServices;
-using OpenRCT2.Bindings.TileElements;
 
 namespace OpenRCT2.Bindings
 {
@@ -20,7 +20,7 @@ namespace OpenRCT2.Bindings
         //public readonly BannerInfo banners;
 
 
-        Tile(int x, int y)
+        public Tile(int x, int y)
         {
             this.x = x;
             this.y = y;
@@ -44,11 +44,6 @@ namespace OpenRCT2.Bindings
             var array = new T[count];
             getter(x, y, array, count);
             return array;
-        }
-
-        public static Tile GetAt(int x, int y)
-        {
-            return new Tile(x, y);
         }
 
 

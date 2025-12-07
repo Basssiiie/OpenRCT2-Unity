@@ -1,4 +1,4 @@
-using OpenRCT2.Bindings.TileElements;
+using OpenRCT2.Bindings;
 using UnityEngine;
 
 #nullable enable
@@ -10,6 +10,6 @@ namespace OpenRCT2.Generators.Map.Providers
         /// <summary>
         /// Creates an object according to the provider's implementation.
         /// </summary>
-        GameObject CreateObject(int x, int y, int index, in TileElementInfo element, in T data);
+        GameObject? CreateObject(Map map, in Element<T> element);
     }
 }

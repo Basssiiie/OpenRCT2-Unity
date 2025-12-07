@@ -28,7 +28,7 @@ namespace OpenRCT2.Generators.MeshBuilding.Behaviours
             if (_mesh != null && _start != null && _end != null)
             {
                 _extruder = new MeshExtruder(_mesh);
-                _extruder.AddSegment(_start.position, _start.rotation, _end.position, _end.rotation, _offset, _multiplier, 0);
+                _extruder.AddSegment(_start.position, _start.rotation, _end.position, _end.rotation, _offset, _multiplier);
 
                 _filter.sharedMesh = _extruder.ToMesh();
             }

@@ -1,7 +1,7 @@
-using System;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Map.Data;
 using OpenRCT2.Utilities;
+using System;
 using UnityEngine;
 
 #nullable enable
@@ -23,7 +23,7 @@ namespace OpenRCT2.Generators.Map.Providers
             Assert.IsNotNull(_prefab);
 
             var length = _identifiers.Length;
-            var array = new (string identifiers, IObjectProvider<SmallSceneryInfo> provider)[length];
+            var array = new (string, IObjectProvider<SmallSceneryInfo>)[length];
             var provider = new SmallScenerySpriteObjectProvider(_prefab, _animationShader, _scaleMode);
 
             for (var i = 0; i < length; i++)

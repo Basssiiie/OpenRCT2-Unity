@@ -1,7 +1,7 @@
-using System;
-using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
+using System;
+using System.Collections.Generic;
 
 #nullable enable
 
@@ -9,8 +9,8 @@ namespace OpenRCT2.Generators.Extensions
 {
     public static class MapExtensions
     {
-        public delegate void ElementCallback(Tile tile, int index, in TileElementInfo element);
-        public delegate void ElementCallback<T>(Tile tile, int index, in TileElementInfo element, in T data) where T : struct;
+        public delegate void ElementCallback(Tile tile, short index, in TileElementInfo element);
+        public delegate void ElementCallback<T>(in Element<T> element) where T : struct;
 
 
         public static IEnumerator<LoadStatus> ForEach(this Map.Map map, string loader, ElementCallback callback)
@@ -27,7 +27,7 @@ namespace OpenRCT2.Generators.Extensions
                     var tile = map.tiles[x, y];
                     var elements = tile.elements;
 
-                    for (var i = 0; i < elements.Length; i++)
+                    for (short i = 0; i < elements.Length; i++)
                     {
                         var element = elements[i];
                         if (!element.invisible)
@@ -59,9 +59,9 @@ namespace OpenRCT2.Generators.Extensions
         {
             Tile? previous = null;
             T[]? data = null;
-            var typeIdx = 0;
+            short typeIdx = 0;
 
-            return ForEach(map, loader, (Tile tile, int index, in TileElementInfo element) =>
+            return ForEach(map, loader, (Tile tile, short index, in TileElementInfo element) =>
             {
                 if (element.type == type)
                 {
@@ -72,7 +72,7 @@ namespace OpenRCT2.Generators.Extensions
                         typeIdx = 0;
                     }
 
-                    callback(tile, index, in element, in data![typeIdx++]);
+                    callback(new Element<T>(tile, in element, index, typeIdx++, data!));
                 }
             });
         }

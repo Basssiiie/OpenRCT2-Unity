@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -42,7 +42,7 @@ namespace OpenRCT2.Generators.Map
                 {
                     yield return new LoadStatus("Loading tiles...", x * width + y, total);
 
-                    tiles[x, y] = Tile.GetAt(x + 1, y + 1); // skip border
+                    tiles[x, y] = new Tile(x + 1, y + 1); // skip border
                 }
             }
 

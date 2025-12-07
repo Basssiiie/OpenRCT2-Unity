@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
 using OpenRCT2.Bindings;
-using OpenRCT2.Bindings.Graphics;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Generators.Extensions;
-using OpenRCT2.Generators.MeshBuilding;
-using OpenRCT2.Generators.Sprites;
-using OpenRCT2.Generators.Tracks;
+using OpenRCT2.Generators.Map.Providers;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -15,96 +11,122 @@ namespace OpenRCT2.Generators.Map
 {
     public class TrackGenerator : ITileElementGenerator
     {
-        readonly Dictionary<int, Mesh> _trackMeshCache = new Dictionary<int, Mesh>();
-        readonly GameObject _prefab;
-        readonly MeshExtruder _meshExtruder;
+        readonly IObjectProvider<TrackInfo> _defaultProvider;
+        readonly IReadOnlyDictionary<string, IObjectProvider<TrackInfo>> _providers;
 
+        readonly IObjectProvider<TunnelInfo> _defaultTunnelProvider;
+        readonly IReadOnlyDictionary<string, IObjectProvider<TunnelInfo>> _tunnelProviders;
 
-        public TrackGenerator(GameObject prefab, Mesh trackMesh)
+        public TrackGenerator(IObjectProvider<TrackInfo> defaultProvider, IReadOnlyDictionary<string, IObjectProvider<TrackInfo>> providers, IObjectProvider<TunnelInfo> defaultTunnelProvider, IReadOnlyDictionary<string, IObjectProvider<TunnelInfo>> tunnelProviders)
         {
-            _prefab = prefab;
-            _meshExtruder = new MeshExtruder(trackMesh);
+            _defaultProvider = defaultProvider;
+            _providers = providers;
+            _defaultTunnelProvider = defaultTunnelProvider;
+            _tunnelProviders = tunnelProviders;
         }
+
+
 
         /// <inheritdoc/>
         public IEnumerator<LoadStatus> Run(Map map, Transform transform)
         {
-            return map.ForEach("Creating tracks...", (Tile tile, int index, in TileElementInfo element, in TrackInfo track) =>
+            return map.ForEach("Creating tracks...", (in Element<TrackInfo> element) =>
             {
-                CreateElement(transform, tile.x, tile.y, element, track);
+                CreateElement(map, transform, element);
             });
         }
 
-        void CreateElement(Transform transform, int x, int y, in TileElementInfo element, in TrackInfo track)
+        void CreateElement(Map map, Transform parent, in Element<TrackInfo> element)
         {
+            ref TrackInfo track = ref element.GetData();
+
             if (track.sequenceIndex != 0)
                 return;
-
-            ushort trackType = track.trackType;
-            int invertedBit = Convert.ToInt32(track.inverted);
-            int chainliftBit = Convert.ToInt32(track.chainlift);
-            int cableliftBit = Convert.ToInt32(track.cablelift);
-            int meshKey = trackType << 3 | cableliftBit << 2 | chainliftBit << 1 | invertedBit;
-
-            if (!_trackMeshCache.TryGetValue(meshKey, out Mesh trackMesh))
-            {
-                trackMesh = CreateNewMesh(track);
-                _trackMeshCache.Add(meshKey, trackMesh);
-            }
 
             float trackOffset = track.trackHeight * World.CoordsZMultiplier;
             if (track.inverted)
             {
                 trackOffset *= 2;
             }
-            Vector3 position = World.TileCoordsToUnity(x, y, element.baseHeight);
-            position.y += trackOffset;
 
-            GameObject obj = UnityEngine.Object.Instantiate(_prefab, position, Quaternion.Euler(0, element.rotation * 90f, 0), transform);
-            obj.name = $"Track [{x}, {y}, {element.baseHeight}] type: {trackType}, key: {meshKey:x}, colours: ({track.mainColour}, {track.additionalColour}, {track.supportsColour}), rot: {element.rotation}, inv: {track.inverted}";
-            obj.isStatic = true;
+            Tile tile = element.tile;
+            int x = tile.x;
+            int y = tile.y;
 
-            MeshFilter filter = obj.GetComponent<MeshFilter>();
-            filter.sharedMesh = trackMesh;
-
-            MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
-            byte paletteIndex = GraphicsDataFactory.GetPaletteIndexForColourId(track.mainColour);
-            renderer.material.color = PaletteFactory.IndexToColor(paletteIndex);
-        }
-
-        Mesh CreateNewMesh(in TrackInfo track)
-        {
-            TrackPiece piece = TrackDataFactory.GetTrackPiece(track.trackType);
-            _meshExtruder.Clear();
-
-            float offset = 0;
-            int len = piece.Points.Length - 1;
-            for (int i = 0, j; i < len; i = j)
+            string identifier = "";// track.identifier.Trim(); // todo get track style
+            if (!_providers.TryGetValue(identifier, out var provider))
             {
-                j = i + 1;
-
-                TransformPoint nodeA = piece.Points[i];
-                TransformPoint nodeB = piece.Points[j];
-
-                // If the track is inverted, and its not an inversion, rotate
-                // TODO: still not perfect; some inverted inversions still mess up. Also performance could be better.
-                if (track.inverted && (track.normalToInverted || track.invertedToNormal))
-                {
-                    Quaternion inversionAngle = Quaternion.AngleAxis(180, Vector3.forward);
-                    nodeA = new TransformPoint(nodeA.Position, nodeA.Rotation * inversionAngle);
-                    nodeB = new TransformPoint(nodeB.Position, nodeB.Rotation * inversionAngle);
-                }
-
-                Vector3 start = nodeA.Position;
-                Vector3 end = nodeB.Position;
-                float length = Vector3.Distance(start, end);
-
-                _meshExtruder.AddSegment(nodeA, nodeB, offset, 1, 0);
-
-                offset += length;
+                provider = _defaultProvider;
             }
 
-            return _meshExtruder.ToMesh();
+            var obj = provider.CreateObject(map, in element);
+            if (obj == null)
+            {
+                return;
+            }
+
+            obj.isStatic = true;
+
+            int baseHeight = element.info.baseHeight;
+            Vector3 position = World.TileCoordsToUnity(x, y, baseHeight);
+            Vector3 trackPosition = new Vector3(position.x, position.y + trackOffset, position.z);
+
+            var rotation = Quaternion.Euler(0, 90 * element.info.rotation, 0);
+            var transform = obj.transform;
+            transform.parent = parent;
+            transform.SetLocalPositionAndRotation(trackPosition, rotation);
+
+            var surfaceHeight = GetSurfaceHeight(tile, out var surfaceIndex);
+            if (surfaceHeight <= baseHeight)
+            {
+                return;
+            }
+
+            ref var surface = ref tile.surfaces[surfaceIndex];
+            var tunnelInfo = new TunnelInfo(0, track.trackType, surface.edgeImageIndex, false, false);
+            //var tunnelElement = new Element<TunnelInfo>(tile, element.info, element.index, element.offset,)
+
+            // Generate tunnels..
+            //var tunnel = _defaultTunnelProvider.CreateObject(map, in tunnelInfo);
+            //if (obj == null)
+            //{
+            //    return;
+            //}
+
+            //obj.isStatic = true;
+
+            //var tunnelTransform = tunnel.transform;
+            //tunnelTransform.parent = parent;
+            //tunnelTransform.SetLocalPositionAndRotation(position, rotation);
+        }
+
+        private int GetSurfaceHeight(Tile tile, out int surfaceIndex)
+        {
+            var elements = tile.elements;
+            var length = elements.Length;
+            var surfaceHeight = -1;
+            var currentIndex = 0;
+
+            surfaceIndex = -1;
+
+            for (var i = 0; i < length; i++)
+            {
+                ref var element = ref elements[i];
+
+                if (element.type == TileElementType.Surface)
+                {
+                    var currentHeight = element.baseHeight;
+                    if (currentHeight > surfaceHeight)
+                    {
+                        surfaceHeight = currentHeight;
+                        surfaceIndex = currentIndex;
+                    }
+
+                    currentIndex++;
+                }
+            }
+
+            return surfaceHeight;
         }
     }
 }

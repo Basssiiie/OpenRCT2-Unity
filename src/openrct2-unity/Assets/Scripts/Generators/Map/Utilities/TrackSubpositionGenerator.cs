@@ -1,9 +1,9 @@
-using System.Collections.Generic;
 using OpenRCT2.Bindings;
 using OpenRCT2.Bindings.TileElements;
 using OpenRCT2.Bindings.Tracks;
 using OpenRCT2.Generators.Extensions;
 using OpenRCT2.Utilities;
+using System.Collections.Generic;
 using UnityEngine;
 
 #nullable enable
@@ -31,14 +31,16 @@ namespace OpenRCT2.Generators.Map.Utilities
         {
             Assert.IsNotNull(_prefab, nameof(_prefab));
 
-            return map.ForEach("Creating subpositions...", (Tile tile, int index, in TileElementInfo element, in TrackInfo track) =>
+            return map.ForEach("Creating subpositions...", (in Element<TrackInfo> element) =>
             {
-                CreateElement(transform, tile.x, tile.y, element, track);
+                CreateElement(map, transform, element);
             });
         }
 
-        void CreateElement(Transform transform, int x, int y, in TileElementInfo element, in TrackInfo track)
+        void CreateElement(Map map, Transform transform, in Element<TrackInfo> element)
         {
+            ref TrackInfo track = ref element.GetData();
+
             if (track.sequenceIndex != 0)
                 return;
 
@@ -52,17 +54,18 @@ namespace OpenRCT2.Generators.Map.Utilities
             }
 
             // Create objects
-            GameObject parent = new GameObject($"[{x}, {y}] type: {trackType}, inv: {track.inverted}, rot: {element.rotation}, nodes: {nodes.Length}")
+            Tile tile = element.tile;
+            GameObject parent = new GameObject($"[{tile.x}, {tile.y}] type: {trackType}, inv: {track.inverted}, rot: {element.info.rotation}, nodes: {nodes.Length}")
             {
                 isStatic = true
             };
 
-            float height = element.baseHeight + track.trackHeight * World.CoordsZMultiplier;
-            Vector3 position = World.TileCoordsToUnity(x, y, height);
+            float height = element.info.baseHeight + track.trackHeight * World.CoordsZMultiplier;
+            Vector3 position = World.TileCoordsToUnity(tile.x, tile.y, height);
 
             Transform tfParent = parent.transform;
             tfParent.parent = transform;
-            tfParent.SetLocalPositionAndRotation(position, Quaternion.Euler(0, element.rotation * 90f, 0));
+            tfParent.SetLocalPositionAndRotation(position, Quaternion.Euler(0, element.info.rotation * 90f, 0));
 
             for (int i = 0; i < nodes.Length; i++)
             {
