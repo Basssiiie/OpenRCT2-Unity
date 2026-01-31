@@ -377,7 +377,7 @@ namespace OpenRCT2::Ui::Windows
                 if (currentRide != nullptr && RideAreAllPossibleEntrancesAndExitsBuilt(*currentRide).Successful)
                 {
                     ToolCancel();
-                    if (!currentRide->getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+                    if (!currentRide->getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
                     {
                         windowMgr->CloseByClass(WindowClass::rideConstruction);
                     }

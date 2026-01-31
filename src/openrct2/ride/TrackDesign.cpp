@@ -247,7 +247,7 @@ ResultWithMessage TrackDesign::CreateTrackDesignTrack(TrackDesignState& tds, con
         if (element->HasChain())
             track.SetFlag(TrackDesignTrackElementFlag::hasChain);
 
-        if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasInvertedVariant) && element->IsInverted())
+        if (ride.getRideTypeDescriptor().flags.has(RtdFlag::hasInvertedVariant) && element->IsInverted())
         {
             track.SetFlag(TrackDesignTrackElementFlag::isInverted);
         }
@@ -1922,7 +1922,7 @@ static bool TrackDesignPlacePreview(
 
     // Flat rides need their vehicle colours loaded for display
     // in the preview window
-    if (!GetRideTypeDescriptor(td.trackAndVehicle.rtdIndex).HasFlag(RtdFlag::hasTrack))
+    if (!GetRideTypeDescriptor(td.trackAndVehicle.rtdIndex).flags.has(RtdFlag::hasTrack))
     {
         for (size_t i = 0; i < std::size(ride->vehicleColours); i++)
         {
@@ -2100,7 +2100,7 @@ void TrackDesignDrawPreview(TrackDesign& td, uint8_t* pixels, bool placeScenery)
 
     // Special case for flat rides - Z-axis info is irrelevant
     // and must be zeroed out lest the preview be off-centre
-    if (!GetRideTypeDescriptor(td.trackAndVehicle.rtdIndex).HasFlag(RtdFlag::hasTrack))
+    if (!GetRideTypeDescriptor(td.trackAndVehicle.rtdIndex).flags.has(RtdFlag::hasTrack))
     {
         centre.z = 0;
         size_z = 0;

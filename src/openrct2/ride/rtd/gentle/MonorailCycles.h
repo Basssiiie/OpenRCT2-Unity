@@ -29,7 +29,7 @@ constexpr RideTypeDescriptor MonorailCyclesRTD =
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = kRtdFlagsHasThreeColours | EnumsToFlags(RtdFlag::canSynchroniseWithAdjacentStations,
+    .flags = kRtdFlagsHasThreeColours | RtdFlags(RtdFlag::canSynchroniseWithAdjacentStations,
                      RtdFlag::hasDataLogging, RtdFlag::noTestMode, RtdFlag::hasLoadOptions,
                      RtdFlag::guestsWillRideAgain, RtdFlag::hasVehicleColours, RtdFlag::hasTrack,
                      RtdFlag::supportsMultipleColourSchemes, RtdFlag::allowMusic, RtdFlag::hasEntranceAndExit,

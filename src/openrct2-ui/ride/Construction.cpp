@@ -281,7 +281,7 @@ namespace OpenRCT2
 
             // Additional tower bases can only be built if the ride allows for it (elevator)
             if (trackType == TrackElemType::towerBase
-                && !currentRide.getRideTypeDescriptor().HasFlag(RtdFlag::allowExtraTowerBases))
+                && !currentRide.getRideTypeDescriptor().flags.has(RtdFlag::allowExtraTowerBases))
                 entryIsDisabled = true;
 
             // Check if a previous element exists, to collate entries if possible

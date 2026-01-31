@@ -168,7 +168,7 @@ namespace OpenRCT2::RCT2
                     else
                     {
                         auto rideType = td->trackAndVehicle.rtdIndex;
-                        const bool isFlatRide = GetRideTypeDescriptor(rideType).HasFlag(RtdFlag::isFlatRide);
+                        const bool isFlatRide = GetRideTypeDescriptor(rideType).flags.has(RtdFlag::isFlatRide);
                         trackType = RCT2TrackTypeToOpenRCT2(t6TrackElement.Type, rideType, isFlatRide);
                     }
 

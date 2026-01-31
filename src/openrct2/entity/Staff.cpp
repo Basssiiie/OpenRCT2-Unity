@@ -2234,8 +2234,8 @@ bool Staff::UpdateFixingMoveToStationEnd(bool firstRun, const Ride& ride)
 {
     if (!firstRun)
     {
-        if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasSinglePieceStation)
-            || !ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+        if (ride.getRideTypeDescriptor().flags.has(RtdFlag::hasSinglePieceStation)
+            || !ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
         {
             return true;
         }
@@ -2321,8 +2321,8 @@ bool Staff::UpdateFixingMoveToStationStart(bool firstRun, const Ride& ride)
 {
     if (!firstRun)
     {
-        if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasSinglePieceStation)
-            || !ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+        if (ride.getRideTypeDescriptor().flags.has(RtdFlag::hasSinglePieceStation)
+            || !ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
         {
             return true;
         }
@@ -2398,8 +2398,8 @@ bool Staff::UpdateFixingFixStationStart(bool firstRun, const Ride& ride)
 {
     if (!firstRun)
     {
-        if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasSinglePieceStation)
-            || !ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+        if (ride.getRideTypeDescriptor().flags.has(RtdFlag::hasSinglePieceStation)
+            || !ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
         {
             return true;
         }

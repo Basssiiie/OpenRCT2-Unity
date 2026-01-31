@@ -384,7 +384,7 @@ namespace OpenRCT2::Ui::Windows
             else if (gameState.researchNextItem->type == Research::EntryType::ride)
             {
                 const auto& rtd = GetRideTypeDescriptor(gameState.researchNextItem->baseRideType);
-                if (rtd.HasFlag(RtdFlag::listVehiclesSeparately))
+                if (rtd.flags.has(RtdFlag::listVehiclesSeparately))
                 {
                     ft.Add<StringId>(gameState.researchNextItem->GetName());
                 }
@@ -444,7 +444,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 lastDevelopmentFormat = STR_RESEARCH_RIDE_LABEL;
                 const auto& rtd = GetRideTypeDescriptor(gameState.researchLastItem->baseRideType);
-                if (rtd.HasFlag(RtdFlag::listVehiclesSeparately))
+                if (rtd.flags.has(RtdFlag::listVehiclesSeparately))
                 {
                     ft.Add<StringId>(gameState.researchLastItem->GetName());
                 }

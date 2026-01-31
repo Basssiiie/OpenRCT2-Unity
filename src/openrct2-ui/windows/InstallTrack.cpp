@@ -281,7 +281,7 @@ namespace OpenRCT2::Ui::Windows
                 screenPos.y += kListRowHeight;
             }
 
-            if (GetRideTypeDescriptor(td.trackAndVehicle.rtdIndex).HasFlag(RtdFlag::hasGForces))
+            if (GetRideTypeDescriptor(td.trackAndVehicle.rtdIndex).flags.has(RtdFlag::hasGForces))
             {
                 // Maximum positive vertical Gs
                 {
@@ -317,7 +317,7 @@ namespace OpenRCT2::Ui::Windows
                 }
             }
 
-            if (GetRideTypeDescriptor(td.trackAndVehicle.rtdIndex).HasFlag(RtdFlag::hasDrops))
+            if (GetRideTypeDescriptor(td.trackAndVehicle.rtdIndex).flags.has(RtdFlag::hasDrops))
             {
                 auto ft = Formatter();
                 ft.Add<uint16_t>(td.statistics.drops);

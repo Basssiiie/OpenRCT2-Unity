@@ -29,7 +29,7 @@ constexpr RideTypeDescriptor MiniHelicoptersRTD =
         .extraTrackGroups = {TrackGroup::spinningTunnel},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = kRtdFlagsHasThreeColours | EnumsToFlags(RtdFlag::canSynchroniseWithAdjacentStations,
+    .flags = kRtdFlagsHasThreeColours | RtdFlags(RtdFlag::canSynchroniseWithAdjacentStations,
                      RtdFlag::hasDataLogging, RtdFlag::hasLoadOptions, RtdFlag::guestsWillRideAgain,
                      RtdFlag::hasVehicleColours, RtdFlag::hasTrack, RtdFlag::supportsMultipleColourSchemes,
                      RtdFlag::allowDoorsOnTrack, RtdFlag::allowMusic, RtdFlag::hasEntranceAndExit,

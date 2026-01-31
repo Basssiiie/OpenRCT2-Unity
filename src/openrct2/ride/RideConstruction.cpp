@@ -553,14 +553,14 @@ static void ride_construction_reset_current_piece()
 
     const auto& rtd = ride->getRideTypeDescriptor();
 
-    if (rtd.HasFlag(RtdFlag::hasTrack) || ride->numStations == 0)
+    if (rtd.flags.has(RtdFlag::hasTrack) || ride->numStations == 0)
     {
         _currentlySelectedTrack = rtd.StartTrackPiece;
         _currentTrackPitchEnd = TrackPitch::none;
         _currentTrackRollEnd = TrackRoll::none;
         _currentTrackHasLiftHill = false;
         _currentTrackAlternative.clearAll();
-        if (rtd.HasFlag(RtdFlag::startConstructionInverted))
+        if (rtd.flags.has(RtdFlag::startConstructionInverted))
         {
             _currentTrackAlternative.set(AlternativeTrackFlag::inverted);
         }
@@ -608,7 +608,7 @@ void RideConstructionSetDefaultNextPiece()
             tileElement = trackBeginEnd.begin_element;
             trackType = tileElement->AsTrack()->GetTrackType();
 
-            if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+            if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
             {
                 ride_construction_reset_current_piece();
                 return;
@@ -616,7 +616,7 @@ void RideConstructionSetDefaultNextPiece()
 
             // Set whether track is covered
             _currentTrackAlternative.unset(AlternativeTrackFlag::inverted);
-            if (rtd.HasFlag(RtdFlag::hasInvertedVariant))
+            if (rtd.flags.has(RtdFlag::hasInvertedVariant))
             {
                 if (tileElement->AsTrack()->IsInverted())
                 {
@@ -632,7 +632,7 @@ void RideConstructionSetDefaultNextPiece()
             _currentlySelectedTrack = ted->curveChain.next;
 
             // Set track banking
-            if (rtd.HasFlag(RtdFlag::hasInvertedVariant))
+            if (rtd.flags.has(RtdFlag::hasInvertedVariant))
             {
                 if (bank == TrackRoll::upsideDown)
                 {
@@ -675,7 +675,7 @@ void RideConstructionSetDefaultNextPiece()
 
             // Set whether track is covered
             _currentTrackAlternative.unset(AlternativeTrackFlag::inverted);
-            if (rtd.HasFlag(RtdFlag::hasInvertedVariant))
+            if (rtd.flags.has(RtdFlag::hasInvertedVariant))
             {
                 if (tileElement->AsTrack()->IsInverted())
                 {
@@ -691,7 +691,7 @@ void RideConstructionSetDefaultNextPiece()
             _currentlySelectedTrack = ted->curveChain.previous;
 
             // Set track banking
-            if (rtd.HasFlag(RtdFlag::hasInvertedVariant))
+            if (rtd.flags.has(RtdFlag::hasInvertedVariant))
             {
                 if (bank == TrackRoll::upsideDown)
                 {
@@ -995,7 +995,7 @@ bool RideModify(const CoordsXYE& input)
     if (tileElement.element->GetType() != TileElementType::Track)
         return false;
 
-    if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::cannotHaveGaps))
+    if (ride->getRideTypeDescriptor().flags.has(RtdFlag::cannotHaveGaps))
     {
         CoordsXYE endOfTrackElement{};
         if (ride->findTrackGap(tileElement, &endOfTrackElement))
@@ -1027,7 +1027,7 @@ bool RideModify(const CoordsXYE& input)
     _rideConstructionNextArrowPulse = 0;
     gMapSelectFlags.unset(MapSelectFlag::enableArrow);
 
-    if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+    if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
     {
         WindowRideConstructionUpdateActiveElements();
         return true;
@@ -1088,7 +1088,7 @@ int32_t RideInitialiseConstructionWindow(Ride& ride)
     _currentTrackHasLiftHill = false;
     _currentTrackAlternative.clearAll();
 
-    if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::startConstructionInverted))
+    if (ride.getRideTypeDescriptor().flags.has(RtdFlag::startConstructionInverted))
         _currentTrackAlternative.set(AlternativeTrackFlag::inverted);
 
     _previousTrackRollEnd = TrackRoll::none;
@@ -1242,7 +1242,7 @@ void Ride::validateStations()
 
                 // In the future this could look at the TED and see if the station has a sequence longer than 1
                 // tower ride, flat ride, shop
-                if (getRideTypeDescriptor().HasFlag(RtdFlag::hasSinglePieceStation))
+                if (getRideTypeDescriptor().flags.has(RtdFlag::hasSinglePieceStation))
                 {
                     // if the track has multiple sequences, stop looking for the next one.
                     specialTrack = true;
@@ -1483,7 +1483,7 @@ bool RideSelectForwardsFromBack()
  */
 ResultWithMessage RideAreAllPossibleEntrancesAndExitsBuilt(const Ride& ride)
 {
-    if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::isShopOrFacility))
+    if (ride.getRideTypeDescriptor().flags.has(RtdFlag::isShopOrFacility))
         return { true };
 
     for (auto& station : ride.getStations())

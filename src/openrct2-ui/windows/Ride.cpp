@@ -1361,26 +1361,26 @@ namespace OpenRCT2::Ui::Windows
 
             const auto& rtd = ride->getRideTypeDescriptor();
 
-            if (!rtd.HasFlag(RtdFlag::hasDataLogging))
+            if (!rtd.flags.has(RtdFlag::hasDataLogging))
                 disabledTabs |= (1uLL << WIDX_TAB_8); // 0x800
 
             if (rtd.specialType == RtdSpecialType::miniGolf)
                 disabledTabs |= (1uLL << WIDX_TAB_2 | 1uLL << WIDX_TAB_3 | 1uLL << WIDX_TAB_4); // 0xE0
 
-            if (rtd.HasFlag(RtdFlag::noVehicles))
+            if (rtd.flags.has(RtdFlag::noVehicles))
                 disabledTabs |= (1uLL << WIDX_TAB_2); // 0x20
 
-            if (!rtd.HasFlag(RtdFlag::hasTrackColourMain) && !rtd.HasFlag(RtdFlag::hasTrackColourAdditional)
-                && !rtd.HasFlag(RtdFlag::hasTrackColourSupports) && !rtd.HasFlag(RtdFlag::hasVehicleColours)
-                && !rtd.HasFlag(RtdFlag::hasEntranceAndExit))
+            if (!rtd.flags.hasAny(
+                    RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourAdditional, RtdFlag::hasTrackColourSupports,
+                    RtdFlag::hasVehicleColours, RtdFlag::hasEntranceAndExit))
             {
                 disabledTabs |= (1uLL << WIDX_TAB_5); // 0x100
             }
 
-            if (rtd.HasFlag(RtdFlag::isShopOrFacility))
+            if (rtd.flags.has(RtdFlag::isShopOrFacility))
                 disabledTabs |= (1uLL << WIDX_TAB_3 | 1uLL << WIDX_TAB_4 | 1uLL << WIDX_TAB_7); // 0x4C0
 
-            if (!rtd.HasFlag(RtdFlag::allowMusic))
+            if (!rtd.flags.has(RtdFlag::allowMusic))
             {
                 disabledTabs |= (1uLL << WIDX_TAB_6); // 0x200
             }
@@ -1753,7 +1753,7 @@ namespace OpenRCT2::Ui::Windows
             const auto& rtd = ride->getRideTypeDescriptor();
 
             int32_t numItems = 1;
-            if (!rtd.HasFlag(RtdFlag::noVehicles))
+            if (!rtd.flags.has(RtdFlag::noVehicles))
             {
                 numItems += ride->numStations;
                 numItems += ride->numTrains;
@@ -1957,7 +1957,7 @@ namespace OpenRCT2::Ui::Windows
             WindowDropdownShowText(
                 { windowPos.x + widget->left, windowPos.y + widget->top }, widget->height(), colours[1], 0, 2);
             gDropdown.defaultIndex = 0;
-            if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack) || _viewIndex == 0 || _viewIndex > ride->numTrains)
+            if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::hasTrack) || _viewIndex == 0 || _viewIndex > ride->numTrains)
             {
                 // Disable if we're a flat ride, 'overall view' is selected or a station is selected
                 gDropdown.items[1].setDisabled(true);
@@ -2000,7 +2000,7 @@ namespace OpenRCT2::Ui::Windows
             const auto& rtd = ride.getRideTypeDescriptor();
             if (gameState.cheats.showVehiclesFromOtherTrackTypes
                 && !(
-                    rtd.HasFlag(RtdFlag::isFlatRide) || rtd.specialType == RtdSpecialType::maze
+                    rtd.flags.has(RtdFlag::isFlatRide) || rtd.specialType == RtdSpecialType::maze
                     || rtd.specialType == RtdSpecialType::miniGolf))
             {
                 selectionShouldBeExpanded = true;
@@ -2025,7 +2025,7 @@ namespace OpenRCT2::Ui::Windows
             for (; rideTypeIterator <= rideTypeIteratorMax; rideTypeIterator++)
             {
                 const auto& rtdIterator = GetRideTypeDescriptor(rideTypeIterator);
-                if (selectionShouldBeExpanded && rtdIterator.HasFlag(RtdFlag::isFlatRide))
+                if (selectionShouldBeExpanded && rtdIterator.flags.has(RtdFlag::isFlatRide))
                     continue;
                 if (selectionShouldBeExpanded
                     && (rtdIterator.specialType == RtdSpecialType::maze || rtd.specialType == RtdSpecialType::miniGolf))
@@ -2478,7 +2478,7 @@ namespace OpenRCT2::Ui::Windows
                 return kStringIdEmpty;
 
             auto stringId = VehicleStatusNames[EnumValue(vehicle->status)];
-            if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::singleSession)
+            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::singleSession)
                 && vehicle->status <= Vehicle::Status::unloadingPassengers)
             {
                 stringId = SingleSessionVehicleStatusNames[EnumValue(vehicle->status)];
@@ -2800,8 +2800,8 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_VEHICLE_CARS_PER_TRAIN_DECREASE].type = WidgetType::empty;
             }
 
-            if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::allowReversedTrains)
-                || (gameState.cheats.disableTrainLengthLimit && !ride->getRideTypeDescriptor().HasFlag(RtdFlag::isFlatRide)))
+            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::allowReversedTrains)
+                || (gameState.cheats.disableTrainLengthLimit && !ride->getRideTypeDescriptor().flags.has(RtdFlag::isFlatRide)))
             {
                 widgets[WIDX_VEHICLE_REVERSED_TRAINS_CHECKBOX].type = WidgetType::checkbox;
                 if (ride->hasLifecycleFlag(RIDE_LIFECYCLE_REVERSED_TRAINS))
@@ -3013,7 +3013,7 @@ namespace OpenRCT2::Ui::Windows
                     y -= (carEntry.spacing / 2) / 17432;
                 }
 
-                if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::layeredVehiclePreview))
+                if (ride->getRideTypeDescriptor().flags.has(RtdFlag::layeredVehiclePreview))
                 {
                     VehicleDrawInfo tmp = *(nextSpriteToDraw - 1);
                     *(nextSpriteToDraw - 1) = *(nextSpriteToDraw - 2);
@@ -3462,7 +3462,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Sometimes, only one of the alternatives support lift hill pieces. Make sure to check both.
             const auto& rtd = ride->getRideTypeDescriptor();
-            bool hasAlternativeType = rtd.HasFlag(RtdFlag::hasInvertedVariant);
+            bool hasAlternativeType = rtd.flags.has(RtdFlag::hasInvertedVariant);
             if (rtd.TrackPaintFunctions.Regular.SupportsTrackGroup(TrackGroup::liftHill)
                 || (hasAlternativeType && rtd.InvertedTrackPaintFunctions.Regular.SupportsTrackGroup(TrackGroup::liftHill)))
             {
@@ -3502,7 +3502,7 @@ namespace OpenRCT2::Ui::Windows
             }
 
             // Leave if another vehicle arrives at station
-            if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation)
+            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation)
                 && ride->numTrains > 1 && !ride->isBlockSectioned())
             {
                 widgets[WIDX_LEAVE_WHEN_ANOTHER_ARRIVES_CHECKBOX].type = WidgetType::checkbox;
@@ -3518,7 +3518,7 @@ namespace OpenRCT2::Ui::Windows
             }
 
             // Synchronise with adjacent stations
-            if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::canSynchroniseWithAdjacentStations))
+            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::canSynchroniseWithAdjacentStations))
             {
                 widgets[WIDX_SYNCHRONISE_WITH_ADJACENT_STATIONS_CHECKBOX].type = WidgetType::checkbox;
                 widgets[WIDX_SYNCHRONISE_WITH_ADJACENT_STATIONS_CHECKBOX].text = STR_SYNCHRONISE_WITH_ADJACENT_STATIONS;
@@ -3534,7 +3534,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Waiting
             widgets[WIDX_LOAD].text = VehicleLoadNames[(ride->departFlags & RIDE_DEPART_WAIT_FOR_LOAD_MASK)];
-            if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasLoadOptions))
+            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasLoadOptions))
             {
                 widgets[WIDX_LOAD_CHECKBOX].type = WidgetType::checkbox;
                 widgets[WIDX_LOAD].type = WidgetType::dropdownMenu;
@@ -3641,7 +3641,7 @@ namespace OpenRCT2::Ui::Windows
                     format = STR_MAX_PEOPLE_ON_RIDE_VALUE;
                     caption = STR_MAX_PEOPLE_ON_RIDE;
                     tooltip = STR_MAX_PEOPLE_ON_RIDE_TIP;
-                    if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::noVehicles))
+                    if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::noVehicles))
                         format = 0;
                     break;
             }
@@ -4131,7 +4131,7 @@ namespace OpenRCT2::Ui::Windows
         {
             // Get station flags (shops don't have them)
             auto stationObjFlags = 0;
-            if (!ride.getRideTypeDescriptor().HasFlag(RtdFlag::isShopOrFacility))
+            if (!ride.getRideTypeDescriptor().flags.has(RtdFlag::isShopOrFacility))
             {
                 auto stationObj = ride.getStationObject();
                 if (stationObj != nullptr)
@@ -4144,12 +4144,12 @@ namespace OpenRCT2::Ui::Windows
             {
                 case 0:
                     return (stationObjFlags & StationObjectFlags::hasPrimaryColour)
-                        || ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasTrackColourMain);
+                        || ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrackColourMain);
                 case 1:
                     return (stationObjFlags & StationObjectFlags::hasSecondaryColour)
-                        || ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasTrackColourAdditional);
+                        || ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrackColourAdditional);
                 case 2:
-                    return ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasTrackColourSupports);
+                    return ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrackColourSupports);
                 default:
                     return 0;
             }
@@ -4591,7 +4591,7 @@ namespace OpenRCT2::Ui::Windows
             }
 
             // Track, multiple colour schemes
-            if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::supportsMultipleColourSchemes))
+            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::supportsMultipleColourSchemes))
             {
                 widgets[WIDX_TRACK_COLOUR_SCHEME].type = WidgetType::dropdownMenu;
                 widgets[WIDX_TRACK_COLOUR_SCHEME_DROPDOWN].type = WidgetType::button;
@@ -4656,14 +4656,14 @@ namespace OpenRCT2::Ui::Windows
             }
 
             // Track preview
-            if (rtd.HasFlag(RtdFlag::hasTrackColourMain) || rtd.HasFlag(RtdFlag::hasTrackColourAdditional)
-                || rtd.HasFlag(RtdFlag::hasTrackColourSupports))
+            if (rtd.flags.hasAny(
+                    RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourAdditional, RtdFlag::hasTrackColourSupports))
                 widgets[WIDX_TRACK_PREVIEW].type = WidgetType::spinner;
             else
                 widgets[WIDX_TRACK_PREVIEW].type = WidgetType::empty;
 
             // Entrance style
-            if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasEntranceAndExit))
+            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasEntranceAndExit))
             {
                 widgets[WIDX_ENTRANCE_PREVIEW].type = WidgetType::spinner;
                 widgets[WIDX_ENTRANCE_STYLE].type = WidgetType::dropdownMenu;
@@ -4685,8 +4685,7 @@ namespace OpenRCT2::Ui::Windows
             }
 
             // Vehicle colours
-            if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::noVehicles)
-                && ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasVehicleColours))
+            if (!rtd.flags.has(RtdFlag::noVehicles) && rtd.flags.has(RtdFlag::hasVehicleColours))
             {
                 if (ride->vehicleColourSettings == VehicleColourSettings::same)
                 {
@@ -4743,7 +4742,7 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 // Vehicle colour scheme type
-                if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::vehicleIsIntegral)
+                if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::vehicleIsIntegral)
                     && (ride->numCarsPerTrain | ride->numTrains) > 1)
                 {
                     widgets[WIDX_VEHICLE_COLOUR_SCHEME].type = WidgetType::dropdownMenu;
@@ -5053,7 +5052,7 @@ namespace OpenRCT2::Ui::Windows
                     }
 
                     if (getGameState().cheats.unlockOperatingLimits
-                        || musicObj->SupportsRideType(ride->type, rtd.HasFlag(RtdFlag::requireExplicitListingInMusicObjects)))
+                        || musicObj->SupportsRideType(ride->type, rtd.flags.has(RtdFlag::requireExplicitListingInMusicObjects)))
                     {
                         musicOrder.push_back(i);
                     }
@@ -5458,7 +5457,7 @@ namespace OpenRCT2::Ui::Windows
                 { windowPos.x + widgets[widgetIndex].left, windowPos.y + widgets[widgetIndex].top },
                 widgets[widgetIndex].height(), colours[1], Dropdown::Flag::StayOpen, 2);
             gDropdown.defaultIndex = 0;
-            if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+            if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
             {
                 // Disable saving without scenery if we're a flat ride
                 gDropdown.items[0].setDisabled(true);
@@ -5764,7 +5763,7 @@ namespace OpenRCT2::Ui::Windows
 
                         screenCoords.y += kListRowHeight;
 
-                        if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasGForces))
+                        if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasGForces))
                         {
                             // Max. positive vertical G's
                             stringId = STR_MAX_POSITIVE_VERTICAL_G;
@@ -5797,7 +5796,7 @@ namespace OpenRCT2::Ui::Windows
                             screenCoords.y += kListRowHeight;
                         }
 
-                        if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasDrops))
+                        if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasDrops))
                         {
                             ft = Formatter();
                             ft.Add<uint16_t>(ride->numDrops);
@@ -6004,7 +6003,7 @@ namespace OpenRCT2::Ui::Windows
             pressedWidgets |= (1LL << (WIDX_GRAPH_VELOCITY + listInformationType));
 
             // Hide graph buttons that are not applicable
-            if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasGForces))
+            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasGForces))
             {
                 widgets[WIDX_GRAPH_VERTICAL].type = WidgetType::button;
                 widgets[WIDX_GRAPH_LATERAL].type = WidgetType::button;
@@ -6780,7 +6779,7 @@ namespace OpenRCT2::Ui::Windows
                 ride->formatNameTo(ft);
 
                 widgets[WIDX_SHOW_GUESTS_THOUGHTS].type = WidgetType::flatBtn;
-                if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::isShopOrFacility))
+                if (ride->getRideTypeDescriptor().flags.has(RtdFlag::isShopOrFacility))
                 {
                     widgets[WIDX_SHOW_GUESTS_ON_RIDE].type = WidgetType::empty;
                     widgets[WIDX_SHOW_GUESTS_QUEUING].type = WidgetType::empty;
@@ -6978,7 +6977,7 @@ namespace OpenRCT2::Ui::Windows
         if (ride.type >= RIDE_TYPE_COUNT)
             return nullptr;
 
-        if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::noVehicles))
+        if (ride.getRideTypeDescriptor().flags.has(RtdFlag::noVehicles))
             return RideMainOpen(ride);
 
         auto* windowMgr = GetWindowManager();

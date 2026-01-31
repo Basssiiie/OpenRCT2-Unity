@@ -149,11 +149,11 @@ namespace OpenRCT2::Ui::Windows
                 if (curRide.status == RideStatus::open)
                 {
                     const auto& rtd = curRide.getRideTypeDescriptor();
-                    if (rtd.HasFlag(RtdFlag::isShopOrFacility))
+                    if (rtd.flags.has(RtdFlag::isShopOrFacility))
                         continue;
-                    if (rtd.HasFlag(RtdFlag::sellsFood))
+                    if (rtd.flags.has(RtdFlag::sellsFood))
                         continue;
-                    if (rtd.HasFlag(RtdFlag::sellsDrinks))
+                    if (rtd.flags.has(RtdFlag::sellsDrinks))
                         continue;
                     if (rtd.specialType == RtdSpecialType::toilet)
                         continue;
