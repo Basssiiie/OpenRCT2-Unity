@@ -13,7 +13,6 @@
 
 namespace OpenRCT2
 {
-    struct BannerElement;
     struct PathElement;
     struct SurfaceElement;
 } // namespace OpenRCT2
@@ -47,6 +46,5 @@ uint16_t PaintUtilRotateSegments(uint16_t segments, uint8_t rotation);
 
 void TileElementPaintSetup(PaintSession& session, const CoordsXY& mapCoords, bool isTrackPiecePreview = false);
 
-void PaintBanner(PaintSession& session, uint8_t direction, int32_t height, const OpenRCT2::BannerElement& bannerElement);
 void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, const OpenRCT2::SurfaceElement& tileElement);
 bool PaintShouldShowHeightMarkers(const PaintSession& session, uint32_t viewportFlag);

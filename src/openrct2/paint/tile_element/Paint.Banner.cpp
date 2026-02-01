@@ -25,7 +25,7 @@
 #include "../../world/Scenery.h"
 #include "../../world/TileInspector.h"
 #include "../../world/tile_element/BannerElement.h"
-#include "Paint.TileElement.h"
+#include "Paint.Banner.h"
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Drawing;
