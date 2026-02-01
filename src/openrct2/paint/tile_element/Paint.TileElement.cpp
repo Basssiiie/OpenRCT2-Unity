@@ -34,6 +34,7 @@
 #include "Paint.Path.h"
 #include "Paint.SmallScenery.h"
 #include "Paint.Surface.h"
+#include "Paint.Wall.h"
 #include "Segment.h"
 
 using namespace OpenRCT2;
