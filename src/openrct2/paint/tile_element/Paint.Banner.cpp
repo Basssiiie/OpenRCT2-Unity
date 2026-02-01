@@ -26,13 +26,14 @@
 #include "../../world/TileInspector.h"
 #include "../../world/tile_element/BannerElement.h"
 #include "Paint.Banner.h"
+#include "Paint.TileElement.h"
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Drawing;
 
 // kBannerBoundBoxes[rotation][0] is for the pole in the back
 // kBannerBoundBoxes[rotation][1] is for the pole and the banner in the front
-constexpr CoordsXY kBannerBoundBoxes[][2] = {
+const CoordsXY kBannerBoundBoxes[][2] = {
     { { 1, 2 }, { 1, 29 } },
     { { 2, 32 }, { 29, 32 } },
     { { 32, 2 }, { 32, 29 } },

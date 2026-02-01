@@ -11,6 +11,11 @@
 
 #include "../../world/Location.hpp"
 
+namespace OpenRCT2
+{
+    struct TrackElement;
+}
+
 struct PaintSession;
 
 enum edge_t
