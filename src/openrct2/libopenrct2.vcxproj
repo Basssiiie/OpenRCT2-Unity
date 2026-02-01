@@ -396,6 +396,7 @@
     <ClInclude Include="paint\support\WoodenSupports.h" />
     <ClInclude Include="paint\tile_element\Paint.Entrance.h" />
     <ClInclude Include="paint\tile_element\Paint.Path.h" />
+    <ClInclude Include="paint\tile_element\Paint.SmallScenery.h" />
     <ClInclude Include="paint\tile_element\Paint.PathAddition.h" />
     <ClInclude Include="paint\tile_element\Paint.Surface.h" />
     <ClInclude Include="paint\tile_element\Paint.TileElement.h" />

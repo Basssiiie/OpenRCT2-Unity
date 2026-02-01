@@ -32,6 +32,7 @@
 #include "../VirtualFloor.h"
 #include "Paint.Entrance.h"
 #include "Paint.Path.h"
+#include "Paint.SmallScenery.h"
 #include "Paint.Surface.h"
 #include "Segment.h"
 

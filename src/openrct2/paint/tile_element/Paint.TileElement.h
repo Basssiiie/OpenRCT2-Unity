@@ -16,7 +16,6 @@ namespace OpenRCT2
     struct BannerElement;
     struct LargeSceneryElement;
     struct PathElement;
-    struct SmallSceneryElement;
     struct SurfaceElement;
     struct TrackElement;
     struct WallElement;
@@ -53,8 +52,6 @@ void TileElementPaintSetup(PaintSession& session, const CoordsXY& mapCoords, boo
 
 void PaintBanner(PaintSession& session, uint8_t direction, int32_t height, const OpenRCT2::BannerElement& bannerElement);
 void PaintSurface(PaintSession& session, uint8_t direction, uint16_t height, const OpenRCT2::SurfaceElement& tileElement);
-void PaintSmallScenery(
-    PaintSession& session, uint8_t direction, int32_t height, const OpenRCT2::SmallSceneryElement& sceneryElement);
 void PaintWall(PaintSession& session, uint8_t direction, int32_t height, const OpenRCT2::WallElement& tileElement);
 void PaintLargeScenery(
     PaintSession& session, uint8_t direction, uint16_t height, const OpenRCT2::LargeSceneryElement& tileElement);
