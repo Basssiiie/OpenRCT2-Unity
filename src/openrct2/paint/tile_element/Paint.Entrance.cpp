@@ -32,6 +32,7 @@
 #include "../../world/TileInspector.h"
 #include "../../world/tile_element/EntranceElement.h"
 #include "../support/WoodenSupports.h"
+#include "Paint.Entrance.h"
 #include "Paint.TileElement.h"
 #include "Segment.h"
 
