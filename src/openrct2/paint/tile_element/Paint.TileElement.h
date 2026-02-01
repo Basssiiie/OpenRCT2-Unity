@@ -11,11 +11,6 @@
 
 #include "../../world/Location.hpp"
 
-namespace OpenRCT2
-{
-    struct PathElement;
-} // namespace OpenRCT2
-
 struct PaintSession;
 
 enum edge_t
