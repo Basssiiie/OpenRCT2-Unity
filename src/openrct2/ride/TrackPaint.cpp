@@ -23,6 +23,7 @@
 #include "../paint/support/MetalSupports.h"
 #include "../paint/support/WoodenSupports.h"
 #include "../paint/tile_element/Paint.TileElement.h"
+#include "../paint/tile_element/Paint.Track.h"
 #include "../paint/tile_element/Segment.h"
 #include "../paint/track/Segment.h"
 #include "../paint/track/Support.h"
