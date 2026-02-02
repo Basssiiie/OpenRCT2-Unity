@@ -1287,6 +1287,9 @@ namespace OpenRCT2::Ui::Windows
             money64 cost = 0;
             CoordsXYZ lastLocation;
 
+            // Disable error sound during loop to prevent stacking sounds for each failed tile
+            gDisableErrorWindowSound = true;
+
             for (const auto& tile : _provisionalFootpath.tiles)
             {
                 auto footpathPlaceAction = GameActions::FootpathPlaceAction(
@@ -1300,6 +1303,8 @@ namespace OpenRCT2::Ui::Windows
                 lastLocation = tile.position;
             }
 
+            gDisableErrorWindowSound = false;
+
             if (anySuccess)
             {
                 // Don't play sound if it is no cost to prevent multiple sounds. TODO: make this work in no
@@ -1311,6 +1316,8 @@ namespace OpenRCT2::Ui::Windows
             }
             else
             {
+                // Play error sound once for the entire failed operation
+                Audio::Play3D(Audio::SoundId::error, lastLocation);
                 _footpathErrorOccured = true;
             }
         }
