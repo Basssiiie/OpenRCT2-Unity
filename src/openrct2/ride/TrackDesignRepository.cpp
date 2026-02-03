@@ -150,7 +150,7 @@ public:
             {
                 const ObjectRepositoryItem* ori = repo.FindObjectLegacy(item.ObjectEntry.c_str());
 
-                if (ori == nullptr || !GetRideTypeDescriptor(rideType).HasFlag(RtdFlag::listVehiclesSeparately))
+                if (ori == nullptr || !GetRideTypeDescriptor(rideType).flags.has(RtdFlag::listVehiclesSeparately))
                     entryIsNotSeparate = true;
             }
 
@@ -184,7 +184,7 @@ public:
             {
                 const ObjectRepositoryItem* ori = repo.FindObjectLegacy(item.ObjectEntry.c_str());
 
-                if (ori == nullptr || !GetRideTypeDescriptor(rideType).HasFlag(RtdFlag::listVehiclesSeparately))
+                if (ori == nullptr || !GetRideTypeDescriptor(rideType).flags.has(RtdFlag::listVehiclesSeparately))
                     entryIsNotSeparate = true;
             }
 

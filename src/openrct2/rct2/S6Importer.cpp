@@ -661,7 +661,7 @@ namespace OpenRCT2::RCT2
                 auto subtype = RCTEntryIndexToOpenRCT2EntryIndex(src->subtype);
                 auto* rideEntry = GetRideEntryByIndex(subtype);
                 // If the ride is tracked, we don’t need to check the vehicle any more.
-                if (!GetRideTypeDescriptor(src->type).HasFlag(RtdFlag::isFlatRide))
+                if (!GetRideTypeDescriptor(src->type).flags.has(RtdFlag::isFlatRide))
                 {
                     _isFlatRide[index] = false;
                     continue;
@@ -674,7 +674,7 @@ namespace OpenRCT2::RCT2
                 {
                     originalRideType = rideEntry->GetFirstNonNullRideType();
                 }
-                const auto isFlatRide = GetRideTypeDescriptor(originalRideType).HasFlag(RtdFlag::isFlatRide);
+                const auto isFlatRide = GetRideTypeDescriptor(originalRideType).flags.has(RtdFlag::isFlatRide);
                 _isFlatRide.set(static_cast<size_t>(index), isFlatRide);
             }
         }
@@ -968,7 +968,7 @@ namespace OpenRCT2::RCT2
             }
 
             auto musicStyle = kObjectEntryIndexNull;
-            if (GetRideTypeDescriptor(dst->type).HasFlag(RtdFlag::allowMusic))
+            if (GetRideTypeDescriptor(dst->type).flags.has(RtdFlag::allowMusic))
             {
                 musicStyle = src->music;
             }

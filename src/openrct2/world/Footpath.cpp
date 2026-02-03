@@ -588,7 +588,7 @@ static void Loc6A6D7E(
                             continue;
                         }
 
-                        if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::isFlatRide))
+                        if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::isFlatRide))
                         {
                             continue;
                         }
@@ -674,7 +674,7 @@ static void Loc6A6C85(
             return;
         }
 
-        if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::isFlatRide))
+        if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::isFlatRide))
         {
             return;
         }
@@ -1685,7 +1685,7 @@ bool TileElementWantsPathConnectionTowards(const TileCoordsXYZD& coords, const T
                     if (ride == nullptr)
                         continue;
 
-                    if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::isFlatRide))
+                    if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::isFlatRide))
                         break;
 
                     const auto trackType = tileElement->AsTrack()->GetTrackType();
@@ -1736,7 +1736,7 @@ void FootpathRemoveEdgesAt(const CoordsXY& footpathPos, TileElement* tileElement
         if (ride == nullptr)
             return;
 
-        if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::isFlatRide))
+        if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::isFlatRide))
             return;
     }
 
@@ -1864,7 +1864,7 @@ bool PathElement::IsLevelCrossing(const CoordsXY& coords) const
         return false;
     }
 
-    return ride->getRideTypeDescriptor().HasFlag(RtdFlag::supportsLevelCrossings);
+    return ride->getRideTypeDescriptor().flags.has(RtdFlag::supportsLevelCrossings);
 }
 
 bool FootpathIsZAndDirectionValid(const PathElement& pathElement, int32_t currentZ, int32_t currentDirection)

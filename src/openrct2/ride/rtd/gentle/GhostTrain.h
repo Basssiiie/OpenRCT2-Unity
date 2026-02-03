@@ -29,7 +29,7 @@ constexpr RideTypeDescriptor GhostTrainRTD =
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = kRtdFlagsHasThreeColours | EnumsToFlags(RtdFlag::canSynchroniseWithAdjacentStations,
+    .flags = kRtdFlagsHasThreeColours | RtdFlags(RtdFlag::canSynchroniseWithAdjacentStations,
                      RtdFlag::hasGForces, RtdFlag::hasDataLogging, RtdFlag::hasDrops,
                      RtdFlag::hasLoadOptions, RtdFlag::guestsWillRideAgain, RtdFlag::hasVehicleColours,
                      RtdFlag::hasTrack, RtdFlag::supportsMultipleColourSchemes, RtdFlag::allowDoorsOnTrack,

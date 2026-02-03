@@ -144,7 +144,7 @@ namespace OpenRCT2::GameActions
             }
         }
 
-        if (!rtd.HasFlag(RtdFlag::isFlatRide))
+        if (!rtd.flags.has(RtdFlag::isFlatRide))
         {
             if (_trackType == TrackElemType::onRidePhoto)
             {
@@ -260,7 +260,7 @@ namespace OpenRCT2::GameActions
                 return Result(Status::invalidParameters, STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE, STR_TOO_HIGH);
             }
 
-            auto crossingMode = (rtd.HasFlag(RtdFlag::supportsLevelCrossings) && _trackType == TrackElemType::flat)
+            auto crossingMode = (rtd.flags.has(RtdFlag::supportsLevelCrossings) && _trackType == TrackElemType::flat)
                 ? CreateCrossingMode::trackOverPath
                 : CreateCrossingMode::none;
             // When placing from a track design, ignore track elements from the same ride to allow it to intersect itself.
@@ -313,7 +313,7 @@ namespace OpenRCT2::GameActions
                     Status::disallowed, STR_RIDE_CONSTRUCTION_CANT_CONSTRUCT_THIS_HERE, STR_RIDE_CANT_BUILD_THIS_UNDERWATER);
             }
 
-            if (rtd.HasFlag(RtdFlag::trackMustBeOnWater) && !_trackDesignDrawingPreview)
+            if (rtd.flags.has(RtdFlag::trackMustBeOnWater) && !_trackDesignDrawingPreview)
             {
                 auto surfaceElement = MapGetSurfaceElementAt(mapLoc);
                 if (surfaceElement == nullptr)
@@ -373,7 +373,7 @@ namespace OpenRCT2::GameActions
                 {
                     uint16_t maxHeight;
 
-                    if (rtd.HasFlag(RtdFlag::listVehiclesSeparately) && rideEntry->maxHeight != 0)
+                    if (rtd.flags.has(RtdFlag::listVehiclesSeparately) && rideEntry->maxHeight != 0)
                     {
                         maxHeight = rideEntry->maxHeight;
                     }
@@ -466,7 +466,7 @@ namespace OpenRCT2::GameActions
             clearanceZ = floor2(clearanceZ, kCoordsZStep) + baseZ;
             const auto mapLocWithClearance = CoordsXYRangedZ(mapLoc, baseZ, clearanceZ);
 
-            auto crossingMode = (rtd.HasFlag(RtdFlag::supportsLevelCrossings) && _trackType == TrackElemType::flat)
+            auto crossingMode = (rtd.flags.has(RtdFlag::supportsLevelCrossings) && _trackType == TrackElemType::flat)
                 ? CreateCrossingMode::trackOverPath
                 : CreateCrossingMode::none;
             // When placing from a track design, ignore track elements from the same ride to allow it to intersect itself.
@@ -494,7 +494,7 @@ namespace OpenRCT2::GameActions
             if (!GetFlags().has(CommandFlag::ghost) && !gameState.cheats.disableClearanceChecks)
             {
                 FootpathRemoveLitter(mapLoc);
-                if (rtd.HasFlag(RtdFlag::noWallsAroundTrack))
+                if (rtd.flags.has(RtdFlag::noWallsAroundTrack))
                 {
                     WallRemoveAt(mapLocWithClearance);
                 }
@@ -595,7 +595,7 @@ namespace OpenRCT2::GameActions
                 trackElement->SetBrakeBoosterSpeed(_brakeSpeed);
             }
 
-            if (rtd.HasFlag(RtdFlag::hasLandscapeDoors))
+            if (rtd.flags.has(RtdFlag::hasLandscapeDoors))
             {
                 trackElement->SetDoorAState(kLandEdgeDoorFrameClosed);
                 trackElement->SetDoorBState(kLandEdgeDoorFrameClosed);
@@ -649,7 +649,7 @@ namespace OpenRCT2::GameActions
 
             auto* tileElement = trackElement->as<TileElement>();
 
-            if (rtd.HasFlag(RtdFlag::trackMustBeOnWater))
+            if (rtd.flags.has(RtdFlag::trackMustBeOnWater))
             {
                 auto* waterSurfaceElement = MapGetSurfaceElementAt(mapLoc);
                 if (waterSurfaceElement != nullptr)

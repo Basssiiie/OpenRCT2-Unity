@@ -230,7 +230,7 @@ namespace OpenRCT2::GameActions
             const auto& rtd = ride.getRideTypeDescriptor();
             if (gameState.cheats.showVehiclesFromOtherTrackTypes
                 && !(
-                    ride.getRideTypeDescriptor().HasFlag(RtdFlag::isFlatRide) || rtd.specialType == RtdSpecialType::maze
+                    ride.getRideTypeDescriptor().flags.has(RtdFlag::isFlatRide) || rtd.specialType == RtdSpecialType::maze
                     || rtd.specialType == RtdSpecialType::miniGolf))
             {
                 selectionShouldBeExpanded = true;
@@ -249,7 +249,7 @@ namespace OpenRCT2::GameActions
         {
             if (selectionShouldBeExpanded)
             {
-                if (GetRideTypeDescriptor(rideTypeIterator).HasFlag(RtdFlag::isFlatRide))
+                if (GetRideTypeDescriptor(rideTypeIterator).flags.has(RtdFlag::isFlatRide))
                     continue;
 
                 const auto& rtd = GetRideTypeDescriptor(rideTypeIterator);

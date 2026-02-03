@@ -110,7 +110,7 @@ static RideId BannerGetRideIndexAt(const CoordsXYZ& bannerCoords)
 
         RideId rideIndex = tileElement->AsTrack()->GetRideIndex();
         auto ride = GetRide(rideIndex);
-        if (ride == nullptr || ride->getRideTypeDescriptor().HasFlag(RtdFlag::isShopOrFacility))
+        if (ride == nullptr || ride->getRideTypeDescriptor().flags.has(RtdFlag::isShopOrFacility))
             continue;
 
         if ((tileElement->GetClearanceZ()) + (4 * kCoordsZStep) <= bannerCoords.z)
@@ -233,7 +233,7 @@ RideId BannerGetClosestRideIndex(const CoordsXYZ& mapPos)
     auto& gameState = getGameState();
     for (auto& ride : RideManager(gameState))
     {
-        if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::isShopOrFacility))
+        if (ride.getRideTypeDescriptor().flags.has(RtdFlag::isShopOrFacility))
             continue;
 
         auto rideCoords = ride.overallView;

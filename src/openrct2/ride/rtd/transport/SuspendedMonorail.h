@@ -28,7 +28,7 @@ constexpr RideTypeDescriptor SuspendedMonorailRTD =
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = kRtdFlagsHasThreeColours | EnumsToFlags(RtdFlag::canSynchroniseWithAdjacentStations,
+    .flags = kRtdFlagsHasThreeColours | RtdFlags(RtdFlag::canSynchroniseWithAdjacentStations,
                      RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation,
                      RtdFlag::hasDataLogging, RtdFlag::hasLoadOptions, RtdFlag::hasVehicleColours,
                      RtdFlag::hasTrack, RtdFlag::supportsMultipleColourSchemes,

@@ -960,7 +960,7 @@ namespace OpenRCT2::RCT1
             dst->liftHillSpeed = 5;
 
             dst->music = kObjectEntryIndexNull;
-            if (GetRideTypeDescriptor(dst->type).HasFlag(RtdFlag::allowMusic))
+            if (GetRideTypeDescriptor(dst->type).flags.has(RtdFlag::allowMusic))
             {
                 if (_gameVersion == FILE_VERSION_RCT1)
                 {
@@ -1127,7 +1127,7 @@ namespace OpenRCT2::RCT1
             }
 
             dst->entranceStyle = kObjectEntryIndexNull;
-            if (dst->getRideTypeDescriptor().HasFlag(RtdFlag::hasEntranceAndExit))
+            if (dst->getRideTypeDescriptor().flags.has(RtdFlag::hasEntranceAndExit))
             {
                 // Entrance styles were introduced with AA. They correspond directly with those in RCT2.
                 if (_gameVersion == FILE_VERSION_RCT1)

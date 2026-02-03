@@ -27,7 +27,7 @@ constexpr RideTypeDescriptor AlpineCoasterRTD =
         .extraTrackGroups =  {TrackGroup::helixUpBankedHalf},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = EnumsToFlags(RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourSupports,
+    .flags = RtdFlags(RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourSupports,
                           RtdFlag::hasDataLogging, RtdFlag::hasDrops, RtdFlag::hasLoadOptions, RtdFlag::guestsWillRideAgain,
                           RtdFlag::hasVehicleColours, RtdFlag::checkForStalling, RtdFlag::hasTrack,
                           RtdFlag::allowMusic, RtdFlag::interestingToLookAt, RtdFlag::supportsMultipleColourSchemes,

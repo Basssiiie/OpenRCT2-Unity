@@ -1011,7 +1011,7 @@ namespace OpenRCT2
 
     bool RideObject::isRideTypeShopOrFacility(ride_type_t rideType)
     {
-        return GetRideTypeDescriptor(rideType).HasFlag(RtdFlag::isShopOrFacility);
+        return GetRideTypeDescriptor(rideType).flags.has(RtdFlag::isShopOrFacility);
     }
 
     ride_type_t RideObject::ParseRideType(const std::string& s)

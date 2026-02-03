@@ -424,7 +424,7 @@ namespace OpenRCT2::GameActions
             return false;
         }
 
-        if (!ride->getRideTypeDescriptor().HasFlag(RtdFlag::allowDoorsOnTrack))
+        if (!ride->getRideTypeDescriptor().flags.has(RtdFlag::allowDoorsOnTrack))
         {
             return false;
         }
@@ -590,7 +590,7 @@ namespace OpenRCT2::GameActions
     bool WallPlaceAction::TrackIsAllowedWallEdges(
         ride_type_t rideType, TrackElemType trackType, uint8_t trackSequence, uint8_t direction)
     {
-        if (!GetRideTypeDescriptor(rideType).HasFlag(RtdFlag::noWallsAroundTrack))
+        if (!GetRideTypeDescriptor(rideType).flags.has(RtdFlag::noWallsAroundTrack))
         {
             const auto& ted = GetTrackElementDescriptor(trackType);
             if (ted.sequences[trackSequence].allowedWallEdges & (1 << direction))

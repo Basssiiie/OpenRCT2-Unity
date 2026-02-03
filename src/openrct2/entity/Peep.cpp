@@ -998,7 +998,7 @@ void PeepProblemWarningsUpdate()
                     break;
                 }
                 ride = GetRide(peep->GuestHeadingToRideId);
-                if (ride != nullptr && !ride->getRideTypeDescriptor().HasFlag(RtdFlag::sellsFood))
+                if (ride != nullptr && !ride->getRideTypeDescriptor().flags.has(RtdFlag::sellsFood))
                     hungerCounter++;
                 break;
 
@@ -1009,7 +1009,7 @@ void PeepProblemWarningsUpdate()
                     break;
                 }
                 ride = GetRide(peep->GuestHeadingToRideId);
-                if (ride != nullptr && !ride->getRideTypeDescriptor().HasFlag(RtdFlag::sellsDrinks))
+                if (ride != nullptr && !ride->getRideTypeDescriptor().flags.has(RtdFlag::sellsDrinks))
                     thirstCounter++;
                 break;
 
@@ -1303,7 +1303,8 @@ void Peep::FormatActionTo(Formatter& ft) const
             auto ride = GetRide(CurrentRide);
             if (ride != nullptr)
             {
-                ft.Add<StringId>(ride->getRideTypeDescriptor().HasFlag(RtdFlag::describeAsInside) ? STR_IN_RIDE : STR_ON_RIDE);
+                ft.Add<StringId>(
+                    ride->getRideTypeDescriptor().flags.has(RtdFlag::describeAsInside) ? STR_IN_RIDE : STR_ON_RIDE);
                 ride->formatNameTo(ft);
             }
             else
@@ -2236,7 +2237,7 @@ static bool PeepInteractWithShop(Peep* peep, const CoordsXYE& coords)
 {
     RideId rideIndex = coords.element->AsTrack()->GetRideIndex();
     auto ride = GetRide(rideIndex);
-    if (ride == nullptr || !ride->getRideTypeDescriptor().HasFlag(RtdFlag::isShopOrFacility))
+    if (ride == nullptr || !ride->getRideTypeDescriptor().flags.has(RtdFlag::isShopOrFacility))
         return false;
 
     auto* guest = peep->As<Guest>();
@@ -2273,7 +2274,7 @@ static bool PeepInteractWithShop(Peep* peep, const CoordsXYE& coords)
         return true;
     }
 
-    if (ride->getRideTypeDescriptor().HasFlag(RtdFlag::guestsShouldGoInsideFacility))
+    if (ride->getRideTypeDescriptor().flags.has(RtdFlag::guestsShouldGoInsideFacility))
     {
         guest->TimeLost = 0;
         if (!guest->ShouldGoOnRide(*ride, StationIndex::FromUnderlying(0), false, false))
@@ -2303,7 +2304,7 @@ static bool PeepInteractWithShop(Peep* peep, const CoordsXYE& coords)
             auto ft = Formatter();
             guest->FormatNameTo(ft);
             ride->formatNameTo(ft);
-            StringId string_id = ride->getRideTypeDescriptor().HasFlag(RtdFlag::describeAsInside)
+            StringId string_id = ride->getRideTypeDescriptor().flags.has(RtdFlag::describeAsInside)
                 ? STR_PEEP_TRACKING_PEEP_IS_IN_X
                 : STR_PEEP_TRACKING_PEEP_IS_ON_X;
             if (Config::Get().notifications.guestUsedFacility)

@@ -297,7 +297,7 @@ namespace OpenRCT2::GameActions
             case RideMode::backwardRotation:
                 return STR_CANT_CHANGE_NUMBER_OF_ROTATIONS;
             default:
-                if (ride.getRideTypeDescriptor().HasFlag(RtdFlag::noVehicles))
+                if (ride.getRideTypeDescriptor().flags.has(RtdFlag::noVehicles))
                 {
                     return STR_CANT_CHANGE_THIS;
                 }

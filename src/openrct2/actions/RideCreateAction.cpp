@@ -186,13 +186,13 @@ namespace OpenRCT2::GameActions
         ride->departFlags = RIDE_DEPART_WAIT_FOR_MINIMUM_LENGTH | 3;
 
         const auto& rtd = ride->getRideTypeDescriptor();
-        if (rtd.HasFlag(RtdFlag::allowMusic))
+        if (rtd.flags.has(RtdFlag::allowMusic))
         {
             auto& objManager = GetContext()->GetObjectManager();
             ride->music = objManager.GetLoadedObjectEntryIndex(rtd.DefaultMusic);
             if (ride->music != kObjectEntryIndexNull)
             {
-                if (rtd.HasFlag(RtdFlag::hasMusicByDefault))
+                if (rtd.flags.has(RtdFlag::hasMusicByDefault))
                 {
                     ride->lifecycleFlags |= RIDE_LIFECYCLE_MUSIC;
                 }
@@ -262,7 +262,7 @@ namespace OpenRCT2::GameActions
             }
 
             // Set the on-ride photo price, whether the ride has one or not (except shops).
-            if (!rtd.HasFlag(RtdFlag::isShopOrFacility) && ShopItemHasCommonPrice(ShopItem::photo))
+            if (!rtd.flags.has(RtdFlag::isShopOrFacility) && ShopItemHasCommonPrice(ShopItem::photo))
             {
                 auto price = ShopItemGetCommonPrice(ride, ShopItem::photo);
                 if (price != kMoney64Undefined)
@@ -288,7 +288,7 @@ namespace OpenRCT2::GameActions
         ride->profit = kMoney64Undefined;
 
         ride->entranceStyle = kObjectEntryIndexNull;
-        if (rtd.HasFlag(RtdFlag::hasEntranceAndExit))
+        if (rtd.flags.has(RtdFlag::hasEntranceAndExit))
         {
             ride->entranceStyle = _entranceObjectIndex;
         }
