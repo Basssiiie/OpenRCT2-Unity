@@ -27,6 +27,7 @@
 #include "../../world/TileInspector.h"
 #include "../../world/tile_element/WallElement.h"
 #include "Paint.TileElement.h"
+#include "Paint.Wall.h"
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Drawing;

@@ -394,10 +394,16 @@
     <ClInclude Include="paint\Painter.h" />
     <ClInclude Include="paint\support\MetalSupports.h" />
     <ClInclude Include="paint\support\WoodenSupports.h" />
+    <ClInclude Include="paint\tile_element\Paint.Banner.h" />
+    <ClInclude Include="paint\tile_element\Paint.Entrance.h" />
+    <ClInclude Include="paint\tile_element\Paint.LargeScenery.h" />
     <ClInclude Include="paint\tile_element\Paint.Path.h" />
+    <ClInclude Include="paint\tile_element\Paint.SmallScenery.h" />
     <ClInclude Include="paint\tile_element\Paint.PathAddition.h" />
     <ClInclude Include="paint\tile_element\Paint.Surface.h" />
     <ClInclude Include="paint\tile_element\Paint.TileElement.h" />
+    <ClInclude Include="paint\tile_element\Paint.Track.h" />
+    <ClInclude Include="paint\tile_element\Paint.Wall.h" />
     <ClInclude Include="paint\tile_element\Segment.h" />
     <ClInclude Include="paint\tile_element\Paint.Tunnel.h" />
     <ClInclude Include="paint\track\coaster\WoodenRollerCoaster.hpp" />

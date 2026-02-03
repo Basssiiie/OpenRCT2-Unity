@@ -32,6 +32,7 @@
 #include "../../world/tile_element/LargeSceneryElement.h"
 #include "../Boundbox.h"
 #include "../support/WoodenSupports.h"
+#include "Paint.LargeScenery.h"
 #include "Paint.TileElement.h"
 #include "Segment.h"
 
