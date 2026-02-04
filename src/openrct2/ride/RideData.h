@@ -445,6 +445,8 @@ enum class RtdFlag : uint8_t
     runningSpeedAffectsReliability,
     poweredLaunchAffectsReliability,
     reverseInclineLaunchAffectsReliability,
+
+    isDummyType,
 };
 using RtdFlags = FlagHolder<uint64_t, RtdFlag>;
 
@@ -635,7 +637,7 @@ constexpr RideTypeDescriptor kDummyRTD =
     .StartTrackPiece = OpenRCT2::TrackElemType::endStation,
     .TrackPaintFunctions = {},
     .InvertedTrackPaintFunctions = {},
-    .flags = {},
+    .flags = { RtdFlag::isDummyType },
     .RideModes = EnumsToFlags(RideMode::continuousCircuit),
     .DefaultMode = RideMode::continuousCircuit,
     .OperatingSettings = {},

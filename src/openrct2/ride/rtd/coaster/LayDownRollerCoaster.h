@@ -110,7 +110,7 @@ constexpr RideTypeDescriptor LayDownRollerCoasterAltRTD =
         .extraTrackGroups = {  },
     }),
     .flags = kRtdFlagsHasThreeColours | kRtdFlagsCommonCoaster | 
-        RtdFlags(RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation),
+        RtdFlags(RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation, RtdFlag::isDummyType),
     .RideModes = EnumsToFlags(RideMode::continuousCircuit, RideMode::continuousCircuitBlockSectioned),
     .DefaultMode = RideMode::continuousCircuit,
     .OperatingSettings = { 10, 27 },
