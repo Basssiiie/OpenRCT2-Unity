@@ -1,5 +1,6 @@
 0.4.32 (in development)
 ------------------------------------------------------------------------
+- Feature: [#22704] Rides can be made invisible more easily.
 - Improved: [#25941] The command line sprite build command is now faster.
 - Fix: [#25237] Wrong colours on the Knight costume.
 
