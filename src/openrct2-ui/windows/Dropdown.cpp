@@ -88,6 +88,62 @@ namespace OpenRCT2::Ui::Windows
             return Config::Get().interface.enlargedUi ? 6 : 0;
         }
 
+        void drawItem(RenderTarget& rt, ScreenCoordsXY screenCoords, int32_t i)
+        {
+            int32_t highlightedIndex = gDropdown.highlightedIndex;
+            bool highlighted = (i == highlightedIndex);
+
+            if (highlighted)
+            {
+                // Darken the cell's background slightly when highlighted
+                const ScreenCoordsXY rightBottom = screenCoords + ScreenCoordsXY{ ItemWidth - 1, ItemHeight - 1 };
+                Rectangle::filter(rt, { screenCoords, rightBottom }, FilterPaletteID::paletteDarken3);
+            }
+
+            const auto& item = gDropdown.items[i];
+            switch (item.type)
+            {
+                case Dropdown::ItemType::regular:
+                {
+                    auto formatString = STR_OPTIONS_DROPDOWN_ITEM;
+                    if (i < Dropdown::kItemsMaxSize && gDropdown.items[i].isChecked())
+                        formatString = STR_OPTIONS_DROPDOWN_ITEM_SELECTED;
+
+                    drawTextItem(rt, screenCoords, width, item, highlighted, formatString, colours[0].colour);
+                    break;
+                }
+                case Dropdown::ItemType::toggle:
+                {
+                    auto formatString = STR_TOGGLE_OPTION;
+                    if (i < Dropdown::kItemsMaxSize && gDropdown.items[i].isChecked())
+                        formatString = STR_TOGGLE_OPTION_CHECKED;
+
+                    drawTextItem(rt, screenCoords, width, item, highlighted, formatString, colours[0].colour);
+                    break;
+                }
+                case Dropdown::ItemType::plain:
+                {
+                    drawTextItem(rt, screenCoords, width, item, highlighted, STR_STRING, colours[0].colour);
+                    break;
+                }
+                case Dropdown::ItemType::image:
+                {
+                    GfxDrawSprite(rt, item.image, screenCoords);
+                    break;
+                }
+                case Dropdown::ItemType::colour:
+                {
+                    auto image = item.image;
+                    if (highlightedIndex == i)
+                        image = image.WithIndexOffset(1);
+                    GfxDrawSprite(rt, image, screenCoords);
+                    break;
+                }
+                case Dropdown::ItemType::separator:
+                    break;
+            }
+        }
+
         void drawSeparator(RenderTarget& rt, ScreenCoordsXY screenCoords)
         {
             const auto leftTop = screenCoords + ScreenCoordsXY{ 2, (ItemHeight / 2) - 1 };
@@ -129,7 +185,6 @@ namespace OpenRCT2::Ui::Windows
         {
             drawWidgets(rt);
 
-            int32_t highlightedIndex = gDropdown.highlightedIndex;
             for (int32_t i = 0; i < gDropdown.numItems; i++)
             {
                 ScreenCoordsXY cellCoords;
@@ -147,56 +202,7 @@ namespace OpenRCT2::Ui::Windows
                 }
                 else
                 {
-                    auto highlighted = (i == highlightedIndex);
-                    if (highlighted)
-                    {
-                        // Darken the cell's background slightly when highlighted
-                        const ScreenCoordsXY rightBottom = screenCoords + ScreenCoordsXY{ ItemWidth - 1, ItemHeight - 1 };
-                        Rectangle::filter(rt, { screenCoords, rightBottom }, FilterPaletteID::paletteDarken3);
-                    }
-
-                    const auto& item = gDropdown.items[i];
-                    switch (item.type)
-                    {
-                        case Dropdown::ItemType::regular:
-                        {
-                            auto formatString = STR_OPTIONS_DROPDOWN_ITEM;
-                            if (i < Dropdown::kItemsMaxSize && gDropdown.items[i].isChecked())
-                                formatString = STR_OPTIONS_DROPDOWN_ITEM_SELECTED;
-
-                            drawTextItem(rt, screenCoords, width, item, highlighted, formatString, colours[0].colour);
-                            break;
-                        }
-                        case Dropdown::ItemType::toggle:
-                        {
-                            auto formatString = STR_TOGGLE_OPTION;
-                            if (i < Dropdown::kItemsMaxSize && gDropdown.items[i].isChecked())
-                                formatString = STR_TOGGLE_OPTION_CHECKED;
-
-                            drawTextItem(rt, screenCoords, width, item, highlighted, formatString, colours[0].colour);
-                            break;
-                        }
-                        case Dropdown::ItemType::plain:
-                        {
-                            drawTextItem(rt, screenCoords, width, item, highlighted, STR_STRING, colours[0].colour);
-                            break;
-                        }
-                        case Dropdown::ItemType::image:
-                        {
-                            GfxDrawSprite(rt, item.image, screenCoords);
-                            break;
-                        }
-                        case Dropdown::ItemType::colour:
-                        {
-                            auto image = item.image;
-                            if (highlightedIndex == i)
-                                image = image.WithIndexOffset(1);
-                            GfxDrawSprite(rt, image, screenCoords);
-                            break;
-                        }
-                        case Dropdown::ItemType::separator:
-                            break;
-                    }
+                    drawItem(rt, screenCoords, i);
                 }
             }
         }
