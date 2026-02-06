@@ -88,6 +88,26 @@ namespace OpenRCT2::Ui::Windows
             return Config::Get().interface.enlargedUi ? 6 : 0;
         }
 
+        void drawSeparator(RenderTarget& rt, ScreenCoordsXY screenCoords)
+        {
+            const auto leftTop = screenCoords + ScreenCoordsXY{ 2, (ItemHeight / 2) - 1 };
+            const auto rightBottom = leftTop + ScreenCoordsXY{ ItemWidth - 4, 0 };
+            const auto shadowOffset = ScreenCoordsXY{ 0, 1 };
+
+            if (colours[0].flags.has(ColourFlag::translucent))
+            {
+                auto palette = kTranslucentWindowPalettes[EnumValue(colours[0].colour)];
+                Rectangle::filter(rt, { leftTop, rightBottom }, palette.highlight);
+                Rectangle::filter(rt, { leftTop + shadowOffset, rightBottom + shadowOffset }, palette.shadow);
+            }
+            else
+            {
+                Rectangle::fill(rt, { leftTop, rightBottom }, getColourMap(colours[0].colour).midDark);
+                Rectangle::fill(
+                    rt, { leftTop + shadowOffset, rightBottom + shadowOffset }, getColourMap(colours[0].colour).lightest);
+            }
+        }
+
         void drawTextItem(
             RenderTarget& rt, ScreenCoordsXY screenCoords, int32_t ddWidth, const Dropdown::Item& item, bool highlighted,
             StringId format, Colour background)
@@ -123,23 +143,7 @@ namespace OpenRCT2::Ui::Windows
 
                 if (gDropdown.items[i].isSeparator())
                 {
-                    const auto leftTop = screenCoords + ScreenCoordsXY{ 2, (ItemHeight / 2) - 1 };
-                    const auto rightBottom = leftTop + ScreenCoordsXY{ ItemWidth - 4, 0 };
-                    const auto shadowOffset = ScreenCoordsXY{ 0, 1 };
-
-                    if (colours[0].flags.has(ColourFlag::translucent))
-                    {
-                        TranslucentWindowPalette palette = kTranslucentWindowPalettes[EnumValue(colours[0].colour)];
-                        Rectangle::filter(rt, { leftTop, rightBottom }, palette.highlight);
-                        Rectangle::filter(rt, { leftTop + shadowOffset, rightBottom + shadowOffset }, palette.shadow);
-                    }
-                    else
-                    {
-                        Rectangle::fill(rt, { leftTop, rightBottom }, getColourMap(colours[0].colour).midDark);
-                        Rectangle::fill(
-                            rt, { leftTop + shadowOffset, rightBottom + shadowOffset },
-                            getColourMap(colours[0].colour).lightest);
-                    }
+                    drawSeparator(rt, screenCoords);
                 }
                 else
                 {
