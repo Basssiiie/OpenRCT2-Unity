@@ -443,8 +443,8 @@ namespace OpenRCT2::Ui::Windows
      * @param numColumns (bl)
      */
     void WindowDropdownShowImage(
-        int32_t x, int32_t y, int32_t extray, ColourWithFlags colour, uint8_t flags, int32_t numItems, int32_t itemWidth,
-        int32_t itemHeight, int32_t numColumns)
+        const ScreenCoordsXY& screenPos, int32_t extray, ColourWithFlags colour, uint8_t flags, int32_t numItems,
+        int32_t itemWidth, int32_t itemHeight, int32_t numColumns)
     {
         gInputFlags.unset(InputFlag::dropdownStayOpen, InputFlag::dropdownMouseUp);
         if (flags & Dropdown::Flag::StayOpen || Config::Get().interface.touchEnhancements)
@@ -458,7 +458,7 @@ namespace OpenRCT2::Ui::Windows
         auto* w = windowMgr->Create<DropdownWindow>(WindowClass::dropdown, { itemWidth, itemHeight }, WindowFlag::stickToFront);
         if (w != nullptr)
         {
-            w->setImageItems({ x, y }, extray, colour, numItems, itemWidth, itemHeight, numColumns);
+            w->setImageItems(screenPos, extray, colour, numItems, itemWidth, itemHeight, numColumns);
         }
     }
 
@@ -616,7 +616,7 @@ namespace OpenRCT2::Ui::Windows
         // Show dropdown
         auto squareSize = DropdownWindow::GetDefaultRowHeight();
         WindowDropdownShowImage(
-            w->windowPos.x + widget->left, w->windowPos.y + widget->top, widget->height(), dropdownColour,
+            w->windowPos + ScreenCoordsXY{ widget->left, widget->top }, widget->height(), dropdownColour,
             Dropdown::Flag::StayOpen, numColours, squareSize, squareSize,
             DropdownGetAppropriateImageDropdownItemsPerRow(static_cast<uint32_t>(numColours)));
 
