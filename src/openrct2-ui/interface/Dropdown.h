@@ -86,7 +86,7 @@ namespace OpenRCT2::Dropdown
     enum class ItemType
     {
         /**
-         * Regular label with padding at the left. Will get marked with » if selected.
+         * Regular label with padding on the left. Will get marked with » if selected.
          */
         regular,
         /**

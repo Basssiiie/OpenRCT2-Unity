@@ -7,8 +7,6 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#include "openrct2/core/String.hpp"
-
 #include <algorithm>
 #include <bitset>
 #include <iterator>
@@ -20,6 +18,7 @@
 #include <openrct2/SpriteIds.h>
 #include <openrct2/config/Config.h>
 #include <openrct2/core/BitSet.hpp>
+#include <openrct2/core/String.hpp>
 #include <openrct2/drawing/ColourMap.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
@@ -623,9 +622,6 @@ namespace OpenRCT2::Ui::Windows
             numItems, static_cast<uint32_t>(std::size(kAppropriateImageDropdownItemsPerRow) - 1))];
     }
 } // namespace OpenRCT2::Ui::Windows
-
-using namespace OpenRCT2::Ui::Windows;
-using namespace OpenRCT2;
 
 namespace OpenRCT2::Dropdown
 {
