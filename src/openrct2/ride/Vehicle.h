@@ -49,7 +49,11 @@ struct VehicleInfo
     }
 };
 
-struct SoundIdVolume;
+struct SoundIdVolume
+{
+    OpenRCT2::Audio::SoundId id;
+    uint8_t volume;
+};
 
 static constexpr uint16_t kVehicleTrackDirectionMask = 0b0000000000000011;
 static constexpr uint16_t kVehicleTrackTypeMask = 0b1111111111111100;

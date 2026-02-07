@@ -1124,6 +1124,7 @@
     <ClCompile Include="ride\Vehicle.BoatHire.cpp" />
     <ClCompile Include="ride\Vehicle.Crash.cpp" />
     <ClCompile Include="ride\Vehicle.cpp" />
+    <ClCompile Include="ride\Vehicle.Sound.cpp" />
     <ClCompile Include="ride\VehicleData.cpp" />
     <ClCompile Include="ride\VehicleGeometry.cpp" />
     <ClCompile Include="ride\VehicleRiderControl.cpp" />
