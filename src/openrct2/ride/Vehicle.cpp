@@ -65,8 +65,6 @@ using namespace OpenRCT2::Audio;
 using namespace OpenRCT2::TrackMetaData;
 using namespace OpenRCT2::RideVehicle;
 
-constexpr int16_t kVehicleMaxSpinSpeed = 1536;
-constexpr int16_t kVehicleMinSpinSpeed = -kVehicleMaxSpinSpeed;
 constexpr int16_t kVehicleMaxSpinSpeedForStopping = 700;
 constexpr int16_t kVehicleMaxSpinSpeedWaterRide = 512;
 constexpr int16_t kVehicleMinSpinSpeedWaterRide = -kVehicleMaxSpinSpeedWaterRide;
