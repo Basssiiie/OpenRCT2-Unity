@@ -1125,6 +1125,9 @@
     <ClCompile Include="ride\Vehicle.Crash.cpp" />
     <ClCompile Include="ride\Vehicle.cpp" />
     <ClCompile Include="ride\Vehicle.Animation.cpp" />
+    <ClCompile Include="ride\Vehicle.MiniGolf.cpp">
+      <ObjectFileName>$(IntDir)ride\</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="ride\Vehicle.Sound.cpp" />
     <ClCompile Include="ride\Vehicle.Station.cpp" />
     <ClCompile Include="ride\VehicleData.cpp" />
