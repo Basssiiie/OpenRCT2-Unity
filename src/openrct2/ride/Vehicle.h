@@ -554,6 +554,7 @@ constexpr uint8_t kVehicleSeatNumMask = 0x7F;
 Vehicle* TryGetVehicle(EntityId spriteIndex);
 void VehicleUpdateAll();
 void VehicleSoundsUpdate();
+std::optional<uint32_t> ride_get_train_index_from_vehicle(const Ride& ride, EntityId spriteIndex);
 uint16_t VehicleGetMoveInfoSize(VehicleTrackSubposition trackSubposition, OpenRCT2::TrackElemType type, uint8_t direction);
 
 void RideUpdateMeasurementsSpecialElements_Default(Ride& ride, OpenRCT2::TrackElemType trackType);
