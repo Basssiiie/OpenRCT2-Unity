@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdk 36
+    buildToolsVersion "36.0.0"
     ndkVersion "27.3.13750724" // Latest r27d (LTS), to be synced with CI container image
     namespace "io.openrct2"
 
