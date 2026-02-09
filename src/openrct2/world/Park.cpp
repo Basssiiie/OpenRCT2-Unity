@@ -15,6 +15,7 @@
 #include "../Game.h"
 #include "../GameState.h"
 #include "../OpenRCT2.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/ParkSetParameterAction.h"
 #include "../core/Memory.hpp"
 #include "../core/String.hpp"

@@ -15,6 +15,7 @@
 #include "../ride/RideConstruction.h"
 #include "../world/Map.h"
 #include "../world/tile_element/SurfaceElement.h"
+#include "GameActionRunner.h"
 #include "WaterSetHeightAction.h"
 
 namespace OpenRCT2::GameActions

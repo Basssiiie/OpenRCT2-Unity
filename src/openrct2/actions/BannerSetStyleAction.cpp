@@ -19,7 +19,7 @@
 #include "../world/Banner.h"
 #include "../world/Map.h"
 #include "../world/tile_element/BannerElement.h"
-#include "GameAction.h"
+#include "GameAction.hpp"
 
 namespace OpenRCT2::GameActions
 {

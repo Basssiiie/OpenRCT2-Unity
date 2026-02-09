@@ -12,6 +12,7 @@
 #include "../Cheats.h"
 #include "../Diagnostic.h"
 #include "../GameState.h"
+#include "../actions/GameActionRunner.h"
 #include "../config/Config.h"
 #include "../core/EnumUtils.hpp"
 #include "../core/Guard.hpp"

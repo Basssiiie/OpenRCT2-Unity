@@ -13,7 +13,7 @@
 #include "../ride/TrackData.h"
 #include "../world/Banner.h"
 #include "../world/Scenery.h"
-#include "GameAction.h"
+#include "GameAction.hpp"
 
 namespace OpenRCT2
 {

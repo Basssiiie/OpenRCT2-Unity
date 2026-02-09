@@ -23,6 +23,7 @@
 #include "../world/tile_element/BannerElement.h"
 #include "../world/tile_element/PathElement.h"
 #include "BannerRemoveAction.h"
+#include "GameActionRunner.h"
 
 namespace OpenRCT2::GameActions
 {

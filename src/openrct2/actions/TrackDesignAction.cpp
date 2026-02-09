@@ -19,6 +19,7 @@
 #include "../object/ObjectRepository.h"
 #include "../ride/RideConstruction.h"
 #include "../ride/TrackDesign.h"
+#include "GameActionRunner.h"
 #include "RideCreateAction.h"
 #include "RideDemolishAction.h"
 #include "RideSetNameAction.h"

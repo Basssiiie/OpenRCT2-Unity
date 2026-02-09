@@ -19,6 +19,7 @@
 #include "../ReplayManager.h"
 #include "../Version.h"
 #include "../actions/CheatSetAction.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/GameSetSpeedAction.h"
 #include "../actions/ParkSetDateAction.h"
 #include "../actions/ParkSetParameterAction.h"

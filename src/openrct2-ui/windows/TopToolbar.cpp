@@ -28,6 +28,7 @@
 #include <openrct2/ParkImporter.h>
 #include <openrct2/SpriteIds.h>
 #include <openrct2/Version.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/GameSetSpeedAction.h>
 #include <openrct2/actions/LoadOrQuitAction.h>
 #include <openrct2/actions/PauseToggleAction.h>

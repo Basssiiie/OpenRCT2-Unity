@@ -21,6 +21,7 @@
 #include "../world/tile_element/PathElement.h"
 #include "../world/tile_element/SmallSceneryElement.h"
 #include "FootpathRemoveAction.h"
+#include "GameActionRunner.h"
 #include "LargeSceneryRemoveAction.h"
 #include "SmallSceneryRemoveAction.h"
 #include "WallRemoveAction.h"

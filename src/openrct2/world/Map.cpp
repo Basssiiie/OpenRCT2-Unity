@@ -17,6 +17,7 @@
 #include "../Input.h"
 #include "../OpenRCT2.h"
 #include "../actions/BannerRemoveAction.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/LargeSceneryRemoveAction.h"
 #include "../actions/ParkEntranceRemoveAction.h"
 #include "../actions/WallRemoveAction.h"

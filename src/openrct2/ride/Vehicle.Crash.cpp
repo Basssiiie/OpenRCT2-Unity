@@ -12,6 +12,7 @@
 #include "../Context.h"
 #include "../Diagnostic.h"
 #include "../GameState.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/RideSetStatusAction.h"
 #include "../audio/Audio.h"
 #include "../config/Config.h"

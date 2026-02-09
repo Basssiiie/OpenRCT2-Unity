@@ -16,6 +16,7 @@
 #include <openrct2/GameState.h>
 #include <openrct2/Input.h>
 #include <openrct2/SpriteIds.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/WaterLowerAction.h>
 #include <openrct2/actions/WaterRaiseAction.h>
 #include <openrct2/drawing/Drawing.h>

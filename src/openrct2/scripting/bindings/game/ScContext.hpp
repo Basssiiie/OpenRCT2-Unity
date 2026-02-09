@@ -12,7 +12,7 @@
 #ifdef ENABLE_SCRIPTING
 
     #include "../../../OpenRCT2.h"
-    #include "../../../actions/GameAction.h"
+    #include "../../../actions/GameActionRunner.h"
     #include "../../../interface/Screenshot.h"
     #include "../../../localisation/Formatting.h"
     #include "../../../object/ObjectManager.h"

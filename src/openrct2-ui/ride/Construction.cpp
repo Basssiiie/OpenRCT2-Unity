@@ -12,6 +12,7 @@
 #include "../interface/Viewport.h"
 
 #include <openrct2/GameState.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/RideCreateAction.h>
 #include <openrct2/config/Config.h>
 #include <openrct2/ride/Ride.h>

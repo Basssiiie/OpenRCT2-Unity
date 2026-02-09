@@ -16,6 +16,7 @@
 #include "../GameState.h"
 #include "../Input.h"
 #include "../OpenRCT2.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/ResultWithMessage.h"
 #include "../actions/RideSetSettingAction.h"
 #include "../actions/RideSetStatusAction.h"

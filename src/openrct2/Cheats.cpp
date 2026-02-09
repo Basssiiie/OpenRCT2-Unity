@@ -11,6 +11,7 @@
 
 #include "GameState.h"
 #include "actions/CheatSetAction.h"
+#include "actions/GameActionRunner.h"
 #include "actions/ParkSetLoanAction.h"
 #include "core/DataSerialiser.h"
 #include "network/Network.h"

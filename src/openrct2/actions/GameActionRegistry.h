@@ -7,25 +7,24 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#include "PauseToggleAction.h"
+#pragma once
 
-#include "../Game.h"
+#include <cstdint>
+#include <optional>
+
+namespace OpenRCT2
+{
+    enum class GameCommand : int32_t;
+}
 
 namespace OpenRCT2::GameActions
 {
-    uint16_t PauseToggleAction::GetActionFlags() const
-    {
-        return GameAction::GetActionFlags() | Flags::AllowWhilePaused | Flags::IgnoreForReplays;
-    }
+    class GameAction;
 
-    Result PauseToggleAction::Query(GameState_t& gameState) const
-    {
-        return Result();
-    }
+    using GameActionFactory = GameAction* (*)();
 
-    Result PauseToggleAction::Execute(GameState_t& gameState) const
-    {
-        PauseToggle();
-        return Result();
-    }
+    std::optional<GameActionFactory> getFactory(GameCommand command);
+    const char* GetName(GameCommand id);
+    bool IsValidId(uint32_t id);
+
 } // namespace OpenRCT2::GameActions

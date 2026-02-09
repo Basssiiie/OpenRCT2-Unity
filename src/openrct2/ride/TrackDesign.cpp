@@ -18,6 +18,7 @@
 #include "../TrackImporter.h"
 #include "../actions/FootpathLayoutPlaceAction.h"
 #include "../actions/FootpathRemoveAction.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/LargeSceneryPlaceAction.h"
 #include "../actions/LargeSceneryRemoveAction.h"
 #include "../actions/MazePlaceTrackAction.h"
