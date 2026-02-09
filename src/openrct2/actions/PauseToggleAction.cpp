@@ -9,6 +9,8 @@
 
 #include "PauseToggleAction.h"
 
+#include "../Game.h"
+
 namespace OpenRCT2::GameActions
 {
     uint16_t PauseToggleAction::GetActionFlags() const

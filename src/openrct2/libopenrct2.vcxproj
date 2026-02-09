@@ -98,6 +98,7 @@
     <ClInclude Include="actions\GameActionRegistry.h" />
     <ClInclude Include="actions\GameActionResult.h" />
     <ClInclude Include="actions\GameActionRunner.h" />
+    <ClInclude Include="actions\GameCommands.h" />
     <ClInclude Include="actions\GameSetSpeedAction.h" />
     <ClInclude Include="actions\GuestSetFlagsAction.h" />
     <ClInclude Include="actions\GuestSetNameAction.h" />

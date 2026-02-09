@@ -12,7 +12,10 @@
 #include <cstdint>
 #include <optional>
 
-enum class GameCommand : int32_t;
+namespace OpenRCT2
+{
+    enum class GameCommand : int32_t;
+}
 
 namespace OpenRCT2::GameActions
 {
