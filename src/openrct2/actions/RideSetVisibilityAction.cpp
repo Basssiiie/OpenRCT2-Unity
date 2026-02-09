@@ -13,7 +13,7 @@
 #include "../GameState.h"
 #include "../world/TileElementsView.h"
 #include "../world/tile_element/TrackElement.h"
-#include "GameAction.h"
+#include "GameAction.hpp"
 
 namespace OpenRCT2::GameActions
 {

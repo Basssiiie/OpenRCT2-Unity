@@ -19,6 +19,7 @@
 #include <openrct2/GameState.h>
 #include <openrct2/Input.h>
 #include <openrct2/SpriteIds.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/GuestSetFlagsAction.h>
 #include <openrct2/actions/GuestSetNameAction.h>
 #include <openrct2/actions/PeepPickupAction.h>

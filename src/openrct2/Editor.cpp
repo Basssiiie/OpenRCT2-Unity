@@ -16,6 +16,7 @@
 #include "GameState.h"
 #include "OpenRCT2.h"
 #include "ParkImporter.h"
+#include "actions/GameActionRunner.h"
 #include "actions/LandBuyRightsAction.h"
 #include "actions/LandSetRightsAction.h"
 #include "actions/ResultWithMessage.h"

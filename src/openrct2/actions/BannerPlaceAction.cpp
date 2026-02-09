@@ -22,7 +22,7 @@
 #include "../world/TileElementsView.h"
 #include "../world/tile_element/BannerElement.h"
 #include "../world/tile_element/PathElement.h"
-#include "GameAction.h"
+#include "GameAction.hpp"
 
 namespace OpenRCT2::GameActions
 {

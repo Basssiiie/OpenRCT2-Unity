@@ -17,6 +17,7 @@
 #include <openrct2/GameState.h>
 #include <openrct2/Input.h>
 #include <openrct2/SpriteIds.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/MazeSetTrackAction.h>
 #include <openrct2/actions/ResultWithMessage.h>
 #include <openrct2/actions/RideDemolishAction.h>

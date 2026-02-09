@@ -27,6 +27,7 @@
 #include "../world/SurfaceData.h"
 #include "../world/tile_element/Slope.h"
 #include "../world/tile_element/SurfaceElement.h"
+#include "GameActionRunner.h"
 
 #include <algorithm>
 

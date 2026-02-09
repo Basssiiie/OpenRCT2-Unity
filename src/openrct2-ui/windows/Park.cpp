@@ -20,6 +20,7 @@
 #include <openrct2/GameState.h>
 #include <openrct2/Input.h>
 #include <openrct2/SpriteIds.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/ParkSetEntranceFeeAction.h>
 #include <openrct2/actions/ParkSetNameAction.h>
 #include <openrct2/config/Config.h>

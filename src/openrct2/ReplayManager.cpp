@@ -19,7 +19,7 @@
 #include "PlatformEnvironment.h"
 #include "actions/CheatSetAction.h"
 #include "actions/FootpathPlaceAction.h"
-#include "actions/GameAction.h"
+#include "actions/GameActionRunner.h"
 #include "actions/RideEntranceExitPlaceAction.h"
 #include "actions/TileModifyAction.h"
 #include "actions/TrackPlaceAction.h"

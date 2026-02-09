@@ -7,6 +7,8 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
+#include "GameActionRegistry.h"
+
 #include "../core/Guard.hpp"
 #include "BalloonPressAction.h"
 #include "BannerPlaceAction.h"
@@ -22,7 +24,6 @@
 #include "FootpathLayoutPlaceAction.h"
 #include "FootpathPlaceAction.h"
 #include "FootpathRemoveAction.h"
-#include "GameAction.h"
 #include "GameSetSpeedAction.h"
 #include "GuestSetFlagsAction.h"
 #include "GuestSetNameAction.h"
@@ -223,29 +224,22 @@ namespace OpenRCT2::GameActions
 
     static constexpr GameActionRegistry _registry = BuildRegistry();
 
+    std::optional<GameActionFactory> getFactory(GameCommand id)
+    {
+        const auto idx = static_cast<size_t>(id);
+        if (idx < std::size(_registry))
+        {
+            return _registry[idx].factory;
+        }
+        return std::nullopt;
+    }
+
     const char* GetName(GameCommand id)
     {
         const auto idx = static_cast<size_t>(id);
         Guard::IndexInRange(idx, _registry);
 
         return _registry[idx].name;
-    }
-
-    std::unique_ptr<GameAction> Create(GameCommand id)
-    {
-        const auto idx = static_cast<size_t>(id);
-
-        GameAction* result = nullptr;
-        if (idx < std::size(_registry))
-        {
-            GameActionFactory factory = _registry[idx].factory;
-            if (factory != nullptr)
-            {
-                result = factory();
-            }
-        }
-        Guard::ArgumentNotNull(result, "Attempting to create unregistered game action: %u", id);
-        return std::unique_ptr<GameAction>(result);
     }
 
     bool IsValidId(uint32_t id)

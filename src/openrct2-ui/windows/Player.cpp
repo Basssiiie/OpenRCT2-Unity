@@ -15,6 +15,7 @@
 #include <openrct2/GameState.h>
 #include <openrct2/Input.h>
 #include <openrct2/SpriteIds.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/PlayerKickAction.h>
 #include <openrct2/actions/PlayerSetGroupAction.h>
 #include <openrct2/drawing/Drawing.h>

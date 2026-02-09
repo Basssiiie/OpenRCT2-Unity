@@ -24,6 +24,7 @@
 #include <openrct2/Input.h>
 #include <openrct2/OpenRCT2.h>
 #include <openrct2/actions/CheatSetAction.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/LoadOrQuitAction.h>
 #include <openrct2/actions/PauseToggleAction.h>
 #include <openrct2/actions/TileModifyAction.h>

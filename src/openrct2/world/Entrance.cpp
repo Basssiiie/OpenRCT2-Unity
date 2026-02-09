@@ -14,6 +14,7 @@
 #include "../Game.h"
 #include "../GameState.h"
 #include "../OpenRCT2.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/ParkEntranceRemoveAction.h"
 #include "../actions/RideEntranceExitPlaceAction.h"
 #include "../actions/RideEntranceExitRemoveAction.h"

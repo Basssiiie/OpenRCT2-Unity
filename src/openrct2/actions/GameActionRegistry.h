@@ -9,19 +9,19 @@
 
 #pragma once
 
-#include "GameAction.hpp"
+#include <cstdint>
+#include <optional>
+
+enum class GameCommand : int32_t;
 
 namespace OpenRCT2::GameActions
 {
-    class PauseToggleAction final : public GameActionBase<GameCommand::TogglePause>
-    {
-    public:
-        PauseToggleAction() = default;
+    class GameAction;
 
-        uint16_t GetActionFlags() const override;
+    using GameActionFactory = GameAction* (*)();
 
-        Result Query(GameState_t& gameState) const override;
-        Result Execute(GameState_t& gameState) const override;
-    };
-    // clang-format on
+    std::optional<GameActionFactory> getFactory(GameCommand command);
+    const char* GetName(GameCommand id);
+    bool IsValidId(uint32_t id);
+
 } // namespace OpenRCT2::GameActions

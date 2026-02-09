@@ -14,7 +14,7 @@
     #include "../PlatformEnvironment.h"
     #include "../actions/BannerPlaceAction.h"
     #include "../actions/CustomAction.h"
-    #include "../actions/GameAction.h"
+    #include "../actions/GameAction.hpp"
     #include "../actions/LargeSceneryPlaceAction.h"
     #include "../actions/RideCreateAction.h"
     #include "../actions/StaffHireNewAction.h"

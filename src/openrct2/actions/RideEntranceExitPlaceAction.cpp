@@ -11,7 +11,6 @@
 
 #include "../Diagnostic.h"
 #include "../GameState.h"
-#include "../actions/RideEntranceExitRemoveAction.h"
 #include "../core/Guard.hpp"
 #include "../management/Finance.h"
 #include "../ride/Ride.h"
@@ -22,6 +21,8 @@
 #include "../world/Wall.h"
 #include "../world/tile_element/EntranceElement.h"
 #include "../world/tile_element/Slope.h"
+#include "GameActionRunner.h"
+#include "RideEntranceExitRemoveAction.h"
 
 namespace OpenRCT2::GameActions
 {

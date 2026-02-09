@@ -17,7 +17,7 @@
 #include "../Input.h"
 #include "../OpenRCT2.h"
 #include "../SpriteIds.h"
-#include "../actions/GameAction.h"
+#include "../actions/GameAction.hpp"
 #include "../audio/Audio.h"
 #include "../audio/AudioChannel.h"
 #include "../audio/AudioMixer.h"

@@ -16,6 +16,7 @@
 #include "../OpenRCT2.h"
 #include "../actions/FootpathPlaceAction.h"
 #include "../actions/FootpathRemoveAction.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/LandSetRightsAction.h"
 #include "../core/Guard.hpp"
 #include "../entity/EntityList.h"

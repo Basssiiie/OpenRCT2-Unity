@@ -23,6 +23,7 @@
 #include <openrct2/actions/BannerPlaceAction.h>
 #include <openrct2/actions/BannerSetColourAction.h>
 #include <openrct2/actions/FootpathAdditionPlaceAction.h>
+#include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/LargeSceneryPlaceAction.h>
 #include <openrct2/actions/LargeScenerySetColourAction.h>
 #include <openrct2/actions/ScenerySetRestrictedAction.h>

@@ -31,7 +31,7 @@
 #include "../world/tile_element/Slope.h"
 #include "../world/tile_element/SmallSceneryElement.h"
 #include "../world/tile_element/SurfaceElement.h"
-#include "GameAction.h"
+#include "GameAction.hpp"
 #include "SmallSceneryRemoveAction.h"
 
 namespace OpenRCT2::GameActions

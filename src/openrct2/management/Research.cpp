@@ -15,6 +15,7 @@
 #include "../Game.h"
 #include "../GameState.h"
 #include "../OpenRCT2.h"
+#include "../actions/GameActionRunner.h"
 #include "../actions/ParkSetResearchFundingAction.h"
 #include "../config/Config.h"
 #include "../core/BitSet.hpp"

@@ -28,6 +28,7 @@
 #include "../world/tile_element/Slope.h"
 #include "../world/tile_element/SurfaceElement.h"
 #include "../world/tile_element/TrackElement.h"
+#include "GameActionRunner.h"
 #include "ResultWithMessage.h"
 #include "RideSetSettingAction.h"
 

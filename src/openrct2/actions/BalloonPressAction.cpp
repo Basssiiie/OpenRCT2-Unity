@@ -13,7 +13,7 @@
 #include "../GameState.h"
 #include "../entity/Balloon.h"
 #include "../entity/EntityRegistry.h"
-#include "GameAction.h"
+#include "GameAction.hpp"
 
 namespace OpenRCT2::GameActions
 {

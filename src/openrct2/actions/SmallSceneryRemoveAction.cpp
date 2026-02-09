@@ -23,7 +23,7 @@
 #include "../world/Park.h"
 #include "../world/TileElementsView.h"
 #include "../world/tile_element/SmallSceneryElement.h"
-#include "GameAction.h"
+#include "GameAction.hpp"
 #include "SmallSceneryPlaceAction.h"
 
 namespace OpenRCT2::GameActions

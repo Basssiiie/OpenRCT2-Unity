@@ -21,6 +21,7 @@
 #include "ParkImporter.h"
 #include "PlatformEnvironment.h"
 #include "ReplayManager.h"
+#include "actions/GameActionRunner.h"
 #include "actions/GameSetSpeedAction.h"
 #include "actions/LoadOrQuitAction.h"
 #include "audio/Audio.h"
