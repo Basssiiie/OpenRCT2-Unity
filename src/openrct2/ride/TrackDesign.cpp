@@ -395,7 +395,7 @@ ResultWithMessage TrackDesign::CreateTrackDesignMaze(TrackDesignState& tds, cons
                 _saveDirection = tileElement->GetDirection();
                 mazeElements.push_back(maze);
 
-                if (mazeElements.size() >= 2000)
+                if (mazeElements.size() >= RCT2::Limits::kTD6MaxMazeElements)
                 {
                     return { false, STR_TRACK_TOO_LARGE_OR_TOO_MUCH_SCENERY };
                 }
