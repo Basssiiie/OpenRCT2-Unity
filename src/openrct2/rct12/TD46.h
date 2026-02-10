@@ -81,8 +81,8 @@ namespace OpenRCT2::RCT12
     /* Track Element entry  size: 0x02 */
     struct TD46TrackElement
     {
-        TrackElemType Type; // 0x00
-        uint8_t Flags;      // 0x01
+        TrackElemType type; // 0x00
+        uint8_t flags;      // 0x01
     };
     static_assert(sizeof(TD46TrackElement) == 0x02);
 #pragma pack(pop)

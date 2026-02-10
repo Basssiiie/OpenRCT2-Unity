@@ -70,7 +70,7 @@ namespace OpenRCT2::RCT2
                 TrackDesignTrackElement trackElement{};
 
                 TrackElemType trackType;
-                if (t6TrackElement.Type == RCT12::TrackElemType::invertedUp90ToFlatQuarterLoopAlias)
+                if (t6TrackElement.type == RCT12::TrackElemType::invertedUp90ToFlatQuarterLoopAlias)
                 {
                     trackType = TrackElemType::multiDimInvertedUp90ToFlatQuarterLoop;
                 }
@@ -78,11 +78,11 @@ namespace OpenRCT2::RCT2
                 {
                     auto rideType = td.trackAndVehicle.rtdIndex;
                     const bool isFlatRide = GetRideTypeDescriptor(rideType).flags.has(RtdFlag::isFlatRide);
-                    trackType = RCT2TrackTypeToOpenRCT2(t6TrackElement.Type, rideType, isFlatRide);
+                    trackType = RCT2TrackTypeToOpenRCT2(t6TrackElement.type, rideType, isFlatRide);
                 }
 
                 trackElement.type = trackType;
-                RCT12::convertFromTD46Flags(trackElement, t6TrackElement.Flags);
+                RCT12::convertFromTD46Flags(trackElement, t6TrackElement.flags);
                 td.trackElements.push_back(trackElement);
             }
         }
