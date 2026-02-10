@@ -28,15 +28,6 @@ namespace OpenRCT2::RCT12
         unknown
     };
 
-    enum class TD46Flags : uint8_t
-    {
-        stationId = 0b00000011,
-        speedOrSeatRotation = 0b00001111,
-        colourScheme = 0b00110000,
-        isInverted = 0b01000000,
-        hasChain = 0b10000000,
-    };
-
 #pragma pack(push, 1)
     enum class TD46MazeElementType : uint8_t
     {
