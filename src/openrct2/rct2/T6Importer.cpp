@@ -205,7 +205,7 @@ namespace OpenRCT2::RCT2
             td->operation.liftHillSpeed = td6.LiftHillSpeedNumCircuits & 0b00011111;
             td->operation.numCircuits = td6.LiftHillSpeedNumCircuits >> 5;
 
-            auto version = static_cast<TD46Version>((td6.VersionAndColourScheme >> 2) & 3);
+            auto version = static_cast<TD46Version>(td6.VersionAndColourScheme >> 2);
             if (version != TD46Version::td6)
             {
                 LOG_ERROR("Unsupported track design.");
