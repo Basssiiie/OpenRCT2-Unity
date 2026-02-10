@@ -29,6 +29,7 @@ using namespace OpenRCT2;
 using namespace OpenRCT2::SawyerCoding;
 
 using OpenRCT2::RCT12::TD46MazeElement;
+using OpenRCT2::RCT12::TD46TrackElement;
 using OpenRCT2::RCT12::TD46Version;
 
 namespace OpenRCT2::RCT2

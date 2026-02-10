@@ -18,6 +18,8 @@ struct TrackDesignTrackElement;
 
 namespace OpenRCT2::RCT12
 {
+    enum class TrackElemType : uint8_t;
+
     enum class TD46Version : uint8_t
     {
         td4,
@@ -75,6 +77,14 @@ namespace OpenRCT2::RCT12
         }
     };
     static_assert(sizeof(TD46MazeElement) == 0x04);
+
+    /* Track Element entry  size: 0x02 */
+    struct TD46TrackElement
+    {
+        TrackElemType Type; // 0x00
+        uint8_t Flags;      // 0x01
+    };
+    static_assert(sizeof(TD46TrackElement) == 0x02);
 #pragma pack(pop)
 
     void convertFromTD46Flags(TrackDesignTrackElement& target, uint8_t flags);
