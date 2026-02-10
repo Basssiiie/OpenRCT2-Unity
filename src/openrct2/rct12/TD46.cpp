@@ -46,9 +46,9 @@ namespace OpenRCT2::RCT12
 
         target.colourScheme = (flags & TD46Flags::colourSchemeMask) >> 4;
         if (flags & TD46Flags::isInverted)
-            target.SetFlag(TrackDesignTrackElementFlag::isInverted);
+            target.flags.set(TrackDesignTrackElementFlag::isInverted);
         if (flags & TD46Flags::hasChain)
-            target.SetFlag(TrackDesignTrackElementFlag::hasChain);
+            target.flags.set(TrackDesignTrackElementFlag::hasChain);
     }
 
     uint8_t convertToTD46Flags(const TrackDesignTrackElement& source)
@@ -69,9 +69,9 @@ namespace OpenRCT2::RCT12
 
         trackFlags |= source.colourScheme << 4;
 
-        if (source.HasFlag(TrackDesignTrackElementFlag::hasChain))
+        if (source.flags.has(TrackDesignTrackElementFlag::hasChain))
             trackFlags |= TD46Flags::hasChain;
-        if (source.HasFlag(TrackDesignTrackElementFlag::isInverted))
+        if (source.flags.has(TrackDesignTrackElementFlag::isInverted))
             trackFlags |= TD46Flags::isInverted;
 
         return trackFlags;

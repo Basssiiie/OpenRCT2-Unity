@@ -246,11 +246,11 @@ ResultWithMessage TrackDesign::CreateTrackDesignTrack(TrackDesignState& tds, con
         }
 
         if (element->HasChain())
-            track.SetFlag(TrackDesignTrackElementFlag::hasChain);
+            track.flags.set(TrackDesignTrackElementFlag::hasChain);
 
         if (ride.getRideTypeDescriptor().flags.has(RtdFlag::hasInvertedVariant) && element->IsInverted())
         {
-            track.SetFlag(TrackDesignTrackElementFlag::isInverted);
+            track.flags.set(TrackDesignTrackElementFlag::isInverted);
         }
 
         trackElements.push_back(track);
@@ -1615,11 +1615,11 @@ static GameActions::Result TrackDesignPlaceRide(
                 int16_t tempZ = newCoords.z - trackCoordinates->zBegin;
 
                 SelectedLiftAndInverted liftHillAndAlternativeState{};
-                if (track.HasFlag(TrackDesignTrackElementFlag::hasChain))
+                if (track.flags.has(TrackDesignTrackElementFlag::hasChain))
                 {
                     liftHillAndAlternativeState.set(LiftHillAndInverted::liftHill);
                 }
-                if (track.HasFlag(TrackDesignTrackElementFlag::isInverted))
+                if (track.flags.has(TrackDesignTrackElementFlag::isInverted))
                 {
                     liftHillAndAlternativeState.set(LiftHillAndInverted::inverted);
                 }
