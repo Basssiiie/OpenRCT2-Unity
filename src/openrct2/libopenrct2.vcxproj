@@ -1135,6 +1135,7 @@
     </ClCompile>
     <ClCompile Include="ride\Vehicle.Sound.cpp" />
     <ClCompile Include="ride\Vehicle.Station.cpp" />
+    <ClCompile Include="ride\Vehicle.TrackMotion.cpp" />
     <ClCompile Include="ride\VehicleData.cpp" />
     <ClCompile Include="ride\VehicleGeometry.cpp" />
     <ClCompile Include="ride\VehicleRiderControl.cpp" />
