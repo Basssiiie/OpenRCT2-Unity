@@ -9,8 +9,8 @@
 
 #include "Vehicle.h"
 
-#include "../core/Speed.hpp"
 #include "../GameState.h"
+#include "../core/Speed.hpp"
 #include "../entity/EntityList.h"
 #include "../entity/EntityRegistry.h"
 #include "../scenario/Scenario.h"

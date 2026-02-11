@@ -80,19 +80,6 @@ uint8_t _vehicleF64E2C;
 Vehicle* _vehicleFrontVehicle;
 CoordsXYZ _vehicleCurPosition;
 
-/** rct2: 0x009A37C4 */
-static constexpr CoordsXY kSurroundingTiles[] = {
-    { 0, 0 },
-    { 0, +kCoordsXYStep },
-    { +kCoordsXYStep, 0 },
-    { 0, -kCoordsXYStep },
-    { 0, -kCoordsXYStep },
-    { -kCoordsXYStep, 0 },
-    { -kCoordsXYStep, 0 },
-    { 0, +kCoordsXYStep },
-    { 0, +kCoordsXYStep },
-};
-
 template<>
 bool EntityBase::Is<Vehicle>() const
 {
