@@ -1129,6 +1129,7 @@
     <ClCompile Include="ride\Vehicle.BoatHire.cpp" />
     <ClCompile Include="ride\Vehicle.Collision.cpp" />
     <ClCompile Include="ride\Vehicle.Crash.cpp" />
+    <ClCompile Include="ride\Vehicle.Dodgems.cpp" />
     <ClCompile Include="ride\Vehicle.cpp" />
     <ClCompile Include="ride\Vehicle.Animation.cpp" />
     <ClCompile Include="ride\Vehicle.MiniGolf.cpp">
