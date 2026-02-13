@@ -48,7 +48,7 @@ namespace OpenRCT2::GameActions
             LOG_ERROR("Can't set park entrance fee because the park has no money");
             return Result(Status::disallowed, STR_ERR_CANT_CHANGE_PARK_ENTRANCE_FEE, kStringIdNone);
         }
-        else if (!Park::EntranceFeeUnlocked())
+        else if (!Park::EntranceFeeUnlocked(park))
         {
             LOG_ERROR("Park entrance fee is locked");
             return Result(Status::disallowed, STR_ERR_CANT_CHANGE_PARK_ENTRANCE_FEE, kStringIdNone);

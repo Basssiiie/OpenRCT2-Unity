@@ -5074,11 +5074,12 @@ bool Ride::isRide() const
 
 money64 RideGetPrice(const Ride& ride)
 {
-    if (getGameState().park.flags & PARK_FLAGS_NO_MONEY)
+    auto& park = getGameState().park;
+    if (park.flags & PARK_FLAGS_NO_MONEY)
         return 0;
     if (ride.isRide())
     {
-        if (!Park::RidePricesUnlocked())
+        if (!Park::RidePricesUnlocked(park))
         {
             return 0;
         }

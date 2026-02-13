@@ -234,7 +234,7 @@ namespace OpenRCT2::GameActions
                 gameState.scenarioOptions.objective.Type = Scenario::ObjectiveType::haveFun;
                 break;
             case CheatType::setForcedParkRating:
-                Park::SetForcedRating(_param1);
+                Park::SetForcedRating(park, _param1);
                 break;
             case CheatType::allowArbitraryRideTypeChanges:
                 gameState.cheats.allowArbitraryRideTypeChanges = _param1 != 0;
