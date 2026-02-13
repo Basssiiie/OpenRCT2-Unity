@@ -90,7 +90,7 @@ namespace OpenRCT2::GameActions
 
             if (gLegacyScene != LegacyScene::scenarioEditor && !gameState.cheats.sandboxMode)
             {
-                if (gameState.park.flags & PARK_FLAGS_FORBID_TREE_REMOVAL)
+                if (park.flags & PARK_FLAGS_FORBID_TREE_REMOVAL)
                 {
                     if (sceneryEntry->flags.has(LargeSceneryFlag::isTree))
                     {
