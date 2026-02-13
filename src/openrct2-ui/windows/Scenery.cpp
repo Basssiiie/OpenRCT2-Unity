@@ -3158,7 +3158,7 @@ namespace OpenRCT2::Ui::Windows
                 location.z = tile.calculatedZ;
                 auto wallRemoveAction = GameActions::WallRemoveAction(location);
                 wallRemoveAction.SetFlags({ CommandFlag::allowDuringPaused, CommandFlag::noSpend, CommandFlag::ghost });
-                wallRemoveAction.Execute(gameState);
+                GameActions::Execute(&wallRemoveAction, gameState);
             }
         }
 

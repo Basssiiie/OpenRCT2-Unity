@@ -73,7 +73,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_cheatType) << DS_TAG(_param1) << DS_TAG(_param2);
     }
 
-    Result CheatSetAction::Query(GameState_t& gameState) const
+    Result CheatSetAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         if (static_cast<uint32_t>(_cheatType) >= static_cast<uint32_t>(CheatType::count))
         {
@@ -101,7 +101,7 @@ namespace OpenRCT2::GameActions
         return Result();
     }
 
-    Result CheatSetAction::Execute(GameState_t& gameState) const
+    Result CheatSetAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto* windowMgr = Ui::GetWindowManager();
 

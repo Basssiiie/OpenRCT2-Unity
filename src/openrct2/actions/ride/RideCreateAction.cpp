@@ -75,7 +75,7 @@ namespace OpenRCT2::GameActions
                << DS_TAG(_vehicleColourPreset) << DS_TAG(_inspectionInterval);
     }
 
-    Result RideCreateAction::Query(GameState_t& gameState) const
+    Result RideCreateAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         if (_inspectionInterval > RideInspection::never)
         {
@@ -129,7 +129,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result RideCreateAction::Execute(GameState_t& gameState) const
+    Result RideCreateAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
 

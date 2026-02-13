@@ -59,7 +59,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_pathTypeIsLegacy);
     }
 
-    Result ParkEntrancePlaceAction::Query(GameState_t& gameState) const
+    Result ParkEntrancePlaceAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         if (!isInEditorMode() && !gameState.cheats.sandboxMode)
         {
@@ -119,7 +119,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result ParkEntrancePlaceAction::Execute(GameState_t& gameState) const
+    Result ParkEntrancePlaceAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.expenditure = ExpenditureType::landPurchase;

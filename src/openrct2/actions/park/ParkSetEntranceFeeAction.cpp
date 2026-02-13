@@ -41,7 +41,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_fee);
     }
 
-    Result ParkSetEntranceFeeAction::Query(GameState_t& gameState) const
+    Result ParkSetEntranceFeeAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         if ((gameState.park.flags & PARK_FLAGS_NO_MONEY) != 0)
         {
@@ -62,7 +62,7 @@ namespace OpenRCT2::GameActions
         return Result();
     }
 
-    Result ParkSetEntranceFeeAction::Execute(GameState_t& gameState) const
+    Result ParkSetEntranceFeeAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         gameState.park.entranceFee = _fee;
 

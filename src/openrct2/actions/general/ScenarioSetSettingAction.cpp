@@ -33,7 +33,7 @@ namespace OpenRCT2::GameActions
         visitor.Visit("value", _value);
     }
 
-    Result ScenarioSetSettingAction::Query(GameState_t& gameState) const
+    Result ScenarioSetSettingAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         if (_setting >= ScenarioSetSetting::Count)
         {
@@ -44,7 +44,7 @@ namespace OpenRCT2::GameActions
         return Result();
     }
 
-    Result ScenarioSetSettingAction::Execute(GameState_t& gameState) const
+    Result ScenarioSetSettingAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto* windowMgr = Ui::GetWindowManager();
 

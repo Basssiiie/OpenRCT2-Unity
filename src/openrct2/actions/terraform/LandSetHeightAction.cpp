@@ -59,7 +59,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_coords) << DS_TAG(_height) << DS_TAG(_style);
     }
 
-    Result LandSetHeightAction::Query(GameState_t& gameState) const
+    Result LandSetHeightAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         if (gameState.park.flags & PARK_FLAGS_FORBID_LANDSCAPE_CHANGES)
         {
@@ -155,7 +155,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result LandSetHeightAction::Execute(GameState_t& gameState) const
+    Result LandSetHeightAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         money64 cost = 0.00_GBP;
         auto surfaceHeight = TileElementHeight(_coords);

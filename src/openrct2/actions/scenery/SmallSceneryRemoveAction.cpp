@@ -54,7 +54,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_loc) << DS_TAG(_quadrant) << DS_TAG(_sceneryType);
     }
 
-    Result SmallSceneryRemoveAction::Query(GameState_t& gameState) const
+    Result SmallSceneryRemoveAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         Result res = Result();
 
@@ -106,7 +106,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result SmallSceneryRemoveAction::Execute(GameState_t& gameState) const
+    Result SmallSceneryRemoveAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         Result res = Result();
 

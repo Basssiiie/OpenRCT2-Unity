@@ -45,7 +45,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_range) << DS_TAG(_surfaceStyle) << DS_TAG(_edgeStyle);
     }
 
-    Result SurfaceSetStyleAction::Query(GameState_t& gameState) const
+    Result SurfaceSetStyleAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.errorTitle = STR_CANT_CHANGE_LAND_TYPE;
@@ -142,7 +142,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result SurfaceSetStyleAction::Execute(GameState_t& gameState) const
+    Result SurfaceSetStyleAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.errorTitle = STR_CANT_CHANGE_LAND_TYPE;
