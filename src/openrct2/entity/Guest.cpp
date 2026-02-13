@@ -4031,7 +4031,7 @@ void Guest::UpdateRideFreeVehicleCheck()
 
     if (rideEntry->Cars[0].flags.has(CarEntryFlag::isMiniGolf))
     {
-        vehicle->mini_golf_flags &= ~MiniGolfFlag::Flag5;
+        vehicle->miniGolfFlags.unset(MiniGolfFlag::flag5);
 
         for (size_t i = 0; i < ride->numTrains; ++i)
         {
@@ -4046,7 +4046,7 @@ void Guest::UpdateRideFreeVehicleCheck()
             if (second_vehicle->num_peeps == 0)
                 continue;
 
-            if (second_vehicle->mini_golf_flags & MiniGolfFlag::Flag5)
+            if (second_vehicle->miniGolfFlags.has(MiniGolfFlag::flag5))
                 continue;
 
             return;
