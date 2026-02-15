@@ -194,10 +194,12 @@ namespace OpenRCT2::Ui::Windows
         WIDX_TRACK_MAIN_COLOUR,
         WIDX_TRACK_ADDITIONAL_COLOUR,
         WIDX_TRACK_SUPPORT_COLOUR,
+        WIDX_SELL_ITEM_RANDOM_COLOUR_CHECKBOX,
         WIDX_MAZE_STYLE,
         WIDX_MAZE_STYLE_DROPDOWN,
         WIDX_PAINT_INDIVIDUAL_AREA,
         WIDX_ENTRANCE_PREVIEW,
+        WIDX_ENTRANCE_STYLE_LABEL,
         WIDX_ENTRANCE_STYLE,
         WIDX_ENTRANCE_STYLE_DROPDOWN,
         WIDX_VEHICLE_PREVIEW,
@@ -208,7 +210,6 @@ namespace OpenRCT2::Ui::Windows
         WIDX_VEHICLE_BODY_COLOUR,
         WIDX_VEHICLE_TRIM_COLOUR,
         WIDX_VEHICLE_TERTIARY_COLOUR,
-        WIDX_SELL_ITEM_RANDOM_COLOUR_CHECKBOX,
         WIDX_RANDOMISE_VEHICLE_COLOURS,
 
         WIDX_PLAY_MUSIC = 14,
@@ -339,12 +340,18 @@ namespace OpenRCT2::Ui::Windows
         makeWidget({ 79,  74}, { 12, 12}, WidgetType::colourBtn,    WindowColour::secondary, 0xFFFFFFFF,                    STR_SELECT_MAIN_COLOUR_TIP                   ),
         makeWidget({ 99,  74}, { 12, 12}, WidgetType::colourBtn,    WindowColour::secondary, 0xFFFFFFFF,                    STR_SELECT_ADDITIONAL_COLOUR_1_TIP           ),
         makeWidget({119,  74}, { 12, 12}, WidgetType::colourBtn,    WindowColour::secondary, 0xFFFFFFFF,                    STR_SELECT_SUPPORT_STRUCTURE_COLOUR_TIP      ),
+        makeWidget({100,  74}, {239, 12}, WidgetType::checkbox,     WindowColour::secondary, STR_RANDOM_COLOUR                                                           ),
+
         makeWidget({ 74,  49}, {239, 12}, WidgetType::dropdownMenu, WindowColour::secondary                                                                              ),
         makeWidget({301,  50}, { 11, 10}, WidgetType::button,       WindowColour::secondary, STR_DROPDOWN_GLYPH                                                          ),
+
         makeWidget({289,  68}, { 24, 24}, WidgetType::flatBtn,      WindowColour::secondary, ImageId(SPR_PAINTBRUSH),       STR_PAINT_INDIVIDUAL_AREA_TIP                ),
+
         makeWidget({245, 101}, { 68, 47}, WidgetType::spinner,      WindowColour::secondary                                                                              ),
+        makeWidget({  3, 103}, { 97, 12}, WidgetType::label,        WindowColour::secondary, STR_STATION_STYLE                                                           ),
         makeWidget({103, 103}, {139, 12}, WidgetType::dropdownMenu, WindowColour::secondary, kStringIdEmpty                                                              ),
         makeWidget({230, 104}, { 11, 10}, WidgetType::button,       WindowColour::secondary, STR_DROPDOWN_GLYPH,            STR_SELECT_STYLE_OF_ENTRANCE_EXIT_STATION_TIP),
+
         makeWidget({  3, 157}, { 68, 47}, WidgetType::scroll,       WindowColour::secondary, kStringIdEmpty                                                              ),
         makeWidget({ 74, 157}, {239, 12}, WidgetType::dropdownMenu, WindowColour::secondary, STR_ARG_6_STRINGID                                                          ),
         makeWidget({301, 158}, { 11, 10}, WidgetType::button,       WindowColour::secondary, STR_DROPDOWN_GLYPH,            STR_SELECT_VEHICLE_COLOUR_SCHEME_TIP         ),
@@ -353,7 +360,6 @@ namespace OpenRCT2::Ui::Windows
         makeWidget({ 79, 190}, { 12, 12}, WidgetType::colourBtn,    WindowColour::secondary, 0xFFFFFFFF,                    STR_SELECT_MAIN_COLOUR_TIP                   ),
         makeWidget({ 99, 190}, { 12, 12}, WidgetType::colourBtn,    WindowColour::secondary, 0xFFFFFFFF,                    STR_SELECT_ADDITIONAL_COLOUR_1_TIP           ),
         makeWidget({119, 190}, { 12, 12}, WidgetType::colourBtn,    WindowColour::secondary, 0xFFFFFFFF,                    STR_SELECT_ADDITIONAL_COLOUR_2_TIP           ),
-        makeWidget({100,  74}, {239, 12}, WidgetType::checkbox,     WindowColour::secondary, STR_RANDOM_COLOUR                                                           ),
         makeWidget({139, 190}, {110, 12}, WidgetType::button,       WindowColour::secondary, STR_RANDOMISE_VEHICLE_COLOURS, STR_RANDOMISE_VEHICLE_COLOURS_TIP            )
     );
 
@@ -4696,6 +4702,7 @@ namespace OpenRCT2::Ui::Windows
             if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasEntranceAndExit))
             {
                 widgets[WIDX_ENTRANCE_PREVIEW].type = WidgetType::spinner;
+                widgets[WIDX_ENTRANCE_STYLE_LABEL].type = WidgetType::label;
                 widgets[WIDX_ENTRANCE_STYLE].type = WidgetType::dropdownMenu;
                 widgets[WIDX_ENTRANCE_STYLE_DROPDOWN].type = WidgetType::button;
 
@@ -4710,6 +4717,7 @@ namespace OpenRCT2::Ui::Windows
             else
             {
                 widgets[WIDX_ENTRANCE_PREVIEW].type = WidgetType::empty;
+                widgets[WIDX_ENTRANCE_STYLE_LABEL].type = WidgetType::empty;
                 widgets[WIDX_ENTRANCE_STYLE].type = WidgetType::empty;
                 widgets[WIDX_ENTRANCE_STYLE_DROPDOWN].type = WidgetType::empty;
             }
@@ -4964,10 +4972,6 @@ namespace OpenRCT2::Ui::Windows
             GfxClear(clippedRT, PaletteIndex::pi12);
 
             ColourOnDrawEntrancePreview(clippedRT, ride, widget);
-
-            // TODO: does not belong here; move into label widget
-            auto labelPos = windowPos + ScreenCoordsXY{ 3, widgets[WIDX_ENTRANCE_STYLE].top };
-            DrawTextEllipsised(rt, labelPos, 97, STR_STATION_STYLE, {});
         }
 
         void ColourOnDrawEntrancePreview(RenderTarget& rt, const Ride* ride, const Widget& widget)
