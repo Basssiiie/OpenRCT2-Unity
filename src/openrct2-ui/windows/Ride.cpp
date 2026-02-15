@@ -4834,16 +4834,22 @@ namespace OpenRCT2::Ui::Windows
             drawWidgets(rt);
             drawTabImages(rt);
 
+            ColourOnDrawTrackPreview(rt, ride);
+            ColourOnDrawEntrancePreview(rt, ride);
+        }
+
+        void ColourOnDrawTrackPreview(RenderTarget& rt, const Ride* ride)
+        {
             // Track / shop item preview
             const auto& trackPreviewWidget = widgets[WIDX_TRACK_PREVIEW];
-            if (trackPreviewWidget.type != WidgetType::empty)
-            {
-                Rectangle::fill(
-                    rt,
-                    { { windowPos + ScreenCoordsXY{ trackPreviewWidget.left + 1, trackPreviewWidget.top + 1 } },
-                      { windowPos + ScreenCoordsXY{ trackPreviewWidget.right - 1, trackPreviewWidget.bottom - 1 } } },
-                    PaletteIndex::pi12);
-            }
+            if (trackPreviewWidget.type == WidgetType::empty)
+                return;
+
+            Rectangle::fill(
+                rt,
+                { { windowPos + ScreenCoordsXY{ trackPreviewWidget.left + 1, trackPreviewWidget.top + 1 } },
+                  { windowPos + ScreenCoordsXY{ trackPreviewWidget.right - 1, trackPreviewWidget.bottom - 1 } } },
+                PaletteIndex::pi12);
 
             auto rideEntry = ride->getRideEntry();
             if (rideEntry == nullptr || rideEntry->shop_item[0] == ShopItem::none)
@@ -4914,43 +4920,46 @@ namespace OpenRCT2::Ui::Windows
                         clipRT, ImageId(previewImage, ride->trackColours[0].main), { imageLocationX, imageLocationY });
                 }
             }
+        }
 
+        void ColourOnDrawEntrancePreview(RenderTarget& rt, const Ride* ride)
+        {
             // Entrance preview
             const auto& entrancePreviewWidget = widgets[WIDX_ENTRANCE_PREVIEW];
-            if (entrancePreviewWidget.type != WidgetType::empty)
+            if (entrancePreviewWidget.type == WidgetType::empty)
+            return;
+
+            RenderTarget clippedRT;
+            if (ClipRenderTarget(
+                    clippedRT, rt,
+                    windowPos + ScreenCoordsXY{ entrancePreviewWidget.left + 1, entrancePreviewWidget.top + 1 },
+                    entrancePreviewWidget.width() - 1, entrancePreviewWidget.height() - 1))
             {
-                RenderTarget clippedRT;
-                if (ClipRenderTarget(
-                        clippedRT, rt,
-                        windowPos + ScreenCoordsXY{ entrancePreviewWidget.left + 1, entrancePreviewWidget.top + 1 },
-                        entrancePreviewWidget.width() - 1, entrancePreviewWidget.height() - 1))
+                GfxClear(clippedRT, PaletteIndex::pi12);
+
+                auto stationObj = ride->getStationObject();
+                if (stationObj != nullptr && stationObj->BaseImageId != kImageIndexUndefined)
                 {
-                    GfxClear(clippedRT, PaletteIndex::pi12);
+                    auto trackColour = ride->trackColours[0];
+                    auto imageId = ImageId(stationObj->BaseImageId, trackColour.main, trackColour.additional);
 
-                    auto stationObj = ride->getStationObject();
-                    if (stationObj != nullptr && stationObj->BaseImageId != kImageIndexUndefined)
+                    // Back
+                    GfxDrawSprite(clippedRT, imageId, { 34, 20 });
+
+                    // Front
+                    GfxDrawSprite(clippedRT, imageId.WithIndexOffset(4), { 34, 20 });
+
+                    // Glass
+                    if (stationObj->Flags & StationObjectFlags::isTransparent)
                     {
-                        auto trackColour = ride->trackColours[0];
-                        auto imageId = ImageId(stationObj->BaseImageId, trackColour.main, trackColour.additional);
-
-                        // Back
-                        GfxDrawSprite(clippedRT, imageId, { 34, 20 });
-
-                        // Front
-                        GfxDrawSprite(clippedRT, imageId.WithIndexOffset(4), { 34, 20 });
-
-                        // Glass
-                        if (stationObj->Flags & StationObjectFlags::isTransparent)
-                        {
-                            auto glassImageId = ImageId(stationObj->BaseImageId + 20).WithTransparency(trackColour.main);
-                            GfxDrawSprite(clippedRT, glassImageId, { 34, 20 });
-                        }
+                        auto glassImageId = ImageId(stationObj->BaseImageId + 20).WithTransparency(trackColour.main);
+                        GfxDrawSprite(clippedRT, glassImageId, { 34, 20 });
                     }
                 }
-
-                auto labelPos = windowPos + ScreenCoordsXY{ 3, widgets[WIDX_ENTRANCE_STYLE].top };
-                DrawTextEllipsised(rt, labelPos, 97, STR_STATION_STYLE, {});
             }
+
+            auto labelPos = windowPos + ScreenCoordsXY{ 3, widgets[WIDX_ENTRANCE_STYLE].top };
+            DrawTextEllipsised(rt, labelPos, 97, STR_STATION_STYLE, {});
         }
 
         void ColourOnScrollDraw(RenderTarget& rt, int32_t scrollIndex) const
