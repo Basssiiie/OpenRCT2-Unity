@@ -4834,11 +4834,92 @@ namespace OpenRCT2::Ui::Windows
             drawWidgets(rt);
             drawTabImages(rt);
 
-            ColourOnDrawTrackPreview(rt, ride);
+            ColourOnDrawPrimaryPreview(rt, ride);
             ColourOnDrawEntrancePreview(rt, ride);
         }
 
-        void ColourOnDrawTrackPreview(RenderTarget& rt, const Ride* ride)
+        void ColourOnDrawTrackPreview(RenderTarget& rt, const Ride* ride, const Widget& widget)
+        {
+            auto screenCoords = windowPos + ScreenCoordsXY{ widget.left, widget.top };
+            auto trackColour = ride->trackColours[_rideColour];
+
+            const auto& rtd = ride->getRideTypeDescriptor();
+            if (rtd.specialType == RtdSpecialType::maze)
+            {
+                // Maze style
+                GfxDrawSprite(rt, ImageId(MazeOptions[EnumValue(trackColour.supports)].sprite), screenCoords);
+            }
+            else
+            {
+                const auto& typeDescriptor = ride->getRideTypeDescriptor();
+
+                // Track
+                int32_t spriteIndex = typeDescriptor.ColourPreview.Track;
+                if (spriteIndex != 0)
+                {
+                    GfxDrawSprite(rt, ImageId(spriteIndex, trackColour.main, trackColour.additional), screenCoords);
+                }
+
+                // Supports
+                spriteIndex = typeDescriptor.ColourPreview.Supports;
+                if (spriteIndex != 0)
+                {
+                    GfxDrawSprite(rt, ImageId(spriteIndex, trackColour.supports), screenCoords);
+                }
+            }
+        }
+
+        void ColourOnDrawShopItemPreview(
+            RenderTarget& rt, const Ride* ride, const ShopItemDescriptor& shopItem, const Widget& widget)
+        {
+            auto screenCoords = windowPos
+                + ScreenCoordsXY{ (widget.left + widget.right) / 2 - 8, (widget.bottom + widget.top) / 2 - 6 };
+
+            Colour spriteColour = ride->trackColours[0].main;
+            if (ride->hasLifecycleFlag(RIDE_LIFECYCLE_RANDOM_SHOP_COLOURS))
+                spriteColour = Colour((getGameState().currentTicks / 32) % kColourNumNormal);
+
+            GfxDrawSprite(rt, ImageId(shopItem.Image, spriteColour), screenCoords);
+        }
+
+        void ColourOnDrawShopBuildingPreview(RenderTarget& rt, const Ride* ride, const Widget& widget)
+        {
+            auto rideEntry = ride->getRideEntry();
+
+            const ImageIndex previewImage = rideEntry->images_offset + 3 + 1;
+            auto image = GfxGetG1Element(previewImage);
+            if (image == nullptr)
+                return;
+
+            RenderTarget clipRT;
+            auto clipScreenPos = windowPos + ScreenCoordsXY{ widget.left + 1, widget.top + 1 };
+            const auto clipWidth = widget.width() - 2;
+            const auto clipHeight = widget.height() - 1;
+            ClipRenderTarget(clipRT, rt, clipScreenPos, clipWidth, clipHeight);
+
+            auto imageLocationX = (clipWidth / 2) - (image->width / 2) - image->xOffset;
+            auto imageLocationY = (clipHeight / 2) - (image->height / 2) - image->yOffset;
+
+            GfxDrawSprite(clipRT, ImageId(previewImage, ride->trackColours[0].main), { imageLocationX, imageLocationY });
+        }
+
+        void ColourOnDrawShopPreview(RenderTarget& rt, const Ride* ride, const Widget& widget)
+        {
+            auto rideEntry = ride->getRideEntry();
+            ShopItem shopItemIndex = rideEntry->shop_item[1] == ShopItem::none ? rideEntry->shop_item[0]
+                                                                               : rideEntry->shop_item[1];
+            auto shopItem = GetShopItemDescriptor(shopItemIndex);
+            if (shopItem.IsRecolourable())
+            {
+                ColourOnDrawShopItemPreview(rt, ride, shopItem, widget);
+            }
+            else
+            {
+                ColourOnDrawShopBuildingPreview(rt, ride, widget);
+            }
+        }
+
+        void ColourOnDrawPrimaryPreview(RenderTarget& rt, const Ride* ride)
         {
             // Track / shop item preview
             const auto& trackPreviewWidget = widgets[WIDX_TRACK_PREVIEW];
@@ -4854,71 +4935,11 @@ namespace OpenRCT2::Ui::Windows
             auto rideEntry = ride->getRideEntry();
             if (rideEntry == nullptr || rideEntry->shop_item[0] == ShopItem::none)
             {
-                auto screenCoords = windowPos + ScreenCoordsXY{ trackPreviewWidget.left, trackPreviewWidget.top };
-                auto trackColour = ride->trackColours[_rideColour];
-
-                // Track
-                const auto& rtd = ride->getRideTypeDescriptor();
-                if (rtd.specialType == RtdSpecialType::maze)
-                {
-                    GfxDrawSprite(rt, ImageId(MazeOptions[EnumValue(trackColour.supports)].sprite), screenCoords);
-                }
-                else
-                {
-                    const auto& typeDescriptor = ride->getRideTypeDescriptor();
-                    int32_t spriteIndex = typeDescriptor.ColourPreview.Track;
-                    if (spriteIndex != 0)
-                    {
-                        GfxDrawSprite(rt, ImageId(spriteIndex, trackColour.main, trackColour.additional), screenCoords);
-                    }
-
-                    // Supports
-                    spriteIndex = typeDescriptor.ColourPreview.Supports;
-                    if (spriteIndex != 0)
-                    {
-                        GfxDrawSprite(rt, ImageId(spriteIndex, trackColour.supports), screenCoords);
-                    }
-                }
+                ColourOnDrawTrackPreview(rt, ride, trackPreviewWidget);
             }
             else
             {
-                ShopItem shopItemIndex = rideEntry->shop_item[1] == ShopItem::none ? rideEntry->shop_item[0]
-                                                                                   : rideEntry->shop_item[1];
-                auto shopItem = GetShopItemDescriptor(shopItemIndex);
-
-                if (shopItem.IsRecolourable())
-                {
-                    auto screenCoords = windowPos
-                        + ScreenCoordsXY{ (trackPreviewWidget.left + trackPreviewWidget.right) / 2 - 8,
-                                          (trackPreviewWidget.bottom + trackPreviewWidget.top) / 2 - 6 };
-
-                    Colour spriteColour = ride->trackColours[0].main;
-                    if (ride->hasLifecycleFlag(RIDE_LIFECYCLE_RANDOM_SHOP_COLOURS))
-                        spriteColour = Colour((getGameState().currentTicks / 32) % kColourNumNormal);
-
-                    GfxDrawSprite(rt, ImageId(shopItem.Image, spriteColour), screenCoords);
-                }
-                else
-                {
-                    const ImageIndex previewImage = rideEntry->images_offset + 3 + 1;
-                    auto image = GfxGetG1Element(previewImage);
-                    if (image == nullptr)
-                        return;
-
-                    const auto& previewWidget = widgets[WIDX_TRACK_PREVIEW];
-
-                    RenderTarget clipRT;
-                    auto clipScreenPos = windowPos + ScreenCoordsXY{ previewWidget.left + 1, previewWidget.top + 1 };
-                    const auto clipWidth = previewWidget.width() - 2;
-                    const auto clipHeight = previewWidget.height() - 1;
-                    ClipRenderTarget(clipRT, rt, clipScreenPos, clipWidth, clipHeight);
-
-                    auto imageLocationX = (clipWidth / 2) - (image->width / 2) - image->xOffset;
-                    auto imageLocationY = (clipHeight / 2) - (image->height / 2) - image->yOffset;
-
-                    GfxDrawSprite(
-                        clipRT, ImageId(previewImage, ride->trackColours[0].main), { imageLocationX, imageLocationY });
-                }
+                ColourOnDrawShopPreview(rt, ride, trackPreviewWidget);
             }
         }
 
@@ -4927,7 +4948,11 @@ namespace OpenRCT2::Ui::Windows
             // Entrance preview
             const auto& entrancePreviewWidget = widgets[WIDX_ENTRANCE_PREVIEW];
             if (entrancePreviewWidget.type == WidgetType::empty)
-            return;
+                return;
+
+            auto stationObj = ride->getStationObject();
+            if (stationObj == nullptr && stationObj->BaseImageId == kImageIndexUndefined)
+                return;
 
             RenderTarget clippedRT;
             if (ClipRenderTarget(
@@ -4937,24 +4962,20 @@ namespace OpenRCT2::Ui::Windows
             {
                 GfxClear(clippedRT, PaletteIndex::pi12);
 
-                auto stationObj = ride->getStationObject();
-                if (stationObj != nullptr && stationObj->BaseImageId != kImageIndexUndefined)
+                auto trackColour = ride->trackColours[0];
+                auto imageId = ImageId(stationObj->BaseImageId, trackColour.main, trackColour.additional);
+
+                // Back
+                GfxDrawSprite(clippedRT, imageId, { 34, 20 });
+
+                // Front
+                GfxDrawSprite(clippedRT, imageId.WithIndexOffset(4), { 34, 20 });
+
+                // Glass
+                if (stationObj->Flags & StationObjectFlags::isTransparent)
                 {
-                    auto trackColour = ride->trackColours[0];
-                    auto imageId = ImageId(stationObj->BaseImageId, trackColour.main, trackColour.additional);
-
-                    // Back
-                    GfxDrawSprite(clippedRT, imageId, { 34, 20 });
-
-                    // Front
-                    GfxDrawSprite(clippedRT, imageId.WithIndexOffset(4), { 34, 20 });
-
-                    // Glass
-                    if (stationObj->Flags & StationObjectFlags::isTransparent)
-                    {
-                        auto glassImageId = ImageId(stationObj->BaseImageId + 20).WithTransparency(trackColour.main);
-                        GfxDrawSprite(clippedRT, glassImageId, { 34, 20 });
-                    }
+                    auto glassImageId = ImageId(stationObj->BaseImageId + 20).WithTransparency(trackColour.main);
+                    GfxDrawSprite(clippedRT, glassImageId, { 34, 20 });
                 }
             }
 
