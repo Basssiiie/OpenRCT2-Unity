@@ -4827,9 +4827,6 @@ namespace OpenRCT2::Ui::Windows
 
         void ColourOnDraw(RenderTarget& rt)
         {
-            // TODO: This should use lists and identified sprites
-            RenderTarget clippedRT;
-
             auto ride = GetRide(rideId);
             if (ride == nullptr)
                 return;
@@ -4840,19 +4837,19 @@ namespace OpenRCT2::Ui::Windows
             // Track / shop item preview
             const auto& trackPreviewWidget = widgets[WIDX_TRACK_PREVIEW];
             if (trackPreviewWidget.type != WidgetType::empty)
+            {
                 Rectangle::fill(
                     rt,
                     { { windowPos + ScreenCoordsXY{ trackPreviewWidget.left + 1, trackPreviewWidget.top + 1 } },
                       { windowPos + ScreenCoordsXY{ trackPreviewWidget.right - 1, trackPreviewWidget.bottom - 1 } } },
                     PaletteIndex::pi12);
+            }
 
-            auto trackColour = ride->trackColours[_rideColour];
-
-            //
             auto rideEntry = ride->getRideEntry();
             if (rideEntry == nullptr || rideEntry->shop_item[0] == ShopItem::none)
             {
                 auto screenCoords = windowPos + ScreenCoordsXY{ trackPreviewWidget.left, trackPreviewWidget.top };
+                auto trackColour = ride->trackColours[_rideColour];
 
                 // Track
                 const auto& rtd = ride->getRideTypeDescriptor();
@@ -4919,10 +4916,10 @@ namespace OpenRCT2::Ui::Windows
             }
 
             // Entrance preview
-            trackColour = ride->trackColours[0];
             const auto& entrancePreviewWidget = widgets[WIDX_ENTRANCE_PREVIEW];
             if (entrancePreviewWidget.type != WidgetType::empty)
             {
+                RenderTarget clippedRT;
                 if (ClipRenderTarget(
                         clippedRT, rt,
                         windowPos + ScreenCoordsXY{ entrancePreviewWidget.left + 1, entrancePreviewWidget.top + 1 },
@@ -4933,6 +4930,7 @@ namespace OpenRCT2::Ui::Windows
                     auto stationObj = ride->getStationObject();
                     if (stationObj != nullptr && stationObj->BaseImageId != kImageIndexUndefined)
                     {
+                        auto trackColour = ride->trackColours[0];
                         auto imageId = ImageId(stationObj->BaseImageId, trackColour.main, trackColour.additional);
 
                         // Back
