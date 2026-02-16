@@ -188,7 +188,7 @@ namespace OpenRCT2::Ui::Windows
         WIDX_RELIABILITY_BAR,
         WIDX_DOWN_TIME_BAR,
 
-        WIDX_TRACK_PREVIEW = 14,
+        WIDX_PRIMARY_PREVIEW = 14,
         WIDX_TRACK_COLOUR_SCHEME,
         WIDX_TRACK_COLOUR_SCHEME_DROPDOWN,
         WIDX_TRACK_MAIN_COLOUR,
@@ -198,7 +198,7 @@ namespace OpenRCT2::Ui::Windows
         WIDX_MAZE_STYLE,
         WIDX_MAZE_STYLE_DROPDOWN,
         WIDX_PAINT_INDIVIDUAL_AREA,
-        WIDX_ENTRANCE_PREVIEW,
+        WIDX_SECONDARY_PREVIEW,
         WIDX_ENTRANCE_STYLE_LABEL,
         WIDX_ENTRANCE_STYLE,
         WIDX_ENTRANCE_STYLE_DROPDOWN,
@@ -4694,14 +4694,14 @@ namespace OpenRCT2::Ui::Windows
             // Track preview
             if (rtd.flags.hasAny(
                     RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourAdditional, RtdFlag::hasTrackColourSupports))
-                widgets[WIDX_TRACK_PREVIEW].type = WidgetType::spinner;
+                widgets[WIDX_PRIMARY_PREVIEW].type = WidgetType::spinner;
             else
-                widgets[WIDX_TRACK_PREVIEW].type = WidgetType::empty;
+                widgets[WIDX_PRIMARY_PREVIEW].type = WidgetType::empty;
 
             // Entrance style
             if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasEntranceAndExit))
             {
-                widgets[WIDX_ENTRANCE_PREVIEW].type = WidgetType::spinner;
+                widgets[WIDX_SECONDARY_PREVIEW].type = WidgetType::spinner;
                 widgets[WIDX_ENTRANCE_STYLE_LABEL].type = WidgetType::label;
                 widgets[WIDX_ENTRANCE_STYLE].type = WidgetType::dropdownMenu;
                 widgets[WIDX_ENTRANCE_STYLE_DROPDOWN].type = WidgetType::button;
@@ -4716,7 +4716,7 @@ namespace OpenRCT2::Ui::Windows
             }
             else
             {
-                widgets[WIDX_ENTRANCE_PREVIEW].type = WidgetType::empty;
+                widgets[WIDX_SECONDARY_PREVIEW].type = WidgetType::empty;
                 widgets[WIDX_ENTRANCE_STYLE_LABEL].type = WidgetType::empty;
                 widgets[WIDX_ENTRANCE_STYLE].type = WidgetType::empty;
                 widgets[WIDX_ENTRANCE_STYLE_DROPDOWN].type = WidgetType::empty;
@@ -4849,7 +4849,7 @@ namespace OpenRCT2::Ui::Windows
         void ColourOnDrawPrimaryPreview(RenderTarget& rt, const Ride* ride)
         {
             // Track / shop item preview
-            const auto& widget = widgets[WIDX_TRACK_PREVIEW];
+            const auto& widget = widgets[WIDX_PRIMARY_PREVIEW];
             if (widget.type == WidgetType::empty)
                 return;
 
@@ -4958,7 +4958,7 @@ namespace OpenRCT2::Ui::Windows
 
         void ColourOnDrawSecondaryPreview(RenderTarget& rt, const Ride* ride)
         {
-            const auto& widget = widgets[WIDX_ENTRANCE_PREVIEW];
+            const auto& widget = widgets[WIDX_SECONDARY_PREVIEW];
             if (widget.type == WidgetType::empty)
                 return;
 
