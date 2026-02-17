@@ -349,9 +349,9 @@ namespace OpenRCT2::Ui::Windows
         makeWidget({289,  68}, { 24, 24}, WidgetType::flatBtn,      WindowColour::secondary, ImageId(SPR_PAINTBRUSH),       STR_PAINT_INDIVIDUAL_AREA_TIP                ),
 
         makeWidget({245, 101}, { 68, 47}, WidgetType::spinner,      WindowColour::secondary                                                                              ),
-        makeWidget({  3, 103}, { 97, 12}, WidgetType::label,        WindowColour::secondary, STR_STATION_STYLE                                                           ),
-        makeWidget({103, 103}, {139, 12}, WidgetType::dropdownMenu, WindowColour::secondary, kStringIdEmpty                                                              ),
-        makeWidget({230, 104}, { 11, 10}, WidgetType::button,       WindowColour::secondary, STR_DROPDOWN_GLYPH,            STR_SELECT_STYLE_OF_ENTRANCE_EXIT_STATION_TIP),
+        makeWidget({  3, 105}, { 97, 12}, WidgetType::label,        WindowColour::secondary, STR_STATION_STYLE                                                           ),
+        makeWidget({103, 102}, {139, 14}, WidgetType::dropdownMenu, WindowColour::secondary, kStringIdEmpty                                                              ),
+        makeWidget({230, 103}, { 11, 12}, WidgetType::button,       WindowColour::secondary, STR_DROPDOWN_GLYPH,            STR_SELECT_STYLE_OF_ENTRANCE_EXIT_STATION_TIP),
 
         makeWidget({  3, 157}, { 68, 47}, WidgetType::scroll,       WindowColour::secondary, kStringIdEmpty                                                              ),
         makeWidget({ 74, 157}, {239, 12}, WidgetType::dropdownMenu, WindowColour::secondary, STR_ARG_6_STRINGID                                                          ),
@@ -654,7 +654,6 @@ namespace OpenRCT2::Ui::Windows
     {
         ObjectEntryIndex EntranceTypeId;
         StringId LabelId;
-        u8string_view LabelString;
     };
 
     class RideWindow final : public Window
@@ -2142,36 +2141,92 @@ namespace OpenRCT2::Ui::Windows
                 auto stationObj = objManager.GetLoadedObject<StationObject>(i);
                 if (stationObj != nullptr)
                 {
-                    auto name = stationObj->NameStringId;
-                    _entranceDropdownData.push_back({ i, name, u8string_view{ ls.GetString(name) } });
+                    _entranceDropdownData.push_back({ i, stationObj->NameStringId });
                 }
             }
 
-            std::sort(_entranceDropdownData.begin(), _entranceDropdownData.end(), [](auto& a, auto& b) {
-                return a.LabelString.compare(b.LabelString) < 0;
+            std::sort(_entranceDropdownData.begin(), _entranceDropdownData.end(), [&ls](auto& a, auto& b) {
+                u8string_view stringA = ls.GetString(a.LabelId);
+                u8string_view stringB = ls.GetString(b.LabelId);
+                return stringA.compare(stringB) < 0;
             });
 
             _entranceDropdownDataLanguage = ls.GetCurrentLanguage();
         }
 
+        void drawEntranceStyleIcon(Drawing::RenderTarget& rt, ScreenCoordsXY coords, ObjectEntryIndex stationObjectIndex)
+        {
+            // Find station object
+            auto& objManager = GetContext()->GetObjectManager();
+            auto* stationObj = objManager.GetLoadedObject<StationObject>(stationObjectIndex);
+            if (stationObj == nullptr || stationObj->iconIndex == kImageIndexUndefined)
+                return;
+
+            // Draw icon in front of the label
+            auto* ride = GetRide(rideId);
+            int32_t colourScheme = _rideColour;
+            auto& trackColour = ride->trackColours[colourScheme];
+            GfxDrawSprite(rt, ImageId(stationObj->iconIndex, trackColour.main, trackColour.additional), coords);
+        }
+
+        void drawEntranceStyleDropdownItem(
+            Drawing::RenderTarget& rt, const Dropdown::Item& item, bool highlighted, int32_t ddWidth)
+        {
+            auto formatString = item.isChecked() ? STR_OPTIONS_DROPDOWN_ITEM_SELECTED : STR_OPTIONS_DROPDOWN_ITEM;
+
+            ColourWithFlags colour = colours[1];
+            if (highlighted)
+                colour.colour = Colour::white;
+            if (item.isDisabled())
+                colour = colour.withFlag(ColourFlag::inset, true);
+
+            bool isEnlarged = Config::Get().interface.enlargedUi;
+            auto yOffset = isEnlarged ? 6 : 3;
+            Formatter ft;
+            ft.Add<const utf8*>(item.text);
+
+            // Draw text label
+            DrawTextEllipsised(rt, ScreenCoordsXY{ 2, yOffset }, ddWidth - 7, formatString, ft, { colour });
+
+            // Draw icon in front of the label
+            auto stationObjectIndex = item.value;
+            drawEntranceStyleIcon(rt, ScreenCoordsXY{ 12, yOffset - 3 }, stationObjectIndex);
+        }
+
         void ShowEntranceStyleDropdown()
         {
-            auto dropdownWidget = &widgets[WIDX_ENTRANCE_STYLE_DROPDOWN] - 1;
-            auto ride = GetRide(rideId);
+            auto& dropdownWidget = widgets[WIDX_ENTRANCE_STYLE_DROPDOWN - 1];
+            auto* ride = GetRide(rideId);
 
             PopulateEntranceStyleDropdown();
 
             for (size_t i = 0; i < _entranceDropdownData.size(); i++)
             {
-                gDropdown.items[i] = Dropdown::MenuLabel(_entranceDropdownData[i].LabelId);
-                if (_entranceDropdownData[i].EntranceTypeId == ride->entranceStyle)
+                auto& item = _entranceDropdownData[i];
+
+                Formatter ft;
+                ft.Add<StringId>(item.LabelId);
+
+                gDropdown.items[i] = Dropdown::MenuLabel(STR_STATION_STYLE_DROPDOWN, ft);
+                gDropdown.items[i].value = item.EntranceTypeId;
+
+                if (item.EntranceTypeId == ride->entranceStyle)
                     gDropdown.items[i].setChecked(true);
             }
 
-            WindowDropdownShowTextCustomWidth(
-                { windowPos.x + dropdownWidget->left, windowPos.y + dropdownWidget->top }, dropdownWidget->height(), colours[1],
-                0, Dropdown::Flag::StayOpen, _entranceDropdownData.size(),
-                widgets[WIDX_ENTRANCE_STYLE_DROPDOWN].right - dropdownWidget->left);
+            const bool isEnlarged = Config::Get().interface.enlargedUi;
+            const auto previewHeight = isEnlarged ? 24 : 17;
+            const auto previewWidth = dropdownWidget.width() + 25;
+
+            auto numItems = static_cast<uint32_t>(std::size(_entranceDropdownData));
+            auto itemsPerRow = 1;
+            auto drawingFunction = [this, previewWidth](Drawing::RenderTarget& rt, const Dropdown::Item& item, bool hover) {
+                drawEntranceStyleDropdownItem(rt, item, hover, previewWidth);
+            };
+
+            WindowDropdownShowCustom(
+                windowPos + ScreenCoordsXY{ dropdownWidget.left, dropdownWidget.top }, dropdownWidget.height(), colours[1],
+                Dropdown::Flag::StayOpen, drawingFunction, numItems, previewWidth, previewHeight, itemsPerRow);
         }
 
         void MainOnMouseDown(WidgetIndex widgetIndex)
@@ -4716,14 +4771,6 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_ENTRANCE_STYLE_LABEL].type = WidgetType::label;
                 widgets[WIDX_ENTRANCE_STYLE].type = WidgetType::dropdownMenu;
                 widgets[WIDX_ENTRANCE_STYLE_DROPDOWN].type = WidgetType::button;
-
-                auto stringId = kStringIdNone;
-                auto stationObj = ride->getStationObject();
-                if (stationObj != nullptr)
-                {
-                    stringId = stationObj->NameStringId;
-                }
-                widgets[WIDX_ENTRANCE_STYLE].text = stringId;
             }
             else
             {
@@ -4983,6 +5030,28 @@ namespace OpenRCT2::Ui::Windows
             GfxClear(clippedRT, PaletteIndex::pi12);
 
             ColourOnDrawEntrancePreview(clippedRT, ride, widget);
+            colourOnDrawEntranceDropdownCaption(rt, ride);
+        }
+
+        void colourOnDrawEntranceDropdownCaption(RenderTarget& rt, const Ride* ride)
+        {
+            auto& widget = widgets[WIDX_ENTRANCE_STYLE];
+
+            const auto clipScreenPos = windowPos + ScreenCoordsXY{ widget.left + 1, widget.top + 1 };
+            RenderTarget clippedRT;
+            if (!ClipRenderTarget(clippedRT, rt, clipScreenPos, widget.width() - 1, widget.height() - 2))
+            {
+                return;
+            }
+
+            // Draw icon, focused on bottom half
+            drawEntranceStyleIcon(clippedRT, { 0, -4 }, ride->entranceStyle);
+
+            // Draw entrance label
+            auto* stationObj = ride->getStationObject();
+            Formatter ft;
+            ft.Add<StringId>(stationObj->NameStringId);
+            DrawTextEllipsised(clippedRT, { 19, 1 }, widget.width() - 12 - 19, STR_WINDOW_COLOUR_2_STRINGID, ft);
         }
 
         void ColourOnDrawEntrancePreview(RenderTarget& rt, const Ride* ride, const Widget& widget)
