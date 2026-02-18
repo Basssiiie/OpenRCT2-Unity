@@ -123,8 +123,8 @@ namespace OpenRCT2
                 // Move the Infogrames logo down
                 _introStateCounter += 5;
 
-                // Check if logo is off the screen...ish
-                if (_introStateCounter > ContextGetHeight() - 120)
+                // Check if logo is off the screen
+                if (_introStateCounter > ContextGetHeight())
                 {
                     _introStateCounter = -116;
                     _introState = IntroState::DeveloperBegin;
