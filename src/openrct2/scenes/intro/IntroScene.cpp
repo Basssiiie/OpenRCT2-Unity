@@ -89,26 +89,9 @@ namespace OpenRCT2
         return _introState != IntroState::None;
     }
 
-    IntroScene::IntroScene(IContext& context)
-        : Scene(context)
-        , _impl(std::make_shared<IntroSceneImpl>())
-    {
-        introSceneImplementation = _impl;
-    }
-
-    void IntroScene::Load()
-    {
-        _impl->Load();
-    }
-
     void IntroSceneImpl::Load()
     {
         _introState = IntroState::PublisherBegin;
-    }
-
-    void IntroScene::Stop()
-    {
-        _impl->Stop();
     }
 
     void IntroSceneImpl::Stop()
@@ -118,12 +101,6 @@ namespace OpenRCT2
     }
 
     // rct2: 0x0068E966
-    void IntroScene::Tick()
-    {
-        auto& sceneContext = GetContext();
-        _impl->Tick(sceneContext);
-    }
-
     void IntroSceneImpl::Tick(IContext& sceneContext)
     {
         ScreenIntroProcessMouseInput();
@@ -389,5 +366,28 @@ namespace OpenRCT2
         GfxDrawSprite(rt, ImageId(SPR_INTRO_LOGO_01), { imageX + 0, 240 });
         GfxDrawSprite(rt, ImageId(SPR_INTRO_LOGO_11), { imageX + 220, 240 });
         GfxDrawSprite(rt, ImageId(SPR_INTRO_LOGO_21), { imageX + 440, 240 });
+    }
+
+    IntroScene::IntroScene(IContext& context)
+        : Scene(context)
+        , _impl(std::make_shared<IntroSceneImpl>())
+    {
+        introSceneImplementation = _impl;
+    }
+
+    void IntroScene::Load()
+    {
+        _impl->Load();
+    }
+
+    void IntroScene::Stop()
+    {
+        _impl->Stop();
+    }
+
+    void IntroScene::Tick()
+    {
+        auto& sceneContext = GetContext();
+        _impl->Tick(sceneContext);
     }
 } // namespace OpenRCT2
