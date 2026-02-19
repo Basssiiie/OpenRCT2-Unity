@@ -31,6 +31,5 @@ namespace OpenRCT2
     };
 
     bool IntroIsPlaying();
-    void IntroUpdate();
     void IntroDraw(Drawing::RenderTarget& rt);
 } // namespace OpenRCT2
