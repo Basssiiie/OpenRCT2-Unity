@@ -20,20 +20,6 @@ namespace OpenRCT2::Drawing
 
 namespace OpenRCT2
 {
-    enum class IntroState : uint8_t
-    {
-        None,
-        PublisherBegin,
-        PublisherScroll,
-        DeveloperBegin,
-        DeveloperScroll,
-        LogoFadeIn,
-        LogoWait,
-        LogoFadeOut,
-        Clear = 254,
-        Finish = 255,
-    };
-
     class IntroScene final : public Scene
     {
     public:

@@ -26,6 +26,20 @@ using namespace OpenRCT2::Drawing;
 
 namespace OpenRCT2
 {
+    enum class IntroState : uint8_t
+    {
+        None,
+        PublisherBegin,
+        PublisherScroll,
+        DeveloperBegin,
+        DeveloperScroll,
+        LogoFadeIn,
+        LogoWait,
+        LogoFadeOut,
+        Clear = 254,
+        Finish = 255,
+    };
+
     static constexpr PaletteIndex kBackgroundColourDark = PaletteIndex::pi10;
     static constexpr PaletteIndex kBackgroundColourLogo = PaletteIndex::primaryRemap2;
     static constexpr PaletteIndex kBorderColourPublisher = PaletteIndex::pi129;
