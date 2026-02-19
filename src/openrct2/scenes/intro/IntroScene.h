@@ -11,7 +11,7 @@
 
 #include "../Scene.h"
 
-#include <cstdint>
+#include <memory>
 
 namespace OpenRCT2::Drawing
 {
@@ -20,14 +20,21 @@ namespace OpenRCT2::Drawing
 
 namespace OpenRCT2
 {
+    class IntroSceneImpl;
+
     class IntroScene final : public Scene
     {
     public:
         using Scene::Scene;
 
+        IntroScene(IContext& context);
+
         void Load() override;
         void Tick() override;
         void Stop() override;
+
+    private:
+        std::shared_ptr<IntroSceneImpl> _impl;
     };
 
     bool IntroIsPlaying();
