@@ -19,7 +19,7 @@
 #include "../../drawing/Drawing.h"
 #include "../../drawing/Rectangle.h"
 
-#include <memory>
+#include <cstdint>
 
 using OpenRCT2::Audio::SoundId;
 using namespace OpenRCT2::Drawing;
@@ -33,37 +33,75 @@ namespace OpenRCT2
     static constexpr ImageIndex kPaletteChrisSawyerLogo = 23217;
     static constexpr ImageIndex kPaletteRCT2Logo = 23224;
 
-    static IntroState _introState;
+    static std::weak_ptr<IntroSceneImpl> introSceneImplementation;
 
-    // Used mainly for timing but also for Y coordinate and fading.
-    static int32_t _introStateCounter;
+    class IntroSceneImpl
+    {
+    public:
+        bool IntroIsPlaying();
+        void IntroDraw(Drawing::RenderTarget& rt);
+        void Load();
+        void Stop();
+        void Tick(IContext& sceneContext);
 
-    static std::shared_ptr<Audio::IAudioChannel> _soundChannel = nullptr;
-    static bool _chainLiftFinished;
+    private:
+        void ScreenIntroProcessMouseInput();
+        void ScreenIntroProcessKeyboardInput();
+        void ScreenIntroSkipPart();
+        void ScreenIntroDrawLogo(RenderTarget& rt);
+
+    private:
+        enum class IntroState : uint8_t
+        {
+            None,
+            PublisherBegin,
+            PublisherScroll,
+            DeveloperBegin,
+            DeveloperScroll,
+            LogoFadeIn,
+            LogoWait,
+            LogoFadeOut,
+            Clear = 254,
+            Finish = 255,
+        };
+
+        IntroState _introState;
+
+        // Used mainly for timing but also for Y coordinate and fading.
+        int32_t _introStateCounter;
+
+        std::shared_ptr<Audio::IAudioChannel> _soundChannel = nullptr;
+        bool _chainLiftFinished;
+    };
 
     bool IntroIsPlaying()
+    {
+        if (auto impl = introSceneImplementation.lock())
+        {
+            return impl->IntroIsPlaying();
+        }
+
+        return false;
+    }
+
+    bool IntroSceneImpl::IntroIsPlaying()
     {
         return _introState != IntroState::None;
     }
 
-    void IntroScene::Load()
+    void IntroSceneImpl::Load()
     {
         _introState = IntroState::PublisherBegin;
     }
 
-    void IntroScene::Stop()
+    void IntroSceneImpl::Stop()
     {
         _introState = IntroState::None;
         LoadPalette();
     }
 
-    static void ScreenIntroProcessMouseInput();
-    static void ScreenIntroProcessKeyboardInput();
-    static void ScreenIntroSkipPart();
-    static void ScreenIntroDrawLogo(RenderTarget& rt);
-
     // rct2: 0x0068E966
-    void IntroScene::Tick()
+    void IntroSceneImpl::Tick(IContext& sceneContext)
     {
         ScreenIntroProcessMouseInput();
         ScreenIntroProcessKeyboardInput();
@@ -181,8 +219,7 @@ namespace OpenRCT2
                 break;
             case IntroState::Finish:
             {
-                auto& context = GetContext();
-                context.SetActiveScene(context.GetTitleScene());
+                sceneContext.SetActiveScene(sceneContext.GetTitleScene());
                 break;
             }
             default:
@@ -191,6 +228,14 @@ namespace OpenRCT2
     }
 
     void IntroDraw(RenderTarget& rt)
+    {
+        if (auto impl = introSceneImplementation.lock())
+        {
+            impl->IntroDraw(rt);
+        }
+    }
+
+    void IntroSceneImpl::IntroDraw(RenderTarget& rt)
     {
         int32_t screenWidth = ContextGetWidth();
 
@@ -264,7 +309,7 @@ namespace OpenRCT2
         }
     }
 
-    static void ScreenIntroProcessMouseInput()
+    void IntroSceneImpl::ScreenIntroProcessMouseInput()
     {
         if (ContextGetCursorState()->any & CURSOR_DOWN)
         {
@@ -276,7 +321,7 @@ namespace OpenRCT2
      *
      *  rct2: 0x006E3AEC
      */
-    static void ScreenIntroProcessKeyboardInput()
+    void IntroSceneImpl::ScreenIntroProcessKeyboardInput()
     {
         const uint8_t* keys = ContextGetKeysState();
         for (int i = 0; i < 256; i++)
@@ -289,7 +334,7 @@ namespace OpenRCT2
         }
     }
 
-    static void ScreenIntroSkipPart()
+    void IntroSceneImpl::ScreenIntroSkipPart()
     {
         switch (_introState)
         {
@@ -301,7 +346,7 @@ namespace OpenRCT2
         }
     }
 
-    static void ScreenIntroDrawLogo(RenderTarget& rt)
+    void IntroSceneImpl::ScreenIntroDrawLogo(RenderTarget& rt)
     {
         int32_t screenWidth = ContextGetWidth();
         int32_t imageWidth = 640;
@@ -321,5 +366,28 @@ namespace OpenRCT2
         GfxDrawSprite(rt, ImageId(SPR_INTRO_LOGO_01), { imageX + 0, 240 });
         GfxDrawSprite(rt, ImageId(SPR_INTRO_LOGO_11), { imageX + 220, 240 });
         GfxDrawSprite(rt, ImageId(SPR_INTRO_LOGO_21), { imageX + 440, 240 });
+    }
+
+    IntroScene::IntroScene(IContext& context)
+        : Scene(context)
+        , _impl(std::make_shared<IntroSceneImpl>())
+    {
+        introSceneImplementation = _impl;
+    }
+
+    void IntroScene::Load()
+    {
+        _impl->Load();
+    }
+
+    void IntroScene::Stop()
+    {
+        _impl->Stop();
+    }
+
+    void IntroScene::Tick()
+    {
+        auto& sceneContext = GetContext();
+        _impl->Tick(sceneContext);
     }
 } // namespace OpenRCT2
