@@ -4977,22 +4977,23 @@ namespace OpenRCT2::Ui::Windows
         void ColourOnDrawEntrancePreview(RenderTarget& rt, const Ride* ride, const Widget& widget)
         {
             auto stationObj = ride->getStationObject();
-            if (stationObj == nullptr && stationObj->BaseImageId == kImageIndexUndefined)
+            if (stationObj == nullptr && stationObj->entranceBackIndex == kImageIndexUndefined)
                 return;
 
             auto trackColour = ride->trackColours[0];
-            auto imageId = ImageId(stationObj->BaseImageId, trackColour.main, trackColour.additional);
 
             // Back
-            GfxDrawSprite(rt, imageId, { 34, 20 });
+            auto backImageId = ImageId(stationObj->entranceBackIndex, trackColour.main, trackColour.additional);
+            GfxDrawSprite(rt, backImageId, { 34, 20 });
 
             // Front
-            GfxDrawSprite(rt, imageId.WithIndexOffset(4), { 34, 20 });
+            auto frontImageId = ImageId(stationObj->entranceFrontIndex, trackColour.main, trackColour.additional);
+            GfxDrawSprite(rt, frontImageId, { 34, 20 });
 
             // Glass
             if (stationObj->Flags & StationObjectFlags::isTransparent)
             {
-                auto glassImageId = ImageId(stationObj->BaseImageId + 20).WithTransparency(trackColour.main);
+                auto glassImageId = ImageId(stationObj->entranceFrontGlassIndex).WithTransparency(trackColour.main);
                 GfxDrawSprite(rt, glassImageId, { 34, 20 });
             }
         }
