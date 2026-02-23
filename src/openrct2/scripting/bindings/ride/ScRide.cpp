@@ -119,7 +119,7 @@ namespace OpenRCT2::Scripting
     uint32_t ScRide::lifecycleFlags_get() const
     {
         auto ride = GetRide();
-        return ride != nullptr ? ride->lifecycleFlags : 0;
+        return ride != nullptr ? ride->lifecycleFlags.holder : 0;
     }
 
     void ScRide::lifecycleFlags_set(uint32_t value)
@@ -128,7 +128,7 @@ namespace OpenRCT2::Scripting
         auto ride = GetRide();
         if (ride != nullptr)
         {
-            ride->lifecycleFlags = value;
+            ride->lifecycleFlags.holder = value;
         }
     }
 
@@ -530,7 +530,7 @@ namespace OpenRCT2::Scripting
 
         if (ride != nullptr)
         {
-            if (!(ride->lifecycleFlags & RIDE_LIFECYCLE_BROKEN_DOWN))
+            if (!ride->lifecycleFlags.has(RideFlag::brokenDown))
             {
                 return "none";
             }

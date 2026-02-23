@@ -1429,7 +1429,7 @@ namespace OpenRCT2
                     cs.readWrite(ride.mode);
                     cs.readWrite(ride.status);
                     cs.readWrite(ride.departFlags);
-                    cs.readWrite(ride.lifecycleFlags);
+                    cs.readWrite(ride.lifecycleFlags.holder);
 
                     // Meta
                     cs.readWrite(ride.customName);

@@ -1525,8 +1525,7 @@ namespace OpenRCT2::Ui::Windows
 
             std::optional<Focus> newFocus;
 
-            if (viewSelectionIndex >= 0 && viewSelectionIndex < ride->numTrains
-                && ride->lifecycleFlags & RIDE_LIFECYCLE_ON_TRACK)
+            if (viewSelectionIndex >= 0 && viewSelectionIndex < ride->numTrains && ride->lifecycleFlags.has(RideFlag::onTrack))
             {
                 auto vehId = ride->vehicles[viewSelectionIndex];
                 const auto* rideEntry = ride->getRideEntry();
@@ -1755,7 +1754,7 @@ namespace OpenRCT2::Ui::Windows
 
         bool TrainMustBeHidden(const Ride& ride, int32_t trainIndex) const
         {
-            if (!(ride.lifecycleFlags & RIDE_LIFECYCLE_ON_TRACK))
+            if (!ride.lifecycleFlags.has(RideFlag::onTrack))
                 return true;
 
             const auto* rideEntry = ride.getRideEntry();
@@ -1827,12 +1826,11 @@ namespace OpenRCT2::Ui::Windows
             {
                 default:
                 case RideStatus::closed:
-                    if ((ride.lifecycleFlags & RIDE_LIFECYCLE_CRASHED)
-                        || (ride.lifecycleFlags & RIDE_LIFECYCLE_HAS_STALLED_VEHICLE))
+                    if (ride.lifecycleFlags.hasAny(RideFlag::crashed, RideFlag::hasStalledVehicle))
                     {
                         return RideStatus::closed;
                     }
-                    if (ride.supportsStatus(RideStatus::testing) && !(ride.lifecycleFlags & RIDE_LIFECYCLE_TESTED))
+                    if (ride.supportsStatus(RideStatus::testing) && !ride.lifecycleFlags.has(RideFlag::tested))
                     {
                         return RideStatus::testing;
                     }
@@ -1840,7 +1838,7 @@ namespace OpenRCT2::Ui::Windows
                 case RideStatus::simulating:
                     return RideStatus::testing;
                 case RideStatus::testing:
-                    return (ride.lifecycleFlags & RIDE_LIFECYCLE_TESTED) ? RideStatus::open : RideStatus::closed;
+                    return ride.lifecycleFlags.has(RideFlag::tested) ? RideStatus::open : RideStatus::closed;
                 case RideStatus::open:
                     return RideStatus::closed;
             }
@@ -2205,7 +2203,7 @@ namespace OpenRCT2::Ui::Windows
                         if (ride != nullptr)
                         {
                             if (dropdownIndex != 0 && dropdownIndex <= ride->numTrains
-                                && !(ride->lifecycleFlags & RIDE_LIFECYCLE_ON_TRACK))
+                                && !ride->lifecycleFlags.has(RideFlag::onTrack))
                             {
                                 dropdownIndex = ride->numTrains + 1;
                             }
@@ -2341,7 +2339,7 @@ namespace OpenRCT2::Ui::Windows
 
             const auto& gameState = getGameState();
             disabledWidgets &= ~((1uLL << WIDX_DEMOLISH) | (1uLL << WIDX_CONSTRUCTION));
-            if (ride->lifecycleFlags & (RIDE_LIFECYCLE_INDESTRUCTIBLE | RIDE_LIFECYCLE_INDESTRUCTIBLE_TRACK)
+            if (ride->lifecycleFlags.hasAny(RideFlag::indestructible, RideFlag::indestructibleTrack)
                 && !gameState.cheats.makeAllDestructible)
                 disabledWidgets |= (1uLL << WIDX_DEMOLISH);
 
@@ -2475,7 +2473,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 ride->formatStatusTo(ft);
                 stringId = STR_BLACK_STRING;
-                if ((ride->lifecycleFlags & RIDE_LIFECYCLE_BROKEN_DOWN) || (ride->lifecycleFlags & RIDE_LIFECYCLE_CRASHED))
+                if (ride->lifecycleFlags.hasAny(RideFlag::brokenDown, RideFlag::crashed))
                 {
                     stringId = STR_RED_OUTLINED_STRING;
                 }
@@ -2588,7 +2586,7 @@ namespace OpenRCT2::Ui::Windows
                 return GetStatusOverallView(ft);
             if (ride != nullptr && _viewIndex <= ride->numTrains)
                 return GetStatusVehicle(ft);
-            if (ride != nullptr && ride->lifecycleFlags & RIDE_LIFECYCLE_BROKEN_DOWN)
+            if (ride != nullptr && ride->lifecycleFlags.has(RideFlag::brokenDown))
                 return GetStatusOverallView(ft);
             return GetStatusStation(ft);
         }
@@ -2688,7 +2686,7 @@ namespace OpenRCT2::Ui::Windows
                     ShowVehicleTypeDropdown(&widgets[widgetIndex]);
                     break;
                 case WIDX_VEHICLE_REVERSED_TRAINS_CHECKBOX:
-                    ride->setReversedTrains(!ride->hasLifecycleFlag(RIDE_LIFECYCLE_REVERSED_TRAINS));
+                    ride->setReversedTrains(!ride->lifecycleFlags.has(RideFlag::reversedTrains));
                     break;
                 case WIDX_VEHICLE_TRAINS_INCREASE:
                     if (ride->numTrains < Limits::kMaxTrainsPerRide)
@@ -2840,7 +2838,7 @@ namespace OpenRCT2::Ui::Windows
                 || (gameState.cheats.disableTrainLengthLimit && !ride->getRideTypeDescriptor().flags.has(RtdFlag::isFlatRide)))
             {
                 widgets[WIDX_VEHICLE_REVERSED_TRAINS_CHECKBOX].type = WidgetType::checkbox;
-                if (ride->hasLifecycleFlag(RIDE_LIFECYCLE_REVERSED_TRAINS))
+                if (ride->lifecycleFlags.has(RideFlag::reversedTrains))
                 {
                     pressedWidgets |= (1uLL << WIDX_VEHICLE_REVERSED_TRAINS_CHECKBOX);
                 }
@@ -2984,7 +2982,7 @@ namespace OpenRCT2::Ui::Windows
             int32_t startX = std::max(2, (widget->width() - 1 - ((ride->numTrains - 1) * 36)) / 2 - 25);
             int32_t startY = widget->height() - 5;
 
-            bool isReversed = ride->hasLifecycleFlag(RIDE_LIFECYCLE_REVERSED_TRAINS);
+            bool isReversed = ride->lifecycleFlags.has(RideFlag::reversedTrains);
             int32_t carIndex = (isReversed) ? ride->numCarsPerTrain - 1 : 0;
 
             const auto& firstCarEntry = rideEntry->Cars[RideEntryGetVehicleAtPosition(
@@ -3857,7 +3855,7 @@ namespace OpenRCT2::Ui::Windows
 
                         numItems = 1;
                         int32_t breakdownReason = ride->breakdownReasonPending;
-                        if (breakdownReason != BREAKDOWN_NONE && (ride->lifecycleFlags & RIDE_LIFECYCLE_BREAKDOWN_PENDING))
+                        if (breakdownReason != BREAKDOWN_NONE && ride->lifecycleFlags.has(RideFlag::breakdownPending))
                         {
                             for (int32_t i = 0; i < 8; i++)
                             {
@@ -3880,7 +3878,7 @@ namespace OpenRCT2::Ui::Windows
                             }
                         }
 
-                        if ((ride->lifecycleFlags & RIDE_LIFECYCLE_BREAKDOWN_PENDING) == 0)
+                        if (!ride->lifecycleFlags.has(RideFlag::breakdownPending))
                         {
                             gDropdown.items[0].setDisabled(true);
                         }
@@ -3915,7 +3913,7 @@ namespace OpenRCT2::Ui::Windows
                         switch (ride->breakdownReasonPending)
                         {
                             case BREAKDOWN_SAFETY_CUT_OUT:
-                                if (!(ride->lifecycleFlags & RIDE_LIFECYCLE_ON_TRACK))
+                                if (!ride->lifecycleFlags.has(RideFlag::onTrack))
                                     break;
                                 for (int32_t i = 0; i < ride->numTrains; ++i)
                                 {
@@ -3947,14 +3945,13 @@ namespace OpenRCT2::Ui::Windows
                                 }
                                 break;
                         }
-                        ride->lifecycleFlags &= ~(RIDE_LIFECYCLE_BREAKDOWN_PENDING | RIDE_LIFECYCLE_BROKEN_DOWN);
+                        ride->lifecycleFlags.unset(RideFlag::breakdownPending, RideFlag::brokenDown);
 
                         auto* windowMgr = GetWindowManager();
                         windowMgr->InvalidateByNumber(WindowClass::ride, number);
                         break;
                     }
-                    if (ride->lifecycleFlags
-                        & (RIDE_LIFECYCLE_BREAKDOWN_PENDING | RIDE_LIFECYCLE_BROKEN_DOWN | RIDE_LIFECYCLE_CRASHED))
+                    if (ride->lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::crashed))
                     {
                         ContextShowError(STR_DEBUG_CANT_FORCE_BREAKDOWN, STR_DEBUG_RIDE_ALREADY_BROKEN, {});
                     }
@@ -4032,8 +4029,7 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_FORCE_BREAKDOWN].type = WidgetType::empty;
             }
 
-            if (ride->getRideTypeDescriptor().AvailableBreakdowns == 0
-                || !(ride->lifecycleFlags & RIDE_LIFECYCLE_EVER_BEEN_OPENED))
+            if (ride->getRideTypeDescriptor().AvailableBreakdowns == 0 || !ride->lifecycleFlags.has(RideFlag::everBeenOpened))
             {
                 disabledWidgets |= (1uLL << WIDX_REFURBISH_RIDE);
                 widgets[WIDX_REFURBISH_RIDE].tooltip = STR_CANT_REFURBISH_NOT_NEEDED;
@@ -4103,14 +4099,14 @@ namespace OpenRCT2::Ui::Windows
             if (ride->breakdownReason == BREAKDOWN_NONE)
                 return;
 
-            stringId = (ride->lifecycleFlags & RIDE_LIFECYCLE_BROKEN_DOWN) ? STR_CURRENT_BREAKDOWN : STR_LAST_BREAKDOWN;
+            stringId = ride->lifecycleFlags.has(RideFlag::brokenDown) ? STR_CURRENT_BREAKDOWN : STR_LAST_BREAKDOWN;
             ft = Formatter();
             ft.Add<StringId>(RideBreakdownReasonNames[ride->breakdownReason]);
             DrawTextBasic(rt, screenCoords, stringId, ft);
             screenCoords.y += 12;
 
             // Mechanic status
-            if (ride->lifecycleFlags & RIDE_LIFECYCLE_BROKEN_DOWN)
+            if (ride->lifecycleFlags.has(RideFlag::brokenDown))
             {
                 switch (ride->mechanicStatus)
                 {
@@ -4247,7 +4243,7 @@ namespace OpenRCT2::Ui::Windows
                     auto ride = GetRide(rideId);
                     if (ride != nullptr)
                     {
-                        const bool currentlyEnabled = ride->hasLifecycleFlag(RIDE_LIFECYCLE_RANDOM_SHOP_COLOURS);
+                        const bool currentlyEnabled = ride->lifecycleFlags.has(RideFlag::randomShopColours);
                         auto rideSetAppearanceAction = GameActions::RideSetAppearanceAction(
                             rideId, GameActions::RideSetAppearanceType::SellingItemColourIsRandom, currentlyEnabled ? 0 : 1, 0);
                         GameActions::Execute(&rideSetAppearanceAction, gameState);
@@ -4667,7 +4663,7 @@ namespace OpenRCT2::Ui::Windows
             if (ride->hasRecolourableShopItems())
             {
                 widgets[WIDX_SELL_ITEM_RANDOM_COLOUR_CHECKBOX].type = WidgetType::checkbox;
-                if (ride->hasLifecycleFlag(RIDE_LIFECYCLE_RANDOM_SHOP_COLOURS))
+                if (ride->lifecycleFlags.has(RideFlag::randomShopColours))
                 {
                     pressedWidgets |= (1uLL << WIDX_SELL_ITEM_RANDOM_COLOUR_CHECKBOX);
                 }
@@ -4927,7 +4923,7 @@ namespace OpenRCT2::Ui::Windows
             RenderTarget& rt, const Ride* ride, const ShopItemDescriptor& shopItem, const Widget& widget)
         {
             Colour spriteColour = ride->trackColours[0].main;
-            if (ride->hasLifecycleFlag(RIDE_LIFECYCLE_RANDOM_SHOP_COLOURS))
+            if (ride->lifecycleFlags.has(RideFlag::randomShopColours))
                 spriteColour = Colour((getGameState().currentTicks / 32) % kColourNumNormal);
 
             auto* image = GfxGetG1Element(shopItem.Image);
@@ -5047,7 +5043,7 @@ namespace OpenRCT2::Ui::Windows
             auto ride = GetRide(rideId);
             if (ride != nullptr)
             {
-                int32_t activateMusic = (ride->lifecycleFlags & RIDE_LIFECYCLE_MUSIC) ? 0 : 1;
+                int32_t activateMusic = ride->lifecycleFlags.has(RideFlag::music) ? 0 : 1;
                 SetOperatingSetting(rideId, GameActions::RideSetSetting::Music, activateMusic);
                 ride->windowInvalidateFlags.set(RideInvalidateFlag::music);
             }
@@ -5087,7 +5083,7 @@ namespace OpenRCT2::Ui::Windows
                 return;
 
             // Expand the window when music is playing
-            auto isMusicActivated = (ride->lifecycleFlags & RIDE_LIFECYCLE_MUSIC) != 0;
+            auto isMusicActivated = ride->lifecycleFlags.has(RideFlag::music);
             auto standardHeight = widgets[WIDX_MUSIC_DROPDOWN].bottom + 6;
             auto newMinHeight = isMusicActivated ? standardHeight + 133 : standardHeight;
             auto newMaxHeight = isMusicActivated ? standardHeight + 369 : standardHeight;
@@ -5272,7 +5268,7 @@ namespace OpenRCT2::Ui::Windows
             }
             widgets[WIDX_MUSIC].text = musicName;
 
-            auto isMusicActivated = (ride->lifecycleFlags & RIDE_LIFECYCLE_MUSIC) != 0;
+            auto isMusicActivated = ride->lifecycleFlags.has(RideFlag::music);
             bool hasPreviewImage = musicObj != nullptr && musicObj->HasPreview();
 
             widgetSetVisible(*this, WIDX_MUSIC_DATA, isMusicActivated);
@@ -5315,7 +5311,7 @@ namespace OpenRCT2::Ui::Windows
                 return;
 
             // Draw music data only when music is activated
-            auto isMusicActivated = (ride->lifecycleFlags & RIDE_LIFECYCLE_MUSIC) != 0;
+            auto isMusicActivated = ride->lifecycleFlags.has(RideFlag::music);
             if (!isMusicActivated)
                 return;
 
@@ -5350,7 +5346,7 @@ namespace OpenRCT2::Ui::Windows
                 return;
 
             // only draw track listing when music is activated
-            auto isMusicActivated = (ride->lifecycleFlags & RIDE_LIFECYCLE_MUSIC) != 0;
+            auto isMusicActivated = ride->lifecycleFlags.has(RideFlag::music);
             if (!isMusicActivated)
                 return;
 
@@ -5672,7 +5668,7 @@ namespace OpenRCT2::Ui::Windows
 
                 widgets[WIDX_SAVE_TRACK_DESIGN].type = WidgetType::flatBtn;
                 disabledWidgets |= (1uLL << WIDX_SAVE_TRACK_DESIGN);
-                if (ride->lifecycleFlags & RIDE_LIFECYCLE_TESTED)
+                if (ride->lifecycleFlags.has(RideFlag::tested))
                 {
                     if (!ride->ratings.isNull())
                     {
@@ -5712,7 +5708,7 @@ namespace OpenRCT2::Ui::Windows
                 auto screenCoords = windowPos
                     + ScreenCoordsXY{ widgets[WIDX_PAGE_BACKGROUND].left + 4, widgets[WIDX_PAGE_BACKGROUND].top + 4 };
 
-                if (ride->lifecycleFlags & RIDE_LIFECYCLE_TESTED)
+                if (ride->lifecycleFlags.has(RideFlag::tested))
                 {
                     // Excitement
                     StringId ratingName = GetRatingName(ride->ratings.excitement);
@@ -5753,7 +5749,7 @@ namespace OpenRCT2::Ui::Windows
                         rt, { screenCoords - ScreenCoordsXY{ 0, 6 }, screenCoords + ScreenCoordsXY{ 303, -5 } }, colours[1],
                         Rectangle::BorderStyle::inset);
 
-                    if (!(ride->lifecycleFlags & RIDE_LIFECYCLE_NO_RAW_STATS))
+                    if (!ride->lifecycleFlags.has(RideFlag::noRawStats))
                     {
                         if (ride->getRideTypeDescriptor().specialType == RtdSpecialType::miniGolf)
                         {
@@ -6647,7 +6643,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Get secondary item
             auto secondaryItem = ride->getRideTypeDescriptor().PhotoItem;
-            if (!(ride->lifecycleFlags & RIDE_LIFECYCLE_ON_RIDE_PHOTO))
+            if (!ride->lifecycleFlags.has(RideFlag::onRidePhoto))
             {
                 if ((secondaryItem = rideEntry->shop_item[1]) != ShopItem::none)
                 {
@@ -6733,7 +6729,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Secondary item profit / loss per item sold
             secondaryItem = ride->getRideTypeDescriptor().PhotoItem;
-            if (!(ride->lifecycleFlags & RIDE_LIFECYCLE_ON_RIDE_PHOTO))
+            if (!ride->lifecycleFlags.has(RideFlag::onRidePhoto))
                 secondaryItem = rideEntry->shop_item[1];
 
             if (secondaryItem != ShopItem::none)
@@ -6975,8 +6971,8 @@ namespace OpenRCT2::Ui::Windows
             }
 
             // Secondary shop items sold / on-ride photos sold
-            shopItem = (ride->lifecycleFlags & RIDE_LIFECYCLE_ON_RIDE_PHOTO) ? ride->getRideTypeDescriptor().PhotoItem
-                                                                             : ride->getRideEntry()->shop_item[1];
+            shopItem = ride->lifecycleFlags.has(RideFlag::onRidePhoto) ? ride->getRideTypeDescriptor().PhotoItem
+                                                                       : ride->getRideEntry()->shop_item[1];
             if (shopItem != ShopItem::none)
             {
                 ft = Formatter();
