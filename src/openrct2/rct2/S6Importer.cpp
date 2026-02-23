@@ -100,6 +100,12 @@ namespace OpenRCT2::RCT2
         ParkLoadResult Load(const u8string& path, const bool skipObjectCheck) override
         {
             const auto extension = Path::GetExtension(path);
+            if (String::iequals(extension, ".sea"))
+            {
+                auto data = DecryptSea(fs::u8path(path));
+                auto ms = MemoryStream(data.data(), data.size(), MemoryAccess::read);
+                return LoadFromStream(&ms, true, skipObjectCheck, path);
+            }
             if (String::iequals(extension, ".sc6"))
             {
                 return LoadScenario(path, skipObjectCheck);
