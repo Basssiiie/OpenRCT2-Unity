@@ -161,9 +161,16 @@ namespace OpenRCT2::RCT2
 
             // Read packed objects
             // TODO try to contain this more and not store objects until later
-            if (!skipObjectCheck)
+            for (uint16_t i = 0; i < _s6.Header.NumPackedObjects; i++)
             {
-                for (uint16_t i = 0; i < _s6.Header.NumPackedObjects; i++)
+                if (skipObjectCheck)
+                {
+                    // When scanning, skip past packed object data to keep the stream
+                    // position correct without importing objects into the repository.
+                    stream->Seek(sizeof(RCTObjectEntry), STREAM_SEEK_CURRENT);
+                    SawyerChunkReader(stream).SkipChunk();
+                }
+                else
                 {
                     _objectRepository.ExportPackedObject(stream);
                 }
