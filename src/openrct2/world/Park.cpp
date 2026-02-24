@@ -86,7 +86,7 @@ namespace OpenRCT2::Park
         {
             if (ride.status != RideStatus::open)
                 continue;
-            if (ride.lifecycleFlags.hasAny(RideFlag::brokenDown, RideFlag::crashed))
+            if (ride.flags.hasAny(RideFlag::brokenDown, RideFlag::crashed))
                 continue;
 
             // Add ride value
@@ -115,7 +115,7 @@ namespace OpenRCT2::Park
         {
             if (ride.status != RideStatus::open)
                 continue;
-            if (ride.lifecycleFlags.hasAny(RideFlag::brokenDown, RideFlag::crashed))
+            if (ride.flags.hasAny(RideFlag::brokenDown, RideFlag::crashed))
                 continue;
 
             // Add guest score for ride type
@@ -124,7 +124,7 @@ namespace OpenRCT2::Park
             // If difficult guest generation, extra guests are available for good rides
             if (park.flags & PARK_FLAGS_DIFFICULT_GUEST_GENERATION)
             {
-                if (!ride.lifecycleFlags.has(RideFlag::tested))
+                if (!ride.flags.has(RideFlag::tested))
                     continue;
                 if (!ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
                     continue;

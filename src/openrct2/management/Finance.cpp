@@ -174,7 +174,7 @@ void FinancePayRideUpkeep()
     auto& gameState = getGameState();
     for (auto& ride : RideManager(gameState))
     {
-        if (!ride.lifecycleFlags.has(RideFlag::everBeenOpened))
+        if (!ride.flags.has(RideFlag::everBeenOpened))
         {
             ride.renew();
         }

@@ -1667,7 +1667,7 @@ static bool GuestDecideAndBuyItem(Guest& guest, Ride& ride, const ShopItem shopI
     // The peep has now decided to buy the item (or, specifically, has not been
     // dissuaded so far).
     guest.GiveItem(shopItem);
-    const auto hasRandomShopColour = ride.lifecycleFlags.has(RideFlag::randomShopColours);
+    const auto hasRandomShopColour = ride.flags.has(RideFlag::randomShopColours);
 
     switch (shopItem)
     {
@@ -1954,7 +1954,7 @@ static Ride* GuestFindBestRideToGoOn(Guest& guest)
         const auto rideIndex = ride.id.ToUnderlying();
         if (rideConsideration.size() > rideIndex && rideConsideration[rideIndex])
         {
-            if (!ride.lifecycleFlags.has(RideFlag::queueFull))
+            if (!ride.flags.has(RideFlag::queueFull))
             {
                 if (guest.ShouldGoOnRide(ride, StationIndex::FromUnderlying(0), false, true) && RideHasRatings(ride))
                 {
@@ -1980,7 +1980,7 @@ bool Guest::ShouldGoOnRide(Ride& ride, StationIndex entranceNum, bool atQueue, b
     // Indicates whether a peep is physically at the ride, or is just thinking about going on the ride.
     bool peepAtRide = !thinking;
 
-    if (ride.status == RideStatus::open && !ride.lifecycleFlags.has(RideFlag::brokenDown))
+    if (ride.status == RideStatus::open && !ride.flags.has(RideFlag::brokenDown))
     {
         // Peeps that are leaving the park will refuse to go on any rides, with the exception of free transport rides.
         assert(ride.type < std::size(kRideTypeDescriptors));
@@ -2254,7 +2254,7 @@ bool Guest::ShouldGoOnRide(Ride& ride, StationIndex entranceNum, bool atQueue, b
             GuestResetRideHeading(*this);
         }
 
-        ride.lifecycleFlags.unset(RideFlag::queueFull);
+        ride.flags.unset(RideFlag::queueFull);
         return true;
     }
 
@@ -2456,7 +2456,7 @@ static bool GuestHasVoucherForFreeRide(Guest& guest, const Ride& ride)
  */
 static void GuestTriedToEnterFullQueue(Guest& guest, Ride& ride)
 {
-    ride.lifecycleFlags.set(RideFlag::queueFull);
+    ride.flags.set(RideFlag::queueFull);
     guest.PreviousRide = ride.id;
     guest.PreviousRideTimeOut = 0;
     // Change status "Heading to" to "Walking" if queue is full
@@ -2590,7 +2590,7 @@ static bool FindVehicleToEnter(
 
     if (ride.mode == RideMode::dodgems || ride.mode == RideMode::race)
     {
-        if (ride.lifecycleFlags.has(RideFlag::passStationNoStopping))
+        if (ride.flags.has(RideFlag::passStationNoStopping))
             return false;
 
         for (int32_t i = 0; i < ride.numTrains; ++i)
@@ -3025,8 +3025,8 @@ static PeepThoughtType GuestAssessSurroundings(int16_t centre_x, int16_t centre_
                         if (ride == nullptr)
                             break;
 
-                        bool isPlayingMusic = ride->lifecycleFlags.has(RideFlag::music) && ride->status != RideStatus::closed
-                            && !ride->lifecycleFlags.hasAny(RideFlag::brokenDown, RideFlag::crashed);
+                        bool isPlayingMusic = ride->flags.has(RideFlag::music) && ride->status != RideStatus::closed
+                            && !ride->flags.hasAny(RideFlag::brokenDown, RideFlag::crashed);
                         if (!isPlayingMusic)
                             break;
 
@@ -3249,7 +3249,7 @@ static void PeepHeadForNearestRide(Guest& guest, bool considerOnlyCloseRides, T 
     {
         if (rideConsideration[ride.id.ToUnderlying()])
         {
-            if (!ride.lifecycleFlags.has(RideFlag::queueFull))
+            if (!ride.flags.has(RideFlag::queueFull))
             {
                 if (guest.ShouldGoOnRide(ride, StationIndex::FromUnderlying(0), false, true))
                 {
@@ -3554,7 +3554,7 @@ void Guest::UpdateRideAtEntrance()
         return;
     }
 
-    if (ride->lifecycleFlags.has(RideFlag::brokenDown))
+    if (ride->flags.has(RideFlag::brokenDown))
         return;
 
     auto ridePrice = RideGetPrice(*ride);
@@ -4485,7 +4485,7 @@ void Guest::UpdateRideInExit()
         MoveTo({ loc.value(), z });
     }
 
-    if (ride->lifecycleFlags.has(RideFlag::onRidePhoto))
+    if (ride->flags.has(RideFlag::onRidePhoto))
     {
         ShopItem secondaryItem = ride->getRideTypeDescriptor().PhotoItem;
         if (GuestDecideAndBuyItem(*this, *ride, secondaryItem, ride->price[1]))
@@ -4809,7 +4809,7 @@ void Guest::UpdateRideOnSpiralSlide()
 
                 return;
             case PeepSpiralSlideSubState::prepareToSlide:
-                if (ride->slideInUse || ride->lifecycleFlags.has(RideFlag::brokenDown))
+                if (ride->slideInUse || ride->flags.has(RideFlag::brokenDown))
                     return;
 
                 ride->slideInUse = 1;
@@ -6466,7 +6466,7 @@ bool Loc690FD0(Guest& guest, RideId* rideToView, uint8_t* rideSeatToView, TileEl
     else
     {
         *rideSeatToView = 0;
-        if (ride->status == RideStatus::open && !ride->lifecycleFlags.has(RideFlag::brokenDown))
+        if (ride->status == RideStatus::open && !ride->flags.has(RideFlag::brokenDown))
         {
             if (tileElement->GetClearanceZ() > guest.NextLoc.z + (8 * kCoordsZStep))
             {

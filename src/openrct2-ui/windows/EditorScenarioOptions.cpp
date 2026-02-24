@@ -2288,7 +2288,7 @@ namespace OpenRCT2::Ui::Windows
             auto* currentRide = GetRide(_rideableRides[i]);
             if (currentRide != nullptr)
             {
-                currentRide->lifecycleFlags.flip(RideFlag::indestructible);
+                currentRide->flags.flip(RideFlag::indestructible);
             }
             invalidate();
         }
@@ -2366,7 +2366,7 @@ namespace OpenRCT2::Ui::Windows
                 auto* currentRide = GetRide(_rideableRides[i]);
                 if (currentRide != nullptr)
                 {
-                    if (currentRide->lifecycleFlags.has(RideFlag::indestructible))
+                    if (currentRide->flags.has(RideFlag::indestructible))
                     {
                         auto darkness = stringId == STR_WINDOW_COLOUR_2_STRINGID ? TextDarkness::extraDark : TextDarkness::dark;
                         DrawText(

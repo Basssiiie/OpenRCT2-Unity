@@ -58,7 +58,7 @@ static void PaintRideEntranceExitScrollingText(
         return;
 
     u8string bannerText;
-    if (ride->status == RideStatus::open && !ride->lifecycleFlags.has(RideFlag::brokenDown))
+    if (ride->status == RideStatus::open && !ride->flags.has(RideFlag::brokenDown))
     {
         bannerText = ScrollingText::kRideBannerColourPrefix + ride->getName();
     }

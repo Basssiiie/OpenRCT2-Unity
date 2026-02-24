@@ -212,7 +212,7 @@ namespace OpenRCT2::Scenario
                 auto rideEntry = ride.getRideEntry();
                 if (rideEntry != nullptr)
                 {
-                    if (ride.lifecycleFlags.has(RideFlag::indestructibleTrack)
+                    if (ride.flags.has(RideFlag::indestructibleTrack)
                         && RideEntryHasCategory(*rideEntry, RideCategory::rollerCoaster))
                     {
                         rcs++;

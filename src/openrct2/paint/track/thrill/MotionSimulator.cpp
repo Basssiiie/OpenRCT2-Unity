@@ -46,7 +46,7 @@ static void PaintMotionSimulatorVehicle(
     CoordsXYZ offset(offsetX, offsetY, height + 2);
 
     Vehicle* vehicle = nullptr;
-    if (ride.lifecycleFlags.has(RideFlag::onTrack))
+    if (ride.flags.has(RideFlag::onTrack))
     {
         vehicle = getGameState().entities.GetEntity<Vehicle>(ride.vehicles[0]);
         if (vehicle != nullptr)

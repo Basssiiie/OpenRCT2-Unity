@@ -136,7 +136,7 @@ money64 ShopItemGetCommonPrice(Ride* forRide, const ShopItem shopItem)
             {
                 return ride.price[1];
             }
-            if (GetShopItemDescriptor(shopItem).IsPhoto() && ride.lifecycleFlags.has(RideFlag::onRidePhoto))
+            if (GetShopItemDescriptor(shopItem).IsPhoto() && ride.flags.has(RideFlag::onRidePhoto))
             {
                 return ride.price[1];
             }

@@ -69,7 +69,7 @@ namespace OpenRCT2::GameActions
                 break;
         }
 
-        ride->lifecycleFlags.set(RideFlag::fixedRatings);
+        ride->flags.set(RideFlag::fixedRatings);
 
         auto* windowMgr = Ui::GetWindowManager();
         windowMgr->InvalidateByNumber(WindowClass::ride, _rideIndex.ToUnderlying());

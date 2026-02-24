@@ -360,7 +360,7 @@ struct Ride
     uint8_t numBlockBrakes{};
     uint8_t liftHillSpeed{};
     uint32_t guestsFavourite{};
-    RideFlags lifecycleFlags{};
+    RideFlags flags{};
     uint16_t totalAirTime{};
     StationIndex currentTestStation{ StationIndex::GetNull() };
     uint8_t numCircuits{};

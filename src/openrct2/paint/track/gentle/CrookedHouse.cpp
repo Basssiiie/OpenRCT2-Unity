@@ -68,7 +68,7 @@ static void PaintCrookedHouseStructure(
     if (rideEntry == nullptr)
         return;
 
-    if (ride->lifecycleFlags.has(RideFlag::onTrack))
+    if (ride->flags.has(RideFlag::onTrack))
     {
         auto vehicle = getGameState().entities.GetEntity<Vehicle>(ride->vehicles[0]);
         if (vehicle != nullptr)

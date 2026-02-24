@@ -694,7 +694,7 @@ namespace OpenRCT2
             || (peep.State == PeepState::leavingRide && peep.x == kLocationNull))
         {
             auto ride = GetRide(peep.CurrentRide);
-            if (ride != nullptr && ride->lifecycleFlags.has(RideFlag::onTrack))
+            if (ride != nullptr && ride->flags.has(RideFlag::onTrack))
             {
                 auto train = getGameState().entities.GetEntity<Vehicle>(ride->vehicles[peep.CurrentTrain]);
                 if (train != nullptr)

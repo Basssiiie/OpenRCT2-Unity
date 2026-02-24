@@ -101,7 +101,7 @@ static int32_t ride_check_if_construction_allowed(Ride& ride)
         ContextShowError(STR_INVALID_RIDE_TYPE, STR_CANT_EDIT_INVALID_RIDE_TYPE, ft);
         return 0;
     }
-    if (ride.lifecycleFlags.has(RideFlag::brokenDown))
+    if (ride.flags.has(RideFlag::brokenDown))
     {
         ride.formatNameTo(ft);
         ContextShowError(STR_CANT_START_CONSTRUCTION_ON, STR_HAS_BROKEN_DOWN_AND_REQUIRES_FIXING, ft);
@@ -154,9 +154,9 @@ void RideConstructionStart(Ride& ride)
  */
 static void ride_remove_cable_lift(Ride& ride)
 {
-    if (ride.lifecycleFlags.has(RideFlag::cableLift))
+    if (ride.flags.has(RideFlag::cableLift))
     {
-        ride.lifecycleFlags.unset(RideFlag::cableLift);
+        ride.flags.unset(RideFlag::cableLift);
         auto spriteIndex = ride.cableLift;
         do
         {
@@ -178,9 +178,9 @@ static void ride_remove_cable_lift(Ride& ride)
  */
 void Ride::removeVehicles()
 {
-    if (lifecycleFlags.has(RideFlag::onTrack))
+    if (flags.has(RideFlag::onTrack))
     {
-        lifecycleFlags.unset(RideFlag::onTrack, RideFlag::testInProgress, RideFlag::hasStalledVehicle);
+        flags.unset(RideFlag::onTrack, RideFlag::testInProgress, RideFlag::hasStalledVehicle);
 
         for (size_t i = 0; i <= Limits::kMaxTrainsPerRide; i++)
         {
@@ -223,7 +223,7 @@ void RideClearForConstruction(Ride& ride)
 {
     ride.measurement = {};
 
-    ride.lifecycleFlags.unset(RideFlag::breakdownPending, RideFlag::brokenDown);
+    ride.flags.unset(RideFlag::breakdownPending, RideFlag::brokenDown);
     ride.windowInvalidateFlags.set(RideInvalidateFlag::main, RideInvalidateFlag::list);
 
     // Open circuit rides will go directly into building mode (creating ghosts) where it would normally clear the stats,
@@ -972,7 +972,7 @@ bool RideModify(const CoordsXYE& input)
     if (rideEntry == nullptr || !ride_check_if_construction_allowed(*ride))
         return false;
 
-    if (ride->lifecycleFlags.has(RideFlag::indestructible) && !getGameState().cheats.makeAllDestructible)
+    if (ride->flags.has(RideFlag::indestructible) && !getGameState().cheats.makeAllDestructible)
     {
         Formatter ft;
         ride->formatNameTo(ft);

@@ -1244,12 +1244,12 @@ void Staff::UpdateHeadingToInspect()
 
     if (ride->getStation(CurrentRideStation).Exit.IsNull())
     {
-        ride->lifecycleFlags.unset(RideFlag::dueInspection);
+        ride->flags.unset(RideFlag::dueInspection);
         SetState(PeepState::falling);
         return;
     }
 
-    if (ride->mechanicStatus != MechanicStatus::heading || !ride->lifecycleFlags.has(RideFlag::dueInspection))
+    if (ride->mechanicStatus != MechanicStatus::heading || !ride->flags.has(RideFlag::dueInspection))
     {
         SetState(PeepState::falling);
         return;
@@ -1267,7 +1267,7 @@ void Staff::UpdateHeadingToInspect()
         MechanicTimeSinceCall++;
         if (MechanicTimeSinceCall > 2500)
         {
-            if (ride->lifecycleFlags.has(RideFlag::dueInspection) && ride->mechanicStatus == MechanicStatus::heading)
+            if (ride->flags.has(RideFlag::dueInspection) && ride->mechanicStatus == MechanicStatus::heading)
             {
                 ride->mechanicStatus = MechanicStatus::calling;
             }
@@ -1975,7 +1975,7 @@ void Staff::UpdateFixing(int32_t steps)
     bool progressToNextSubstate = true;
     bool firstRun = true;
 
-    if ((State == PeepState::inspecting) && (ride->lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown)))
+    if ((State == PeepState::inspecting) && (ride->flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown)))
     {
         // Ride has broken down since Mechanic was called to inspect it.
         // Mechanic identifies the breakdown and switches to fixing it.
@@ -2597,7 +2597,7 @@ void Staff::UpdateRideInspected(RideId rideIndex)
     auto ride = GetRide(rideIndex);
     if (ride != nullptr)
     {
-        ride->lifecycleFlags.unset(RideFlag::dueInspection);
+        ride->flags.unset(RideFlag::dueInspection);
         ride->reliability += ((100 - ride->reliabilityPercentage) / 4) * (ScenarioRand() & 0xFF);
         ride->lastInspection = 0;
         ride->windowInvalidateFlags.set(RideInvalidateFlag::maintenance, RideInvalidateFlag::main, RideInvalidateFlag::list);

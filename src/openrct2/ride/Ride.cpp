@@ -311,7 +311,7 @@ size_t Ride::getNumPrices() const
         auto rideEntry = getRideEntry();
         if (rideEntry != nullptr)
         {
-            if (lifecycleFlags.has(RideFlag::onRidePhoto))
+            if (flags.has(RideFlag::onRidePhoto))
             {
                 result++;
             }
@@ -440,7 +440,7 @@ money64 Ride::calculateIncomePerHour() const
         priceMinusCost -= GetShopItemDescriptor(currentShopItem).Cost;
     }
 
-    currentShopItem = lifecycleFlags.has(RideFlag::onRidePhoto) ? getRideTypeDescriptor().PhotoItem : entry->shop_item[1];
+    currentShopItem = flags.has(RideFlag::onRidePhoto) ? getRideTypeDescriptor().PhotoItem : entry->shop_item[1];
 
     if (currentShopItem != ShopItem::none)
     {
@@ -838,11 +838,11 @@ bool Ride::findTrackGap(const CoordsXYE& input, CoordsXYE* output) const
 
 void Ride::formatStatusTo(Formatter& ft) const
 {
-    if (lifecycleFlags.has(RideFlag::crashed))
+    if (flags.has(RideFlag::crashed))
     {
         ft.Add<StringId>(STR_CRASHED);
     }
-    else if (lifecycleFlags.has(RideFlag::brokenDown))
+    else if (flags.has(RideFlag::brokenDown))
     {
         ft.Add<StringId>(STR_BROKEN_DOWN);
     }
@@ -873,7 +873,7 @@ void Ride::formatStatusTo(Formatter& ft) const
     {
         ft.Add<StringId>(STR_TEST_RUN);
     }
-    else if (mode == RideMode::race && !lifecycleFlags.has(RideFlag::passStationNoStopping) && !raceWinner.IsNull())
+    else if (mode == RideMode::race && !flags.has(RideFlag::passStationNoStopping) && !raceWinner.IsNull())
     {
         auto peep = getGameState().entities.GetEntity<Guest>(raceWinner);
         if (peep != nullptr)
@@ -955,7 +955,7 @@ bool Ride::supportsStatus(RideStatus s) const
 
 bool Ride::hasFailingBrakes() const
 {
-    return lifecycleFlags.has(RideFlag::brokenDown) && breakdownReasonPending == BREAKDOWN_BRAKES_FAILURE
+    return flags.has(RideFlag::brokenDown) && breakdownReasonPending == BREAKDOWN_BRAKES_FAILURE
         && mechanicStatus != MechanicStatus::hasFixedStationBrakes;
 }
 
@@ -1039,7 +1039,7 @@ void Ride::updateAll()
 
 std::unique_ptr<TrackDesign> Ride::saveToTrackDesign(TrackDesignState& tds) const
 {
-    if (!lifecycleFlags.has(RideFlag::tested))
+    if (!flags.has(RideFlag::tested))
     {
         ContextShowError(STR_CANT_SAVE_TRACK_DESIGN, kStringIdNone, {});
         return nullptr;
@@ -1156,7 +1156,7 @@ void Ride::update()
     RideBreakdownUpdate(*this);
 
     // Various things include news messages
-    if (lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::dueInspection))
+    if (flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::dueInspection))
     {
         // Breakdown updates originally were performed when (id == (gCurrentTicks / 2) & 0xFF)
         // with the increased MAX_RIDES the update is tied to the first byte of the id this allows
@@ -1169,7 +1169,7 @@ void Ride::update()
     RideInspectionUpdate(*this);
 
     // If ride is simulating but crashed, reset the vehicles
-    if (status == RideStatus::simulating && lifecycleFlags.has(RideFlag::crashed))
+    if (status == RideStatus::simulating && flags.has(RideFlag::crashed))
     {
         // We require this to execute right away during the simulation, always ignore network and queue.
         auto gameAction = GameActions::RideSetStatusAction(id, RideStatus::simulating);
@@ -1183,9 +1183,9 @@ void Ride::update()
  */
 void updateChairlift(Ride& ride)
 {
-    if (!ride.lifecycleFlags.has(RideFlag::onTrack))
+    if (!ride.flags.has(RideFlag::onTrack))
         return;
-    if (ride.lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::crashed)
+    if (ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::crashed)
         && ride.breakdownReasonPending == 0)
         return;
 
@@ -1346,7 +1346,7 @@ static void RideInspectionUpdate(Ride& ride)
     // An inspection interval of 0 minutes means the ride is set to never be inspected.
     if (inspectionIntervalMinutes == 0)
     {
-        ride.lifecycleFlags.unset(RideFlag::dueInspection);
+        ride.flags.unset(RideFlag::dueInspection);
         return;
     }
 
@@ -1356,12 +1356,11 @@ static void RideInspectionUpdate(Ride& ride)
     if (inspectionIntervalMinutes > ride.lastInspection)
         return;
 
-    if (ride.lifecycleFlags.hasAny(
-            RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::dueInspection, RideFlag::crashed))
+    if (ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::dueInspection, RideFlag::crashed))
         return;
 
     // Inspect the first station that has an exit
-    ride.lifecycleFlags.set(RideFlag::dueInspection);
+    ride.flags.set(RideFlag::dueInspection);
     ride.mechanicStatus = MechanicStatus::calling;
 
     auto stationIndex = RideGetFirstValidStationExit(ride);
@@ -1405,7 +1404,7 @@ static void RideBreakdownUpdate(Ride& ride)
     if (gLegacyScene == LegacyScene::trackDesigner)
         return;
 
-    if (ride.lifecycleFlags.hasAny(RideFlag::brokenDown, RideFlag::crashed))
+    if (ride.flags.hasAny(RideFlag::brokenDown, RideFlag::crashed))
         ride.downtimeHistory[0]++;
 
     if (!(currentTicks & 8191))
@@ -1428,7 +1427,7 @@ static void RideBreakdownUpdate(Ride& ride)
         ride.windowInvalidateFlags.set(RideInvalidateFlag::maintenance);
     }
 
-    if (ride.lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::crashed))
+    if (ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::crashed))
         return;
     if (ride.status == RideStatus::closed || ride.status == RideStatus::simulating)
         return;
@@ -1556,10 +1555,10 @@ void RidePrepareBreakdown(Ride& ride, int32_t breakdownReason)
     StationIndex i;
     Vehicle* vehicle;
 
-    if (ride.lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::crashed))
+    if (ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::crashed))
         return;
 
-    ride.lifecycleFlags.set(RideFlag::breakdownPending);
+    ride.flags.set(RideFlag::breakdownPending);
 
     ride.breakdownReasonPending = breakdownReason;
     ride.breakdownSoundModifier = 0;
@@ -1645,7 +1644,7 @@ void RideBreakdownAddNewsItem(const Ride& ride)
 static void RideBreakdownStatusUpdate(Ride& ride)
 {
     // Warn player if ride hasn't been fixed for ages
-    if (ride.lifecycleFlags.has(RideFlag::brokenDown))
+    if (ride.flags.has(RideFlag::brokenDown))
     {
         ride.notFixedTimeout++;
         // When there has been a full 255 timeout ticks this
@@ -1678,13 +1677,13 @@ static void RideMechanicStatusUpdate(Ride& ride, MechanicStatus mechanicStatus)
     // Turn a pending breakdown into a breakdown.
     if ((mechanicStatus == MechanicStatus::undefined || mechanicStatus == MechanicStatus::calling
          || mechanicStatus == MechanicStatus::heading)
-        && ride.lifecycleFlags.has(RideFlag::breakdownPending) && !ride.lifecycleFlags.has(RideFlag::brokenDown))
+        && ride.flags.has(RideFlag::breakdownPending) && !ride.flags.has(RideFlag::brokenDown))
     {
         auto breakdownReason = ride.breakdownReasonPending;
         if (breakdownReason == BREAKDOWN_SAFETY_CUT_OUT || breakdownReason == BREAKDOWN_BRAKES_FAILURE
             || breakdownReason == BREAKDOWN_CONTROL_FAILURE)
         {
-            ride.lifecycleFlags.set(RideFlag::brokenDown);
+            ride.flags.set(RideFlag::brokenDown);
             ride.windowInvalidateFlags.set(RideInvalidateFlag::maintenance, RideInvalidateFlag::list, RideInvalidateFlag::main);
             ride.breakdownReason = breakdownReason;
             RideBreakdownAddNewsItem(ride);
@@ -1693,7 +1692,7 @@ static void RideMechanicStatusUpdate(Ride& ride, MechanicStatus mechanicStatus)
     switch (mechanicStatus)
     {
         case MechanicStatus::undefined:
-            if (ride.lifecycleFlags.has(RideFlag::brokenDown))
+            if (ride.flags.has(RideFlag::brokenDown))
             {
                 ride.mechanicStatus = MechanicStatus::calling;
             }
@@ -1701,7 +1700,7 @@ static void RideMechanicStatusUpdate(Ride& ride, MechanicStatus mechanicStatus)
         case MechanicStatus::calling:
             if (ride.getRideTypeDescriptor().AvailableBreakdowns == 0)
             {
-                ride.lifecycleFlags.unset(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::dueInspection);
+                ride.flags.unset(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::dueInspection);
                 break;
             }
 
@@ -1710,7 +1709,7 @@ static void RideMechanicStatusUpdate(Ride& ride, MechanicStatus mechanicStatus)
         case MechanicStatus::heading:
         {
             auto mechanic = RideGetMechanic(ride);
-            bool rideNeedsRepair = ride.lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown);
+            bool rideNeedsRepair = ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown);
             if (mechanic == nullptr
                 || (mechanic->State != PeepState::headingToInspection && mechanic->State != PeepState::answering)
                 || mechanic->CurrentRide != ride.id)
@@ -1767,7 +1766,7 @@ static void RideCallMechanic(Ride& ride, Peep* mechanic, int32_t forInspection)
  */
 static void RideCallClosestMechanic(Ride& ride)
 {
-    auto forInspection = !ride.lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown);
+    auto forInspection = !ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown);
     auto mechanic = RideFindClosestMechanic(ride, forInspection);
     if (mechanic != nullptr)
         RideCallMechanic(ride, mechanic, forInspection);
@@ -1863,7 +1862,7 @@ Staff* RideGetMechanic(const Ride& ride)
 
 Staff* RideGetAssignedMechanic(const Ride& ride)
 {
-    if (ride.lifecycleFlags.has(RideFlag::brokenDown))
+    if (ride.flags.has(RideFlag::brokenDown))
     {
         if (ride.mechanicStatus == MechanicStatus::heading || ride.mechanicStatus == MechanicStatus::fixing
             || ride.mechanicStatus == MechanicStatus::hasFixedStationBrakes)
@@ -1888,7 +1887,7 @@ static int32_t RideMusicSampleRate(const Ride& ride)
     int32_t sampleRate = 22050;
 
     // Alter sample rate for a power cut effect
-    if (ride.lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown))
+    if (ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown))
     {
         sampleRate = ride.breakdownSoundModifier * 70;
         if (ride.breakdownReasonPending != BREAKDOWN_CONTROL_FAILURE)
@@ -1906,7 +1905,7 @@ static int32_t RideMusicSampleRate(const Ride& ride)
 static bool RideMusicBreakdownEffect(Ride& ride)
 {
     // Oscillate parameters for a power cut effect when breaking down
-    if (ride.lifecycleFlags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown))
+    if (ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown))
     {
         if (ride.breakdownReasonPending == BREAKDOWN_CONTROL_FAILURE)
         {
@@ -1916,7 +1915,7 @@ static bool RideMusicBreakdownEffect(Ride& ride)
         }
         else
         {
-            if (ride.lifecycleFlags.has(RideFlag::brokenDown) || ride.breakdownReasonPending == BREAKDOWN_BRAKES_FAILURE
+            if (ride.flags.has(RideFlag::brokenDown) || ride.breakdownReasonPending == BREAKDOWN_BRAKES_FAILURE
                 || ride.breakdownReasonPending == BREAKDOWN_CONTROL_FAILURE)
             {
                 if (ride.breakdownSoundModifier != 255)
@@ -1965,7 +1964,7 @@ void CircusMusicUpdate(Ride& ride)
  */
 void DefaultMusicUpdate(Ride& ride)
 {
-    if (ride.status != RideStatus::open || !ride.lifecycleFlags.has(RideFlag::music))
+    if (ride.status != RideStatus::open || !ride.flags.has(RideFlag::music))
     {
         ride.musicTuneId = kTuneIDNull;
         return;
@@ -2104,7 +2103,7 @@ void RideMeasurementsUpdate()
     for (auto& ride : RideManager(gameState))
     {
         auto measurement = ride.measurement.get();
-        if (measurement != nullptr && ride.lifecycleFlags.has(RideFlag::onTrack) && ride.status != RideStatus::simulating)
+        if (measurement != nullptr && ride.flags.has(RideFlag::onTrack) && ride.status != RideStatus::simulating)
         {
             if (measurement->flags.has(RideMeasurementFlag::running))
             {
@@ -3205,7 +3204,7 @@ static void RideSetStartFinishPoints(RideId rideIndex, const CoordsXYE& startEle
     else if (rtd.specialType == RtdSpecialType::boatHire)
         RideSetBoatHireReturnPoint(*ride, startElement);
 
-    if (ride->isBlockSectioned() && !ride->lifecycleFlags.has(RideFlag::onTrack))
+    if (ride->isBlockSectioned() && !ride->flags.has(RideFlag::onTrack))
     {
         RideOpenBlockBrakes(startElement);
     }
@@ -3439,7 +3438,7 @@ static Vehicle* VehicleCreateCar(
         }
         vehicle->SetState(Vehicle::Status::movingToEndOfStation);
 
-        if (ride.lifecycleFlags.has(RideFlag::reversedTrains))
+        if (ride.flags.has(RideFlag::reversedTrains))
         {
             vehicle->SubType = carIndex == (ride.numCarsPerTrain - 1) ? Vehicle::Type::head : Vehicle::Type::tail;
             vehicle->flags.set(VehicleFlag::carIsReversed);
@@ -3461,7 +3460,7 @@ static TrainReference VehicleCreateTrain(
     Ride& ride, const CoordsXYZ& trainPos, int32_t vehicleIndex, int32_t* remainingDistance, TrackElement* trackElement)
 {
     TrainReference train = { nullptr, nullptr };
-    bool isReversed = ride.lifecycleFlags.has(RideFlag::reversedTrains);
+    bool isReversed = ride.flags.has(RideFlag::reversedTrains);
 
     for (int32_t carIndex = 0; carIndex < ride.numCarsPerTrain; carIndex++)
     {
@@ -3658,7 +3657,7 @@ ResultWithMessage Ride::createVehicles(const CoordsXYE& element, bool isApplying
     if (!VehicleCreateTrains(*this, vehiclePos, trackElement, numberOfTrains))
     {
         // This flag is needed for Ride::removeVehicles()
-        lifecycleFlags.set(RideFlag::onTrack);
+        flags.set(RideFlag::onTrack);
         removeVehicles();
         return { false, STR_UNABLE_TO_CREATE_ENOUGH_VEHICLES };
     }
@@ -3666,7 +3665,7 @@ ResultWithMessage Ride::createVehicles(const CoordsXYE& element, bool isApplying
 
     // Initialise station departs
     // 006DDDD0:
-    lifecycleFlags.set(RideFlag::onTrack);
+    flags.set(RideFlag::onTrack);
     for (int32_t i = 0; i < Limits::kMaxStationsPerRide; i++)
     {
         stations[i].Depart = (stations[i].Depart & kStationDepartFlag) | 1;
@@ -3718,7 +3717,7 @@ void Ride::moveTrainsToBlockBrakes(const CoordsXYZ& firstBlockPosition, TrackEle
     // If the ride has a cable lift, we don't want to fetch the cable lift element and the block preceding it
     TrackElement* cableLiftTileElement = nullptr;
     TrackElement* cableLiftPreviousBlock = nullptr;
-    if (lifecycleFlags.has(RideFlag::cableLiftHillComponentUsed))
+    if (flags.has(RideFlag::cableLiftHillComponentUsed))
     {
         cableLiftTileElement = MapGetTrackElementAt(cableLiftLoc);
         if (cableLiftTileElement != nullptr)
@@ -3957,7 +3956,7 @@ static ResultWithMessage RideCreateCableLift(RideId rideIndex, bool isApplying)
     head->prev_vehicle_on_ride = tail->Id;
     tail->next_vehicle_on_ride = head->Id;
 
-    ride->lifecycleFlags.set(RideFlag::cableLift);
+    ride->flags.set(RideFlag::cableLift);
     head->CableLiftUpdateTrackMotion();
     return { true };
 }
@@ -4177,7 +4176,7 @@ ResultWithMessage Ride::open(bool isApplying)
     if (isApplying)
     {
         chainQueues();
-        lifecycleFlags.set(RideFlag::everBeenOpened);
+        flags.set(RideFlag::everBeenOpened);
     }
 
     CoordsXYE trackElement = {};
@@ -4681,8 +4680,8 @@ void InvalidateTestResults(Ride& ride)
 {
     ride.measurement = {};
     ride.ratings.setNull();
-    ride.lifecycleFlags.unset(RideFlag::tested, RideFlag::testInProgress);
-    if (ride.lifecycleFlags.has(RideFlag::onTrack))
+    ride.flags.unset(RideFlag::tested, RideFlag::testInProgress);
+    if (ride.flags.has(RideFlag::onTrack))
     {
         for (int32_t i = 0; i < ride.numTrains; i++)
         {
@@ -4707,10 +4706,10 @@ void InvalidateTestResults(Ride& ride)
  */
 void RideFixBreakdown(Ride& ride, int32_t reliabilityIncreaseFactor)
 {
-    ride.lifecycleFlags.unset(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::dueInspection);
+    ride.flags.unset(RideFlag::breakdownPending, RideFlag::brokenDown, RideFlag::dueInspection);
     ride.windowInvalidateFlags.set(RideInvalidateFlag::main, RideInvalidateFlag::list, RideInvalidateFlag::maintenance);
 
-    if (ride.lifecycleFlags.has(RideFlag::onTrack))
+    if (ride.flags.has(RideFlag::onTrack))
     {
         for (int32_t i = 0; i < ride.numTrains; i++)
         {
@@ -6016,7 +6015,7 @@ ResultWithMessage Ride::changeStatusCreateVehicles(bool isApplying, const Coords
         RideSetStartFinishPoints(id, trackElement);
 
     const auto& rtd = getRideTypeDescriptor();
-    if (!rtd.flags.has(RtdFlag::noVehicles) && !lifecycleFlags.has(RideFlag::onTrack))
+    if (!rtd.flags.has(RtdFlag::noVehicles) && !flags.has(RideFlag::onTrack))
     {
         const auto createVehicleResult = createVehicles(trackElement, isApplying, isSimulating);
         if (!createVehicleResult.Successful)
@@ -6025,8 +6024,8 @@ ResultWithMessage Ride::changeStatusCreateVehicles(bool isApplying, const Coords
         }
     }
 
-    if (rtd.flags.has(RtdFlag::allowCableLiftHill) && lifecycleFlags.has(RideFlag::cableLiftHillComponentUsed)
-        && !lifecycleFlags.has(RideFlag::cableLift))
+    if (rtd.flags.has(RtdFlag::allowCableLiftHill) && flags.has(RideFlag::cableLiftHillComponentUsed)
+        && !flags.has(RideFlag::cableLift))
     {
         const auto createCableLiftResult = RideCreateCableLift(id, isApplying);
         if (!createCableLiftResult.Successful)

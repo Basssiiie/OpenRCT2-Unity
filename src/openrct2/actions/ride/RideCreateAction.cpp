@@ -194,7 +194,7 @@ namespace OpenRCT2::GameActions
             {
                 if (rtd.flags.has(RtdFlag::hasMusicByDefault))
                 {
-                    ride->lifecycleFlags.set(RideFlag::music);
+                    ride->flags.set(RideFlag::music);
                 }
             }
         }

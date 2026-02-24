@@ -247,7 +247,7 @@ namespace OpenRCT2::GameActions
         auto numCircuits = std::max<uint8_t>(1, _td.operation.numCircuits);
         SetOperatingSettingNested(ride->id, RideSetSetting::NumCircuits, numCircuits, flags);
 
-        ride->lifecycleFlags.set(RideFlag::notCustomDesign);
+        ride->flags.set(RideFlag::notCustomDesign);
         ride->vehicleColourSettings = _td.appearance.vehicleColourSettings;
 
         ride->entranceStyle = objManager.GetLoadedObjectEntryIndex(_td.appearance.stationObjectIdentifier);
