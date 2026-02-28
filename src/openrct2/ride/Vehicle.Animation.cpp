@@ -29,7 +29,7 @@
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Audio;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 constexpr int16_t kVehicleMaxSpinSpeed = 1536;
 constexpr int16_t kVehicleMinSpinSpeed = -kVehicleMaxSpinSpeed;

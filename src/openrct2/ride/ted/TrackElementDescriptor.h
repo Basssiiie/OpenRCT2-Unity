@@ -22,7 +22,7 @@
 #include <array>
 #include <cstdint>
 
-namespace OpenRCT2::TrackMetaData
+namespace OpenRCT2::TrackMetadata
 {
     constexpr uint8_t kMaxSequencesPerPiece = 16;
 
@@ -255,4 +255,4 @@ namespace OpenRCT2::TrackMetaData
         TrackComputeFunction verticalFactor;
         TrackComputeFunction lateralFactor;
     };
-} // namespace OpenRCT2::TrackMetaData
+} // namespace OpenRCT2::TrackMetadata

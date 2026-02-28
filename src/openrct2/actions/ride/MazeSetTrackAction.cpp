@@ -31,7 +31,7 @@
 
 namespace OpenRCT2::GameActions
 {
-    using namespace OpenRCT2::TrackMetaData;
+    using namespace OpenRCT2::TrackMetadata;
 
     // clang-format off
     /** rct2: 0x00993CE9 */

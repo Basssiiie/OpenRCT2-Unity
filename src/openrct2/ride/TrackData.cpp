@@ -20,7 +20,7 @@
 
 using namespace OpenRCT2;
 
-namespace OpenRCT2::TrackMetaData
+namespace OpenRCT2::TrackMetadata
 {
     struct SequenceData
     {
@@ -16090,4 +16090,4 @@ namespace OpenRCT2::TrackMetaData
         return kTrackElementDescriptors[EnumValue(type)];
     }
 
-} // namespace OpenRCT2::TrackMetaData
+} // namespace OpenRCT2::TrackMetadata

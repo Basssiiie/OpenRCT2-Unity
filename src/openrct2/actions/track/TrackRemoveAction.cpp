@@ -27,7 +27,7 @@
 
 namespace OpenRCT2::GameActions
 {
-    using namespace OpenRCT2::TrackMetaData;
+    using namespace OpenRCT2::TrackMetadata;
 
     TrackRemoveAction::TrackRemoveAction(TrackElemType trackType, int32_t sequence, const CoordsXYZD& origin)
         : _trackType(trackType)

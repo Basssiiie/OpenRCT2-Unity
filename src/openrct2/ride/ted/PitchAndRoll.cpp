@@ -12,7 +12,7 @@
 #include "../TrackData.h"
 #include "TrackElementDescriptor.h"
 
-namespace OpenRCT2::TrackMetaData
+namespace OpenRCT2::TrackMetadata
 {
     PitchAndRoll TrackPitchAndRollStart(TrackElemType trackType)
     {
@@ -25,4 +25,4 @@ namespace OpenRCT2::TrackMetaData
         const auto& ted = GetTrackElementDescriptor(trackType);
         return { ted.definition.pitchEnd, ted.definition.rollEnd };
     }
-} // namespace OpenRCT2::TrackMetaData
+} // namespace OpenRCT2::TrackMetadata

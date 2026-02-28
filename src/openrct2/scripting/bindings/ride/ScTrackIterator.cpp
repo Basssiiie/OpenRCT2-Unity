@@ -21,7 +21,7 @@
     #include "ScTrackSegment.h"
 
 using namespace OpenRCT2::Scripting;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 std::shared_ptr<ScTrackIterator> ScTrackIterator::FromElement(const CoordsXY& position, int32_t elementIndex)
 {

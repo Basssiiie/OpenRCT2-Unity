@@ -37,7 +37,7 @@
 namespace OpenRCT2::GameActions
 {
     using namespace OpenRCT2::Numerics;
-    using namespace OpenRCT2::TrackMetaData;
+    using namespace OpenRCT2::TrackMetadata;
 
     TrackPlaceAction::TrackPlaceAction(
         RideId rideIndex, TrackElemType trackType, ride_type_t rideType, const CoordsXYZD& origin, int32_t brakeSpeed,

@@ -24,7 +24,7 @@
 #include <openrct2/world/Map.h>
 #include <openrct2/world/tile_element/TrackElement.h>
 
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 namespace OpenRCT2
 {

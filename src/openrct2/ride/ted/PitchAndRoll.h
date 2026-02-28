@@ -16,7 +16,7 @@ namespace OpenRCT2
     enum class TrackElemType : uint16_t;
 }
 
-namespace OpenRCT2::TrackMetaData
+namespace OpenRCT2::TrackMetadata
 {
     enum class TrackRoll : uint8_t
     {
@@ -56,4 +56,4 @@ namespace OpenRCT2::TrackMetaData
 
     PitchAndRoll TrackPitchAndRollStart(TrackElemType trackType);
     PitchAndRoll TrackPitchAndRollEnd(TrackElemType trackType);
-} // namespace OpenRCT2::TrackMetaData
+} // namespace OpenRCT2::TrackMetadata

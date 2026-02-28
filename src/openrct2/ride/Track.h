@@ -34,11 +34,11 @@ namespace OpenRCT2
     struct TileElement;
     struct TrackElement;
 
-    namespace TrackMetaData
+    namespace TrackMetadata
     {
         enum class TrackRoll : uint8_t;
         struct PitchAndRoll;
-    } // namespace TrackMetaData
+    } // namespace TrackMetadata
 } // namespace OpenRCT2
 
 struct ResultWithMessage;
@@ -81,11 +81,11 @@ bool TrackTypeIsBlockBrakes(OpenRCT2::TrackElemType trackType);
 bool TrackTypeIsBooster(OpenRCT2::TrackElemType trackType);
 bool TrackTypeIsReverser(OpenRCT2::TrackElemType trackType);
 
-OpenRCT2::TrackMetaData::TrackRoll TrackGetActualBank(
-    OpenRCT2::TileElement* tileElement, OpenRCT2::TrackMetaData::TrackRoll bank);
-OpenRCT2::TrackMetaData::TrackRoll TrackGetActualBank2(
-    ride_type_t rideType, bool isInverted, OpenRCT2::TrackMetaData::TrackRoll bank);
-OpenRCT2::TrackMetaData::TrackRoll TrackGetActualBank3(bool useInvertedSprites, OpenRCT2::TileElement* tileElement);
+OpenRCT2::TrackMetadata::TrackRoll TrackGetActualBank(
+    OpenRCT2::TileElement* tileElement, OpenRCT2::TrackMetadata::TrackRoll bank);
+OpenRCT2::TrackMetadata::TrackRoll TrackGetActualBank2(
+    ride_type_t rideType, bool isInverted, OpenRCT2::TrackMetadata::TrackRoll bank);
+OpenRCT2::TrackMetadata::TrackRoll TrackGetActualBank3(bool useInvertedSprites, OpenRCT2::TileElement* tileElement);
 
 ResultWithMessage TrackAddStationElement(
     CoordsXYZD loc, RideId rideIndex, OpenRCT2::GameActions::CommandFlags flags, bool fromTrackDesign);

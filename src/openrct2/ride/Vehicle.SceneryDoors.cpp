@@ -24,7 +24,7 @@
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Audio;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 static constexpr SoundId kDoorOpenSoundIds[] = {
     SoundId::null,       // DoorSoundType::none

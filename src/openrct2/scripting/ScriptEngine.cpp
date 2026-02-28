@@ -72,8 +72,8 @@
 using namespace OpenRCT2;
 using namespace OpenRCT2::Scripting;
 
-using OpenRCT2::TrackMetaData::TrackPitch;
-using OpenRCT2::TrackMetaData::TrackRoll;
+using OpenRCT2::TrackMetadata::TrackPitch;
+using OpenRCT2::TrackMetadata::TrackRoll;
 
 struct ExpressionStringifier final
 {

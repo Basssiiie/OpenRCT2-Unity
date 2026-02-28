@@ -17,7 +17,7 @@ bool DrawSupportForSequenceA(
     PaintSession& session, const WoodenSupportType supportType, const uint8_t sequence, const Direction direction,
     const int32_t height, const ImageId imageTemplate)
 {
-    const auto& ted = OpenRCT2::TrackMetaData::GetTrackElementDescriptor(trackType);
+    const auto& ted = OpenRCT2::TrackMetadata::GetTrackElementDescriptor(trackType);
     const auto& sequenceDesc = ted.sequences[sequence];
     const auto& desc = sequenceDesc.woodenSupports;
 
@@ -35,7 +35,7 @@ bool DrawSupportForSequenceB(
     PaintSession& session, const WoodenSupportType supportType, const uint8_t sequence, const Direction direction,
     const int32_t height, const ImageId imageTemplate)
 {
-    const auto& ted = OpenRCT2::TrackMetaData::GetTrackElementDescriptor(trackType);
+    const auto& ted = OpenRCT2::TrackMetadata::GetTrackElementDescriptor(trackType);
     const auto& sequenceDesc = ted.sequences[sequence];
     const auto& desc = sequenceDesc.woodenSupports;
 

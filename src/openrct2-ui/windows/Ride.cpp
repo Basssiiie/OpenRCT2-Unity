@@ -81,7 +81,7 @@
 #include <vector>
 
 using namespace OpenRCT2::Drawing;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 namespace OpenRCT2::Ui::Windows
 {

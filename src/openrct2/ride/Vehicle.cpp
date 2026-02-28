@@ -63,7 +63,7 @@
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Audio;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 using namespace OpenRCT2::RideVehicle;
 
 constexpr int16_t kVehicleMaxSpinSpeedForStopping = 700;

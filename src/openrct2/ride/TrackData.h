@@ -14,7 +14,7 @@
 
 using namespace OpenRCT2;
 
-namespace OpenRCT2::TrackMetaData
+namespace OpenRCT2::TrackMetadata
 {
     enum class TrackCurve : uint8_t;
     enum class TrackPitch : uint8_t;
@@ -54,4 +54,4 @@ namespace OpenRCT2::TrackMetaData
     }
 
     const TrackElementDescriptor& GetTrackElementDescriptor(TrackElemType type);
-} // namespace OpenRCT2::TrackMetaData
+} // namespace OpenRCT2::TrackMetadata

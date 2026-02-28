@@ -43,7 +43,7 @@
 #include <vector>
 
 using namespace OpenRCT2::Numerics;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 using OpenRCT2::Drawing::PaletteIndex;
 using OpenRCT2::GameActions::CommandFlag;
 using OpenRCT2::GameActions::CommandFlags;

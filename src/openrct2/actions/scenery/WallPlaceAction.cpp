@@ -38,7 +38,7 @@
 
 namespace OpenRCT2::GameActions
 {
-    using namespace OpenRCT2::TrackMetaData;
+    using namespace OpenRCT2::TrackMetadata;
 
     WallPlaceAction::WallPlaceAction(
         ObjectEntryIndex wallType, const CoordsXYZ& loc, uint8_t edge, Drawing::Colour primaryColour,
@@ -408,7 +408,7 @@ namespace OpenRCT2::GameActions
     {
         TrackElemType trackType = trackElement->GetTrackType();
 
-        using namespace OpenRCT2::TrackMetaData;
+        using namespace OpenRCT2::TrackMetadata;
         const auto& ted = GetTrackElementDescriptor(trackType);
         int32_t sequence = trackElement->GetSequenceIndex();
         int32_t direction = (_edge - trackElement->GetDirection()) & kTileElementDirectionMask;

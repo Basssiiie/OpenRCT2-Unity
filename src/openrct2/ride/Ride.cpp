@@ -78,7 +78,7 @@
 #include <optional>
 
 using namespace OpenRCT2;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 static constexpr auto kRideModeBlockSectionedCounterpart = std::to_array(
     {
