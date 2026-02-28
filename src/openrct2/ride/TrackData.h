@@ -44,19 +44,19 @@ namespace OpenRCT2::TrackMetaData
 
     enum class SpinFunction : uint8_t
     {
-        None,
-        L8,
-        R8,
-        LR,
-        RL,
-        L7,
-        R7,
-        L5,
-        R5,
-        RC, // Rotation Control Spin
-        SP, // Special rapids Spin
-        L9,
-        R9
+        none,
+        l8,
+        r8,
+        lr,
+        rl,
+        l7,
+        r7,
+        l5,
+        r5,
+        rc, // Rotation Control Spin
+        sp, // Special rapids Spin
+        l9,
+        r9
     };
 
     extern const TrackDescriptor gTrackDescriptors[186];
