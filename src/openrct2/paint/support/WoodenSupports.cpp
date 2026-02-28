@@ -12,6 +12,7 @@
 #include "../../SpriteIds.h"
 #include "../../interface/Viewport.h"
 #include "../../ride/TrackData.h"
+#include "../../ride/ted/TrackElementDescriptor.h"
 #include "../../world/Footpath.h"
 #include "../../world/tile_element/Slope.h"
 #include "../Boundbox.h"

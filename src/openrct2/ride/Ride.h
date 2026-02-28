@@ -19,6 +19,7 @@
 #include "RideTypes.h"
 #include "Track.h"
 #include "VehicleColour.h"
+#include "ted/TrackGroup.h"
 
 #include <array>
 #include <limits>
@@ -883,7 +884,7 @@ void BlockBrakeSetLinkedBrakesClosed(const CoordsXYZ& vehicleTrackLocation, Open
 uint8_t RideEntryGetVehicleAtPosition(int32_t rideEntryIndex, int32_t numCarsPerTrain, int32_t position);
 void RideUpdateVehicleColours(const Ride& ride);
 
-OpenRCT2::BitSet<EnumValue(TrackGroup::count)> RideEntryGetSupportedTrackPieces(const RideObjectEntry& rideEntry);
+OpenRCT2::BitSet<EnumValue(OpenRCT2::TrackGroup::count)> RideEntryGetSupportedTrackPieces(const RideObjectEntry& rideEntry);
 
 uint32_t RideCustomersPerHour(const Ride& ride);
 uint32_t RideCustomersInLast5Minutes(const Ride& ride);

@@ -19,6 +19,7 @@
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
 #include "../ride/TrackData.h"
+#include "../ride/ted/TrackElementDescriptor.h"
 #include "Map.h"
 #include "Park.h"
 #include "QuarterTile.h"

@@ -10,6 +10,7 @@
 #include "ScVehicle.hpp"
 
 #include "../../../ride/TrackData.h"
+#include "../../../ride/ted/TrackElementDescriptor.h"
 #include "../../../world/Map.h"
 #include "../../../world/tile_element/TrackElement.h"
 #include "../ride/ScRide.hpp"

@@ -70,6 +70,7 @@
 #include "TrackData.h"
 #include "TrackDesign.h"
 #include "Vehicle.h"
+#include "ted/TrackElementDescriptor.h"
 
 #include <cassert>
 #include <iterator>

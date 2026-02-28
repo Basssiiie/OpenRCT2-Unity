@@ -33,6 +33,7 @@
 #include "TrackData.h"
 #include "TrackDesign.h"
 #include "TrackStyle.h"
+#include "ted/TrackElementDescriptor.h"
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Drawing;

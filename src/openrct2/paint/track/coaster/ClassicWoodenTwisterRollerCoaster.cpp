@@ -9,7 +9,6 @@
 
 #include "../../../SpriteIds.h"
 #include "../../../drawing/Drawing.h"
-#include "../../../ride/Track.h"
 #include "../../../ride/TrackPaint.h"
 #include "../../tile_element/Paint.Tunnel.h"
 #include "../../tile_element/Segment.h"

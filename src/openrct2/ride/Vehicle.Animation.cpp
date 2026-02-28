@@ -23,6 +23,7 @@
 #include "Track.h"
 #include "TrackData.h"
 #include "VehicleData.h"
+#include "ted/TrackElementDescriptor.h"
 
 #include <cassert>
 

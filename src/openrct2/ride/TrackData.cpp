@@ -13,6 +13,7 @@
 #include "../localisation/StringIds.h"
 #include "Track.h"
 #include "TrackPaint.h"
+#include "ted/TrackElementDescriptor.h"
 
 #include <cstdint>
 #include <iterator>

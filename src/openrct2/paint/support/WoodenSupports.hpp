@@ -10,6 +10,7 @@
 #pragma once
 
 #include "../../ride/TrackData.h"
+#include "../../ride/ted/TrackElementDescriptor.h"
 
 template<OpenRCT2::TrackElemType trackType>
 bool DrawSupportForSequenceA(

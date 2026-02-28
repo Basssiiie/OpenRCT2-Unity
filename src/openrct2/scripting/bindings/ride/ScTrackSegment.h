@@ -16,6 +16,11 @@
     #include <cstdint>
     #include <string>
 
+namespace OpenRCT2::TrackMetaData
+{
+    enum class TrackElementFlag : uint8_t;
+}
+
 namespace OpenRCT2::Scripting
 {
     template<>
@@ -65,7 +70,7 @@ namespace OpenRCT2::Scripting
         int32_t getPriceModifier() const;
         int32_t getPreviewZOffset() const;
         int32_t getTrackGroup() const;
-        template<TrackElementFlag flag>
+        template<OpenRCT2::TrackMetaData::TrackElementFlag flag>
         bool getTrackFlag() const;
         std::string getTrackCurvature() const;
         std::string getTrackPitchDirection() const;

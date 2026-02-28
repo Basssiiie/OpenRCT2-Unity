@@ -19,6 +19,7 @@
 #include "../../ride/Track.h"
 #include "../../ride/TrackData.h"
 #include "../../ride/TrackDesign.h"
+#include "../../ride/ted/TrackElementDescriptor.h"
 #include "../../world/ConstructionClearance.h"
 #include "../../world/Footpath.h"
 #include "../../world/Map.h"

@@ -20,6 +20,7 @@
 #include <openrct2/ride/RideData.h>
 #include <openrct2/ride/RideTypes.h>
 #include <openrct2/ride/TrackData.h>
+#include <openrct2/ride/ted/TrackElementDescriptor.h>
 #include <openrct2/world/Map.h>
 #include <openrct2/world/tile_element/TrackElement.h>
 

@@ -75,6 +75,7 @@
 #include "TrackDesign.h"
 #include "TrackDesignRepository.h"
 #include "Vehicle.h"
+#include "ted/TrackElementDescriptor.h"
 
 #include <iterator>
 #include <memory>

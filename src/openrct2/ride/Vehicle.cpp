@@ -56,6 +56,7 @@
 #include "VehicleData.h"
 #include "VehicleGeometry.h"
 #include "VehicleSubpositionData.h"
+#include "ted/TrackElementDescriptor.h"
 
 #include <cassert>
 #include <iterator>

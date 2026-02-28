@@ -45,6 +45,7 @@
 #include "TrackData.h"
 #include "TrainManager.h"
 #include "Vehicle.h"
+#include "ted/TrackElementDescriptor.h"
 
 #include <cassert>
 #include <sfl/static_vector.hpp>

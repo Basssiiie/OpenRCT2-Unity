@@ -14,6 +14,7 @@
     #include "../../../Context.h"
     #include "../../../ride/TrackData.h"
     #include "../../../ride/Vehicle.h"
+    #include "../../../ride/ted/TrackElementDescriptor.h"
     #include "../../ScriptEngine.h"
 
 using namespace OpenRCT2::Scripting;
