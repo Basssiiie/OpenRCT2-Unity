@@ -1265,6 +1265,9 @@
     <ClCompile Include="..\thirdparty\quickjs-ng\quickjs-amalgam.c">
       <CompileAs>CompileAsC</CompileAs>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <AdditionalOptions>/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
