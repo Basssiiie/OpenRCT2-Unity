@@ -12,8 +12,6 @@
 #include "../paint/support/MetalSupports.h"
 #include "ted/TrackElemType.h"
 
-using namespace OpenRCT2;
-
 namespace OpenRCT2::TrackMetadata
 {
     enum class TrackCurve : uint8_t;
