@@ -43,18 +43,6 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "GraphicsContext", Finalize);
-        }
-
-        static void Finalize(JSRuntime* rt, JSValue thisVal)
-        {
-            GraphicsData* data = gScGraphicsContext.GetOpaque<GraphicsData*>(thisVal);
-            if (data)
-                delete data;
-        }
-
-        JSValue New(JSContext* ctx, const Drawing::RenderTarget& rt)
-        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("colour", ScGraphicsContext::colour_get, ScGraphicsContext::colour_set),
                 JS_CGETSET_DEF(
@@ -79,7 +67,19 @@ namespace OpenRCT2::Scripting
                 JS_CFUNC_DEF("text", 3, ScGraphicsContext::text),
                 JS_CFUNC_DEF("well", 4, ScGraphicsContext::well),
             };
-            return MakeWithOpaque(ctx, funcs, new GraphicsData{ rt });
+            RegisterBase(ctx, "GraphicsContext", Finalize, funcs);
+        }
+
+        static void Finalize(JSRuntime* rt, JSValue thisVal)
+        {
+            GraphicsData* data = gScGraphicsContext.GetOpaque<GraphicsData*>(thisVal);
+            if (data)
+                delete data;
+        }
+
+        JSValue New(JSContext* ctx, const Drawing::RenderTarget& rt)
+        {
+            return MakeWithOpaque(ctx, new GraphicsData{ rt });
         }
 
     private:
@@ -212,7 +212,8 @@ namespace OpenRCT2::Scripting
             GraphicsData* data = gScGraphicsContext.GetOpaque<GraphicsData*>(thisVal);
 
             Drawing::Rectangle::fillInset(
-                data->_rt, { x, y, x + width - 1, y + height - 1 }, { static_cast<Drawing::Colour>(data->_colour.value_or(0)) });
+                data->_rt, { x, y, x + width - 1, y + height - 1 },
+                { static_cast<Drawing::Colour>(data->_colour.value_or(0)) });
             return JS_UNDEFINED;
         }
 

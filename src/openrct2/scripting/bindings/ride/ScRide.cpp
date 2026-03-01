@@ -35,11 +35,6 @@ namespace OpenRCT2::Scripting
 
     void ScRide::Register(JSContext* ctx)
     {
-        RegisterBaseStr(ctx, "Ride", Finalize);
-    }
-
-    JSValue ScRide::New(JSContext* ctx, RideId rideId)
-    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("id", ScRide::id_get, nullptr),
             JS_CGETSET_DEF("object", ScRide::object_get, nullptr),
@@ -90,7 +85,12 @@ namespace OpenRCT2::Scripting
             JS_CFUNC_DEF("setBreakdown", 1, ScRide::setBreakdown),
             JS_CFUNC_DEF("fixBreakdown", 0, ScRide::fixBreakdown),
         };
-        return MakeWithOpaque(ctx, funcs, new RideData{ rideId });
+        RegisterBase(ctx, "Ride", Finalize, funcs);
+    }
+
+    JSValue ScRide::New(JSContext* ctx, RideId rideId)
+    {
+        return MakeWithOpaque(ctx, new RideData{ rideId });
     }
 
     void ScRide::Finalize(JSRuntime* rt, JSValue thisVal)

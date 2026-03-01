@@ -2415,6 +2415,11 @@ namespace OpenRCT2::Scripting
 
     JSValue ScTileElement::New(JSContext* ctx, TileElement* element, CoordsXY& coords)
     {
+        return MakeWithOpaque(ctx, new OpaqueTileElementData{ element, coords });
+    }
+
+    void ScTileElement::Register(JSContext* ctx)
+    {
         static constexpr JSCFunctionListEntry funcs[] = {
             // All
             JS_CGETSET_DEF("type", ScTileElement::type_get, ScTileElement::type_set),
@@ -2507,12 +2512,7 @@ namespace OpenRCT2::Scripting
             // Banner only
             JS_CGETSET_DEF("isNoEntry", ScTileElement::isNoEntry_get, ScTileElement::isNoEntry_set)
         };
-        return MakeWithOpaque(ctx, funcs, new OpaqueTileElementData{ element, coords });
-    }
-
-    void ScTileElement::Register(JSContext* ctx)
-    {
-        RegisterBaseStr(ctx, "TileElement", Finalize);
+        RegisterBase(ctx, "TileElement", Finalize, funcs);
     }
 
     void ScTileElement::Finalize(JSRuntime* rt, JSValue thisVal)

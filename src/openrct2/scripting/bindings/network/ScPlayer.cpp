@@ -119,6 +119,11 @@ namespace OpenRCT2::Scripting
 
     JSValue ScPlayer::New(JSContext* ctx, int32_t id)
     {
+        return MakeWithOpaque(ctx, new OpaquePlayerData{ id });
+    }
+
+    void ScPlayer::Register(JSContext* ctx)
+    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("id", ScPlayer::id_get, nullptr),
             JS_CGETSET_DEF("name", ScPlayer::name_get, nullptr),
@@ -129,12 +134,7 @@ namespace OpenRCT2::Scripting
             JS_CGETSET_DEF("ipAddress", ScPlayer::ipAddress_get, nullptr),
             JS_CGETSET_DEF("publicKeyHash", ScPlayer::publicKeyHash_get, nullptr),
         };
-        return MakeWithOpaque(ctx, funcs, new OpaquePlayerData{ id });
-    }
-
-    void ScPlayer::Register(JSContext* ctx)
-    {
-        RegisterBaseStr(ctx, "Player", Finalize);
+        RegisterBase(ctx, "Player", Finalize, funcs);
     }
 
     void ScPlayer::Finalize(JSRuntime* rt, JSValue thisVal)

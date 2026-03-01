@@ -55,21 +55,25 @@ namespace OpenRCT2::Scripting
             return JS_UNDEFINED;
         }
 
-        static constexpr JSCFunctionListEntry funcs[] = {
-            JS_CFUNC_DEF("clear", 0, clear),
-            JS_CFUNC_DEF("log", 0, log),
-            JS_CFUNC_DEF("executeLegacy", 1, executeLegacy),
-        };
+        static void Finalize(JSRuntime* ctx, JSValue thisVal)
+        {
+            // Do nothing as we don't need to free the console object.
+        }
 
     public:
         JSValue New(JSContext* ctx, InteractiveConsole& console)
         {
-            return MakeWithOpaque(ctx, funcs, &console);
+            return MakeWithOpaque(ctx, &console);
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Console");
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CFUNC_DEF("clear", 0, clear),
+                JS_CFUNC_DEF("log", 0, log),
+                JS_CFUNC_DEF("executeLegacy", 1, executeLegacy),
+            };
+            RegisterBase(ctx, "Console", Finalize, funcs);
         }
     };
 } // namespace OpenRCT2::Scripting

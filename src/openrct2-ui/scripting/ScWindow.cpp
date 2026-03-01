@@ -378,12 +378,33 @@ namespace OpenRCT2::Scripting
 
     JSValue ScWindow::New(JSContext* ctx, WindowClass wClass, WindowNumber wNum)
     {
-        return MakeWithOpaque(ctx, funcs, new OpaqueWindowData{ wClass, wNum });
+        return MakeWithOpaque(ctx, new OpaqueWindowData{ wClass, wNum });
     }
 
     void ScWindow::Register(JSContext* ctx)
     {
-        RegisterBaseStr(ctx, "Window", Finalize);
+        static constexpr JSCFunctionListEntry funcs[] = {
+            JS_CGETSET_DEF("classification", ScWindow::classification_get, nullptr),
+            JS_CGETSET_DEF("number", ScWindow::number_get, nullptr),
+            JS_CGETSET_DEF("x", ScWindow::x_get, ScWindow::x_set),
+            JS_CGETSET_DEF("y", ScWindow::y_get, ScWindow::y_set),
+            JS_CGETSET_DEF("width", ScWindow::width_get, ScWindow::width_set),
+            JS_CGETSET_DEF("height", ScWindow::height_get, ScWindow::height_set),
+            JS_CGETSET_DEF("minWidth", ScWindow::minWidth_get, ScWindow::minWidth_set),
+            JS_CGETSET_DEF("maxWidth", ScWindow::maxWidth_get, ScWindow::maxWidth_set),
+            JS_CGETSET_DEF("minHeight", ScWindow::minHeight_get, ScWindow::minHeight_set),
+            JS_CGETSET_DEF("maxHeight", ScWindow::maxHeight_get, ScWindow::maxHeight_set),
+            JS_CGETSET_DEF("isSticky", ScWindow::isSticky_get, nullptr),
+            JS_CGETSET_DEF("widgets", ScWindow::widgets_get, nullptr),
+            JS_CGETSET_DEF("colours", ScWindow::colours_get, ScWindow::colours_set),
+            JS_CGETSET_DEF("title", ScWindow::title_get, ScWindow::title_set),
+            JS_CGETSET_DEF("tabIndex", ScWindow::tabIndex_get, ScWindow::tabIndex_set),
+
+            JS_CFUNC_DEF("close", 0, ScWindow::close),
+            JS_CFUNC_DEF("findWidget", 1, ScWindow::findWidget),
+            JS_CFUNC_DEF("bringToFront", 0, ScWindow::bringToFront)
+        };
+        RegisterBase(ctx, "Window", Finalize, funcs);
     }
 
     void ScWindow::Finalize(JSRuntime* rt, JSValue thisVal)

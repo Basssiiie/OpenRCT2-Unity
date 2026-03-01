@@ -94,7 +94,7 @@ namespace OpenRCT2::Scripting
         void Register(JSContext* ctx);
 
     private:
-        void Finalize(JSRuntime* rt, JSValue thisVal);
+        static void Finalize(JSRuntime* rt, JSValue thisVal);
     };
 
 } // namespace OpenRCT2::Scripting

@@ -84,6 +84,11 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx)
         {
+            return MakeWithOpaque(ctx, nullptr);
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CFUNC_DEF("getData", 0, ScProfiler::getData),
                 JS_CFUNC_DEF("start", 0, ScProfiler::start),
@@ -91,13 +96,7 @@ namespace OpenRCT2::Scripting
                 JS_CFUNC_DEF("reset", 0, ScProfiler::reset),
                 JS_CGETSET_DEF("enabled", ScProfiler::enabled_get, nullptr),
             };
-
-            return MakeWithOpaque(ctx, funcs, nullptr);
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Profiler");
+            RegisterBase(ctx, "Profiler", nullptr, funcs);
         }
     };
 } // namespace OpenRCT2::Scripting

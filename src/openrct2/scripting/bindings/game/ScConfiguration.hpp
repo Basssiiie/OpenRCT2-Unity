@@ -341,29 +341,28 @@ namespace OpenRCT2::Scripting
             return JS_NewBool(ctx, retval);
         }
 
-        static constexpr JSCFunctionListEntry funcs[] = {
-            JS_CFUNC_DEF("getAll", 1, ScConfiguration::getAll),
-            JS_CFUNC_DEF("get", 2, ScConfiguration::get),
-            JS_CFUNC_DEF("set", 2, ScConfiguration::set),
-            JS_CFUNC_DEF("has", 1, ScConfiguration::has),
-        };
-
     public:
         // context.configuration
         JSValue New(JSContext* ctx)
         {
-            return MakeWithOpaque(ctx, funcs, new ConfigurationData{ ScConfigurationKind::User, {} });
+            return MakeWithOpaque(ctx, new ConfigurationData{ ScConfigurationKind::User, {} });
         }
 
         // context.sharedStorage / context.getParkStorage
         JSValue New(JSContext* ctx, ScConfigurationKind kind, std::string_view pluginName = {})
         {
-            return MakeWithOpaque(ctx, funcs, new ConfigurationData{ kind, std::string(pluginName) });
+            return MakeWithOpaque(ctx, new ConfigurationData{ kind, std::string(pluginName) });
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Configuration", Finalize);
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CFUNC_DEF("getAll", 1, ScConfiguration::getAll),
+                JS_CFUNC_DEF("get", 2, ScConfiguration::get),
+                JS_CFUNC_DEF("set", 2, ScConfiguration::set),
+                JS_CFUNC_DEF("has", 1, ScConfiguration::has),
+            };
+            RegisterBase(ctx, "Configuration", Finalize, funcs);
         }
 
         static void Finalize(JSRuntime* rt, JSValue thisVal)

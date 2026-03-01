@@ -323,18 +323,17 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx, std::string_view path, std::string_view fileName)
         {
+            return MakeWithOpaque(ctx, new OpaqueData{ std::string(path), std::string(fileName) });
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("fileName", ScTitleSequencePark::fileName_get, ScTitleSequencePark::fileName_set),
                 JS_CFUNC_DEF("delete", 0, ScTitleSequencePark::delete_),
                 JS_CFUNC_DEF("load", 0, ScTitleSequencePark::load),
             };
-
-            return MakeWithOpaque(ctx, funcs, new OpaqueData{ std::string(path), std::string(fileName) });
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "TitleSequencePark", Finalize);
+            RegisterBase(ctx, "TitleSequencePark", Finalize, funcs);
         }
 
     private:
@@ -616,6 +615,11 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx, std::string_view path)
         {
+            return MakeWithOpaque(ctx, new OpaqueData{ std::string(path) });
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("name", ScTitleSequence::name_get, ScTitleSequence::name_set),
                 JS_CGETSET_DEF("path", ScTitleSequence::path_get, nullptr),
@@ -634,13 +638,7 @@ namespace OpenRCT2::Scripting
                 JS_CFUNC_DEF("seek", 1, ScTitleSequence::seek),
                 JS_CFUNC_DEF("stop", 0, ScTitleSequence::stop),
             };
-
-            return MakeWithOpaque(ctx, funcs, new OpaqueData{ std::string(path) });
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "TitleSequence", Finalize);
+            RegisterBase(ctx, "TitleSequence", Finalize, funcs);
         }
 
     private:
@@ -712,16 +710,16 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx)
         {
-            static constexpr JSCFunctionListEntry funcs[] = {
-                JS_CGETSET_DEF("titleSequences", ScTitleSequenceManager::titleSequences_get, nullptr),
-                JS_CFUNC_DEF("create", 1, ScTitleSequenceManager::create),
-            };
-            return MakeWithOpaque(ctx, funcs, nullptr);
+            return MakeWithOpaque(ctx, nullptr);
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "TitleSequenceManager");
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CGETSET_DEF("titleSequences", ScTitleSequenceManager::titleSequences_get, nullptr),
+                JS_CFUNC_DEF("create", 1, ScTitleSequenceManager::create),
+            };
+            RegisterBase(ctx, "TitleSequenceManager", nullptr, funcs);
         }
     };
 } // namespace OpenRCT2::Scripting

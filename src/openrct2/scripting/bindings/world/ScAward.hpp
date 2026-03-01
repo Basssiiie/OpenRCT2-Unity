@@ -78,13 +78,6 @@ namespace OpenRCT2::Scripting
         static JSValue monthsRemaining_get(JSContext* ctx, JSValue thisVal);
         static JSValue positive_get(JSContext* ctx, JSValue thisVal);
         static JSValue imageId_get(JSContext* ctx, JSValue thisVal);
-
-        static constexpr JSCFunctionListEntry funcs[] = {
-            JS_CGETSET_DEF("type", &ScAward::type_get, nullptr), JS_CGETSET_DEF("text", &ScAward::text_get, nullptr),
-            JS_CGETSET_DEF("positive", &ScAward::positive_get, nullptr),
-            JS_CGETSET_DEF("imageId", &ScAward::imageId_get, nullptr),
-            JS_CGETSET_DEF("monthsRemaining", &ScAward::monthsRemaining_get, nullptr)
-        };
     };
 
 } // namespace OpenRCT2::Scripting

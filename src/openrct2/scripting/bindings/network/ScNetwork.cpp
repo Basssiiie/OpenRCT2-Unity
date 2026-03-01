@@ -323,6 +323,11 @@ namespace OpenRCT2::Scripting
 
     JSValue ScNetwork::New(JSContext* ctx)
     {
+        return MakeWithOpaque(ctx, nullptr);
+    }
+
+    void ScNetwork::Register(JSContext* ctx)
+    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("mode", ScNetwork::mode_get, nullptr),
             JS_CGETSET_DEF("numGroups", ScNetwork::numGroups_get, nullptr),
@@ -343,8 +348,7 @@ namespace OpenRCT2::Scripting
             JS_CFUNC_DEF("createListener", 0, ScNetwork::createListener),
             JS_CFUNC_DEF("createSocket", 0, ScNetwork::createSocket)
         };
-
-        return MakeWithOpaque(ctx, funcs, nullptr);
+        RegisterBase(ctx, "Network", nullptr, funcs);
     }
 
 } // namespace OpenRCT2::Scripting

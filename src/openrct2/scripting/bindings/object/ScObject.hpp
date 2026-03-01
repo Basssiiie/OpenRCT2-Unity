@@ -40,11 +40,6 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Object", Finalize);
-        }
-
-        JSValue NewInstance(JSContext* ctx, ObjectType type, int32_t index)
-        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("installedObject", ScObject::installedObject_get, nullptr),
                 JS_CGETSET_DEF("type", ScObject::type_get, nullptr),
@@ -55,7 +50,12 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("baseImageId", ScObject::baseImageId_get, nullptr),
                 JS_CGETSET_DEF("numImages", ScObject::numImages_get, nullptr),
             };
-            return MakeWithOpaque(ctx, funcs, new ObjectData{ type, index });
+            RegisterBase(ctx, "Object", Finalize, funcs);
+        }
+
+        JSValue NewInstance(JSContext* ctx, ObjectType type, int32_t index)
+        {
+            return MakeWithOpaque(ctx, new ObjectData{ type, index });
         }
 
         static JSValue New(JSContext* ctx, ObjectType type, int32_t index)
@@ -177,11 +177,6 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "RideObjectVehicle", Finalize);
-        }
-
-        JSValue New(JSContext* ctx, ObjectEntryIndex objectIndex, size_t vehicleIndex)
-        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("rotationFrameMask", ScRideObjectVehicle::rotationFrameMask_get, nullptr),
                 JS_CGETSET_DEF("spacing", ScRideObjectVehicle::spacing_get, nullptr),
@@ -212,7 +207,12 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("drawOrder", ScRideObjectVehicle::drawOrder_get, nullptr),
                 JS_CGETSET_DEF("numVerticalFramesOverride", ScRideObjectVehicle::numVerticalFramesOverride_get, nullptr),
             };
-            return MakeWithOpaque(ctx, funcs, new VehicleData{ objectIndex, vehicleIndex });
+            RegisterBase(ctx, "RideObjectVehicle", Finalize, funcs);
+        }
+
+        JSValue New(JSContext* ctx, ObjectEntryIndex objectIndex, size_t vehicleIndex)
+        {
+            return MakeWithOpaque(ctx, new VehicleData{ objectIndex, vehicleIndex });
         }
 
     private:
@@ -756,11 +756,6 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "LargeSceneryObjectTile", Finalize);
-        }
-
-        JSValue New(JSContext* ctx, const LargeSceneryTile& tile)
-        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("offset", ScLargeSceneryObjectTile::offset_get, nullptr),
                 JS_CGETSET_DEF("zClearance", ScLargeSceneryObjectTile::zClearance_get, nullptr),
@@ -769,7 +764,12 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("corners", ScLargeSceneryObjectTile::corners_get, nullptr),
                 JS_CGETSET_DEF("walls", ScLargeSceneryObjectTile::walls_get, nullptr),
             };
-            return MakeWithOpaque(ctx, funcs, new TileData{ tile });
+            RegisterBase(ctx, "LargeSceneryObjectTile", Finalize, funcs);
+        }
+
+        JSValue New(JSContext* ctx, const LargeSceneryTile& tile)
+        {
+            return MakeWithOpaque(ctx, new TileData{ tile });
         }
 
     private:

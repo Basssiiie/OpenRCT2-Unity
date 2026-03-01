@@ -405,20 +405,13 @@ namespace OpenRCT2::Scripting
         }
 
     public:
-        static constexpr JSCFunctionListEntry funcs[] = {
-            JS_CFUNC_DEF("destroy", 1, ScSocket::destroy), JS_CFUNC_DEF("setNoDelay", 1, ScSocket::setNoDelay),
-            JS_CFUNC_DEF("connect", 3, ScSocket::connect), JS_CFUNC_DEF("end", 1, ScSocket::end),
-            JS_CFUNC_DEF("write", 1, ScSocket::write),     JS_CFUNC_DEF("on", 2, ScSocket::on),
-            JS_CFUNC_DEF("off", 2, ScSocket::off),
-        };
-
         JSValue New(JSContext* ctx, const std::shared_ptr<Plugin>& plugin)
         {
             // unique ptr is used to avoid static analyzer false positives.
             auto data = std::make_unique<SocketData>();
             data->_plugin = plugin;
             GetContext()->GetScriptEngine().AddSocket(data.get());
-            return MakeWithOpaque(ctx, funcs, data.release());
+            return MakeWithOpaque(ctx, data.release());
         }
 
         JSValue New(JSContext* ctx, const std::shared_ptr<Plugin>& plugin, std::unique_ptr<Network::ITcpSocket>&& socket)
@@ -427,12 +420,18 @@ namespace OpenRCT2::Scripting
             data->_plugin = plugin;
             data->_socket = std::move(socket);
             GetContext()->GetScriptEngine().AddSocket(data.get());
-            return MakeWithOpaque(ctx, funcs, data.release());
+            return MakeWithOpaque(ctx, data.release());
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Socket", Finalize);
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CFUNC_DEF("destroy", 1, ScSocket::destroy), JS_CFUNC_DEF("setNoDelay", 1, ScSocket::setNoDelay),
+                JS_CFUNC_DEF("connect", 3, ScSocket::connect), JS_CFUNC_DEF("end", 1, ScSocket::end),
+                JS_CFUNC_DEF("write", 1, ScSocket::write),     JS_CFUNC_DEF("on", 2, ScSocket::on),
+                JS_CFUNC_DEF("off", 2, ScSocket::off),
+            };
+            RegisterBase(ctx, "Socket", Finalize, funcs);
         }
 
         static void Finalize(JSRuntime* rt, JSValue thisVal)
@@ -632,6 +631,15 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx, const std::shared_ptr<Plugin>& plugin)
         {
+            // unique ptr is used to avoid static analyzer false positives.
+            auto data = std::make_unique<ListenerData>();
+            data->_plugin = plugin;
+            GetContext()->GetScriptEngine().AddSocket(data.get());
+            return MakeWithOpaque(ctx, data.release());
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("listening", ScListener::listening_get, nullptr),
                 JS_CFUNC_DEF("close", 0, ScListener::close),
@@ -639,17 +647,7 @@ namespace OpenRCT2::Scripting
                 JS_CFUNC_DEF("on", 2, ScListener::on),
                 JS_CFUNC_DEF("off", 2, ScListener::off),
             };
-
-            // unique ptr is used to avoid static analyzer false positives.
-            auto data = std::make_unique<ListenerData>();
-            data->_plugin = plugin;
-            GetContext()->GetScriptEngine().AddSocket(data.get());
-            return MakeWithOpaque(ctx, funcs, data.release());
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Listener", Finalize);
+            RegisterBase(ctx, "Listener", Finalize, funcs);
         }
 
         static void Finalize(JSRuntime* rt, JSValue thisVal)

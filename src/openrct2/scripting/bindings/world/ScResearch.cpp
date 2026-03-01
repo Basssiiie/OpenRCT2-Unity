@@ -263,11 +263,6 @@ namespace OpenRCT2::Scripting
 
     void ScResearch::Register(JSContext* ctx)
     {
-        RegisterBaseStr(ctx, "Research");
-    }
-
-    JSValue ScResearch::New(JSContext* ctx)
-    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("funding", ScResearch::funding_get, ScResearch::funding_set),
             JS_CGETSET_DEF("priorities", ScResearch::priorities_get, ScResearch::priorities_set),
@@ -281,7 +276,12 @@ namespace OpenRCT2::Scripting
             JS_CGETSET_DEF("uninventedItems", ScResearch::uninventedItems_get, ScResearch::uninventedItems_set),
             JS_CFUNC_DEF("isObjectResearched", 2, ScResearch::isObjectResearched),
         };
-        return MakeWithOpaque(ctx, funcs, nullptr);
+        RegisterBase(ctx, "Research", nullptr, funcs);
+    }
+
+    JSValue ScResearch::New(JSContext* ctx)
+    {
+        return MakeWithOpaque(ctx, nullptr);
     }
 
     std::vector<ResearchItem> ScResearch::ConvertResearchList(JSContext* ctx, JSValue value)

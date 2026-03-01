@@ -47,11 +47,6 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "InstalledObject", Finalize);
-        }
-
-        JSValue New(JSContext* ctx, size_t index)
-        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("path", ScInstalledObject::path_get, nullptr),
                 JS_CGETSET_DEF("generation", ScInstalledObject::generation_get, nullptr),
@@ -62,7 +57,12 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("authors", ScInstalledObject::authors_get, nullptr),
                 JS_CGETSET_DEF("name", ScInstalledObject::name_get, nullptr),
             };
-            return MakeWithOpaque(ctx, funcs, new InstalledObjectData{ index });
+            RegisterBase(ctx, "InstalledObject", Finalize, funcs);
+        }
+
+        JSValue New(JSContext* ctx, size_t index)
+        {
+            return MakeWithOpaque(ctx, new InstalledObjectData{ index });
         }
 
     private:

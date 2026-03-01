@@ -80,6 +80,11 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx)
         {
+            return MakeWithOpaque(ctx, nullptr);
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("monthsElapsed", ScDate::monthsElapsed_get, ScDate::monthsElapsed_set),
                 JS_CGETSET_DEF("monthProgress", ScDate::monthProgress_get, ScDate::monthProgress_set),
@@ -89,13 +94,7 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("month", ScDate::month_get, nullptr),
                 JS_CGETSET_DEF("year", ScDate::year_get, nullptr),
             };
-
-            return MakeWithOpaque(ctx, funcs, nullptr);
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Date");
+            RegisterBase(ctx, "Date", nullptr, funcs);
         }
     };
 } // namespace OpenRCT2::Scripting

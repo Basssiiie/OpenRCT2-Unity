@@ -155,17 +155,17 @@ namespace OpenRCT2::Scripting
 
     JSValue ScPlayerGroup::New(JSContext* ctx, int32_t id)
     {
+        return MakeWithOpaque(ctx, new OpaquePlayerGroupData{ id });
+    }
+
+    void ScPlayerGroup::Register(JSContext* ctx)
+    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("id", ScPlayerGroup::id_get, nullptr),
             JS_CGETSET_DEF("name", ScPlayerGroup::name_get, ScPlayerGroup::name_set),
             JS_CGETSET_DEF("permissions", ScPlayerGroup::permissions_get, ScPlayerGroup::permissions_set),
         };
-        return MakeWithOpaque(ctx, funcs, new OpaquePlayerGroupData{ id });
-    }
-
-    void ScPlayerGroup::Register(JSContext* ctx)
-    {
-        RegisterBaseStr(ctx, "PlayerGroup", Finalize);
+        RegisterBase(ctx, "PlayerGroup", Finalize, funcs);
     }
 
     void ScPlayerGroup::Finalize(JSRuntime* rt, JSValue thisVal)

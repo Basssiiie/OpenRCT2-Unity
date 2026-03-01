@@ -580,6 +580,11 @@ namespace OpenRCT2::Scripting
 
     JSValue ScPatrolArea::New(JSContext* ctx, EntityId staffId)
     {
+        return MakeWithOpaque(ctx, new OpaquePatrolAreaData{ staffId });
+    }
+
+    void ScPatrolArea::Register(JSContext* ctx)
+    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("tiles", &ScPatrolArea::tiles_get, &ScPatrolArea::tiles_set),
             JS_CFUNC_DEF("clear", 0, &ScPatrolArea::clear),
@@ -587,12 +592,7 @@ namespace OpenRCT2::Scripting
             JS_CFUNC_DEF("remove", 1, &ScPatrolArea::remove),
             JS_CFUNC_DEF("contains", 1, &ScPatrolArea::contains),
         };
-        return MakeWithOpaque(ctx, funcs, new OpaquePatrolAreaData{ staffId });
-    }
-
-    void ScPatrolArea::Register(JSContext* ctx)
-    {
-        RegisterBaseStr(ctx, "PatrolArea", Finalize);
+        RegisterBase(ctx, "PatrolArea", Finalize, funcs);
     }
 
     void ScPatrolArea::Finalize(JSRuntime* rt, JSValue thisVal)

@@ -68,16 +68,15 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx)
         {
-            static constexpr JSCFunctionListEntry funcs[] = {
-                JS_CGETSET_DEF("plugins", ScPlugin::plugins_get, nullptr),
-            };
-
-            return MakeWithOpaque(ctx, funcs, nullptr);
+            return MakeWithOpaque(ctx, nullptr);
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "PluginManager");
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CGETSET_DEF("plugins", ScPlugin::plugins_get, nullptr),
+            };
+            RegisterBase(ctx, "PluginManager", nullptr, funcs);
         }
     };
 } // namespace OpenRCT2::Scripting

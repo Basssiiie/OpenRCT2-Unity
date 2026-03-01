@@ -451,11 +451,6 @@ namespace OpenRCT2::Scripting
 
     void ScMap::Register(JSContext* ctx)
     {
-        RegisterBaseStr(ctx, "Map");
-    }
-
-    JSValue ScMap::New(JSContext* ctx)
-    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("size", ScMap::size_get, nullptr),
             JS_CGETSET_DEF("numRides", ScMap::numRides_get, nullptr),
@@ -469,7 +464,12 @@ namespace OpenRCT2::Scripting
             JS_CFUNC_DEF("createEntity", 2, ScMap::createEntity),
             JS_CFUNC_DEF("getTrackIterator", 2, ScMap::getTrackIterator),
         };
-        return MakeWithOpaque(ctx, funcs, nullptr);
+        RegisterBase(ctx, "Map", nullptr, funcs);
+    }
+
+    JSValue ScMap::New(JSContext* ctx)
+    {
+        return MakeWithOpaque(ctx, nullptr);
     }
 
     JSValue ScMap::GetEntityAsDukValue(JSContext* ctx, const EntityBase* sprite)

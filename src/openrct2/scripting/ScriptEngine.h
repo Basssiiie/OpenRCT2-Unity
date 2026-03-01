@@ -314,26 +314,30 @@ namespace OpenRCT2::Scripting
     class ScBase
     {
     private:
+        JSValue proto = JS_NULL;
+        JSContext* protoCtx = nullptr;
         JSClassID classId = JS_INVALID_CLASS_ID;
+        bool hasFinalizer = false;
 
     public:
         void Unregister()
         {
             classId = JS_INVALID_CLASS_ID;
+            if (protoCtx != nullptr)
+                JS_FreeValue(protoCtx, proto);
         }
 
     protected:
-        [[nodiscard]] JSValue MakeWithOpaque(JSContext* ctx, std::span<const JSCFunctionListEntry> classFuncs, void* opaque)
+        [[nodiscard]] JSValue MakeWithOpaque(JSContext* ctx, void* opaque) const
         {
+            // If you fail this assert you probably need a finalizer to free the opaque ptr.
+            assert(opaque == nullptr || hasFinalizer);
+            // TODO: the class proto could be set once per context rather than here on every object creation.
+            JS_SetClassProto(ctx, classId, JS_DupValue(ctx, proto));
             JSValue obj = JS_NewObjectClass(ctx, classId);
             if (JS_IsException(obj))
                 throw std::runtime_error("Failed to create new object for class.");
             JS_SetOpaque(obj, opaque);
-
-            // Note: Usually one would set a class prototype rather than setting the functions as properties on every creation.
-            //       However, that causes the attached functions to not be "own properties" which make them a little less
-            //       visible to the user, and also does not match the previous behaviour with the DukTape engine.
-            JS_SetPropertyFunctionList(ctx, obj, classFuncs.data(), static_cast<int>(classFuncs.size()));
             return obj;
         }
 
@@ -343,9 +347,11 @@ namespace OpenRCT2::Scripting
             return static_cast<T>(JS_GetOpaque(obj, classId));
         }
 
-        void RegisterBase(JSContext* ctx, const JSClassDef& classDef)
+        void RegisterBase(
+            JSContext* ctx, const char* className, JSClassFinalizer* finalizer,
+            std::span<const JSCFunctionListEntry> classFuncs)
         {
-            Guard::Assert(classId == JS_INVALID_CLASS_ID);
+            assert(classId == JS_INVALID_CLASS_ID);
             // Note: Technically JS_NewClassID is meant to be called once during the lifetime of the program
             //       whereas JS_NewClass is meant to be called for each runtime.
             //       If we ever have any more runtimes, this flow would be wrong.
@@ -353,18 +359,14 @@ namespace OpenRCT2::Scripting
             //       calling callbacks.
             JSRuntime* rt = JS_GetRuntime(ctx);
             JS_NewClassID(rt, &classId);
+            JSClassDef classDef = { className, finalizer, nullptr, nullptr, nullptr };
             JS_NewClass(rt, classId, &classDef);
-            JS_SetClassProto(ctx, classId, JS_NewObject(ctx));
-        }
 
-        void RegisterBaseStr(JSContext* ctx, const char* className)
-        {
-            RegisterBase(ctx, { className, nullptr, nullptr, nullptr, nullptr });
-        }
+            proto = JS_NewObject(ctx);
+            protoCtx = ctx;
+            JS_SetPropertyFunctionList(ctx, proto, classFuncs.data(), static_cast<int>(classFuncs.size()));
 
-        void RegisterBaseStr(JSContext* ctx, const char* className, JSClassFinalizer* finalizer)
-        {
-            RegisterBase(ctx, { className, finalizer, nullptr, nullptr, nullptr });
+            hasFinalizer = finalizer != nullptr;
         }
     };
 

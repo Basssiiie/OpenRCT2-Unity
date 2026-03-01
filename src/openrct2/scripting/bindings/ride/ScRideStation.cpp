@@ -19,18 +19,18 @@ namespace OpenRCT2::Scripting
 {
     void ScRideStation::Register(JSContext* ctx)
     {
-        RegisterBaseStr(ctx, "RideStation", Finalize);
-    }
-
-    JSValue ScRideStation::New(JSContext* ctx, RideId rideId, StationIndex stationIndex)
-    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("start", ScRideStation::start_get, ScRideStation::start_set),
             JS_CGETSET_DEF("length", ScRideStation::length_get, ScRideStation::length_set),
             JS_CGETSET_DEF("entrance", ScRideStation::entrance_get, ScRideStation::entrance_set),
             JS_CGETSET_DEF("exit", ScRideStation::exit_get, ScRideStation::exit_set),
         };
-        return MakeWithOpaque(ctx, funcs, new RideStationData{ rideId, stationIndex });
+        RegisterBase(ctx, "RideStation", Finalize, funcs);
+    }
+
+    JSValue ScRideStation::New(JSContext* ctx, RideId rideId, StationIndex stationIndex)
+    {
+        return MakeWithOpaque(ctx, new RideStationData{ rideId, stationIndex });
     }
 
     void ScRideStation::Finalize(JSRuntime* rt, JSValue thisVal)

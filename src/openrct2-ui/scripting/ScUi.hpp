@@ -89,21 +89,20 @@ namespace OpenRCT2::Scripting
             return JS_UNDEFINED;
         }
 
-        static constexpr JSCFunctionListEntry funcs[] = {
-            JS_CGETSET_DEF("id", ScTool::id_get, nullptr),
-            JS_CGETSET_DEF("cursor", ScTool::cursor_get, nullptr),
-            JS_CFUNC_DEF("cancel", 0, ScTool::cancel),
-        };
-
     public:
         JSValue New(JSContext* ctx)
         {
-            return MakeWithOpaque(ctx, funcs, nullptr);
+            return MakeWithOpaque(ctx, nullptr);
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Tool");
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CGETSET_DEF("id", ScTool::id_get, nullptr),
+                JS_CGETSET_DEF("cursor", ScTool::cursor_get, nullptr),
+                JS_CFUNC_DEF("cancel", 0, ScTool::cancel),
+            };
+            RegisterBase(ctx, "Tool", nullptr, funcs);
         }
     };
 
@@ -379,7 +378,6 @@ namespace OpenRCT2::Scripting
             auto& execInfo = scriptEngine->GetExecInfo();
             auto owner = execInfo.GetCurrentPlugin();
             std::string text = JSToStdString(ctx, argv[0]);
-            assert(owner->GetContext() == ctx);
             CustomMenuItems.emplace_back(owner, CustomToolbarMenuItemKind::Standard, text, JSCallback(ctx, argv[1]));
             std::ranges::sort(CustomMenuItems, [](auto&& a, auto&& b) { return a.Text < b.Text; });
 
@@ -445,38 +443,42 @@ namespace OpenRCT2::Scripting
             return JS_UNDEFINED;
         }
 
-        static constexpr JSCFunctionListEntry funcs[] = {
-            JS_CGETSET_DEF("height", ScUi::height_get, nullptr),
-            JS_CGETSET_DEF("width", ScUi::width_get, nullptr),
-            JS_CGETSET_DEF("windows", ScUi::windows_get, nullptr),
-            JS_CGETSET_DEF("mainViewport", ScUi::mainViewport_get, nullptr),
-            JS_CGETSET_DEF("tileSelection", ScUi::tileSelection_get, nullptr),
-            JS_CGETSET_DEF("tool", ScUi::tool_get, nullptr),
-            JS_CGETSET_DEF("imageManager", ScUi::imageManager_get, nullptr),
-
-            JS_CFUNC_DEF("openWindow", 1, ScUi::openWindow),
-            JS_CFUNC_DEF("closeWindows", 2, ScUi::closeWindows),
-            JS_CFUNC_DEF("closeAllWindows", 0, ScUi::closeAllWindows),
-            JS_CFUNC_DEF("getWindow", 1, ScUi::getWindow),
-            JS_CFUNC_DEF("showError", 2, ScUi::showError),
-            JS_CFUNC_DEF("showTextInput", 1, ScUi::showTextInput),
-            JS_CFUNC_DEF("showFileBrowse", 1, ScUi::showFileBrowse),
-            JS_CFUNC_DEF("showScenarioSelect", 1, ScUi::showScenarioSelect),
-            JS_CFUNC_DEF("activateTool", 1, ScUi::activateTool),
-            JS_CFUNC_DEF("registerMenuItem", 2, ScUi::registerMenuItem),
-            JS_CFUNC_DEF("registerToolboxMenuItem", 2, ScUi::registerToolboxMenuItem),
-            JS_CFUNC_DEF("registerShortcut", 1, ScUi::registerShortcut),
-        };
+        static void Finalize(JSRuntime* rt, JSValue thisVal)
+        {
+            // Do nothing as we don't need to free the script engine.
+        }
 
     public:
         JSValue New(JSContext* ctx, ScriptEngine* scriptEngine)
         {
-            return MakeWithOpaque(ctx, funcs, scriptEngine);
+            return MakeWithOpaque(ctx, scriptEngine);
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Ui");
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CGETSET_DEF("height", ScUi::height_get, nullptr),
+                JS_CGETSET_DEF("width", ScUi::width_get, nullptr),
+                JS_CGETSET_DEF("windows", ScUi::windows_get, nullptr),
+                JS_CGETSET_DEF("mainViewport", ScUi::mainViewport_get, nullptr),
+                JS_CGETSET_DEF("tileSelection", ScUi::tileSelection_get, nullptr),
+                JS_CGETSET_DEF("tool", ScUi::tool_get, nullptr),
+                JS_CGETSET_DEF("imageManager", ScUi::imageManager_get, nullptr),
+
+                JS_CFUNC_DEF("openWindow", 1, ScUi::openWindow),
+                JS_CFUNC_DEF("closeWindows", 2, ScUi::closeWindows),
+                JS_CFUNC_DEF("closeAllWindows", 0, ScUi::closeAllWindows),
+                JS_CFUNC_DEF("getWindow", 1, ScUi::getWindow),
+                JS_CFUNC_DEF("showError", 2, ScUi::showError),
+                JS_CFUNC_DEF("showTextInput", 1, ScUi::showTextInput),
+                JS_CFUNC_DEF("showFileBrowse", 1, ScUi::showFileBrowse),
+                JS_CFUNC_DEF("showScenarioSelect", 1, ScUi::showScenarioSelect),
+                JS_CFUNC_DEF("activateTool", 1, ScUi::activateTool),
+                JS_CFUNC_DEF("registerMenuItem", 2, ScUi::registerMenuItem),
+                JS_CFUNC_DEF("registerToolboxMenuItem", 2, ScUi::registerToolboxMenuItem),
+                JS_CFUNC_DEF("registerShortcut", 1, ScUi::registerShortcut),
+            };
+            RegisterBase(ctx, "Ui", Finalize, funcs);
         }
 
     private:

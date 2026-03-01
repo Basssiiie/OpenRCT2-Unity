@@ -28,8 +28,8 @@
     #include "../core/Path.hpp"
     #include "../interface/InteractiveConsole.h"
     #include "../platform/Platform.h"
-    #include "../ride/ted/PitchAndRoll.h"
     #include "../profiling/Profiling.h"
+    #include "../ride/ted/PitchAndRoll.h"
     #include "bindings/entity/ScBalloon.hpp"
     #include "bindings/entity/ScEntity.hpp"
     #include "bindings/entity/ScGuest.hpp"
@@ -231,19 +231,56 @@ private:
 
     void StringifyObject(const JSValue val, bool canStartWithNewLine, int32_t nestLevel)
     {
-        JSPropertyEnum* props;
-        uint32_t propsLen;
-        JS_GetOwnPropertyNames(_context, &props, &propsLen, val, JS_GPN_STRING_MASK | JS_GPN_SYMBOL_MASK | JS_GPN_PRIVATE_MASK);
+        std::vector<JSAtom> propsVec;
 
-        if (propsLen == 0)
+        // To correctly get all properties of an object, we must walk up the stack of prototypes until we get to the Object
+        // prototype. This is because JS_GetOwnPropertyNames only returns the "own" properties, not inherited ones.
+        JSValue blankValue = JS_NewObject(_context);
+        JSValue objProto = JS_GetPrototype(_context, blankValue);
+        JS_FreeValue(_context, blankValue);
+        JSValue propsObj = JS_DupValue(_context, val);
+        while (true)
+        {
+            JSValue nextPropsObj = JS_GetPrototype(_context, propsObj);
+            if (JS_IsNull(nextPropsObj))
+            {
+                // The prototype of the Object prototype is null.
+                JS_FreeValue(_context, nextPropsObj);
+                break;
+            }
+
+            JSPropertyEnum* props;
+            uint32_t propsLen;
+            if (JS_GetOwnPropertyNames(
+                    _context, &props, &propsLen, propsObj, JS_GPN_STRING_MASK | JS_GPN_SYMBOL_MASK | JS_GPN_PRIVATE_MASK)
+                == -1)
+            {
+                JS_FreeValue(_context, nextPropsObj);
+                break;
+            }
+            propsVec.reserve(propsLen);
+            for (uint32_t i = 0; i < propsLen; i++)
+            {
+                JS_DupAtom(_context, props[i].atom);
+                propsVec.push_back(props[i].atom);
+            }
+            JS_FreePropertyEnum(_context, props, propsLen);
+
+            JS_FreeValue(_context, propsObj);
+            propsObj = nextPropsObj;
+        }
+        JS_FreeValue(_context, propsObj);
+        JS_FreeValue(_context, objProto);
+
+        if (propsVec.size() == 0)
         {
             _ss << "{}";
         }
-        else if (propsLen == 1)
+        else if (propsVec.size() == 1)
         {
             _ss << "{ ";
 
-            const char* key = JS_AtomToCString(_context, props[0].atom);
+            const char* key = JS_AtomToCString(_context, propsVec[0]);
             if (key)
             {
                 _ss << key << ": ";
@@ -255,7 +292,7 @@ private:
                 _ss << "?: ";
             }
 
-            JSValue prop = JS_GetProperty(_context, val, props[0].atom);
+            JSValue prop = JS_GetProperty(_context, val, propsVec[0]);
             Stringify(prop, true, nestLevel + 1);
             JS_FreeValue(_context, prop);
 
@@ -272,14 +309,14 @@ private:
             _ss << "{ ";
             PushIndent(2);
 
-            for (uint32_t i = 0; i < propsLen; i++)
+            for (uint32_t i = 0; i < propsVec.size(); i++)
             {
                 if (i != 0)
                 {
                     _ss << ",";
                     LineFeed();
                 }
-                const char* key = JS_AtomToCString(_context, props[i].atom);
+                const char* key = JS_AtomToCString(_context, propsVec[i]);
                 if (key)
                 {
                     _ss << key << ": ";
@@ -291,7 +328,7 @@ private:
                     _ss << "?: ";
                 }
 
-                JSValue prop = JS_GetProperty(_context, val, props[i].atom);
+                JSValue prop = JS_GetProperty(_context, val, propsVec[i]);
                 Stringify(prop, true, nestLevel + 1);
                 JS_FreeValue(_context, prop);
             }
@@ -305,7 +342,10 @@ private:
             }
         }
 
-        JS_FreePropertyEnum(_context, props, propsLen);
+        for (size_t i = 0; i < propsVec.size(); i++)
+        {
+            JS_FreeAtom(_context, propsVec[i]);
+        }
     }
 
     void StringifyFunction(const JSValue val)
@@ -637,16 +677,16 @@ ScriptEngine::~ScriptEngine()
         JS_FreeContext(_replContext);
         _replContext = nullptr;
     }
-    if (_runtime)
-    {
-        JS_FreeRuntime(_runtime);
-        _runtime = nullptr;
-    }
     for (const ExtensionCallbacks& ext : _extensions)
     {
         ext.unregister();
     }
     UnregisterClasses();
+    if (_runtime)
+    {
+        JS_FreeRuntime(_runtime);
+        _runtime = nullptr;
+    }
 }
 
 class ConstantBuilder

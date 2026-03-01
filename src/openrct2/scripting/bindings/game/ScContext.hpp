@@ -421,11 +421,6 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Context");
-        }
-
-        JSValue New(JSContext* ctx)
-        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("apiVersion", ScContext::apiVersion_get, nullptr),
                 JS_CGETSET_DEF("configuration", ScContext::configuration_get, nullptr),
@@ -450,7 +445,12 @@ namespace OpenRCT2::Scripting
                 JS_CFUNC_DEF("clearTimeout", 1, ScContext::clearTimeout),
                 JS_CFUNC_DEF("getIcon", 1, ScContext::getIcon),
             };
-            return MakeWithOpaque(ctx, funcs, nullptr);
+            RegisterBase(ctx, "Context", nullptr, funcs);
+        }
+
+        JSValue New(JSContext* ctx)
+        {
+            return MakeWithOpaque(ctx, nullptr);
         }
     };
 } // namespace OpenRCT2::Scripting

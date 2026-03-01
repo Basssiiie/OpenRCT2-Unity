@@ -440,26 +440,24 @@ namespace OpenRCT2::Scripting
             return JS_UNDEFINED;
         }
 
-    private:
-        static constexpr JSCFunctionListEntry _funcs[] = {
-            JS_CGETSET_DEF("window", ScWidget::window_get, nullptr),
-            JS_CGETSET_DEF("name", ScWidget::name_get, ScWidget::name_set),
-            JS_CGETSET_DEF("type", ScWidget::type_get, nullptr),
-            JS_CGETSET_DEF("x", ScWidget::x_get, ScWidget::x_set),
-            JS_CGETSET_DEF("y", ScWidget::y_get, ScWidget::y_set),
-            JS_CGETSET_DEF("width", ScWidget::width_get, ScWidget::width_set),
-            JS_CGETSET_DEF("height", ScWidget::height_get, &ScWidget::height_set),
-            JS_CGETSET_DEF("tooltip", ScWidget::tooltip_get, &ScWidget::tooltip_set),
-            JS_CGETSET_DEF("isDisabled", ScWidget::isDisabled_get, &ScWidget::isDisabled_set),
-            JS_CGETSET_DEF("isVisible", ScWidget::isVisible_get, &ScWidget::isVisible_set),
-        };
-
     public:
         JSValue New(JSContext* ctx, WindowBase* w, WidgetIndex widgetIndex);
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Widget", Finalize);
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CGETSET_DEF("window", ScWidget::window_get, nullptr),
+                JS_CGETSET_DEF("name", ScWidget::name_get, ScWidget::name_set),
+                JS_CGETSET_DEF("type", ScWidget::type_get, nullptr),
+                JS_CGETSET_DEF("x", ScWidget::x_get, ScWidget::x_set),
+                JS_CGETSET_DEF("y", ScWidget::y_get, ScWidget::y_set),
+                JS_CGETSET_DEF("width", ScWidget::width_get, ScWidget::width_set),
+                JS_CGETSET_DEF("height", ScWidget::height_get, &ScWidget::height_set),
+                JS_CGETSET_DEF("tooltip", ScWidget::tooltip_get, &ScWidget::tooltip_set),
+                JS_CGETSET_DEF("isDisabled", ScWidget::isDisabled_get, &ScWidget::isDisabled_set),
+                JS_CGETSET_DEF("isVisible", ScWidget::isVisible_get, &ScWidget::isVisible_set),
+            };
+            RegisterBase(ctx, "Widget", Finalize, funcs);
         }
 
     private:
@@ -1133,7 +1131,9 @@ namespace OpenRCT2::Scripting
 
     inline JSValue ScWidget::New(JSContext* ctx, WindowBase* w, WidgetIndex widgetIndex)
     {
-        JSValue newObj = MakeWithOpaque(ctx, _funcs, new WidgetData{ w->classification, w->number, widgetIndex });
+        JSValue newObj = MakeWithOpaque(ctx, new WidgetData{ w->classification, w->number, widgetIndex });
+        // TODO: Adding these functions like this in New() is probably slower than creating a proto for each type in Register()
+        // and using that.
         switch (w->widgets[widgetIndex].type)
         {
             case WidgetType::button:

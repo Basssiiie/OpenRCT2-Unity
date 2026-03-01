@@ -36,11 +36,6 @@ static JSValue VehicleInfoToJSValue(JSContext* ctx, const VehicleInfo& value)
 
 void ScTrackSegment::Register(JSContext* ctx)
 {
-    RegisterBaseStr(ctx, "TrackSegment", Finalize);
-}
-
-JSValue ScTrackSegment::New(JSContext* ctx, OpenRCT2::TrackElemType type)
-{
     static constexpr JSCFunctionListEntry funcs[] = {
         JS_CGETSET_DEF("type", ScTrackSegment::type_get, nullptr),
         JS_CGETSET_DEF("description", ScTrackSegment::description_get, nullptr),
@@ -79,7 +74,12 @@ JSValue ScTrackSegment::New(JSContext* ctx, OpenRCT2::TrackElemType type)
         JS_CFUNC_DEF("getSubpositionLength", 2, ScTrackSegment::getSubpositionLength),
         JS_CFUNC_DEF("getSubpositions", 2, ScTrackSegment::getSubpositions),
     };
-    return MakeWithOpaque(ctx, funcs, new TrackSegmentData{ type });
+    RegisterBase(ctx, "TrackSegment", Finalize, funcs);
+}
+
+JSValue ScTrackSegment::New(JSContext* ctx, OpenRCT2::TrackElemType type)
+{
+    return MakeWithOpaque(ctx, new TrackSegmentData{ type });
 }
 
 void ScTrackSegment::Finalize(JSRuntime* rt, JSValue thisVal)

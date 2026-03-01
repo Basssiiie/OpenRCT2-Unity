@@ -501,6 +501,11 @@ namespace OpenRCT2::Scripting
 
     JSValue ScPark::New(JSContext* ctx)
     {
+        return MakeWithOpaque(ctx, nullptr);
+    } // namespace OpenRCT2::Scripting
+
+    void ScPark::Register(JSContext* ctx)
+    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("cash", ScPark::cash_get, ScPark::cash_set),
             JS_CGETSET_DEF("rating", ScPark::rating_get, ScPark::rating_set),
@@ -536,12 +541,7 @@ namespace OpenRCT2::Scripting
             JS_CFUNC_DEF("clearAwards", 0, ScPark::clearAwards),
             JS_CFUNC_DEF("grantAward", 1, ScPark::grantAward),
         };
-        return MakeWithOpaque(ctx, funcs, nullptr);
-    } // namespace OpenRCT2::Scripting
-
-    void ScPark::Register(JSContext* ctx)
-    {
-        RegisterBaseStr(ctx, "Park");
+        RegisterBase(ctx, "Park", nullptr, funcs);
     }
 } // namespace OpenRCT2::Scripting
 

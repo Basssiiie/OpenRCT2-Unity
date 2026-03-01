@@ -35,16 +35,15 @@ namespace OpenRCT2::Scripting
 
         JSValue New(JSContext* ctx, const std::function<void()>& f)
         {
-            static constexpr JSCFunctionListEntry funcs[] = {
-                JS_CFUNC_DEF("dispose", 0, ScDisposable::dispose),
-            };
-
-            return MakeWithOpaque(ctx, funcs, f ? new OpaqueType(f) : nullptr);
+            return MakeWithOpaque(ctx, f ? new OpaqueType(f) : nullptr);
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "Disposable", Finalize);
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CFUNC_DEF("dispose", 0, ScDisposable::dispose),
+            };
+            RegisterBase(ctx, "Disposable", Finalize, funcs);
         }
 
         static void Finalize(JSRuntime* rt, JSValue thisVal)

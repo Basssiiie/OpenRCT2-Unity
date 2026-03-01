@@ -40,11 +40,6 @@ JSValue ScTrackIterator::FromElement(JSContext* ctx, const CoordsXY& position, i
 
 void ScTrackIterator::Register(JSContext* ctx)
 {
-    RegisterBaseStr(ctx, "TrackIterator", Finalize);
-}
-
-JSValue ScTrackIterator::New(JSContext* ctx, const CoordsXYZD& position, OpenRCT2::TrackElemType type)
-{
     static constexpr JSCFunctionListEntry funcs[] = {
         JS_CGETSET_DEF("position", ScTrackIterator::position_get, nullptr),
         JS_CGETSET_DEF("segment", ScTrackIterator::segment_get, nullptr),
@@ -53,7 +48,12 @@ JSValue ScTrackIterator::New(JSContext* ctx, const CoordsXYZD& position, OpenRCT
         JS_CFUNC_DEF("previous", 0, ScTrackIterator::previous),
         JS_CFUNC_DEF("next", 0, ScTrackIterator::next),
     };
-    return MakeWithOpaque(ctx, funcs, new TrackIteratorData{ position, type });
+    RegisterBase(ctx, "TrackIterator", Finalize, funcs);
+}
+
+JSValue ScTrackIterator::New(JSContext* ctx, const CoordsXYZD& position, OpenRCT2::TrackElemType type)
+{
+    return MakeWithOpaque(ctx, new TrackIteratorData{ position, type });
 }
 
 void ScTrackIterator::Finalize(JSRuntime* rt, JSValue thisVal)

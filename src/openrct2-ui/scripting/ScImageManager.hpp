@@ -27,11 +27,6 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "ImageManager");
-        }
-
-        JSValue New(JSContext* ctx)
-        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CFUNC_DEF("getPredefinedRange", 1, ScImageManager::getPredefinedRange),
                 JS_CFUNC_DEF("getAvailableAllocationRanges", 0, ScImageManager::getAvailableAllocationRanges),
@@ -42,7 +37,12 @@ namespace OpenRCT2::Scripting
                 JS_CFUNC_DEF("setPixelData", 2, ScImageManager::setPixelData),
                 JS_CFUNC_DEF("draw", 3, ScImageManager::draw)
             };
-            return MakeWithOpaque(ctx, funcs, nullptr);
+            RegisterBase(ctx, "ImageManager", nullptr, funcs);
+        }
+
+        JSValue New(JSContext* ctx)
+        {
+            return MakeWithOpaque(ctx, nullptr);
         }
 
     private:

@@ -1055,6 +1055,11 @@ namespace OpenRCT2::Scripting
 
     JSValue ScThought::New(JSContext* ctx, PeepThought thought)
     {
+        return MakeWithOpaque(ctx, new OpaqueThoughtData{ thought });
+    }
+
+    void ScThought::Register(JSContext* ctx)
+    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("type", &ScThought::type_get, nullptr),
             JS_CGETSET_DEF("item", &ScThought::item_get, nullptr),
@@ -1062,12 +1067,7 @@ namespace OpenRCT2::Scripting
             JS_CGETSET_DEF("freshTimeout", &ScThought::freshTimeout_get, nullptr),
             JS_CFUNC_DEF("toString", 0, &ScThought::toString),
         };
-        return MakeWithOpaque(ctx, funcs, new OpaqueThoughtData{ thought });
-    }
-
-    void ScThought::Register(JSContext* ctx)
-    {
-        RegisterBaseStr(ctx, "Thought", Finalize);
+        RegisterBase(ctx, "Thought", Finalize, funcs);
     }
 
     void ScThought::Finalize(JSRuntime* rt, JSValue thisVal)

@@ -26,6 +26,11 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx)
         {
+            return MakeWithOpaque(ctx, nullptr);
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF(
                     "allowArbitraryRideTypeChanges", &ScCheats::allowArbitraryRideTypeChanges_get,
@@ -77,12 +82,7 @@ namespace OpenRCT2::Scripting
                     &ScCheats::showVehiclesFromOtherTrackTypes_set),
                 JS_CGETSET_DEF("makeAllDestructible", &ScCheats::makeAllDestructible_get, &ScCheats::makeAllDestructible_set)
             };
-            return MakeWithOpaque(ctx, funcs, nullptr);
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Cheats");
+            RegisterBase(ctx, "Cheats", nullptr, funcs);
         }
 
     private:

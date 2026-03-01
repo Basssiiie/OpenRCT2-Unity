@@ -55,10 +55,7 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx);
 
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Network");
-        }
+        void Register(JSContext* ctx);
     };
 
     extern ScNetwork gScNetwork;

@@ -45,20 +45,19 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx, const std::string& weather, int8_t temperature)
         {
-            static constexpr JSCFunctionListEntry funcs[] = {
-                JS_CGETSET_DEF("weather", ScWeatherState::weather_get, nullptr),
-                JS_CGETSET_DEF("temperature", ScWeatherState::temperature_get, nullptr),
-            };
-
-            return MakeWithOpaque(ctx, funcs, new OpaqueWeatherStateData{ weather, temperature });
+            return MakeWithOpaque(ctx, new OpaqueWeatherStateData{ weather, temperature });
         }
 
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "WeatherState");
+            static constexpr JSCFunctionListEntry funcs[] = {
+                JS_CGETSET_DEF("weather", ScWeatherState::weather_get, nullptr),
+                JS_CGETSET_DEF("temperature", ScWeatherState::temperature_get, nullptr),
+            };
+            RegisterBase(ctx, "WeatherState", Finalize, funcs);
         }
 
-        void Finalize(JSRuntime*, JSValue thisVal)
+        static void Finalize(JSRuntime*, JSValue thisVal)
         {
             OpaqueWeatherStateData* data = gScWeatherState.GetOpaque<OpaqueWeatherStateData*>(thisVal);
             if (data)
@@ -126,18 +125,17 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx)
         {
+            return MakeWithOpaque(ctx, nullptr);
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("type", ScWeather::type_get, nullptr),
                 JS_CGETSET_DEF("current", ScWeather::current_get, nullptr),
                 JS_CGETSET_DEF("future", ScWeather::future_get, nullptr),
             };
-
-            return MakeWithOpaque(ctx, funcs, nullptr);
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Weather");
+            RegisterBase(ctx, "Weather", nullptr, funcs);
         }
     };
 

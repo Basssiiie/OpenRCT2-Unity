@@ -187,6 +187,11 @@ namespace OpenRCT2::Scripting
 
     JSValue ScParkMessage::New(JSContext* ctx, size_t index)
     {
+        return MakeWithOpaque(ctx, new OpaqueParkMessageData{ index });
+    }
+
+    void ScParkMessage::Register(JSContext* ctx)
+    {
         static constexpr JSCFunctionListEntry funcs[] = {
             JS_CGETSET_DEF("isArchived", ScParkMessage::isArchived_get, nullptr),
             JS_CGETSET_DEF("month", ScParkMessage::month_get, ScParkMessage::month_set),
@@ -197,13 +202,7 @@ namespace OpenRCT2::Scripting
             JS_CGETSET_DEF("text", ScParkMessage::text_get, ScParkMessage::text_set),
             JS_CFUNC_DEF("remove", 0, ScParkMessage::remove),
         };
-
-        return MakeWithOpaque(ctx, funcs, new OpaqueParkMessageData{ index });
-    }
-
-    void ScParkMessage::Register(JSContext* ctx)
-    {
-        RegisterBaseStr(ctx, "ParkMessage");
+        RegisterBase(ctx, "ParkMessage", Finalize, funcs);
     }
 
     void ScParkMessage::Finalize(JSRuntime*, JSValue thisVal)

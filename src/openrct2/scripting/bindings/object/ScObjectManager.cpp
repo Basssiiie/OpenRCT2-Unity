@@ -22,11 +22,6 @@ using namespace OpenRCT2::Scripting;
 
 void ScObjectManager::Register(JSContext* ctx)
 {
-    RegisterBaseStr(ctx, "ObjectManager");
-}
-
-JSValue ScObjectManager::New(JSContext* ctx)
-{
     static constexpr JSCFunctionListEntry funcs[] = {
         JS_CGETSET_DEF("installedObjects", ScObjectManager::installedObjects_get, nullptr),
         JS_CFUNC_DEF("getInstalledObject", 1, ScObjectManager::getInstalledObject),
@@ -35,7 +30,12 @@ JSValue ScObjectManager::New(JSContext* ctx)
         JS_CFUNC_DEF("getObject", 2, ScObjectManager::getObject),
         JS_CFUNC_DEF("getAllObjects", 1, ScObjectManager::getAllObjects),
     };
-    return MakeWithOpaque(ctx, funcs, nullptr);
+    RegisterBase(ctx, "ObjectManager", nullptr, funcs);
+}
+
+JSValue ScObjectManager::New(JSContext* ctx)
+{
+    return MakeWithOpaque(ctx, nullptr);
 }
 
 JSValue ScObjectManager::installedObjects_get(JSContext* ctx, JSValue thisVal)

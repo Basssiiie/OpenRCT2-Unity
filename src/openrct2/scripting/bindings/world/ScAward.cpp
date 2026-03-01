@@ -28,12 +28,18 @@ namespace OpenRCT2::Scripting
 
     JSValue ScAward::New(JSContext* ctx, size_t index)
     {
-        return MakeWithOpaque(ctx, funcs, new OpaqueAwardData{ index });
+        return MakeWithOpaque(ctx, new OpaqueAwardData{ index });
     }
 
     void ScAward::Register(JSContext* ctx)
     {
-        RegisterBaseStr(ctx, "Award", Finalize);
+        static constexpr JSCFunctionListEntry funcs[] = {
+            JS_CGETSET_DEF("type", &ScAward::type_get, nullptr), JS_CGETSET_DEF("text", &ScAward::text_get, nullptr),
+            JS_CGETSET_DEF("positive", &ScAward::positive_get, nullptr),
+            JS_CGETSET_DEF("imageId", &ScAward::imageId_get, nullptr),
+            JS_CGETSET_DEF("monthsRemaining", &ScAward::monthsRemaining_get, nullptr)
+        };
+        RegisterBase(ctx, "Award", Finalize, funcs);
     }
 
     void ScAward::Finalize(JSRuntime* rt, JSValue thisVal)

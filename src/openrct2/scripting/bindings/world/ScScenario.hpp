@@ -200,6 +200,11 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx)
         {
+            return MakeWithOpaque(ctx, nullptr);
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("type", ScScenarioObjective::type_get, ScScenarioObjective::type_set),
                 JS_CGETSET_DEF("guests", ScScenarioObjective::guests_get, ScScenarioObjective::guests_set),
@@ -208,13 +213,7 @@ namespace OpenRCT2::Scripting
                 JS_CGETSET_DEF("monthlyIncome", ScScenarioObjective::monthlyIncome_get, ScScenarioObjective::monthlyIncome_set),
                 JS_CGETSET_DEF("parkValue", ScScenarioObjective::parkValue_get, ScScenarioObjective::parkValue_set),
             };
-
-            return MakeWithOpaque(ctx, funcs, nullptr);
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "ScenarioObjective");
+            RegisterBase(ctx, "ScenarioObjective", nullptr, funcs);
         }
     };
 
@@ -349,6 +348,11 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx)
         {
+            return MakeWithOpaque(ctx, nullptr);
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("name", ScScenario::name_get, ScScenario::name_set),
                 JS_CGETSET_DEF("details", ScScenario::details_get, ScScenario::details_set),
@@ -362,13 +366,7 @@ namespace OpenRCT2::Scripting
                     "completedCompanyValue", ScScenario::completedCompanyValue_get, ScScenario::completedCompanyValue_set),
                 JS_CGETSET_DEF("companyValueRecord", ScScenario::companyValueRecord_get, ScScenario::companyValueRecord_set),
             };
-
-            return MakeWithOpaque(ctx, funcs, nullptr);
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Scenario");
+            RegisterBase(ctx, "Scenario", nullptr, funcs);
         }
     };
 } // namespace OpenRCT2::Scripting

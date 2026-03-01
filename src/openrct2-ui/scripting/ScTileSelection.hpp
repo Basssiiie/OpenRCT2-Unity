@@ -23,16 +23,16 @@ namespace OpenRCT2::Scripting
     public:
         void Register(JSContext* ctx)
         {
-            RegisterBaseStr(ctx, "TileSelection");
-        }
-
-        JSValue New(JSContext* ctx)
-        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("range", ScTileSelection::range_get, ScTileSelection::range_set),
                 JS_CGETSET_DEF("tiles", ScTileSelection::tiles_get, ScTileSelection::tiles_set),
             };
-            return MakeWithOpaque(ctx, funcs, nullptr);
+            RegisterBase(ctx, "TileSelection", nullptr, funcs);
+        }
+
+        JSValue New(JSContext* ctx)
+        {
+            return MakeWithOpaque(ctx, nullptr);
         }
 
         static JSValue range_get(JSContext* ctx, JSValue thisVal)

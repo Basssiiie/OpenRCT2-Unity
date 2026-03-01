@@ -252,6 +252,11 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx, WindowClass wClass, WindowNumber wNum = 0)
         {
+            return MakeWithOpaque(ctx, new OpaqueWindowData{ wClass, wNum });
+        }
+
+        void Register(JSContext* ctx)
+        {
             static constexpr JSCFunctionListEntry funcs[] = {
                 JS_CGETSET_DEF("left", ScViewport::left_get, ScViewport::left_set),
                 JS_CGETSET_DEF("top", ScViewport::top_get, ScViewport::top_set),
@@ -264,12 +269,7 @@ namespace OpenRCT2::Scripting
                 JS_CFUNC_DEF("moveTo", 1, ScViewport::moveTo),
                 JS_CFUNC_DEF("scrollTo", 1, ScViewport::scrollTo),
             };
-            return MakeWithOpaque(ctx, funcs, new OpaqueWindowData{ wClass, wNum });
-        }
-
-        void Register(JSContext* ctx)
-        {
-            RegisterBaseStr(ctx, "Viewport", Finalize);
+            RegisterBase(ctx, "Viewport", Finalize, funcs);
         }
 
         static void Finalize(JSRuntime* rt, JSValue thisVal)
