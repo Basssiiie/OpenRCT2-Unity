@@ -1,4 +1,4 @@
-0.4.32 (in development)
+0.4.32 (2026-03-01)
 ------------------------------------------------------------------------
 - Feature: [#22704] Rides can be made invisible more easily.
 - Improved: [#21753] Tracked rides with cheated powered launch mode can change powered launch speed without extra cheats.
