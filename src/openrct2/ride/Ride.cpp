@@ -70,6 +70,7 @@
 #include "TrackData.h"
 #include "TrackDesign.h"
 #include "Vehicle.h"
+#include "ted/TrackElementDescriptor.h"
 
 #include <cassert>
 #include <iterator>
@@ -77,7 +78,7 @@
 #include <optional>
 
 using namespace OpenRCT2;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 static constexpr auto kRideModeBlockSectionedCounterpart = std::to_array(
     {
