@@ -10,7 +10,7 @@
 #include "TileInspector.h"
 
 #include "../Diagnostic.h"
-#include "../actions/GameAction.h"
+#include "../actions/GameAction.hpp"
 #include "../core/Guard.hpp"
 #include "../object/LargeSceneryEntry.h"
 #include "../ride/Station.h"
@@ -769,6 +769,8 @@ namespace OpenRCT2::TileInspector
 
                 nextTrackElement->BaseHeight += offset;
                 nextTrackElement->ClearanceHeight += offset;
+
+                MapInvalidateTileFull(elem);
             }
         }
 
@@ -853,6 +855,8 @@ namespace OpenRCT2::TileInspector
                 {
                     nextTrackElement->AsTrack()->SetHasChain(setChain);
                 }
+
+                MapInvalidateTileFull(elem);
             }
         }
 

@@ -694,7 +694,7 @@ namespace OpenRCT2
             || (peep.State == PeepState::leavingRide && peep.x == kLocationNull))
         {
             auto ride = GetRide(peep.CurrentRide);
-            if (ride != nullptr && (ride->lifecycleFlags & RIDE_LIFECYCLE_ON_TRACK))
+            if (ride != nullptr && ride->flags.has(RideFlag::onTrack))
             {
                 auto train = getGameState().entities.GetEntity<Vehicle>(ride->vehicles[peep.CurrentTrain]);
                 if (train != nullptr)
@@ -1381,7 +1381,7 @@ namespace OpenRCT2
                                     break;
 
                                 auto ride = vehicle->GetRide();
-                                if (ride != nullptr && !ride->getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+                                if (ride != nullptr && !ride->getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
                                 {
                                     return (viewFlags & VIEWPORT_FLAG_INVISIBLE_RIDES) ? VisibilityKind::hidden
                                                                                        : VisibilityKind::partial;

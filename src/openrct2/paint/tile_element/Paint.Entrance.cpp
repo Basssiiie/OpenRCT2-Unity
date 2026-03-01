@@ -32,6 +32,7 @@
 #include "../../world/TileInspector.h"
 #include "../../world/tile_element/EntranceElement.h"
 #include "../support/WoodenSupports.h"
+#include "Paint.Entrance.h"
 #include "Paint.TileElement.h"
 #include "Segment.h"
 
@@ -52,36 +53,22 @@ static void PaintRideEntranceExitScrollingText(
     if (entranceEl.GetEntranceType() == ENTRANCE_TYPE_RIDE_EXIT)
         return;
 
-    auto ride = GetRide(entranceEl.GetRideIndex());
+    const auto* ride = GetRide(entranceEl.GetRideIndex());
     if (ride == nullptr)
         return;
 
-    auto ft = Formatter();
-    ft.Add<StringId>(STR_RIDE_ENTRANCE_NAME);
-    if (ride->status == RideStatus::open && !(ride->lifecycleFlags & RIDE_LIFECYCLE_BROKEN_DOWN))
+    u8string bannerText;
+    if (ride->status == RideStatus::open && !ride->flags.has(RideFlag::brokenDown))
     {
-        ride->formatNameTo(ft);
+        bannerText = ScrollingText::kRideBannerColourPrefix + ride->getName();
     }
     else
     {
-        ft.Add<StringId>(STR_RIDE_ENTRANCE_CLOSED);
+        bannerText = LanguageGetString(STR_RIDE_ENTRANCE_CLOSED);
     }
-
-    char text[256];
-    if (Config::Get().general.upperCaseBanners)
-    {
-        FormatStringToUpper(text, sizeof(text), STR_BANNER_TEXT_FORMAT, ft.Data());
-    }
-    else
-    {
-        FormatStringLegacy(text, sizeof(text), STR_BANNER_TEXT_FORMAT, ft.Data());
-    }
-    auto stringWidth = GfxGetStringWidth(text, FontStyle::tiny);
-    auto scroll = stringWidth > 0 ? (getGameState().currentTicks / 2) % stringWidth : 0;
 
     PaintAddImageAsChild(
-        session,
-        ScrollingText::setup(session, STR_BANNER_TEXT_FORMAT, ft, scroll, stationObj.ScrollingMode, PaletteIndex::transparent),
+        session, ScrollingText::setup(session, bannerText, stationObj.ScrollingMode, PaletteIndex::transparent),
         { 0, 0, height + stationObj.Height }, { { 2, 2, height + stationObj.Height }, { 28, 28, 51 } });
 }
 
@@ -132,7 +119,7 @@ static void PaintRideEntranceExit(PaintSession& session, uint8_t direction, int3
     }
 
     auto stationObj = ride->getStationObject();
-    if (stationObj == nullptr || stationObj->BaseImageId == kImageIndexUndefined)
+    if (stationObj == nullptr || stationObj->baseImageIndex == kImageIndexUndefined)
     {
         return;
     }
@@ -180,27 +167,30 @@ static void PaintRideEntranceExit(PaintSession& session, uint8_t direction, int3
     auto isExit = entranceEl.GetEntranceType() == ENTRANCE_TYPE_RIDE_EXIT;
 
     // Back
-    ImageIndex imageIndex = isExit ? stationObj->BaseImageId + direction + 8 : stationObj->BaseImageId + direction;
-    ImageIndex glassImageIndex = isExit ? stationObj->BaseImageId + direction + 24 : stationObj->BaseImageId + direction + 16;
+    ImageIndex backImageIndex = (isExit ? stationObj->exitBackIndex : stationObj->entranceBackIndex) + direction;
     PaintAddImageAsParentRotated(
-        session, direction, imageTemplate.WithIndex(imageIndex), { 0, 0, height }, { { 2, 2, height }, { 28, 8, 30 } });
+        session, direction, imageTemplate.WithIndex(backImageIndex), { 0, 0, height }, { { 2, 2, height }, { 28, 8, 30 } });
     if (hasGlass)
     {
+        ImageIndex backGlassImageIndex = (isExit ? stationObj->exitBackGlassIndex : stationObj->entranceBackGlassIndex)
+            + direction;
         PaintAddImageAsChildRotated(
-            session, direction, glassImageTemplate.WithIndex(glassImageIndex), { 0, 0, height },
+            session, direction, glassImageTemplate.WithIndex(backGlassImageIndex), { 0, 0, height },
             { { 2, 2, height }, { 28, 8, 30 } });
     }
 
     // Front
     const auto frontBoundBoxZ = isExit ? 1 : 17;
-    imageIndex += 4;
+    ImageIndex frontImageIndex = (isExit ? stationObj->exitFrontIndex : stationObj->entranceFrontIndex) + direction;
     PaintAddImageAsParent(
-        session, imageTemplate.WithIndex(imageIndex), { 0, 0, height }, { { 2, 2, height + 30 }, { 28, 28, frontBoundBoxZ } });
+        session, imageTemplate.WithIndex(frontImageIndex), { 0, 0, height },
+        { { 2, 2, height + 30 }, { 28, 28, frontBoundBoxZ } });
     if (hasGlass)
     {
-        glassImageIndex += 4;
+        ImageIndex frontGlassImageIndex = (isExit ? stationObj->exitFrontGlassIndex : stationObj->entranceFrontGlassIndex)
+            + direction;
         PaintAddImageAsChild(
-            session, glassImageTemplate.WithIndex(glassImageIndex), { 0, 0, height },
+            session, glassImageTemplate.WithIndex(frontGlassImageIndex), { 0, 0, height },
             { { 2, 2, height + 30 }, { 28, 28, frontBoundBoxZ } });
     }
 
@@ -234,35 +224,19 @@ static void PaintParkEntranceScrollingText(
     if (scrollingMode == kScrollingModeNone)
         return;
 
-    auto ft = Formatter();
     auto& gameState = getGameState();
+    u8string bannerText;
     if (gameState.park.flags & PARK_FLAGS_PARK_OPEN)
     {
         const auto& park = gameState.park;
-        auto name = park.name.c_str();
-        ft.Add<StringId>(STR_STRING);
-        ft.Add<const char*>(name);
+        bannerText = ScrollingText::kParkBannerColourPrefix + park.name;
     }
     else
     {
-        ft.Add<StringId>(STR_BANNER_TEXT_CLOSED);
-        ft.Add<uint32_t>(0);
+        bannerText = LanguageGetString(STR_BANNER_TEXT_CLOSED);
     }
 
-    char text[256];
-    if (Config::Get().general.upperCaseBanners)
-    {
-        FormatStringToUpper(text, sizeof(text), STR_BANNER_TEXT_FORMAT, ft.Data());
-    }
-    else
-    {
-        FormatStringLegacy(text, sizeof(text), STR_BANNER_TEXT_FORMAT, ft.Data());
-    }
-
-    auto stringWidth = GfxGetStringWidth(text, FontStyle::tiny);
-    auto scroll = stringWidth > 0 ? (gameState.currentTicks / 2) % stringWidth : 0;
-    auto imageIndex = ScrollingText::setup(
-        session, STR_BANNER_TEXT_FORMAT, ft, scroll, scrollingMode + direction / 2, PaletteIndex::transparent);
+    auto imageIndex = ScrollingText::setup(session, bannerText, scrollingMode + direction / 2, PaletteIndex::transparent);
     auto textHeight = height + entrance.GetTextHeight();
     PaintAddImageAsChild(session, imageIndex, { 0, 0, textHeight }, { { 2, 2, textHeight }, { 28, 28, 47 } });
 }

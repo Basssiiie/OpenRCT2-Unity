@@ -157,7 +157,7 @@ static bool AwardIsDeservedBestRollercoasters(GameState_t& gameState, [[maybe_un
             continue;
         }
 
-        if (ride.status != RideStatus::open || (ride.lifecycleFlags & RIDE_LIFECYCLE_CRASHED))
+        if (ride.status != RideStatus::open || ride.flags.has(RideFlag::crashed))
         {
             continue;
         }
@@ -300,7 +300,7 @@ static bool AwardIsDeservedBestFood(GameState_t& gameState, int32_t activeAwardT
     {
         if (ride.status != RideStatus::open)
             continue;
-        if (!ride.getRideTypeDescriptor().HasFlag(RtdFlag::sellsFood))
+        if (!ride.getRideTypeDescriptor().flags.has(RtdFlag::sellsFood))
             continue;
 
         shops++;
@@ -345,7 +345,7 @@ static bool AwardIsDeservedWorstFood(GameState_t& gameState, int32_t activeAward
     {
         if (ride.status != RideStatus::open)
             continue;
-        if (!ride.getRideTypeDescriptor().HasFlag(RtdFlag::sellsFood))
+        if (!ride.getRideTypeDescriptor().flags.has(RtdFlag::sellsFood))
             continue;
 
         shops++;
@@ -448,7 +448,7 @@ static bool AwardIsDeservedBestWaterRides(GameState_t& gameState, [[maybe_unused
             continue;
         }
 
-        if (ride.status != RideStatus::open || (ride.lifecycleFlags & RIDE_LIFECYCLE_CRASHED))
+        if (ride.status != RideStatus::open || ride.flags.has(RideFlag::crashed))
         {
             continue;
         }
@@ -473,13 +473,13 @@ static bool AwardIsDeservedBestCustomDesignedRides(GameState_t& gameState, int32
     auto customDesignedRides = 0;
     for (const auto& ride : RideManager(gameState))
     {
-        if (!ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+        if (!ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
             continue;
-        if (ride.lifecycleFlags & RIDE_LIFECYCLE_NOT_CUSTOM_DESIGN)
+        if (ride.flags.has(RideFlag::notCustomDesign))
             continue;
         if (ride.ratings.excitement < RideRating::make(5, 50))
             continue;
-        if (ride.status != RideStatus::open || (ride.lifecycleFlags & RIDE_LIFECYCLE_CRASHED))
+        if (ride.status != RideStatus::open || ride.flags.has(RideFlag::crashed))
             continue;
 
         customDesignedRides++;
@@ -505,7 +505,7 @@ static bool AwardIsDeservedMostDazzlingRideColours(GameState_t& gameState, int32
     auto colourfulRides = 0;
     for (const auto& ride : RideManager(gameState))
     {
-        if (!ride.getRideTypeDescriptor().HasFlag(RtdFlag::hasTrack))
+        if (!ride.getRideTypeDescriptor().flags.has(RtdFlag::hasTrack))
             continue;
 
         countedRides++;
@@ -555,7 +555,7 @@ static bool AwardIsDeservedBestGentleRides(GameState_t& gameState, [[maybe_unuse
             continue;
         }
 
-        if (ride.status != RideStatus::open || (ride.lifecycleFlags & RIDE_LIFECYCLE_CRASHED))
+        if (ride.status != RideStatus::open || ride.flags.has(RideFlag::crashed))
         {
             continue;
         }
