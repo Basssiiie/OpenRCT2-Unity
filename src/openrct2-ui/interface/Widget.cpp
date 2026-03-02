@@ -921,7 +921,7 @@ namespace OpenRCT2::Ui
 
     bool widgetIsVisible(const WindowBase& w, WidgetIndex widgetIndex)
     {
-        return w.widgets[widgetIndex].IsVisible();
+        return w.widgets[widgetIndex].isVisible();
     }
 
     bool widgetIsPressed(const WindowBase& w, WidgetIndex widgetIndex)
