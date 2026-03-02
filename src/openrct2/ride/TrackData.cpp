@@ -3128,12 +3128,6 @@ namespace OpenRCT2::TrackMetadata
 
 #pragma region GForces
 
-    template<int32_t TConstant>
-    static int32_t EvaluatorConst(const int16_t)
-    {
-        return TConstant;
-    }
-
     static int32_t EvaluatorVerticalLoop(const int16_t progress)
     {
         return (abs(progress - 155) / 2) + 28;

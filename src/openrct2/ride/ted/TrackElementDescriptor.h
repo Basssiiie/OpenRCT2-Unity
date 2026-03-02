@@ -28,6 +28,12 @@ namespace OpenRCT2::TrackMetadata
 
     using TrackComputeFunction = int32_t (*)(int16_t);
 
+    template<int32_t TConstant>
+    static int32_t EvaluatorConst(const int16_t)
+    {
+        return TConstant;
+    }
+
     enum class TrackElementFlag : uint8_t
     {
         onlyUnderwater,
@@ -231,7 +237,7 @@ namespace OpenRCT2::TrackMetadata
 
     struct TrackElementDescriptor
     {
-        StringId description;
+        StringId description = kStringIdEmpty;
         TrackCoordinates coordinates;
 
         // Used to estimate the ride length for number of powered vehicle trains
@@ -239,7 +245,7 @@ namespace OpenRCT2::TrackMetadata
         // Piece the ride construction window automatically selects next
         TrackCurveChain curveChain;
         // Track element to build when building "covered"/"splashdown" track
-        TrackElemType alternativeType;
+        TrackElemType alternativeType = TrackElemType::none;
         // Price Modifier should be used as in the following calculation:
         // (RideTrackPrice * TED::PriceModifier) / 65536
         uint32_t priceModifier;
@@ -250,9 +256,9 @@ namespace OpenRCT2::TrackMetadata
         std::array<SequenceDescriptor, kMaxSequencesPerPiece> sequences;
 
         TrackDefinition definition;
-        SpinFunction spinFunction;
+        SpinFunction spinFunction = SpinFunction::none;
 
-        TrackComputeFunction verticalFactor;
-        TrackComputeFunction lateralFactor;
+        TrackComputeFunction verticalFactor = EvaluatorConst<0>;
+        TrackComputeFunction lateralFactor = EvaluatorConst<0>;
     };
 } // namespace OpenRCT2::TrackMetadata
