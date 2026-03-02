@@ -850,13 +850,11 @@ namespace OpenRCT2::Ui::Windows
                     {
                         auto index = std::distance(_availableCostumes.begin(), pos);
                         auto name = _availableCostumes[index].friendlyName.c_str();
-                        widgets[WIDX_COSTUME_BOX].string = const_cast<utf8*>(name);
-                        widgets[WIDX_COSTUME_BOX].flags.set(WidgetFlag::textIsString);
+                        widgets[WIDX_COSTUME_BOX].setString(name);
                     }
                     else
                     {
-                        widgets[WIDX_COSTUME_BOX].text = kStringIdEmpty;
-                        widgets[WIDX_COSTUME_BOX].flags.unset(WidgetFlag::textIsString);
+                        widgets[WIDX_COSTUME_BOX].setString(kStringIdEmpty);
                     }
 
                     break;
