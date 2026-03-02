@@ -5415,7 +5415,7 @@ TileElement* GetStationPlatform(const CoordsXYRangedZ& coords)
 
             if (coords.baseZ > tileElement->GetBaseZ() || coords.clearanceZ < tileElement->GetBaseZ())
             {
-                /* The base height if tileElement is not within
+                /* The base height of tileElement is not within
                  * the z tolerance. */
                 continue;
             }
@@ -5445,7 +5445,7 @@ static bool CheckForAdjacentStation(const CoordsXYZ& stationCoords, uint8_t dire
         adjX += CoordsDirectionDelta[direction].x;
         adjY += CoordsDirectionDelta[direction].y;
         TileElement* stationElement = GetStationPlatform(
-            { { adjX, adjY, stationCoords.z }, stationCoords.z + 2 * kCoordsZStep });
+            { { adjX, adjY, stationCoords.z - 2 * kCoordsZStep }, stationCoords.z + 2 * kCoordsZStep });
         if (stationElement != nullptr)
         {
             auto rideIndex = stationElement->AsTrack()->GetRideIndex();

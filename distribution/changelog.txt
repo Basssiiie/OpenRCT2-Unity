@@ -1,6 +1,7 @@
 0.4.33 (in development)
 ------------------------------------------------------------------------
 - Fix: [#10616] Quarter-tile trees cannot be placed on dry portions of half-water tiles.
+- Fix: [#25735] Ride synchronisation z-check works incorrectly.
 - Fix: [#25993] Toggling “allow arbitrary ride type changes” does not resize open ride windows.
 - Fix: [#26111] Vehicle colours tab can go out of bounds in certain edge cases.
 - Fix: [#26118] Windows installers for releases are not signed properly.
