@@ -50,7 +50,7 @@ using OpenRCT2::GameActions::CommandFlags;
 
 namespace OpenRCT2::Ui::Windows
 {
-    static constexpr StringId kWindowTitle = STR_STRING;
+    static constexpr StringId kWindowTitle = kStringIdNone;
     static constexpr ScreenSize kWindowSize = { 200, 124 };
     static constexpr ScreenSize kTrackMiniPreviewSize = { 168, 78 };
 
@@ -361,8 +361,11 @@ namespace OpenRCT2::Ui::Windows
 
         void onDraw(Drawing::RenderTarget& rt) override
         {
-            auto ft = Formatter::Common();
-            ft.Add<char*>(_trackDesign->gameStateData.name.c_str());
+            if (_trackDesign != nullptr)
+                widgets[WIDX_TITLE].setString(_trackDesign->gameStateData.name.c_str());
+            else
+                widgets[WIDX_TITLE].setString("");
+
             WindowDrawWidgets(*this, rt);
 
             // Draw mini tile preview
@@ -383,7 +386,7 @@ namespace OpenRCT2::Ui::Windows
             // Price
             if (_placementCost != kMoney64Undefined && !(getGameState().park.flags & PARK_FLAGS_NO_MONEY))
             {
-                ft = Formatter();
+                auto ft = Formatter();
                 ft.Add<money64>(_placementCost);
                 const auto& priceWidget = widgets[WIDX_PRICE];
                 const auto priceCoords = windowPos + ScreenCoordsXY{ priceWidget.left, priceWidget.top };

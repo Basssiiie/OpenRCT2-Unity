@@ -52,7 +52,7 @@ using namespace OpenRCT2::Drawing;
 
 namespace OpenRCT2::Ui::Windows
 {
-    static constexpr StringId kWindowTitle = STR_STRINGID;
+    static constexpr StringId kWindowTitle = kStringIdNone;
     static constexpr ScreenSize kWindowSize = { 192, 157 };
 
     enum WindowGuestPage
@@ -213,6 +213,7 @@ namespace OpenRCT2::Ui::Windows
         uint16_t _guestAnimationFrame = 0;
         int16_t _pickedPeepX = kLocationNull; // entity->x gets set to 0x8000 on pickup, this is the old value
         std::vector<RideId> _riddenRides;
+        u8string _windowTitle{};
 
     public:
         void onOpen() override
@@ -470,8 +471,9 @@ namespace OpenRCT2::Ui::Windows
             {
                 return;
             }
-            auto ft = Formatter::Common();
-            peep->FormatNameTo(ft);
+
+            _windowTitle = peep->GetName();
+            widgets[WIDX_TITLE].setString(_windowTitle.c_str());
 
             WindowAlignTabs(this, WIDX_TAB_1, WIDX_TAB_7);
         }

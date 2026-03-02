@@ -43,7 +43,7 @@
 
 namespace OpenRCT2::Ui::Windows
 {
-    static constexpr StringId kWindowTitle = STR_STRINGID;
+    static constexpr StringId kWindowTitle = kStringIdNone;
 
     static constexpr ScreenSize kWindowSize = { 190, 180 };
 
@@ -133,6 +133,7 @@ namespace OpenRCT2::Ui::Windows
         std::vector<AvailableCostume> _availableCostumes;
         uint16_t _tabAnimationOffset = 0;
         int32_t _pickedPeepOldX = kLocationNull;
+        u8string _windowTitle{};
 
     public:
         void initialise(EntityId entityId)
@@ -356,8 +357,8 @@ namespace OpenRCT2::Ui::Windows
                 return;
             }
 
-            auto ft = Formatter::Common();
-            staff->FormatNameTo(ft);
+            _windowTitle = staff->GetName();
+            widgets[WIDX_TITLE].setString(_windowTitle.c_str());
         }
 
         void CommonPrepareDrawAfter()

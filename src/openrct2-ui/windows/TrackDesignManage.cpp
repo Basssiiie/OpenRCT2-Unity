@@ -19,7 +19,7 @@
 
 namespace OpenRCT2::Ui::Windows
 {
-    static constexpr StringId kWindowTitle = STR_STRING;
+    static constexpr StringId kWindowTitle = kStringIdNone;
     static constexpr ScreenSize kWindowSize = { 250, 44 };
     static constexpr ScreenSize kWindowSizeDeletePrompt = { 250, 74 };
     static constexpr int32_t kTrackDesignNameMaxLength = 127;
@@ -135,7 +135,7 @@ namespace OpenRCT2::Ui::Windows
 
         void onDraw(Drawing::RenderTarget& rt) override
         {
-            Formatter::Common().Add<const utf8*>(_trackDesignFileReference->name.c_str());
+            widgets[WIDX_TITLE].setString(_trackDesignFileReference->name.c_str());
             drawWidgets(rt);
         }
     };

@@ -40,7 +40,7 @@ using namespace OpenRCT2::Drawing;
 
 namespace OpenRCT2::Ui::Windows
 {
-    static constexpr StringId kWindowTitle = STR_STRINGID;
+    static constexpr StringId kWindowTitle = kStringIdNone;
     static constexpr int32_t kWindowHeight = 224;
 
     static constexpr ScreenCoordsXY kGraphTopLeftPadding{ 45, 20 };
@@ -404,11 +404,7 @@ namespace OpenRCT2::Ui::Windows
 
         void PrepareWindowTitleText()
         {
-            auto parkName = getGameState().park.name.c_str();
-
-            auto ft = Formatter::Common();
-            ft.Add<StringId>(STR_STRING);
-            ft.Add<const char*>(parkName);
+            widgets[WIDX_TITLE].setString(getGameState().park.name.c_str());
         }
 
 #pragma region Entrance page
@@ -508,14 +504,8 @@ namespace OpenRCT2::Ui::Windows
 
             SetPressedTab();
 
+            widgets[WIDX_TITLE].setString(gameState.park.name.c_str());
             // Set open / close park button state
-            {
-                auto parkName = gameState.park.name.c_str();
-
-                auto ft = Formatter::Common();
-                ft.Add<StringId>(STR_STRING);
-                ft.Add<const char*>(parkName);
-            }
             const bool parkIsOpen = Park::IsOpen(gameState.park);
             widgets[WIDX_OPEN_OR_CLOSE].image = ImageId(parkIsOpen ? SPR_OPEN : SPR_CLOSED);
             const auto closeLightImage = SPR_G2_RCT1_CLOSE_BUTTON_0 + !parkIsOpen * 2

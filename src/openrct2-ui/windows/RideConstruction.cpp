@@ -39,6 +39,7 @@
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/interface/Viewport.h>
 #include <openrct2/localisation/Formatter.h>
+#include <openrct2/localisation/Formatting.h>
 #include <openrct2/network/Network.h>
 #include <openrct2/object/ObjectManager.h>
 #include <openrct2/paint/VirtualFloor.h>
@@ -87,7 +88,7 @@ namespace OpenRCT2::Ui::Windows
         const CoordsXYZ& trackPos);
     static std::pair<bool, TrackElemType> WindowRideConstructionUpdateStateGetTrackElement();
 
-    static constexpr StringId kWindowTitle = STR_RIDE_CONSTRUCTION_WINDOW_TITLE;
+    static constexpr StringId kWindowTitle = kStringIdNone;
     static constexpr ScreenSize kWindowSize = { 210, 394 };
 
     static constexpr uint16_t kArrowPulseDuration = 200;
@@ -242,6 +243,7 @@ namespace OpenRCT2::Ui::Windows
         uint8_t _currentlyShowingBrakeOrBoosterSpeed{};
         SpecialElementsDropdownState _specialElementDropdownState;
         bool _autoOpeningShop{};
+        u8string _windowTitle{};
 
     public:
         void onOpen() override
@@ -1620,9 +1622,11 @@ namespace OpenRCT2::Ui::Windows
                     stringId = STR_LOG_BUMPS;
                 }
             }
-            auto ft = Formatter::Common();
-            ft.Add<uint16_t>(stringId);
 
+            _windowTitle = FormatStringID(STR_RIDE_CONSTRUCTION_WINDOW_TITLE, currentRide->getName().c_str());
+            widgets[WIDX_TITLE].setString(_windowTitle.c_str());
+
+            auto ft = Formatter::Common();
             if (_currentlyShowingBrakeOrBoosterSpeed)
             {
                 uint16_t brakeSpeed2 = ((_currentBrakeSpeed * 9) >> 2) & 0xFFFF;
@@ -1654,9 +1658,8 @@ namespace OpenRCT2::Ui::Windows
                     pressedWidgets &= ~(1uLL << WIDX_SIMULATE);
                 }
             }
-
-            // Set window title arguments
-            currentRide->formatNameTo(ft);
+            _windowTitle = FormatStringID(STR_RIDE_CONSTRUCTION_WINDOW_TITLE, currentRide->getName().c_str());
+            widgets[WIDX_TITLE].setString(_windowTitle.c_str());
         }
 
         static void onDrawUpdateCoveredPieces(const TrackDrawerDescriptor& trackDrawerDescriptor, std::span<Widget> widgets)

@@ -25,7 +25,6 @@
     #include <openrct2/drawing/Drawing.h>
     #include <openrct2/interface/ColourWithFlags.h>
     #include <openrct2/interface/Window.h>
-    #include <openrct2/localisation/Formatter.h>
     #include <openrct2/scripting/Plugin.h>
     #include <optional>
     #include <string>
@@ -48,7 +47,7 @@ namespace OpenRCT2::Ui::Windows
     };
 
     static auto CustomDefaultWidgets = makeWidgets(
-        makeWindowShim(STR_STRING, { 50, 50 }),
+        makeWindowShim(kStringIdNone, { 50, 50 }),
         makeWidget({ 0, 14 }, { 50, 36 }, WidgetType::resize, WindowColour::secondary) // content panel
     );
 
@@ -514,8 +513,7 @@ namespace OpenRCT2::Ui::Windows
             SetPressedTab();
 
             const auto& desc = _info.Desc;
-            auto ft = Formatter::Common();
-            ft.Add<const char*>(desc.Title.c_str());
+            widgets[WIDX_TITLE].setString(desc.Title.c_str());
 
             size_t scrollIndex = 0;
             for (const auto& widget : widgets)

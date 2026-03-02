@@ -578,7 +578,7 @@ namespace OpenRCT2::Ui
                 FilterPaletteID::paletteDarken3);
 
         // Draw text
-        if (widget->text == kStringIdNone)
+        if (!widget->flags.has(WidgetFlag::textIsString) && widget->text == kStringIdNone)
             return;
 
         topLeft = w.windowPos + ScreenCoordsXY{ widget->left + 2, widget->top + 1 };
@@ -598,8 +598,17 @@ namespace OpenRCT2::Ui
         if (Config::Get().interface.enlargedUi)
             topLeft.y += kTitleHeightLarge / 4;
 
+        Formatter ft{};
+        bool hasStringPtr = widget->flags.has(WidgetFlag::textIsString);
+        auto formatString = widget->text;
+        if (hasStringPtr)
+        {
+            formatString = STR_STRING;
+            ft.Add<const utf8*>(widget->string);
+        }
+
         DrawTextEllipsised(
-            rt, topLeft, width, widget->text, Formatter::Common(),
+            rt, topLeft, width, formatString, ft,
             { ColourWithFlags{ Drawing::Colour::white }.withFlag(ColourFlag::withOutline, true), TextAlignment::centre });
     }
 
