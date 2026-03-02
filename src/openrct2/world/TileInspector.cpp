@@ -731,11 +731,11 @@ namespace OpenRCT2::TileInspector
 
             const auto& ted = GetTrackElementDescriptor(type);
             auto sequenceIndex = trackElement->AsTrack()->GetSequenceIndex();
-            if (sequenceIndex >= ted.numSequences)
+            if (sequenceIndex >= ted.sequenceData.numSequences)
                 return GameActions::Result(
                     GameActions::Status::invalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_TRACK_BLOCK_NOT_FOUND);
 
-            const auto& trackBlock = ted.sequences[sequenceIndex].clearance;
+            const auto& trackBlock = ted.sequenceData.sequences[sequenceIndex].clearance;
             uint8_t originDirection = trackElement->GetDirection();
             CoordsXY offsets = { trackBlock.x, trackBlock.y };
             CoordsXY coords = { originX, originY };
@@ -745,9 +745,9 @@ namespace OpenRCT2::TileInspector
             originY = static_cast<int16_t>(coords.y);
             originZ -= trackBlock.z;
 
-            for (uint8_t i = 0; i < ted.numSequences; i++)
+            for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
             {
-                const auto& trackBlock2 = ted.sequences[i].clearance;
+                const auto& trackBlock2 = ted.sequenceData.sequences[i].clearance;
                 CoordsXYZD elem = { originX, originY, originZ + trackBlock2.z, rotation };
                 offsets.x = trackBlock2.x;
                 offsets.y = trackBlock2.y;
@@ -815,11 +815,11 @@ namespace OpenRCT2::TileInspector
 
             const auto& ted = GetTrackElementDescriptor(type);
             auto sequenceIndex = trackElement->AsTrack()->GetSequenceIndex();
-            if (sequenceIndex >= ted.numSequences)
+            if (sequenceIndex >= ted.sequenceData.numSequences)
                 return GameActions::Result(
                     GameActions::Status::invalidParameters, STR_ERR_INVALID_PARAMETER, STR_ERR_TRACK_BLOCK_NOT_FOUND);
 
-            const auto& trackBlock = ted.sequences[sequenceIndex].clearance;
+            const auto& trackBlock = ted.sequenceData.sequences[sequenceIndex].clearance;
             uint8_t originDirection = trackElement->GetDirection();
             CoordsXY offsets = { trackBlock.x, trackBlock.y };
             CoordsXY coords = { originX, originY };
@@ -829,9 +829,9 @@ namespace OpenRCT2::TileInspector
             originY = static_cast<int16_t>(coords.y);
             originZ -= trackBlock.z;
 
-            for (uint8_t i = 0; i < ted.numSequences; i++)
+            for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
             {
-                const auto& trackBlock2 = ted.sequences[i].clearance;
+                const auto& trackBlock2 = ted.sequenceData.sequences[i].clearance;
                 CoordsXYZD elem = { originX, originY, originZ + trackBlock2.z, rotation };
                 offsets.x = trackBlock2.x;
                 offsets.y = trackBlock2.y;

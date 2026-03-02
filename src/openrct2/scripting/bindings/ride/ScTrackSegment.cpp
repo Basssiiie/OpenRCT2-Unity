@@ -158,9 +158,9 @@ DukValue ScTrackSegment::elements_get() const
     duk_push_array(ctx);
 
     duk_uarridx_t index = 0;
-    for (uint8_t i = 0; i < ted.numSequences; i++)
+    for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
     {
-        auto& block = ted.sequences[i].clearance;
+        auto& block = ted.sequenceData.sequences[i].clearance;
         duk_push_object(ctx);
         duk_push_number(ctx, block.x);
         duk_put_prop_string(ctx, -2, "x");

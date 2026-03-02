@@ -235,6 +235,12 @@ namespace OpenRCT2::TrackMetadata
         int8_t previewZOffset;
     };
 
+    struct SequenceTable
+    {
+        uint8_t numSequences{};
+        std::array<SequenceDescriptor, kMaxSequencesPerPiece> sequences;
+    };
+
     struct TrackElementDescriptor
     {
         StringId description = kStringIdEmpty;
@@ -252,13 +258,12 @@ namespace OpenRCT2::TrackMetadata
         TrackElemType mirrorElement;
         TrackFlags flags;
 
-        uint8_t numSequences{};
-        std::array<SequenceDescriptor, kMaxSequencesPerPiece> sequences;
-
         TrackDefinition definition;
         SpinFunction spinFunction = SpinFunction::none;
 
         TrackComputeFunction verticalFactor = EvaluatorConst<0>;
         TrackComputeFunction lateralFactor = EvaluatorConst<0>;
+
+        SequenceTable sequenceData;
     };
 } // namespace OpenRCT2::TrackMetadata

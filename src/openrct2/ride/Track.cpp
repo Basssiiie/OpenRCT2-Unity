@@ -753,10 +753,10 @@ std::optional<CoordsXYZD> GetTrackSegmentOrigin(const CoordsXYE& posEl)
 
     // Subtract the current sequence's offset
     auto sequenceIndex = trackEl->GetSequenceIndex();
-    if (sequenceIndex >= ted.numSequences)
+    if (sequenceIndex >= ted.sequenceData.numSequences)
         return {};
 
-    const auto& trackBlock = ted.sequences[sequenceIndex].clearance;
+    const auto& trackBlock = ted.sequenceData.sequences[sequenceIndex].clearance;
     CoordsXY trackBlockOffset = { trackBlock.x, trackBlock.y };
     coords += trackBlockOffset.Rotate(DirectionReverse(direction));
     coords.z -= trackBlock.z;

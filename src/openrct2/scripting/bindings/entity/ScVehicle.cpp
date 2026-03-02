@@ -568,7 +568,7 @@ namespace OpenRCT2::Scripting
 
         const auto& trackType = el->AsTrack()->GetTrackType();
         const auto& ted = GetTrackElementDescriptor(trackType);
-        const auto& seq0 = ted.sequences[0].clearance;
+        const auto& seq0 = ted.sequenceData.sequences[0].clearance;
         const auto trackLoc = CoordsXYZ(origin->x + seq0.x, origin->y + seq0.y, origin->z + seq0.z);
 
         vehicle->TrackLocation.x = trackLoc.x;

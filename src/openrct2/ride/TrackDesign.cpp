@@ -219,7 +219,8 @@ ResultWithMessage TrackDesign::CreateTrackDesignTrack(TrackDesignState& tds, con
     // start.
     TileElement* initialMap = trackElement.element;
 
-    CoordsXYZ startPos = { trackElement.x, trackElement.y, z + trackCoordinates->zBegin - ted.sequences[0].clearance.z };
+    CoordsXYZ startPos = { trackElement.x, trackElement.y,
+                           z + trackCoordinates->zBegin - ted.sequenceData.sequences[0].clearance.z };
     tds.origin = startPos;
 
     do
@@ -1586,9 +1587,9 @@ static GameActions::Result TrackDesignPlaceRide(
         switch (tds.placeOperation)
         {
             case TrackPlaceOperation::drawOutlines:
-                for (uint8_t i = 0; i < ted.numSequences; i++)
+                for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
                 {
-                    const auto& trackBlock = ted.sequences[i].clearance;
+                    const auto& trackBlock = ted.sequenceData.sequences[i].clearance;
                     auto tile = CoordsXY{ newCoords } + CoordsXY{ trackBlock.x, trackBlock.y }.Rotate(rotation);
                     TrackDesignUpdatePreviewBounds(tds, { tile, newCoords.z });
                     TrackDesignAddSelectedTile(tile);
@@ -1597,7 +1598,7 @@ static GameActions::Result TrackDesignPlaceRide(
             case TrackPlaceOperation::removeGhost:
             {
                 const TrackCoordinates* trackCoordinates = &ted.coordinates;
-                int32_t tempZ = newCoords.z - trackCoordinates->zBegin + ted.sequences[0].clearance.z;
+                int32_t tempZ = newCoords.z - trackCoordinates->zBegin + ted.sequenceData.sequences[0].clearance.z;
                 auto trackRemoveAction = GameActions::TrackRemoveAction(
                     trackType, 0, { newCoords, tempZ, static_cast<Direction>(rotation & 3) });
                 trackRemoveAction.SetFlags(
@@ -1661,9 +1662,9 @@ static GameActions::Result TrackDesignPlaceRide(
             case TrackPlaceOperation::getPlaceZ:
             {
                 int32_t tempZ = newCoords.z - ted.coordinates.zBegin;
-                for (uint8_t i = 0; i < ted.numSequences; i++)
+                for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
                 {
-                    const auto& trackBlock = ted.sequences[i].clearance;
+                    const auto& trackBlock = ted.sequenceData.sequences[i].clearance;
                     auto tile = CoordsXY{ newCoords } + CoordsXY{ trackBlock.x, trackBlock.y }.Rotate(rotation);
                     if (!MapIsLocationValid(tile))
                     {
