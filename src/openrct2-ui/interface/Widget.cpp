@@ -369,9 +369,17 @@ namespace OpenRCT2::Ui
         int32_t r = w.windowPos.x + widget.right;
 
         if (widget.type == WidgetType::button || widget.type == WidgetType::tableHeader)
-            topLeft.y += widget.textTop();
+        {
+            // Optical alignment for dropdown glyph
+            if (widget.text == STR_DROPDOWN_GLYPH)
+                topLeft.y += widget.top + (widget.height() / 2) - 5;
+            else
+                topLeft.y += widget.textTop();
+        }
         else
+        {
             topLeft.y += widget.top;
+        }
 
         auto stringId = widget.text;
         auto ft = Formatter::Common();

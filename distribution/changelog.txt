@@ -1,5 +1,6 @@
 0.4.33 (in development)
 ------------------------------------------------------------------------
+- Change: [#25962] The station style dropdown now shows entrance icons next to the labels for easier selection.
 - Fix: [#10616] Quarter-tile trees cannot be placed on dry portions of half-water tiles.
 - Fix: [#25735] Ride synchronisation z-check works incorrectly.
 - Fix: [#25993] Toggling “allow arbitrary ride type changes” does not resize open ride windows.
