@@ -1200,7 +1200,7 @@ public:
         {
             const auto& widget = w.widgets[i];
 
-            if (widget.type != WidgetType::empty && widget.IsVisible())
+            if (widget.type != WidgetType::empty && widget.isVisible())
             {
                 if (screenCoords.x >= w.windowPos.x + widget.left && screenCoords.x <= w.windowPos.x + widget.right
                     && screenCoords.y >= w.windowPos.y + widget.top && screenCoords.y <= w.windowPos.y + widget.bottom)

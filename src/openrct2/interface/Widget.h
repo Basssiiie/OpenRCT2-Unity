@@ -166,9 +166,21 @@ namespace OpenRCT2
             moveDown(y - top);
         }
 
-        bool IsVisible() const
+        bool isVisible() const
         {
             return !flags.has(WidgetFlag::isHidden);
+        }
+
+        void setString(StringId newStringId)
+        {
+            text = newStringId;
+            flags.unset(WidgetFlag::textIsString);
+        }
+
+        void setString(const utf8* newString)
+        {
+            string = newString;
+            flags.set(WidgetFlag::textIsString);
         }
     };
 

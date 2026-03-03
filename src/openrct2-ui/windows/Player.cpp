@@ -55,7 +55,7 @@ namespace OpenRCT2::Ui::Windows
     // clang-format off
 
     static constexpr auto kCommonPlayerWidgets = makeWidgets(
-        makeWindowShim(STR_STRING, kWindowSize),
+        makeWindowShim(kStringIdNone, kWindowSize),
         makeWidget({ 0, 43}, {192, 114}, WidgetType::resize, WindowColour::secondary),
         makeTab   ({ 3, 17}                                                         ),
         makeTab   ({34, 17}                                                         )
@@ -328,15 +328,14 @@ namespace OpenRCT2::Ui::Windows
 
         void UpdateTitle()
         {
-            auto ft = Formatter::Common();
             int32_t player = Network::GetPlayerIndex(static_cast<uint8_t>(number));
             if (player != -1)
             {
-                ft.Add<const char*>(Network::GetPlayerName(player)); // set title caption to player name
+                widgets[WIDX_TITLE].setString(Network::GetPlayerName(player));
             }
             else
             {
-                ft.Add<const char*>("");
+                widgets[WIDX_TITLE].setString("");
             }
         }
 

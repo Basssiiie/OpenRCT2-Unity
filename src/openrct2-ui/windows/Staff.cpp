@@ -43,7 +43,7 @@
 
 namespace OpenRCT2::Ui::Windows
 {
-    static constexpr StringId kWindowTitle = STR_STRINGID;
+    static constexpr StringId kWindowTitle = kStringIdNone;
 
     static constexpr ScreenSize kWindowSize = { 190, 180 };
 
@@ -133,6 +133,7 @@ namespace OpenRCT2::Ui::Windows
         std::vector<AvailableCostume> _availableCostumes;
         uint16_t _tabAnimationOffset = 0;
         int32_t _pickedPeepOldX = kLocationNull;
+        u8string _windowTitle{};
 
     public:
         void initialise(EntityId entityId)
@@ -356,8 +357,8 @@ namespace OpenRCT2::Ui::Windows
                 return;
             }
 
-            auto ft = Formatter::Common();
-            staff->FormatNameTo(ft);
+            _windowTitle = staff->GetName();
+            widgets[WIDX_TITLE].setString(_windowTitle.c_str());
         }
 
         void CommonPrepareDrawAfter()
@@ -850,13 +851,11 @@ namespace OpenRCT2::Ui::Windows
                     {
                         auto index = std::distance(_availableCostumes.begin(), pos);
                         auto name = _availableCostumes[index].friendlyName.c_str();
-                        widgets[WIDX_COSTUME_BOX].string = const_cast<utf8*>(name);
-                        widgets[WIDX_COSTUME_BOX].flags.set(WidgetFlag::textIsString);
+                        widgets[WIDX_COSTUME_BOX].setString(name);
                     }
                     else
                     {
-                        widgets[WIDX_COSTUME_BOX].text = kStringIdEmpty;
-                        widgets[WIDX_COSTUME_BOX].flags.unset(WidgetFlag::textIsString);
+                        widgets[WIDX_COSTUME_BOX].setString(kStringIdEmpty);
                     }
 
                     break;

@@ -32,6 +32,7 @@
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
 #include <openrct2/localisation/Formatter.h>
+#include <openrct2/localisation/Formatting.h>
 #include <openrct2/object/ClimateObject.h>
 #include <openrct2/object/MusicObject.h>
 #include <openrct2/object/ObjectList.h>
@@ -113,7 +114,7 @@ namespace OpenRCT2::Ui::Windows
 
     static constexpr uint8_t _numSourceGameItems = 8;
 
-    static constexpr StringId kWindowTitle = STR_OBJECT_SELECTION;
+    static constexpr StringId kWindowTitle = kStringIdNone;
     static constexpr ScreenSize kWindowSize = { 755, 400 };
     static constexpr ScreenSize kMinimumWindowSize = { 600, 400 };
     static constexpr ScreenSize kMaximumWindowSize = { 1200, 1000 };
@@ -269,6 +270,7 @@ namespace OpenRCT2::Ui::Windows
         uint32_t _filterFlags = FILTER_RIDES_ALL;
         uint8_t _selectedSubTab = 0;
         bool _overrideChecks = false;
+        u8string _windowTitle{};
 
     public:
         /**
@@ -867,31 +869,33 @@ namespace OpenRCT2::Ui::Windows
             SetPressedTab();
 
             // Set window title and buttons
+            const auto& currentPage = ObjectSelectionPages[selectedTab];
             auto& titleWidget = widgets[WIDX_TITLE];
             if (gLegacyScene == LegacyScene::trackDesignsManager)
             {
-                titleWidget.text = STR_TRACK_DESIGNS_MANAGER_SELECT_RIDE_TYPE;
+                titleWidget.setString(STR_TRACK_DESIGNS_MANAGER_SELECT_RIDE_TYPE);
                 installTrackWidget.type = WidgetType::button;
             }
             else if (gLegacyScene == LegacyScene::trackDesigner)
             {
-                titleWidget.text = STR_ROLLER_COASTER_DESIGNER_SELECT_RIDE_TYPES_VEHICLES;
+                titleWidget.setString(STR_ROLLER_COASTER_DESIGNER_SELECT_RIDE_TYPES_VEHICLES);
                 installTrackWidget.type = WidgetType::empty;
             }
             else
             {
-                titleWidget.text = STR_OBJECT_SELECTION;
+                // Set title parameters for current page
+                StringId stringId;
+                if (!currentPage.subTabs.empty())
+                    stringId = currentPage.subTabs[_selectedSubTab].tooltip;
+                else
+                    stringId = currentPage.Caption;
+
+                _windowTitle = FormatStringID(STR_OBJECT_SELECTION, stringId);
+                titleWidget.setString(_windowTitle.c_str());
                 installTrackWidget.type = WidgetType::empty;
             }
 
-            // Set title parameters for current page
-            const auto& currentPage = ObjectSelectionPages[selectedTab];
             auto ft = Formatter::Common();
-            if (!currentPage.subTabs.empty())
-                ft.Add<StringId>(currentPage.subTabs[_selectedSubTab].tooltip);
-            else
-                ft.Add<StringId>(currentPage.Caption);
-
             // Set filter dropdown caption
             if (!IsFilterActive(FILTER_SOURCES_ALL))
             {

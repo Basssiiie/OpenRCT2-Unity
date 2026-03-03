@@ -25,7 +25,6 @@
     #include <openrct2/drawing/Drawing.h>
     #include <openrct2/interface/ColourWithFlags.h>
     #include <openrct2/interface/Window.h>
-    #include <openrct2/localisation/Formatter.h>
     #include <openrct2/scripting/Plugin.h>
     #include <optional>
     #include <string>
@@ -48,7 +47,7 @@ namespace OpenRCT2::Ui::Windows
     };
 
     static auto CustomDefaultWidgets = makeWidgets(
-        makeWindowShim(STR_STRING, { 50, 50 }),
+        makeWindowShim(kStringIdNone, { 50, 50 }),
         makeWidget({ 0, 14 }, { 50, 36 }, WidgetType::resize, WindowColour::secondary) // content panel
     );
 
@@ -514,8 +513,7 @@ namespace OpenRCT2::Ui::Windows
             SetPressedTab();
 
             const auto& desc = _info.Desc;
-            auto ft = Formatter::Common();
-            ft.Add<const char*>(desc.Title.c_str());
+            widgets[WIDX_TITLE].setString(desc.Title.c_str());
 
             size_t scrollIndex = 0;
             for (const auto& widget : widgets)
@@ -987,8 +985,7 @@ namespace OpenRCT2::Ui::Windows
                 else
                 {
                     widget.type = WidgetType::button;
-                    widget.string = const_cast<utf8*>(desc.Text.c_str());
-                    widget.flags.set(WidgetFlag::textIsString);
+                    widget.setString(desc.Text.c_str());
                 }
                 if (desc.IsPressed)
                 {
@@ -1023,13 +1020,12 @@ namespace OpenRCT2::Ui::Windows
                 widget.type = WidgetType::dropdownMenu;
                 if (desc.SelectedIndex >= 0 && static_cast<size_t>(desc.SelectedIndex) < desc.Items.size())
                 {
-                    widget.string = const_cast<utf8*>(desc.Items[desc.SelectedIndex].c_str());
+                    widget.setString(desc.Items[desc.SelectedIndex].c_str());
                 }
                 else
                 {
-                    widget.string = const_cast<utf8*>("");
+                    widget.setString("");
                 }
-                widget.flags.set(WidgetFlag::textIsString);
                 widgetList.push_back(widget);
 
                 // Add the dropdown button
@@ -1056,8 +1052,7 @@ namespace OpenRCT2::Ui::Windows
             else if (desc.Type == "label")
             {
                 widget.type = WidgetType::label;
-                widget.string = const_cast<utf8*>(desc.Text.c_str());
-                widget.flags.set(WidgetFlag::textIsString);
+                widget.setString(desc.Text.c_str());
                 if (desc.TextAlign == TextAlignment::centre)
                 {
                     widget.type = WidgetType::labelCentred;
@@ -1107,8 +1102,7 @@ namespace OpenRCT2::Ui::Windows
             else if (desc.Type == "textbox")
             {
                 widget.type = WidgetType::textBox;
-                widget.string = const_cast<utf8*>(desc.Text.c_str());
-                widget.flags.set(WidgetFlag::textIsString);
+                widget.setString(desc.Text.c_str());
                 widgetList.push_back(widget);
             }
             else if (desc.Type == "viewport")

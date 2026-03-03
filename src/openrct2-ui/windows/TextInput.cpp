@@ -187,13 +187,11 @@ namespace OpenRCT2::Ui::Windows
             // Set window title argument
             if (_titleStringId == kStringIdNone)
             {
-                auto ft = Formatter::Common();
-                ft.Add<const char*>(_title.c_str());
-                widgets[WIDX_TITLE].text = STR_STRING;
+                widgets[WIDX_TITLE].setString(_title.c_str());
             }
             else
             {
-                widgets[WIDX_TITLE].text = _titleStringId;
+                widgets[WIDX_TITLE].setString(_titleStringId);
             }
         }
 

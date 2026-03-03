@@ -671,6 +671,7 @@ namespace OpenRCT2::Ui::Windows
         std::vector<EntranceTypeLabel> _entranceDropdownData;
         bool _autoScrollGraph = true;
         bool _lastAllowArbitraryRideTypeChanges = false;
+        u8string _windowTitle{};
 
         uint8_t getNumVisibleCars()
         {
@@ -779,6 +780,10 @@ namespace OpenRCT2::Ui::Windows
                 close();
                 return;
             }
+
+            _windowTitle = ride->getName();
+            widgets[WIDX_TITLE].setString(_windowTitle.c_str());
+
             UpdateOverallView(*ride);
 
             PopulateVehicleTypeDropdown(*ride, true);
@@ -873,6 +878,13 @@ namespace OpenRCT2::Ui::Windows
 
         void onPrepareDraw() override
         {
+            auto ride = GetRide(rideId);
+            if (ride != nullptr)
+            {
+                _windowTitle = ride->getName();
+                widgets[WIDX_TITLE].setString(_windowTitle.c_str());
+            }
+
             switch (page)
             {
                 case WINDOW_RIDE_PAGE_MAIN:
@@ -2411,9 +2423,6 @@ namespace OpenRCT2::Ui::Windows
                 && !gameState.cheats.makeAllDestructible)
                 disabledWidgets |= (1uLL << WIDX_DEMOLISH);
 
-            auto ft = Formatter::Common();
-            ride->formatNameTo(ft);
-
             uint32_t spriteIds[] = {
                 SPR_CLOSED,
                 SPR_OPEN,
@@ -2865,8 +2874,6 @@ namespace OpenRCT2::Ui::Windows
 
             const auto* rideEntry = ride->getRideEntry();
 
-            widgets[WIDX_TITLE].text = STR_ARG_20_STRINGID;
-
             // Widget setup
             carsPerTrain = ride->numCarsPerTrain - rideEntry->zero_cars;
 
@@ -2934,7 +2941,8 @@ namespace OpenRCT2::Ui::Windows
 
             ft.Increment(8);
 
-            ride->formatNameTo(ft);
+            _windowTitle = ride->getName();
+            widgets[WIDX_TITLE].setString(_windowTitle.c_str());
 
             WindowAlignTabs(this, WIDX_TAB_1, WIDX_TAB_10);
 
@@ -3554,15 +3562,13 @@ namespace OpenRCT2::Ui::Windows
             if (ride == nullptr)
                 return;
 
-            auto ft = Formatter::Common();
-            ride->formatNameTo(ft);
-
             // Widget setup
             pressedWidgets &= ~(
                 (1uLL << WIDX_LOAD_CHECKBOX) | (1uLL << WIDX_LEAVE_WHEN_ANOTHER_ARRIVES_CHECKBOX)
                 | (1uLL << WIDX_MINIMUM_LENGTH_CHECKBOX) | (1uLL << WIDX_MAXIMUM_LENGTH_CHECKBOX)
                 | (1uLL << WIDX_SYNCHRONISE_WITH_ADJACENT_STATIONS_CHECKBOX));
 
+            auto ft = Formatter::Common();
             // Sometimes, only one of the alternatives support lift hill pieces. Make sure to check both.
             const auto& rtd = ride->getRideTypeDescriptor();
             bool hasAlternativeType = rtd.flags.has(RtdFlag::hasInvertedVariant);
@@ -4081,9 +4087,6 @@ namespace OpenRCT2::Ui::Windows
             auto ride = GetRide(rideId);
             if (ride == nullptr)
                 return;
-
-            auto ft = Formatter::Common();
-            ride->formatNameTo(ft);
 
             widgets[WIDX_INSPECTION_INTERVAL].text = kRideInspectionIntervalNames[EnumValue(ride->inspectionInterval)];
 
@@ -4669,11 +4672,6 @@ namespace OpenRCT2::Ui::Windows
             if (rideEntry == nullptr)
                 return;
 
-            widgets[WIDX_TITLE].text = STR_ARG_16_STRINGID;
-            auto ft = Formatter::Common();
-            ft.Increment(16);
-            ride->formatNameTo(ft);
-
             // Track colours
             int32_t colourScheme = _rideColour;
             trackColour = ride->trackColours[colourScheme];
@@ -4849,7 +4847,7 @@ namespace OpenRCT2::Ui::Windows
                     widgets[WIDX_VEHICLE_COLOUR_SCHEME].type = WidgetType::empty;
                     widgets[WIDX_VEHICLE_COLOUR_SCHEME_DROPDOWN].type = WidgetType::empty;
                 }
-                ft.Rewind();
+                auto ft = Formatter::Common();
                 ft.Increment(6);
                 ft.Add<StringId>(VehicleColourSchemeNames[EnumValue(ride->vehicleColourSettings)]);
                 ft.Add<StringId>(GetRideComponentName(ride->getRideTypeDescriptor().NameConvention.vehicle).singular);
@@ -4884,7 +4882,7 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_RANDOMISE_VEHICLE_COLOURS].type = WidgetType::empty;
             }
 
-            ft.Rewind();
+            auto ft = Formatter::Common();
             ft.Increment(14);
             ft.Add<StringId>(ColourSchemeNames[colourScheme]);
 
@@ -5334,9 +5332,6 @@ namespace OpenRCT2::Ui::Windows
             if (ride == nullptr)
                 return;
 
-            auto ft = Formatter::Common();
-            ride->formatNameTo(ft);
-
             // Align music dropdown
             widgets[WIDX_MUSIC].right = width - 8;
             widgets[WIDX_MUSIC_DROPDOWN].right = width - 9;
@@ -5729,9 +5724,6 @@ namespace OpenRCT2::Ui::Windows
             auto ride = GetRide(rideId);
             if (ride == nullptr)
                 return;
-
-            auto ft = Formatter::Common();
-            ride->formatNameTo(ft);
 
             widgets[WIDX_SAVE_TRACK_DESIGN].tooltip = STR_SAVE_TRACK_DESIGN_NOT_POSSIBLE;
             widgets[WIDX_SAVE_TRACK_DESIGN].type = WidgetType::empty;
@@ -6165,9 +6157,6 @@ namespace OpenRCT2::Ui::Windows
             auto ride = GetRide(rideId);
             if (ride == nullptr)
                 return;
-
-            auto ft = Formatter::Common();
-            ride->formatNameTo(ft);
 
             // Set pressed graph button type
             pressedWidgets &= ~(1uLL << WIDX_GRAPH_VELOCITY);
@@ -6675,12 +6664,6 @@ namespace OpenRCT2::Ui::Windows
             if (ride == nullptr)
                 return;
 
-            widgets[WIDX_TITLE].text = STR_ARG_18_STRINGID;
-
-            auto ft = Formatter::Common();
-            ft.Increment(18);
-            ride->formatNameTo(ft);
-
             auto rideEntry = ride->getRideEntry();
             if (rideEntry == nullptr)
                 return;
@@ -6708,6 +6691,7 @@ namespace OpenRCT2::Ui::Windows
 
             widgets[WIDX_PRIMARY_PRICE].text = STR_BOTTOM_TOOLBAR_CASH;
             auto ridePrimaryPrice = RideGetPrice(*ride);
+            auto ft = Formatter::Common();
             ft.Rewind();
             ft.Add<money64>(ridePrimaryPrice);
             if (ridePrimaryPrice == 0)
@@ -6949,9 +6933,6 @@ namespace OpenRCT2::Ui::Windows
             auto ride = GetRide(rideId);
             if (ride != nullptr)
             {
-                auto ft = Formatter::Common();
-                ride->formatNameTo(ft);
-
                 widgets[WIDX_SHOW_GUESTS_THOUGHTS].type = WidgetType::flatBtn;
                 if (ride->getRideTypeDescriptor().flags.has(RtdFlag::isShopOrFacility))
                 {
