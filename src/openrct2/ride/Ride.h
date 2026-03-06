@@ -13,6 +13,7 @@
 #include "../core/BitSet.hpp"
 #include "../core/FixedPoint.hpp"
 #include "../core/FlagHolder.hpp"
+#include "../localisation/StringWithArgs.h"
 #include "RideColour.h"
 #include "RideEntry.h"
 #include "RideRatings.h"
@@ -31,7 +32,6 @@ struct IObjectManager;
 struct Ride;
 struct RideTypeDescriptor;
 struct Guest;
-struct StringWithArgs;
 struct Staff;
 struct Vehicle;
 struct RideObjectEntry;
@@ -501,7 +501,7 @@ public:
     RideNaming getTypeNaming() const;
     OpenRCT2::TrackElement* getOriginElement(StationIndex stationIndex) const;
 
-    std::pair<RideMeasurement*, StringWithArgs> getMeasurement();
+    std::pair<RideMeasurement*, OpenRCT2::StringWithArgs> getMeasurement();
 
     uint8_t getNumShelteredSections() const;
     void increaseNumShelteredSections();
