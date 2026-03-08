@@ -34,8 +34,8 @@
 #include "../ride/TrackDesign.h"
 #include "../ride/Vehicle.h"
 #include "../ui/WindowManager.h"
-#include "../world/Climate.h"
 #include "../world/Map.h"
+#include "../world/Weather.h"
 #include "../world/tile_element/LargeSceneryElement.h"
 #include "../world/tile_element/SmallSceneryElement.h"
 #include "../world/tile_element/TileElement.h"
@@ -1001,7 +1001,7 @@ namespace OpenRCT2
 
     static void ViewportPaintWeatherGloom(RenderTarget& rt)
     {
-        auto paletteId = ClimateGetWeatherGloomPaletteId(getGameState().weatherCurrent);
+        auto paletteId = Weather::getWeatherGloomPaletteId(getGameState().weatherCurrent);
         if (paletteId != FilterPaletteID::paletteNull)
         {
             auto x = rt.x;

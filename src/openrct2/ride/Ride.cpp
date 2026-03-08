@@ -49,13 +49,13 @@
 #include "../ui/WindowManager.h"
 #include "../util/Util.h"
 #include "../windows/Intent.h"
-#include "../world/Climate.h"
 #include "../world/Entrance.h"
 #include "../world/Footpath.h"
 #include "../world/Location.hpp"
 #include "../world/Map.h"
 #include "../world/Park.h"
 #include "../world/TileElementsView.h"
+#include "../world/Weather.h"
 #include "../world/tile_element/EntranceElement.h"
 #include "../world/tile_element/PathElement.h"
 #include "../world/tile_element/TrackElement.h"
@@ -1468,7 +1468,7 @@ static void RideBreakdownUpdate(Ride& ride)
 static Breakdown RideGetNewBreakdownProblem(const Ride& ride)
 {
     // Brake failure is more likely when it's raining or heavily snowing (HeavySnow and Blizzard)
-    _breakdownProblemProbabilities[EnumValue(Breakdown::brakesFailure)] = ClimateIsPrecipitating() ? 20 : 3;
+    _breakdownProblemProbabilities[EnumValue(Breakdown::brakesFailure)] = Weather::isPrecipitating() ? 20 : 3;
 
     if (!ride.canBreakDown())
         return Breakdown::none;
