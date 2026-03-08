@@ -143,6 +143,7 @@ namespace OpenRCT2::Scripting
                 }
             }
             _eventList.RemoveAllListeners();
+            _disposed = true;
         }
 
         void RaiseOnClose(bool hadError)
@@ -228,7 +229,6 @@ namespace OpenRCT2::Scripting
         void Dispose() override
         {
             CloseSocket();
-            _disposed = true;
         }
     };
 
@@ -239,7 +239,7 @@ namespace OpenRCT2::Scripting
     private:
         static SocketData* GetData(JSValue thisVal)
         {
-            return gScSocket.GetOpaque<SocketData*>(thisVal);
+            return gScSocket.GetOpaque<std::shared_ptr<SocketData>*>(thisVal)->get();
         }
 
         static JSValue destroy(JSContext* ctx, JSValue thisVal, int argc, JSValue* argv)
@@ -280,25 +280,25 @@ namespace OpenRCT2::Scripting
 
             if (data->_socket != nullptr)
             {
-                JS_ThrowPlainError(ctx, "Socket has already been created.");
+                return JS_ThrowPlainError(ctx, "Socket has already been created.");
             }
             else if (data->_disposed)
             {
-                JS_ThrowPlainError(ctx, "Socket is disposed.");
+                return JS_ThrowPlainError(ctx, "Socket is disposed.");
             }
             else if (data->_connecting)
             {
-                JS_ThrowPlainError(ctx, "Socket is already connecting.");
+                return JS_ThrowPlainError(ctx, "Socket is already connecting.");
             }
             else if (!IsLocalhostAddress(host) && !IsOnWhiteList(host))
             {
-                JS_ThrowPlainError(ctx, "For security reasons, only connecting to localhost is allowed.");
+                return JS_ThrowPlainError(ctx, "For security reasons, only connecting to localhost is allowed.");
             }
             else
             {
-                data->_socket = Network::CreateTcpSocket();
                 try
                 {
+                    data->_socket = Network::CreateTcpSocket();
                     data->_socket->ConnectAsync(host, port);
                     if (JS_IsFunction(ctx, argv[2]))
                     {
@@ -308,7 +308,7 @@ namespace OpenRCT2::Scripting
                 }
                 catch (const std::exception& e)
                 {
-                    JS_ThrowInternalError(ctx, "%s", e.what());
+                    return JS_ThrowInternalError(ctx, "%s", e.what());
                 }
             }
             return JS_DupValue(ctx, thisVal);
@@ -320,25 +320,32 @@ namespace OpenRCT2::Scripting
             if (!data)
                 return JS_ThrowInternalError(ctx, "Invalid socket");
 
-            if (data->_disposed)
+            try
             {
-                JS_ThrowPlainError(ctx, "Socket is disposed.");
-            }
-            else if (data->_socket != nullptr)
-            {
-                if (JS_IsString(argv[0]))
+                if (data->_disposed)
                 {
-                    if (JSValue res = write(ctx, thisVal, argc, argv); JS_IsException(res))
+                    return JS_ThrowPlainError(ctx, "Socket is disposed.");
+                }
+                else if (data->_socket != nullptr)
+                {
+                    if (JS_IsString(argv[0]))
                     {
-                        return res;
+                        if (JSValue res = write(ctx, thisVal, argc, argv); JS_IsException(res))
+                        {
+                            return res;
+                        }
+                        data->_socket->Finish();
                     }
-                    data->_socket->Finish();
+                    else
+                    {
+                        data->_socket->Finish();
+                        return JS_ThrowPlainError(ctx, "Only sending strings is currently supported.");
+                    }
                 }
-                else
-                {
-                    data->_socket->Finish();
-                    JS_ThrowPlainError(ctx, "Only sending strings is currently supported.");
-                }
+            }
+            catch (const std::exception& e)
+            {
+                return JS_ThrowInternalError(ctx, "%s", e.what());
             }
             return JS_DupValue(ctx, thisVal);
         }
@@ -353,7 +360,7 @@ namespace OpenRCT2::Scripting
 
             if (data->_disposed)
             {
-                JS_ThrowPlainError(ctx, "Socket is disposed.");
+                return JS_ThrowPlainError(ctx, "Socket is disposed.");
             }
             else if (data->_socket != nullptr)
             {
@@ -376,7 +383,7 @@ namespace OpenRCT2::Scripting
             JS_UNPACK_CALLBACK(callback, ctx, argv[1]);
 
             auto data = GetData(thisVal);
-            if (!data)
+            if (!data || data->_disposed)
                 return JS_ThrowInternalError(ctx, "Invalid socket");
 
             auto eventId = SocketData::GetEventType(eventType);
@@ -393,7 +400,7 @@ namespace OpenRCT2::Scripting
             JS_UNPACK_CALLBACK(callback, ctx, argv[1]);
 
             auto data = GetData(thisVal);
-            if (!data)
+            if (!data || data->_disposed)
                 return JS_ThrowInternalError(ctx, "Invalid socket");
 
             auto eventId = SocketData::GetEventType(eventType);
@@ -407,20 +414,19 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx, const std::shared_ptr<Plugin>& plugin)
         {
-            // unique ptr is used to avoid static analyzer false positives.
-            auto data = std::make_unique<SocketData>();
+            auto data = std::make_shared<SocketData>();
             data->_plugin = plugin;
-            GetContext()->GetScriptEngine().AddSocket(data.get());
-            return MakeWithOpaque(ctx, data.release());
+            GetContext()->GetScriptEngine().AddSocket(data);
+            return MakeWithOpaque(ctx, new std::shared_ptr(data));
         }
 
         JSValue New(JSContext* ctx, const std::shared_ptr<Plugin>& plugin, std::unique_ptr<Network::ITcpSocket>&& socket)
         {
-            auto data = std::make_unique<SocketData>();
+            auto data = std::make_shared<SocketData>();
             data->_plugin = plugin;
             data->_socket = std::move(socket);
-            GetContext()->GetScriptEngine().AddSocket(data.get());
-            return MakeWithOpaque(ctx, data.release());
+            GetContext()->GetScriptEngine().AddSocket(data);
+            return MakeWithOpaque(ctx, new std::shared_ptr(data));
         }
 
         void Register(JSContext* ctx)
@@ -436,15 +442,9 @@ namespace OpenRCT2::Scripting
 
         static void Finalize(JSRuntime* rt, JSValue thisVal)
         {
-            SocketData* data = gScSocket.GetOpaque<SocketData*>(thisVal);
+            auto data = gScSocket.GetOpaque<std::shared_ptr<SocketData>*>(thisVal);
             if (data)
             {
-                // Note the game context pointer can be null if the game is shutting down,
-                // but all sockets should have been cleaned up by then.
-                IContext* gameContext = GetContext();
-                assert(gameContext != nullptr);
-                gameContext->GetScriptEngine().RemoveSocket(data);
-                data->Dispose();
                 delete data;
             }
         }
@@ -491,12 +491,12 @@ namespace OpenRCT2::Scripting
                 _socket = nullptr;
             }
             _eventList.RemoveAllListeners();
+            _disposed = true;
         }
 
         void Dispose() override
         {
             CloseSocket();
-            _disposed = true;
         }
     };
 
@@ -506,7 +506,7 @@ namespace OpenRCT2::Scripting
     {
         static ListenerData* GetData(JSValue thisVal)
         {
-            return gScListener.GetOpaque<ListenerData*>(thisVal);
+            return gScListener.GetOpaque<std::shared_ptr<ListenerData>*>(thisVal)->get();
         }
 
         static JSValue listening_get(JSContext* ctx, JSValue thisVal)
@@ -544,9 +544,10 @@ namespace OpenRCT2::Scripting
 
             if (data->_disposed)
             {
-                JS_ThrowPlainError(ctx, "Socket is disposed.");
+                return JS_ThrowPlainError(ctx, "Socket is disposed.");
             }
-            else
+
+            try
             {
                 if (data->_socket == nullptr)
                 {
@@ -555,34 +556,29 @@ namespace OpenRCT2::Scripting
 
                 if (data->_socket->GetStatus() == Network::SocketStatus::listening)
                 {
-                    JS_ThrowPlainError(ctx, "Server is already listening.");
+                    return JS_ThrowPlainError(ctx, "Server is already listening.");
                 }
-                else
+
+                if (JS_IsString(argv[1]))
                 {
-                    if (JS_IsString(argv[1]))
+                    std::string host = JSToStdString(ctx, argv[1]);
+                    if (IsLocalhostAddress(host) || IsOnWhiteList(host))
                     {
-                        std::string host = JSToStdString(ctx, argv[1]);
-                        if (IsLocalhostAddress(host) || IsOnWhiteList(host))
-                        {
-                            try
-                            {
-                                data->_socket->Listen(host, port);
-                            }
-                            catch (const std::exception& e)
-                            {
-                                JS_ThrowPlainError(ctx, "%s", e.what());
-                            }
-                        }
-                        else
-                        {
-                            JS_ThrowPlainError(ctx, "For security reasons, only binding to localhost is allowed.");
-                        }
+                        data->_socket->Listen(host, port);
                     }
                     else
                     {
-                        data->_socket->Listen("127.0.0.1", port);
+                        return JS_ThrowPlainError(ctx, "For security reasons, only binding to localhost is allowed.");
                     }
                 }
+                else
+                {
+                    data->_socket->Listen("127.0.0.1", port);
+                }
+            }
+            catch (const std::exception& e)
+            {
+                return JS_ThrowPlainError(ctx, "%s", e.what());
             }
             return JS_DupValue(ctx, thisVal);
         }
@@ -593,7 +589,7 @@ namespace OpenRCT2::Scripting
             JS_UNPACK_CALLBACK(callback, ctx, argv[1]);
 
             auto data = GetData(thisVal);
-            if (!data)
+            if (!data || data->_disposed)
                 return JS_ThrowInternalError(ctx, "Invalid listener");
 
             auto eventId = GetEventType(eventType);
@@ -610,7 +606,7 @@ namespace OpenRCT2::Scripting
             JS_UNPACK_CALLBACK(callback, ctx, argv[1]);
 
             auto data = GetData(thisVal);
-            if (!data)
+            if (!data || data->_disposed)
                 return JS_ThrowInternalError(ctx, "Invalid listener");
 
             auto eventId = GetEventType(eventType);
@@ -631,11 +627,10 @@ namespace OpenRCT2::Scripting
     public:
         JSValue New(JSContext* ctx, const std::shared_ptr<Plugin>& plugin)
         {
-            // unique ptr is used to avoid static analyzer false positives.
-            auto data = std::make_unique<ListenerData>();
+            auto data = std::make_shared<ListenerData>();
             data->_plugin = plugin;
-            GetContext()->GetScriptEngine().AddSocket(data.get());
-            return MakeWithOpaque(ctx, data.release());
+            GetContext()->GetScriptEngine().AddSocket(data);
+            return MakeWithOpaque(ctx, new std::shared_ptr(data));
         }
 
         void Register(JSContext* ctx)
@@ -652,15 +647,9 @@ namespace OpenRCT2::Scripting
 
         static void Finalize(JSRuntime* rt, JSValue thisVal)
         {
-            ListenerData* data = gScListener.GetOpaque<ListenerData*>(thisVal);
+            auto data = gScListener.GetOpaque<std::shared_ptr<ListenerData>*>(thisVal);
             if (data)
             {
-                // Note the game context pointer can be null if the game is shutting down,
-                // but all sockets should have been cleaned up by then.
-                IContext* gameContext = GetContext();
-                assert(gameContext != nullptr);
-                gameContext->GetScriptEngine().RemoveSocket(data);
-                data->Dispose();
                 delete data;
             }
         }

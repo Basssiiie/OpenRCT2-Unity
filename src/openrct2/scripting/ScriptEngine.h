@@ -161,7 +161,7 @@ namespace OpenRCT2::Scripting
 
         std::unordered_map<std::string, CustomActionInfo> _customActions;
     #ifndef DISABLE_NETWORK
-        std::vector<SocketDataBase*> _sockets;
+        std::vector<std::shared_ptr<SocketDataBase>> _sockets;
     #endif
 
         void InitialiseContext(JSContext* ctx) const;
@@ -265,8 +265,7 @@ namespace OpenRCT2::Scripting
         static ExpenditureType StringToExpenditureType(std::string_view expenditureType);
 
     #ifndef DISABLE_NETWORK
-        void AddSocket(SocketDataBase* data);
-        void RemoveSocket(SocketDataBase* data);
+        void AddSocket(const std::shared_ptr<SocketDataBase>& data);
     #endif
 
     private:

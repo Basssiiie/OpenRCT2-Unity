@@ -2051,49 +2051,39 @@ void ScriptEngine::RemoveIntervals(const std::shared_ptr<Plugin>& plugin)
 }
 
     #ifndef DISABLE_NETWORK
-void ScriptEngine::AddSocket(SocketDataBase* data)
+void ScriptEngine::AddSocket(const std::shared_ptr<SocketDataBase>& data)
 {
     _sockets.push_back(data);
-}
-
-void ScriptEngine::RemoveSocket(SocketDataBase* data)
-{
-    // Just remove one
-    auto it = std::find(_sockets.begin(), _sockets.end(), data);
-    if (it != _sockets.end())
-        *it = nullptr;
 }
     #endif
 
 void ScriptEngine::UpdateSockets()
 {
     #ifndef DISABLE_NETWORK
-    // AddSocket and RemoveSocket can be called as a result of the Update
-    // Therefore we add to the end and remove by setting to null and cleaning up
-    // after the update. We also must use [] here and we remember the original
-    // sockets vector size so that we process new ones in the next tick.
+    // AddSocket and RemoveSocket can be called as a result of the Update.
+    // Therefore we add to the end in AddSocket and use [] here, and we also remember
+    // the original sockets vector size so that we process new ones in the next tick.
     const size_t sz = _sockets.size();
     for (size_t i = 0; i < sz; i++)
     {
         if (_sockets[i] != nullptr)
             _sockets[i]->Update();
     }
-    std::erase(_sockets, nullptr);
+    std::erase_if(_sockets, [](const std::shared_ptr<SocketDataBase>& data) { return data == nullptr || data->_disposed; });
     #endif
 }
 
 void ScriptEngine::RemoveSockets(const std::shared_ptr<Plugin>& plugin)
 {
     #ifndef DISABLE_NETWORK
-    // The ownership model has the javascript engine owning all the socket data.
-    // Therefore we rely on the javascript engine to finalise all sockets.
-    // We just remove the listeners since they can hold references to the javascript socket objects which will
-    // prevent finalisation.
-    for (SocketDataBase* socket : _sockets)
-    {
-        if (socket != nullptr)
-            socket->_eventList.RemoveAllListeners();
-    }
+    std::erase_if(_sockets, [plugin](const std::shared_ptr<SocketDataBase>& data) {
+        if (data->_plugin == plugin)
+        {
+            data->Dispose();
+            return true;
+        }
+        return false;
+    });
     #endif
 }
 
