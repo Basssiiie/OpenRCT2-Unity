@@ -7184,7 +7184,7 @@ namespace OpenRCT2::Ui::Windows
                     auto trackElement = tileElement->AsTrack();
                     auto trackType = trackElement->GetTrackType();
                     const auto& ted = GetTrackElementDescriptor(trackType);
-                    if (ted.sequences[0].flags.has(SequenceFlag::trackOrigin))
+                    if (ted.sequenceData.sequences[0].flags.has(SequenceFlag::trackOrigin))
                     {
                         auto stationIndex = trackElement->GetStationIndex();
                         return WindowRideOpenStation(*ride, stationIndex);

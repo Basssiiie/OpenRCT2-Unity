@@ -442,7 +442,7 @@ namespace OpenRCT2::GameActions
         int32_t z;
         if (sequence == 0)
         {
-            if (ted.sequences[0].flags.has(SequenceFlag::disallowDoors))
+            if (ted.sequenceData.sequences[0].flags.has(SequenceFlag::disallowDoors))
             {
                 return false;
             }
@@ -455,7 +455,7 @@ namespace OpenRCT2::GameActions
                     if (direction == _edge)
                     {
                         z = ted.coordinates.zBegin;
-                        z = trackElement->BaseHeight + ((z - ted.sequences[sequence].clearance.z) * 8);
+                        z = trackElement->BaseHeight + ((z - ted.sequenceData.sequences[sequence].clearance.z) * 8);
                         if (z == z0)
                         {
                             return true;
@@ -465,7 +465,7 @@ namespace OpenRCT2::GameActions
             }
         }
 
-        bool isLastInSequence = (sequence + 1) == ted.numSequences;
+        bool isLastInSequence = (sequence + 1) == ted.sequenceData.numSequences;
         if (!isLastInSequence)
         {
             return false;
@@ -489,7 +489,7 @@ namespace OpenRCT2::GameActions
         }
 
         z = ted.coordinates.zEnd;
-        z = trackElement->BaseHeight + ((z - ted.sequences[sequence].clearance.z) * kCoordsZStep);
+        z = trackElement->BaseHeight + ((z - ted.sequenceData.sequences[sequence].clearance.z) * kCoordsZStep);
         return z == z0;
     }
 
@@ -597,7 +597,7 @@ namespace OpenRCT2::GameActions
         if (!GetRideTypeDescriptor(rideType).flags.has(RtdFlag::noWallsAroundTrack))
         {
             const auto& ted = GetTrackElementDescriptor(trackType);
-            if (ted.sequences[trackSequence].allowedWallEdges & (1 << direction))
+            if (ted.sequenceData.sequences[trackSequence].allowedWallEdges & (1 << direction))
             {
                 return true;
             }

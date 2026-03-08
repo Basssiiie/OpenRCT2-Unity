@@ -404,10 +404,10 @@ std::optional<CoordsXYZ> GetTrackElementOriginAndApplyChanges(
     // Now find all the elements that belong to this track piece
     int32_t sequence = trackElement->GetSequenceIndex();
     uint8_t mapDirection = trackElement->GetDirection();
-    if (sequence >= ted.numSequences)
+    if (sequence >= ted.sequenceData.numSequences)
         return std::nullopt;
 
-    const auto& trackBlock = ted.sequences[sequence].clearance;
+    const auto& trackBlock = ted.sequenceData.sequences[sequence].clearance;
 
     CoordsXY offsets = { trackBlock.x, trackBlock.y };
     CoordsXY newCoords = location;
@@ -416,13 +416,13 @@ std::optional<CoordsXYZ> GetTrackElementOriginAndApplyChanges(
     auto retCoordsXYZ = CoordsXYZ{ newCoords.x, newCoords.y, location.z - trackBlock.z };
 
     int32_t start_z = retCoordsXYZ.z;
-    assert(ted.numSequences > 0);
-    const auto block0 = ted.sequences[0].clearance;
+    assert(ted.sequenceData.numSequences > 0);
+    const auto block0 = ted.sequenceData.sequences[0].clearance;
 
     retCoordsXYZ.z += block0.z;
-    for (int32_t i = 0; i < ted.numSequences; i++)
+    for (int32_t i = 0; i < ted.sequenceData.numSequences; i++)
     {
-        const auto& block = ted.sequences[i].clearance;
+        const auto& block = ted.sequenceData.sequences[i].clearance;
         CoordsXY cur = { retCoordsXYZ };
         offsets = { block.x, block.y };
         cur += offsets.Rotate(mapDirection);
@@ -1226,7 +1226,7 @@ void Ride::validateStations()
 
                     const auto& ted = GetTrackElementDescriptor(tileElement->AsTrack()->GetTrackType());
                     // keep searching for a station piece (coaster station, tower ride base, shops, and flat ride base)
-                    if (!ted.sequences[0].flags.has(SequenceFlag::trackOrigin))
+                    if (!ted.sequenceData.sequences[0].flags.has(SequenceFlag::trackOrigin))
                         continue;
 
                     trackFound = true;
@@ -1258,9 +1258,9 @@ void Ride::validateStations()
             }
             // update all the blocks with StationIndex
             const auto& ted = GetTrackElementDescriptor(tileElement->AsTrack()->GetTrackType());
-            for (uint8_t i = 0; i < ted.numSequences; i++)
+            for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
             {
-                const auto& block = ted.sequences[i].clearance;
+                const auto& block = ted.sequenceData.sequences[i].clearance;
                 CoordsXYZ blockLocation = location + CoordsXYZ{ CoordsXY{ block.x, block.y }.Rotate(direction), 0 };
 
                 bool trackFound = false;
@@ -1276,7 +1276,7 @@ void Ride::validateStations()
                         continue;
 
                     const auto& ted2 = GetTrackElementDescriptor(tileElement->AsTrack()->GetTrackType());
-                    if (!ted2.sequences[0].flags.has(SequenceFlag::trackOrigin))
+                    if (!ted2.sequenceData.sequences[0].flags.has(SequenceFlag::trackOrigin))
                         continue;
 
                     trackFound = true;
@@ -1383,7 +1383,7 @@ void Ride::validateStations()
 
                     // if the ride entrance is not on a valid side, remove it
                     const auto& ted = GetTrackElementDescriptor(trackType);
-                    auto connectionSides = ted.sequences[trackSequence].getEntranceConnectionSides();
+                    auto connectionSides = ted.sequenceData.sequences[trackSequence].getEntranceConnectionSides();
                     if (!(connectionSides & (1 << direction)))
                     {
                         continue;

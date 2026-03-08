@@ -639,9 +639,9 @@ namespace OpenRCT2::Ui::Windows
             {
                 // Follow a single track piece shape
                 const auto& ted = GetTrackElementDescriptor(trackElement.type);
-                for (size_t sequenceIndex = 0; sequenceIndex < ted.numSequences; sequenceIndex++)
+                for (size_t sequenceIndex = 0; sequenceIndex < ted.sequenceData.numSequences; sequenceIndex++)
                 {
-                    const auto& trackBlock = ted.sequences[sequenceIndex].clearance;
+                    const auto& trackBlock = ted.sequenceData.sequences[sequenceIndex].clearance;
                     auto rotatedAndOffsetTrackBlock = curTrackStart
                         + CoordsXY{ trackBlock.x, trackBlock.y }.Rotate(curTrackRotation);
 
@@ -662,8 +662,9 @@ namespace OpenRCT2::Ui::Windows
                             auto bits = trackBlock.quarterTile.Rotate(curTrackRotation & 3).GetBaseQuarterOccupied();
 
                             // Station track is a lighter colour
-                            auto colour = ted.sequences[0].flags.has(SequenceFlag::trackOrigin) ? kPaletteIndexColourStation
-                                                                                                : kPaletteIndexColourTrack;
+                            auto colour = ted.sequenceData.sequences[0].flags.has(SequenceFlag::trackOrigin)
+                                ? kPaletteIndexColourStation
+                                : kPaletteIndexColourTrack;
 
                             for (int32_t i = 0; i < 4; i++)
                             {

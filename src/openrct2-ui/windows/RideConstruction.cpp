@@ -2295,9 +2295,9 @@ namespace OpenRCT2::Ui::Windows
             const auto& ted = GetTrackElementDescriptor(trackType);
             trackDirection &= 3;
             MapSelection::clearSelectedTiles();
-            for (uint8_t i = 0; i < ted.numSequences; i++)
+            for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
             {
-                CoordsXY offsets = { ted.sequences[i].clearance.x, ted.sequences[i].clearance.y };
+                CoordsXY offsets = { ted.sequenceData.sequences[i].clearance.x, ted.sequenceData.sequences[i].clearance.y };
                 CoordsXY currentTileCoords = tileCoords + offsets.Rotate(trackDirection);
 
                 MapSelection::addSelectedTile(currentTileCoords);
@@ -2457,7 +2457,7 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 const auto& ted = GetTrackElementDescriptor(tileElement->AsTrack()->GetTrackType());
-                newCoords->z = (tileElement->GetBaseZ()) - ted.sequences[0].clearance.z;
+                newCoords->z = (tileElement->GetBaseZ()) - ted.sequenceData.sequences[0].clearance.z;
                 _gotoStartPlacementMode = true;
             }
 
@@ -2714,7 +2714,7 @@ namespace OpenRCT2::Ui::Windows
             }
 
             const auto& ted = GetTrackElementDescriptor(trackType);
-            const auto trackBlock = ted.sequences[ted.numSequences - 1].clearance;
+            const auto trackBlock = ted.sequenceData.sequences[ted.sequenceData.numSequences - 1].clearance;
             CoordsXYZ mapCoords{ trackBlock.x, trackBlock.y, trackBlock.z };
             if (trackBlock.flags & RCT_PREVIEW_TRACK_FLAG_1)
             {
@@ -2783,9 +2783,9 @@ namespace OpenRCT2::Ui::Windows
             auto clearanceHeight = (rideEntry != nullptr) ? rideEntry->Clearance
                                                           : currentRide->getRideTypeDescriptor().Heights.ClearanceHeight;
 
-            for (uint8_t i = 0; i < ted.numSequences; i++)
+            for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
             {
-                const auto& trackBlock = ted.sequences[i].clearance;
+                const auto& trackBlock = ted.sequenceData.sequences[i].clearance;
 
                 auto quarterTile = trackBlock.quarterTile.Rotate(trackDirection);
                 CoordsXY offsets = { trackBlock.x, trackBlock.y };
@@ -3433,9 +3433,9 @@ namespace OpenRCT2::Ui::Windows
         // Loc6CC91B:
         const auto& ted = GetTrackElementDescriptor(trackType);
         int32_t bx = 0;
-        for (uint8_t i = 0; i < ted.numSequences; i++)
+        for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
         {
-            bx = std::min<int32_t>(bx, ted.sequences[i].clearance.z);
+            bx = std::min<int32_t>(bx, ted.sequenceData.sequences[i].clearance.z);
         }
         z -= bx;
 
@@ -3662,9 +3662,9 @@ namespace OpenRCT2::Ui::Windows
         {
             const auto& ted = GetTrackElementDescriptor(_currentTrackPieceType);
             int32_t bx = 0;
-            for (uint8_t i = 0; i < ted.numSequences; i++)
+            for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
             {
-                bx = std::min<int32_t>(bx, ted.sequences[i].clearance.z);
+                bx = std::min<int32_t>(bx, ted.sequenceData.sequences[i].clearance.z);
             }
             z -= bx;
 

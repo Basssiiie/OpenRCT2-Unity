@@ -436,7 +436,7 @@ void Vehicle::Sub6DBF3E()
 
     auto trackType = GetTrackType();
     const auto& ted = GetTrackElementDescriptor(trackType);
-    if (!ted.sequences[0].flags.has(SequenceFlag::trackOrigin))
+    if (!ted.sequenceData.sequences[0].flags.has(SequenceFlag::trackOrigin))
     {
         return;
     }
