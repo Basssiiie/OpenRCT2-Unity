@@ -26,13 +26,15 @@
 #include <thread>
 
 struct EntityBase;
-enum class RailingEntrySupportType : uint8_t;
+
 enum class ViewportInteractionItem : uint8_t;
 
 namespace OpenRCT2
 {
     struct TileElement;
     struct SurfaceElement;
+
+    enum class RailingEntrySupportType : uint8_t;
 } // namespace OpenRCT2
 
 struct AttachedPaintStruct
