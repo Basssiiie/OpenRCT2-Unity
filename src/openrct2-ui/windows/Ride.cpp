@@ -4650,9 +4650,6 @@ namespace OpenRCT2::Ui::Windows
 
         void ColourOnPrepareDraw()
         {
-            TrackColour trackColour;
-            VehicleColour vehicleColour;
-
             SetPressedTab();
 
             auto ride = GetRide(rideId);
@@ -4663,12 +4660,21 @@ namespace OpenRCT2::Ui::Windows
             if (rideEntry == nullptr)
                 return;
 
-            // Track colours
+            colourOnPrepareDrawTrack(ride, rideEntry);
+            colourOnPrepareDrawEntrance(ride);
+            colourOnPrepareDrawVehicles(ride, rideEntry);
+
+            WindowAlignTabs(this, WIDX_TAB_1, WIDX_TAB_10);
+        }
+
+        void colourOnPrepareDrawTrack(const Ride* ride, const RideObjectEntry* rideEntry)
+        {
             int32_t colourScheme = _rideColour;
-            trackColour = ride->trackColours[colourScheme];
+            TrackColour trackColour = ride->trackColours[colourScheme];
+
+            const auto& rtd = ride->getRideTypeDescriptor();
 
             // Maze style
-            const auto& rtd = ride->getRideTypeDescriptor();
             if (rtd.specialType == RtdSpecialType::maze)
             {
                 widgets[WIDX_MAZE_STYLE].type = WidgetType::dropdownMenu;
@@ -4752,7 +4758,10 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_PRIMARY_PREVIEW].type = WidgetType::spinner;
             else
                 widgets[WIDX_PRIMARY_PREVIEW].type = WidgetType::empty;
+        }
 
+        void colourOnPrepareDrawEntrance(const Ride* ride)
+        {
             // Entrance style
             if (ride->getRideTypeDescriptor().flags.has(RtdFlag::hasEntranceAndExit))
             {
@@ -4768,6 +4777,11 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_ENTRANCE_STYLE].type = WidgetType::empty;
                 widgets[WIDX_ENTRANCE_STYLE_DROPDOWN].type = WidgetType::empty;
             }
+        }
+
+        void colourOnPrepareDrawVehicles(const Ride* ride, const RideObjectEntry* rideEntry)
+        {
+            const auto& rtd = ride->getRideTypeDescriptor();
 
             // Vehicle colours
             if (!rtd.flags.has(RtdFlag::noVehicles) && rtd.flags.has(RtdFlag::hasVehicleColours))
@@ -4782,7 +4796,7 @@ namespace OpenRCT2::Ui::Windows
                     widgets[WIDX_RANDOMISE_VEHICLE_COLOURS].type = WidgetType::button;
                 }
 
-                vehicleColour = RideGetVehicleColour(*ride, _vehicleIndex);
+                VehicleColour vehicleColour = RideGetVehicleColour(*ride, _vehicleIndex);
 
                 widgets[WIDX_VEHICLE_PREVIEW].type = WidgetType::scroll;
                 widgets[WIDX_VEHICLE_BODY_COLOUR].type = WidgetType::colourBtn;
@@ -4878,10 +4892,9 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_RANDOMISE_VEHICLE_COLOURS].type = WidgetType::empty;
             }
 
+            int32_t colourScheme = _rideColour;
             _spinnerCaption0 = LanguageGetString(ColourSchemeNames[colourScheme]);
             widgets[WIDX_TRACK_COLOUR_SCHEME].setString(_spinnerCaption0.c_str());
-
-            WindowAlignTabs(this, WIDX_TAB_1, WIDX_TAB_10);
         }
 
         void ColourOnDraw(RenderTarget& rt)
