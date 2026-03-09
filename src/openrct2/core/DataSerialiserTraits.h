@@ -1002,23 +1002,23 @@ struct DataSerializerTraitsT<Banner>
 };
 
 template<>
-struct DataSerializerTraitsT<FootpathSlope>
+struct DataSerializerTraitsT<OpenRCT2::FootpathSlope>
 {
-    static void encode(OpenRCT2::IStream* stream, const FootpathSlope& slope)
+    static void encode(OpenRCT2::IStream* stream, const OpenRCT2::FootpathSlope& slope)
     {
         uint8_t combined = (EnumValue(slope.type) << 2) | (slope.direction % kNumOrthogonalDirections);
         stream->WriteValue(combined);
     }
 
-    static void decode(OpenRCT2::IStream* stream, FootpathSlope& slope)
+    static void decode(OpenRCT2::IStream* stream, OpenRCT2::FootpathSlope& slope)
     {
         auto combined = stream->ReadValue<uint8_t>();
-        auto type = static_cast<FootpathSlopeType>(combined >> 2);
+        auto type = static_cast<OpenRCT2::FootpathSlopeType>(combined >> 2);
         Direction direction = combined & 0b00000011;
-        slope = FootpathSlope{ type, direction };
+        slope = OpenRCT2::FootpathSlope{ type, direction };
     }
 
-    static void log(OpenRCT2::IStream* stream, const FootpathSlope& slope)
+    static void log(OpenRCT2::IStream* stream, const OpenRCT2::FootpathSlope& slope)
     {
         char msg[128] = {};
         snprintf(msg, sizeof(msg), "FootpathSlope(type = %d, direction = %d)", EnumValue(slope.type), slope.direction);
