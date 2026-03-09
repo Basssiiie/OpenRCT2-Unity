@@ -167,7 +167,7 @@ namespace OpenRCT2::Ui::Windows
         makeWidget        ({138,  29}, {              22,  24}, WidgetType::flatBtn,  WindowColour::secondary, ImageId(SPR_RIDE_CONSTRUCTION_RIGHT_CURVE),       STR_RIDE_CONSTRUCTION_RIGHT_CURVE_TIP               ),
         makeWidget        ({160,  29}, {              22,  24}, WidgetType::flatBtn,  WindowColour::secondary, ImageId(SPR_G2_ICON_MEDIUM_CURVE_RIGHT),          STR_RIDE_CONSTRUCTION_RIGHT_CURVE_SMALL_TIP         ),
         makeWidget        ({182,  29}, {              22,  24}, WidgetType::flatBtn,  WindowColour::secondary, ImageId(SPR_RIDE_CONSTRUCTION_RIGHT_CURVE_SMALL), STR_RIDE_CONSTRUCTION_RIGHT_CURVE_VERY_SMALL_TIP    ),
-        makeWidget        ({  6,  55}, { kGroupWidth - 6,  14}, WidgetType::button,   WindowColour::secondary, STR_YELLOW_STRING,                                STR_RIDE_CONSTRUCTION_OTHER_TRACK_CONFIGURATIONS_TIP),
+        makeWidget        ({  6,  55}, { kGroupWidth - 6,  14}, WidgetType::button,   WindowColour::secondary, kStringIdEmpty,                                   STR_RIDE_CONSTRUCTION_OTHER_TRACK_CONFIGURATIONS_TIP),
         makeWidget        ({  6,  88}, {              24,  24}, WidgetType::flatBtn,  WindowColour::secondary, ImageId(SPR_RIDE_CONSTRUCTION_VERTICAL_DROP),     STR_RIDE_CONSTRUCTION_VERTICAL_DROP_TIP             ),
         makeWidget        ({ 30,  88}, {              24,  24}, WidgetType::flatBtn,  WindowColour::secondary, ImageId(SPR_RIDE_CONSTRUCTION_SLOPE_DOWN_STEEP),  STR_RIDE_CONSTRUCTION_STEEP_SLOPE_DOWN_TIP          ),
         makeWidget        ({ 54,  88}, {              24,  24}, WidgetType::flatBtn,  WindowColour::secondary, ImageId(SPR_RIDE_CONSTRUCTION_SLOPE_DOWN),        STR_RIDE_CONSTRUCTION_SLOPE_DOWN_TIP                ),
@@ -244,6 +244,8 @@ namespace OpenRCT2::Ui::Windows
         SpecialElementsDropdownState _specialElementDropdownState;
         bool _autoOpeningShop{};
         u8string _windowTitle{};
+        u8string _specialDropdownText{};
+        u8string _brakeSpeedText{};
 
     public:
         void onOpen() override
@@ -1622,9 +1624,8 @@ namespace OpenRCT2::Ui::Windows
                     stringId = STR_LOG_BUMPS;
                 }
             }
-
-            auto ft = Formatter::Common();
-            ft.Add<uint16_t>(stringId);
+            _specialDropdownText = FormatStringID(STR_YELLOW_STRING, stringId);
+            widgets[WIDX_SPECIAL_TRACK_DROPDOWN].setString(_specialDropdownText.c_str());
 
             if (_currentlyShowingBrakeOrBoosterSpeed)
             {
@@ -1633,11 +1634,8 @@ namespace OpenRCT2::Ui::Windows
                 {
                     brakeSpeed2 = GetUnifiedBoosterSpeed(currentRide->type, brakeSpeed2);
                 }
-                ft.Add<uint16_t>(brakeSpeed2);
-            }
-            else
-            {
-                ft.Increment(2);
+                _brakeSpeedText = FormatStringID(STR_VELOCITY, brakeSpeed2);
+                widgets[WIDX_SPEED_SETTING_SPINNER].setString(_brakeSpeedText.c_str());
             }
 
             widgets[WIDX_SEAT_ROTATION_ANGLE_SPINNER].text = kSeatAngleRotationStrings[_currentSeatRotationAngle];
@@ -2030,7 +2028,6 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 _currentlyShowingBrakeOrBoosterSpeed = true;
-                widgets[WIDX_SPEED_SETTING_SPINNER].text = STR_RIDE_CONSTRUCTION_BRAKE_SPEED_VELOCITY;
 
                 widgets[WIDX_SPEED_SETTING_SPINNER].type = WidgetType::spinner;
                 widgets[WIDX_SPEED_SETTING_SPINNER_UP].type = WidgetType::button;

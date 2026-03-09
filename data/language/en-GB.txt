@@ -1055,7 +1055,6 @@ STR_1671    :{WINDOW_COLOUR_2}Total profit: {BLACK}{CURRENCY2DP}
 STR_1672    :Brakes
 STR_1673    :Spinning Control Toggle Track
 STR_1674    :Brake speed
-STR_1675    :{POP16}{VELOCITY}
 STR_1676    :Set speed limit for brakes
 STR_1677    :{WINDOW_COLOUR_2}Popularity: {BLACK}Unknown
 STR_1678    :{WINDOW_COLOUR_2}Popularity: {BLACK}{COMMA16}%
