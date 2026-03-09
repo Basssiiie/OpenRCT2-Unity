@@ -26,6 +26,7 @@
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/localisation/Currency.h>
 #include <openrct2/localisation/Formatter.h>
+#include <openrct2/localisation/Formatting.h>
 #include <openrct2/localisation/Localisation.Date.h>
 #include <openrct2/network/Network.h>
 #include <openrct2/ui/WindowManager.h>
@@ -273,7 +274,7 @@ static constexpr auto window_cheats_guests_widgets = makeWidgets(
     makeWidget({ 11, 251}, kCheatButtonSize,  WidgetType::button,   WindowColour::secondary, STR_CHEAT_LESS_THAN_15                                          ), // ride intensity < 15
 
     makeWidget({  5, 258+15+6+2}, {238, 62},        WidgetType::groupbox, WindowColour::secondary, STR_CHEAT_GIVE_ALL_GUESTS                                       ), // Guests inventory group frame
-    makeWidget({ 11, 279+15+6-3}, kCheatButtonSize, WidgetType::button,   WindowColour::secondary, STR_CURRENCY_FORMAT                                             ), // give guests money
+    makeWidget({ 11, 279+15+6-3}, kCheatButtonSize, WidgetType::button,   WindowColour::secondary, kStringIdEmpty                                                  ), // give guests money
     makeWidget({127, 279+15+6-3}, kCheatButtonSize, WidgetType::button,   WindowColour::secondary, STR_SHOP_ITEM_PLURAL_PARK_MAP                                   ), // give guests park maps
     makeWidget({ 11, 300+15+6-3}, kCheatButtonSize, WidgetType::button,   WindowColour::secondary, STR_SHOP_ITEM_PLURAL_BALLOON                                    ), // give guests balloons
     makeWidget({127, 300+15+6-3}, kCheatButtonSize, WidgetType::button,   WindowColour::secondary, STR_SHOP_ITEM_PLURAL_UMBRELLA                                   ), // give guests umbrellas
@@ -350,7 +351,7 @@ static constexpr auto window_cheats_rides_widgets = makeWidgets(
 static constexpr auto window_cheats_weather_widgets = makeWidgets(
     kMainCheatWidgets,
     makeWidget        ({  5,  48}, {238,  50},       WidgetType::groupbox,     WindowColour::secondary, STR_CHEAT_WEATHER_GROUP                                      ), // Weather group
-    makeWidget        ({126,  62}, {111,  14},       WidgetType::dropdownMenu, WindowColour::secondary, STR_WEATHER_CAPTION,             STR_CHANGE_WEATHER_TOOLTIP  ), // Force weather
+    makeWidget        ({126,  62}, {111,  14},       WidgetType::dropdownMenu, WindowColour::secondary, kStringIdEmpty,                  STR_CHANGE_WEATHER_TOOLTIP  ), // Force weather
     makeWidget        ({225,  63}, { 11,  12},       WidgetType::button,       WindowColour::secondary, STR_DROPDOWN_GLYPH,              STR_CHANGE_WEATHER_TOOLTIP  ), // Force weather
     makeWidget        ({ 11,  80}, kCheatCheckSize,  WidgetType::checkbox,     WindowColour::secondary, STR_CHEAT_FREEZE_WEATHER,        STR_CHEAT_FREEZE_WEATHER_TIP), // Freeze weather
     makeWidget        ({  5, 102}, {238,  37},       WidgetType::groupbox,     WindowColour::secondary, STR_FAUNA                                                    ), // Fauna group
@@ -413,6 +414,8 @@ static StringId window_cheats_page_titles[] = {
         int32_t _yearSpinnerValue = 1;
         int32_t _monthSpinnerValue = 1;
         int32_t _daySpinnerValue = 1;
+        u8string _moneyButtonText = FormatStringID(STR_CURRENCY_FORMAT, 1000.00_GBP);
+        u8string _weatherDropdownText{};
 
     public:
         void onOpen() override
@@ -539,8 +542,6 @@ static StringId window_cheats_page_titles[] = {
                 }
                 case WINDOW_CHEATS_PAGE_GUESTS:
                 {
-                    auto ft = Formatter::Common();
-                    ft.Add<money64>(1000.00_GBP);
                     setCheckboxValue(WIDX_GUEST_IGNORE_RIDE_INTENSITY, gameState.cheats.ignoreRideIntensity);
                     setCheckboxValue(WIDX_GUEST_IGNORE_PRICE, gameState.cheats.ignorePrice);
                     setCheckboxValue(WIDX_DISABLE_VANDALISM, gameState.cheats.disableVandalism);
@@ -586,10 +587,8 @@ static StringId window_cheats_page_titles[] = {
             if (page == WINDOW_CHEATS_PAGE_WEATHER)
             {
                 auto& weatherType = kWeatherTypes[EnumValue(gameState.weatherCurrent.weatherType)];
-
-                auto ft = Formatter::Common();
-                ft.Add<uint32_t>(weatherType.smallIcon);
-                ft.Add<StringId>(weatherType.label);
+                _weatherDropdownText = FormatStringID(STR_WEATHER_CAPTION, weatherType.smallIcon, weatherType.label);
+                widgets[WIDX_WEATHER].setString(_weatherDropdownText.c_str());
             }
 
             // Staff speed
@@ -769,6 +768,9 @@ static StringId window_cheats_page_titles[] = {
                 resizeFrame();
                 invalidate();
             }
+
+            if (p == WINDOW_CHEATS_PAGE_GUESTS)
+                widgets[WIDX_GIVE_GUESTS_MONEY].setString(_moneyButtonText.c_str());
         }
 
         void UpdateTabPositions()
