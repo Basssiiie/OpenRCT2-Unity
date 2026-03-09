@@ -118,7 +118,7 @@ namespace OpenRCT2::Ui::Windows
     static constexpr auto _windowFinancesSummaryWidgets = makeWidgets(
         makeFinancesWidgets(STR_FINANCIAL_SUMMARY, kTabContentSizeSummary, kWindowSizeSummary),
         makeWidget        ({130,  50}, {391, 211}, WidgetType::scroll,  WindowColour::secondary, SCROLL_HORIZONTAL              ),
-        makeSpinnerWidgets({ 64, 277}, { 97,  14}, WidgetType::spinner, WindowColour::secondary, STR_FINANCES_SUMMARY_LOAN_VALUE) // NB: 3 widgets
+        makeSpinnerWidgets({ 64, 277}, { 97,  14}, WidgetType::spinner, WindowColour::secondary) // NB: 3 widgets
     );
 
     static constexpr auto _windowFinancesCashWidgets = makeWidgets(
@@ -228,6 +228,7 @@ namespace OpenRCT2::Ui::Windows
         uint32_t _lastPaintedMonth = std::numeric_limits<uint32_t>::max();
         ScreenRect _graphBounds;
         Graph::GraphProperties<money64> _graphProps{};
+        u8string _loanSpinnerText{};
 
         void SetDisabledTabs()
         {
@@ -579,12 +580,8 @@ namespace OpenRCT2::Ui::Windows
 
         void onPrepareDrawSummary()
         {
-            // Setting loan widget's format arguments here.
-            // Nothing else should use the global formatter until
-            // drawing has completed.
-            auto ft = Formatter::Common();
-            ft.Increment(6);
-            ft.Add<money64>(getGameState().park.bankLoan);
+            _loanSpinnerText = FormatStringID(STR_CURRENCY_FORMAT, getGameState().park.bankLoan);
+            widgets[WIDX_LOAN].setString(_loanSpinnerText.c_str());
 
             // Keep up with new months being added in the first two years.
             if (GetDate().GetMonthsElapsed() != _lastPaintedMonth)
