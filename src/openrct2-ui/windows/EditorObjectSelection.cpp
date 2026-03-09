@@ -896,6 +896,7 @@ namespace OpenRCT2::Ui::Windows
             }
 
             auto ft = Formatter::Common();
+            ft.Increment(2);
             // Set filter dropdown caption
             if (!IsFilterActive(FILTER_SOURCES_ALL))
             {
