@@ -669,6 +669,7 @@ namespace OpenRCT2::Ui::Windows
         std::vector<VehicleTypeLabel> _vehicleDropdownData;
         int16_t _vehicleIndex = 0;
         uint16_t _rideColour = 0;
+        int32_t _colourPanelHeight = kWindowSize.height;
         std::vector<EntranceTypeLabel> _entranceDropdownData;
         bool _autoScrollGraph = true;
         bool _lastAllowArbitraryRideTypeChanges = false;
@@ -4374,7 +4375,7 @@ namespace OpenRCT2::Ui::Windows
 
         void ColourResize()
         {
-            auto bottom = widgets[WIDX_VEHICLE_PREVIEW].bottom + 6 - getTitleBarDiffNormal();
+            auto bottom = _colourPanelHeight - getTitleBarDiffNormal();
             WindowSetResize(*this, { kMinimumWindowWidth, bottom }, { kMinimumWindowWidth, bottom });
         }
 
@@ -4665,6 +4666,10 @@ namespace OpenRCT2::Ui::Windows
             startY = colourOnPrepareDrawTrack(startY, ride, rideEntry);
             startY = colourOnPrepareDrawEntrance(startY, ride);
             startY = colourOnPrepareDrawVehicles(startY, ride, rideEntry);
+
+            _colourPanelHeight = startY;
+            if (_colourPanelHeight != height)
+                onResize();
         }
 
         int32_t colourOnPrepareDrawTrack(int32_t startY, const Ride* ride, const RideObjectEntry* rideEntry)
