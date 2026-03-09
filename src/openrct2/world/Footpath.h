@@ -191,6 +191,8 @@ void FootpathChainRideQueue(
 void FootpathUpdatePathWideFlags(const CoordsXY& footpathPos);
 bool FootpathIsBlockedByVehicle(const TileCoordsXYZ& position);
 
+bool TileElementWantsPathConnectionTowards(const TileCoordsXYZD& coords, const OpenRCT2::TileElement* elementToBeRemoved);
+
 int32_t FootpathIsConnectedToMapEdge(const CoordsXYZ& footpathPos, int32_t direction, int32_t flags);
 void FootpathRemoveEdgesAt(const CoordsXY& footpathPos, OpenRCT2::TileElement* tileElement);
 
