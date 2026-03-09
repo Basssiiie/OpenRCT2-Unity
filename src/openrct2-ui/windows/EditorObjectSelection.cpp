@@ -271,6 +271,7 @@ namespace OpenRCT2::Ui::Windows
         uint8_t _selectedSubTab = 0;
         bool _overrideChecks = false;
         u8string _windowTitle{};
+        u8string _filterDropdownText{};
 
     public:
         /**
@@ -895,28 +896,30 @@ namespace OpenRCT2::Ui::Windows
                 installTrackWidget.type = WidgetType::empty;
             }
 
-            auto ft = Formatter::Common();
-            ft.Increment(2);
             // Set filter dropdown caption
             if (!IsFilterActive(FILTER_SOURCES_ALL))
             {
                 // only one source active?
                 uint32_t sources = _filterFlags & FILTER_SOURCES_ALL;
-                auto numSourcesActive = std::popcount(sources);
+                uint16_t numSourcesActive = std::popcount(sources);
                 if (numSourcesActive == 1)
                 {
                     widgets[WIDX_FILTER_DROPDOWN].text = STR_OBJECT_SELECTION_ONLY_STRINGID;
                     auto firstActiveSource = Numerics::bitScanForward(sources);
-                    ft.Add<StringId>(kSourceStringIds[firstActiveSource]);
+                    _filterDropdownText = FormatStringID(
+                        STR_OBJECT_SELECTION_ONLY_STRINGID, kSourceStringIds[firstActiveSource]);
                 }
                 else
                 {
-                    widgets[WIDX_FILTER_DROPDOWN].text = STR_OBJECT_SELECTION_SHOWING_N_SOURCES;
-                    ft.Add<uint16_t>(numSourcesActive);
+                    _filterDropdownText = FormatStringID(STR_OBJECT_SELECTION_SHOWING_N_SOURCES, numSourcesActive);
                 }
             }
             else
-                widgets[WIDX_FILTER_DROPDOWN].text = STR_OBJECT_SELECTION_ALL_SOURCES_SHOWN;
+            {
+                _filterDropdownText = FormatStringID(STR_OBJECT_SELECTION_ALL_SOURCES_SHOWN);
+            }
+
+            widgets[WIDX_FILTER_DROPDOWN].setString(_filterDropdownText.c_str());
 
             // Align main tabs
             int32_t x = 3;
