@@ -67,6 +67,9 @@ enum class RideEntryFlag : uint8_t
     magicCarpetSwingMode,
     riderControlsSpeed,
     hideEmptyTrains,
+    // Hide the ‘Reverse trains’ checkbox in the Ride window. Used for symmetrical spinning trains and legacy pre-reversed
+    // vehicles (to avoid double-dipping on the reverse bonus).
+    noReverseOption,
 };
 using RideEntryFlags = FlagHolder<uint32_t, RideEntryFlag>;
 

@@ -672,6 +672,7 @@ namespace OpenRCT2
                     { "disablePainting", RideEntryFlag::disableColourTab },
                     { "riderControlsSpeed", RideEntryFlag::riderControlsSpeed },
                     { "hideEmptyTrains", RideEntryFlag::hideEmptyTrains },
+                    { "noReverseOption", RideEntryFlag::noReverseOption },
                 });
         }
 

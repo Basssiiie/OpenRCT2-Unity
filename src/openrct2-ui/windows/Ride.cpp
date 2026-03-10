@@ -2908,7 +2908,8 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_VEHICLE_CARS_PER_TRAIN_DECREASE].type = WidgetType::empty;
             }
 
-            if (ride->getRideTypeDescriptor().flags.has(RtdFlag::allowReversedTrains)
+            if ((ride->getRideTypeDescriptor().flags.has(RtdFlag::allowReversedTrains)
+                 && !rideEntry->flags.has(RideEntryFlag::noReverseOption))
                 || (gameState.cheats.disableTrainLengthLimit && !ride->getRideTypeDescriptor().flags.has(RtdFlag::isFlatRide)))
             {
                 widgets[WIDX_VEHICLE_REVERSED_TRAINS_CHECKBOX].type = WidgetType::checkbox;
