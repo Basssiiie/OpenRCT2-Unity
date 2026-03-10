@@ -67,7 +67,6 @@
 #include "RideManager.hpp"
 #include "ShopItem.h"
 #include "Station.h"
-#include "Track.h"
 #include "TrackData.h"
 #include "TrackDesign.h"
 #include "TrackIteration.h"
@@ -2440,7 +2439,7 @@ static ResultWithMessage RideCheckBlockBrakes(const CoordsXYE& input, CoordsXYE*
     trackCircuitIteratorBegin(&it, input);
     while (trackCircuitIteratorNext(&it))
     {
-        if (TrackTypeIsBlockBrakes(it.current.element->AsTrack()->GetTrackType()))
+        if (trackTypeIsBlockBrakes(it.current.element->AsTrack()->GetTrackType()))
         {
             auto type = it.last.element->AsTrack()->GetTrackType();
             if (type == TrackElemType::endStation)
@@ -2448,7 +2447,7 @@ static ResultWithMessage RideCheckBlockBrakes(const CoordsXYE& input, CoordsXYE*
                 *output = it.current;
                 return { false, STR_BLOCK_BRAKES_CANNOT_BE_USED_DIRECTLY_AFTER_STATION };
             }
-            if (TrackTypeIsBlockBrakes(type))
+            if (trackTypeIsBlockBrakes(type))
             {
                 *output = it.current;
                 return { false, STR_BLOCK_BRAKES_CANNOT_BE_USED_DIRECTLY_AFTER_EACH_OTHER };
@@ -2856,7 +2855,7 @@ void BlockBrakeSetLinkedBrakesClosed(const CoordsXYZ& vehicleTrackLocation, Trac
         location.z = trackBeginEnd.begin_z;
         tileElement = trackBeginEnd.begin_element;
 
-        if (TrackTypeIsBrakes(tileElement->AsTrack()->GetTrackType()))
+        if (trackTypeIsBrakes(tileElement->AsTrack()->GetTrackType()))
         {
             SetBrakeClosedMultiTile(
                 *tileElement->AsTrack(), { trackBeginEnd.begin_x, trackBeginEnd.begin_y },
@@ -2878,7 +2877,7 @@ void BlockBrakeSetLinkedBrakesClosed(const CoordsXYZ& vehicleTrackLocation, Trac
                 return;
             }
         }
-    } while (TrackTypeIsBrakes(trackBeginEnd.begin_element->AsTrack()->GetTrackType()));
+    } while (trackTypeIsBrakes(trackBeginEnd.begin_element->AsTrack()->GetTrackType()));
 }
 
 /**
@@ -3471,7 +3470,7 @@ void Ride::moveTrainsToBlockBrakes(const CoordsXYZ& firstBlockPosition, TrackEle
         // All vehicles are in position, set the block brake directly before the station one last time and make sure the brakes
         // are set appropriately
         SetBrakeClosedMultiTile(firstBlock, firstBlockPosition, true);
-        if (TrackTypeIsBlockBrakes(firstBlock.GetTrackType()))
+        if (trackTypeIsBlockBrakes(firstBlock.GetTrackType()))
         {
             BlockBrakeSetLinkedBrakesClosed(firstBlockPosition, firstBlock, true);
         }

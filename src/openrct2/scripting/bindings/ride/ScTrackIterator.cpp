@@ -13,6 +13,7 @@
 
     #include "../../../Context.h"
     #include "../../../ride/Ride.h"
+    #include "../../../ride/Track.h"
     #include "../../../ride/TrackData.h"
     #include "../../../ride/TrackIteration.h"
     #include "../../../ride/ted/TrackElementDescriptor.h"

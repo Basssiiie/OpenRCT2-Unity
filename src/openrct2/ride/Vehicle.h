@@ -14,12 +14,12 @@
 #include "../core/FlagHolder.hpp"
 #include "../entity/EntityBase.h"
 #include "../ride/RideTypes.h"
-#include "../ride/Track.h"
 #include "../world/Location.hpp"
 #include "Angles.h"
 #include "CarEntry.h"
 #include "VehicleColour.h"
 #include "VehicleSubpositionData.h"
+#include "ted/PitchAndRoll.h"
 
 #include <cstddef>
 #include <optional>

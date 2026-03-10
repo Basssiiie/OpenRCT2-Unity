@@ -20,7 +20,6 @@
 #include "Ride.h"
 #include "RideData.h"
 #include "RideEntry.h"
-#include "Track.h"
 #include "TrackData.h"
 #include "VehicleData.h"
 #include "ted/TrackElementDescriptor.h"
@@ -714,7 +713,7 @@ void Vehicle::UpdateSwingingCar()
                 break;
         }
 
-        if (TrackTypeIsStation(trackType) || TrackTypeIsBrakes(trackType) || TrackTypeIsBlockBrakes(trackType))
+        if (trackTypeIsStation(trackType) || trackTypeIsBrakes(trackType) || trackTypeIsBlockBrakes(trackType))
         {
             dx = 0;
             cx = 0;

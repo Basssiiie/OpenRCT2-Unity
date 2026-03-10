@@ -26,7 +26,6 @@
 #include "../paint/tile_element/Paint.TileElement.h"
 #include "../peep/GuestPathfinding.h"
 #include "../ride/RideData.h"
-#include "../ride/Track.h"
 #include "../ride/TrackIteration.h"
 #include "../ride/Vehicle.h"
 #include "../scenario/Scenario.h"
@@ -2105,7 +2104,7 @@ namespace OpenRCT2
                 }
 
                 auto trackType = vehicle->GetTrackType();
-                if (TrackTypeIsStation(trackType))
+                if (trackTypeIsStation(trackType))
                 {
                     break;
                 }

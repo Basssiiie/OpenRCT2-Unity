@@ -29,7 +29,6 @@
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
 #include "../ride/ShopItem.h"
-#include "../ride/Track.h"
 #include "../ride/Vehicle.h"
 #include "ObjectRepository.h"
 

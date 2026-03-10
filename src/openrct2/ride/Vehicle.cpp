@@ -1574,5 +1574,5 @@ void Vehicle::Serialise(DataSerialiser& stream)
 
 bool Vehicle::IsOnCoveredTrack() const
 {
-    return TrackElementIsCovered(GetTrackType());
+    return trackTypeIsCovered(GetTrackType());
 }

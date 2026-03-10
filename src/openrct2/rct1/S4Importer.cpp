@@ -1756,7 +1756,7 @@ namespace OpenRCT2::RCT1
                     auto trackType = dst2->GetTrackType();
                     // Brakes import as closed to preserve legacy behaviour
                     dst2->SetBrakeClosed(trackType == TrackElemType::brakes);
-                    if (TrackTypeHasSpeedSetting(trackType))
+                    if (trackTypeHasSpeedSetting(trackType))
                     {
                         dst2->SetBrakeBoosterSpeed(src2->GetBrakeBoosterSpeed());
                     }

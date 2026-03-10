@@ -29,36 +29,17 @@ constexpr uint8_t kDefaultSeatRotation = 4;
 
 namespace OpenRCT2
 {
-    enum class TrackElemType : uint16_t;
-
     struct TileElement;
-    struct TrackElement;
 
     namespace TrackMetadata
     {
         enum class TrackRoll : uint8_t;
-        struct PitchAndRoll;
     } // namespace TrackMetadata
 } // namespace OpenRCT2
 
 struct ResultWithMessage;
 
-enum
-{
-    RCT_PREVIEW_TRACK_FLAG_0 = (1 << 0),
-    RCT_PREVIEW_TRACK_FLAG_1 = (1 << 1),
-    RCT_PREVIEW_TRACK_FLAG_IS_VERTICAL = (1 << 2),
-};
-
 int32_t TrackIsConnectedByShape(OpenRCT2::TileElement* a, OpenRCT2::TileElement* b);
-
-bool TrackElementIsCovered(OpenRCT2::TrackElemType trackElementType);
-OpenRCT2::TrackElemType UncoverTrackElement(OpenRCT2::TrackElemType trackElementType);
-bool TrackTypeIsStation(OpenRCT2::TrackElemType trackType);
-bool TrackTypeIsBrakes(OpenRCT2::TrackElemType trackType);
-bool TrackTypeIsBlockBrakes(OpenRCT2::TrackElemType trackType);
-bool TrackTypeIsBooster(OpenRCT2::TrackElemType trackType);
-bool TrackTypeIsReverser(OpenRCT2::TrackElemType trackType);
 
 OpenRCT2::TrackMetadata::TrackRoll TrackGetActualBank(
     OpenRCT2::TileElement* tileElement, OpenRCT2::TrackMetadata::TrackRoll bank);
@@ -70,8 +51,6 @@ ResultWithMessage TrackAddStationElement(
     CoordsXYZD loc, RideId rideIndex, OpenRCT2::GameActions::CommandFlags flags, bool fromTrackDesign);
 ResultWithMessage TrackRemoveStationElement(const CoordsXYZD& loc, RideId rideIndex, OpenRCT2::GameActions::CommandFlags flags);
 
-bool TrackTypeHasSpeedSetting(OpenRCT2::TrackElemType trackType);
-bool TrackTypeIsHelix(OpenRCT2::TrackElemType trackType);
 std::optional<CoordsXYZD> GetTrackSegmentOrigin(const CoordsXYE& posEl);
 
 constexpr bool TrackPieceDirectionIsDiagonal(const uint8_t direction)

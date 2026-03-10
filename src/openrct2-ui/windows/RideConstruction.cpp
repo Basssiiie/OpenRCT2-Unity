@@ -1630,7 +1630,7 @@ namespace OpenRCT2::Ui::Windows
             if (_currentlyShowingBrakeOrBoosterSpeed)
             {
                 uint16_t brakeSpeed2 = ((_currentBrakeSpeed * 9) >> 2) & 0xFFFF;
-                if (TrackTypeIsBooster(_selectedTrackType) || TrackTypeIsBooster(_currentlySelectedTrack.trackType))
+                if (trackTypeIsBooster(_selectedTrackType) || trackTypeIsBooster(_currentlySelectedTrack.trackType))
                 {
                     brakeSpeed2 = GetUnifiedBoosterSpeed(currentRide->type, brakeSpeed2);
                 }
@@ -1988,10 +1988,10 @@ namespace OpenRCT2::Ui::Windows
             widgets[WIDX_U_TRACK].type = WidgetType::empty;
             widgets[WIDX_O_TRACK].type = WidgetType::empty;
 
-            bool trackHasSpeedSetting = TrackTypeHasSpeedSetting(_selectedTrackType)
-                || TrackTypeHasSpeedSetting(_currentlySelectedTrack.trackType);
-            bool boosterTrackSelected = TrackTypeIsBooster(_selectedTrackType)
-                || TrackTypeIsBooster(_currentlySelectedTrack.trackType);
+            bool trackHasSpeedSetting = trackTypeHasSpeedSetting(_selectedTrackType)
+                || trackTypeHasSpeedSetting(_currentlySelectedTrack.trackType);
+            bool boosterTrackSelected = trackTypeIsBooster(_selectedTrackType)
+                || trackTypeIsBooster(_currentlySelectedTrack.trackType);
 
             // only necessary because TD6 writes speed and seat rotation to the same bits. Remove for new track design format.
             bool trackHasSpeedAndSeatRotation = _selectedTrackType == TrackElemType::blockBrakes
@@ -2370,7 +2370,7 @@ namespace OpenRCT2::Ui::Windows
             }
 
             const bool helixSelected = (_currentlySelectedTrack.isTrackType)
-                && TrackTypeIsHelix(_currentlySelectedTrack.trackType);
+                && trackTypeIsHelix(_currentlySelectedTrack.trackType);
             if (helixSelected || (_currentTrackPitchEnd != TrackPitch::none))
             {
                 ViewportSetVisibility(ViewportVisibility::trackHeights);
@@ -2713,7 +2713,7 @@ namespace OpenRCT2::Ui::Windows
             const auto& ted = GetTrackElementDescriptor(trackType);
             const auto trackBlock = ted.sequenceData.sequences[ted.sequenceData.numSequences - 1].clearance;
             CoordsXYZ mapCoords{ trackBlock.x, trackBlock.y, trackBlock.z };
-            if (trackBlock.flags & RCT_PREVIEW_TRACK_FLAG_1)
+            if (trackBlock.flags.has(ClearanceFlag::flag1))
             {
                 mapCoords.x = 0;
                 mapCoords.y = 0;
@@ -3189,7 +3189,7 @@ namespace OpenRCT2::Ui::Windows
                 != std::nullopt)
             {
                 _selectedTrackType = tileElement->AsTrack()->GetTrackType();
-                if (TrackTypeHasSpeedSetting(tileElement->AsTrack()->GetTrackType()))
+                if (trackTypeHasSpeedSetting(tileElement->AsTrack()->GetTrackType()))
                     _currentBrakeSpeed = tileElement->AsTrack()->GetBrakeBoosterSpeed();
                 _currentColourScheme = static_cast<RideColourScheme>(tileElement->AsTrack()->GetColourScheme());
                 _currentSeatRotationAngle = tileElement->AsTrack()->GetSeatRotation();
@@ -5073,7 +5073,7 @@ namespace OpenRCT2::Ui::Windows
             }
         }
 
-        if (TrackTypeHasSpeedSetting(trackType))
+        if (trackTypeHasSpeedSetting(trackType))
         {
             properties = _currentBrakeSpeed;
         }

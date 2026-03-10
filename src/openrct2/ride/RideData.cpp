@@ -27,7 +27,6 @@
 #include "../management/Research.h"
 #include "Ride.h"
 #include "ShopItem.h"
-#include "Track.h"
 #include "Vehicle.h"
 #include "rtd/coaster/AirPoweredVerticalCoaster.h"
 #include "rtd/coaster/AlpineCoaster.h"

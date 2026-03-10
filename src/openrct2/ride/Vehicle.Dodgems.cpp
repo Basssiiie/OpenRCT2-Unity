@@ -29,6 +29,25 @@ extern int32_t _vehicleVelocityF64E0C;
 extern int32_t _vehicleUnkF64E10;
 extern CoordsXYZ _vehicleCurPosition;
 
+struct DodgemsTrackSize
+{
+    uint8_t left;
+    uint8_t top;
+    uint8_t right;
+    uint8_t bottom;
+};
+
+constexpr DodgemsTrackSize GetDodgemsTrackSize(TrackElemType type)
+{
+    if (type == TrackElemType::flatTrack2x2)
+        return { 4, 4, 59, 59 };
+    if (type == TrackElemType::flatTrack4x4)
+        return { 4, 4, 123, 123 };
+    if (type == TrackElemType::flatTrack2x4)
+        return { 4, 4, 59, 123 };
+    return { 0, 0, 0, 0 };
+}
+
 /** rct2: 0x009A37C4 */
 static constexpr CoordsXY kSurroundingTiles[] = {
     { 0, 0 },

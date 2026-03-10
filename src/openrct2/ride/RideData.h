@@ -32,7 +32,6 @@
 #include "RideRatings.h"
 #include "RideStringIds.h"
 #include "ShopItem.h"
-#include "Track.h"
 #include "TrackStyle.h"
 #include "Vehicle.h"
 #include "ted/TrackGroup.h"

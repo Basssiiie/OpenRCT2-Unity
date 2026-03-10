@@ -247,7 +247,7 @@ namespace OpenRCT2::GameActions
             int32_t baseZ = floor2(mapLoc.z, kCoordsZStep);
 
             int32_t clearanceZ = trackBlock.clearanceZ;
-            if (trackBlock.flags & RCT_PREVIEW_TRACK_FLAG_IS_VERTICAL && clearanceHeight > 24)
+            if (trackBlock.flags.has(ClearanceFlag::isVertical) && clearanceHeight > 24)
             {
                 clearanceZ += 24;
             }
@@ -457,7 +457,7 @@ namespace OpenRCT2::GameActions
 
             int32_t baseZ = floor2(mapLoc.z, kCoordsZStep);
             int32_t clearanceZ = trackBlock.clearanceZ;
-            if (trackBlock.flags & RCT_PREVIEW_TRACK_FLAG_IS_VERTICAL && clearanceHeight > 24)
+            if (trackBlock.flags.has(ClearanceFlag::isVertical) && clearanceHeight > 24)
             {
                 clearanceZ += 24;
             }
@@ -593,7 +593,7 @@ namespace OpenRCT2::GameActions
                 default:
                     break;
             }
-            if (TrackTypeHasSpeedSetting(_trackType))
+            if (trackTypeHasSpeedSetting(_trackType))
             {
                 trackElement->SetBrakeBoosterSpeed(_brakeSpeed);
             }

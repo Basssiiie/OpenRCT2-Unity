@@ -19,7 +19,6 @@
     #include "../../../object/WallSceneryEntry.h"
     #include "../../../ride/Ride.h"
     #include "../../../ride/RideData.h"
-    #include "../../../ride/Track.h"
     #include "../../../world/Footpath.h"
     #include "../../../world/Map.h"
     #include "../../../world/Scenery.h"
@@ -1005,7 +1004,7 @@ namespace OpenRCT2::Scripting
             if (el == nullptr)
                 throw DukException() << "Cannot read 'brakeBoosterSpeed' property, tile element is not a TrackElement.";
 
-            if (!TrackTypeHasSpeedSetting(el->GetTrackType()))
+            if (!trackTypeHasSpeedSetting(el->GetTrackType()))
                 throw DukException() << "Cannot read 'brakeBoosterSpeed' property, track element has no speed setting.";
 
             duk_push_int(ctx, el->GetBrakeBoosterSpeed());
@@ -1030,7 +1029,7 @@ namespace OpenRCT2::Scripting
             if (el == nullptr)
                 throw DukException() << "Cannot set 'brakeBoosterSpeed' property, tile element is not a TrackElement.";
 
-            if (!TrackTypeHasSpeedSetting(el->GetTrackType()))
+            if (!trackTypeHasSpeedSetting(el->GetTrackType()))
                 throw DukException() << "Cannot set 'brakeBoosterSpeed' property, track element has no speed setting.";
 
             el->SetBrakeBoosterSpeed(value.as_uint());

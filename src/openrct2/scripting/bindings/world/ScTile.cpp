@@ -16,7 +16,6 @@
     #include "../../../drawing/ScrollingText.h"
     #include "../../../entity/EntityRegistry.h"
     #include "../../../object/LargeSceneryEntry.h"
-    #include "../../../ride/Track.h"
     #include "../../../world/Footpath.h"
     #include "../../../world/Map.h"
     #include "../../../world/Scenery.h"
