@@ -560,6 +560,8 @@
     <ClInclude Include="ride\ted\PitchAndRoll.h" />
     <ClInclude Include="ride\ted\TED.DiveLoop.h" />
     <ClInclude Include="ride\ted\TED.HalfHelix.h" />
+    <ClInclude Include="ride\ted\TED.Heartline.h" />
+    <ClInclude Include="ride\ted\TED.Loop.h" />
     <ClInclude Include="ride\ted\TED.SBend.h" />
     <ClInclude Include="ride\ted\TED.Station.h" />
     <ClInclude Include="ride\ted\TED.ZeroG.h" />
