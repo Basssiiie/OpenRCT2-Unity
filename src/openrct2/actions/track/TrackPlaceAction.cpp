@@ -593,7 +593,7 @@ namespace OpenRCT2::GameActions
                 default:
                     break;
             }
-            if (TrackTypeHasSpeedSetting(_trackType))
+            if (trackTypeHasSpeedSetting(_trackType))
             {
                 trackElement->SetBrakeBoosterSpeed(_brakeSpeed);
             }

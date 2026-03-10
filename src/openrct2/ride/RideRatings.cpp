@@ -28,7 +28,6 @@
 #include "RideData.h"
 #include "RideManager.hpp"
 #include "Station.h"
-#include "Track.h"
 #include "TrackData.h"
 #include "TrackIteration.h"
 
@@ -866,11 +865,11 @@ static void ride_ratings_score_close_proximity(RideRating::UpdateState& state, T
     ride_ratings_score_close_proximity_in_direction(state, inputTileElement, (direction - 1) & 3);
     ride_ratings_score_close_proximity_loops(state, inputTileElement);
 
-    if (TrackTypeIsBrakes(state.ProximityTrackType))
+    if (trackTypeIsBrakes(state.ProximityTrackType))
         state.AmountOfBrakes++;
-    else if (TrackTypeIsBooster(state.ProximityTrackType))
+    else if (trackTypeIsBooster(state.ProximityTrackType))
         state.amountOfBoosters++;
-    else if (TrackTypeIsReverser(state.ProximityTrackType))
+    else if (trackTypeIsReverser(state.ProximityTrackType))
         state.AmountOfReversers++;
 }
 

@@ -21,7 +21,6 @@
 #include "../world/tile_element/TrackElement.h"
 #include "Ride.h"
 #include "RideData.h"
-#include "Track.h"
 #include "TrackData.h"
 #include "TrackIteration.h"
 #include "VehicleGeometry.h"

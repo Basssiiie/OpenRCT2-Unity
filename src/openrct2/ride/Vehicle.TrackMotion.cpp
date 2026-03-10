@@ -318,7 +318,7 @@ static void BlockBrakesOpenPreviousSection(const Ride& ride, const CoordsXYZ& ve
     {
         Play3D(SoundId::blockBrakeClose, location);
     }
-    else if (TrackTypeIsBlockBrakes(trackType))
+    else if (trackTypeIsBlockBrakes(trackType))
     {
         Play3D(SoundId::blockBrakeClose, location);
         BlockBrakeSetLinkedBrakesClosed(location, *trackElement, false);
@@ -510,7 +510,7 @@ void Vehicle::Sub6DBF3E()
  */
 uint8_t Vehicle::ChooseBrakeSpeed() const
 {
-    if (!TrackTypeIsBrakes(GetTrackType()))
+    if (!trackTypeIsBrakes(GetTrackType()))
         return brake_speed;
     auto trackElement = MapGetTrackElementAtOfTypeSeq(TrackLocation, GetTrackType(), 0);
     if (trackElement != nullptr)
@@ -530,7 +530,7 @@ void Vehicle::PopulateBrakeSpeed(const CoordsXYZ& vehicleTrackLocation, TrackEle
 {
     auto trackSpeed = brake.GetBrakeBoosterSpeed();
     brake_speed = trackSpeed;
-    if (!TrackTypeIsBrakes(brake.GetTrackType()))
+    if (!trackTypeIsBrakes(brake.GetTrackType()))
     {
         BlockBrakeSpeed = trackSpeed;
         return;
@@ -542,12 +542,12 @@ void Vehicle::PopulateBrakeSpeed(const CoordsXYZ& vehicleTrackLocation, TrackEle
     uint16_t timeoutCount = 256;
     do
     {
-        if (TrackTypeIsBlockBrakes(output.element->AsTrack()->GetTrackType()))
+        if (trackTypeIsBlockBrakes(output.element->AsTrack()->GetTrackType()))
         {
             BlockBrakeSpeed = output.element->AsTrack()->GetBrakeBoosterSpeed();
             return;
         }
-        if (!TrackTypeIsBrakes(output.element->AsTrack()->GetTrackType()))
+        if (!trackTypeIsBrakes(output.element->AsTrack()->GetTrackType()))
         {
             break;
         }
@@ -585,7 +585,7 @@ bool Vehicle::UpdateTrackMotionForwardsGetNewTrack(
         if (next_vehicle_on_train.IsNull())
         {
             SetBrakeClosedMultiTile(*tileElement->AsTrack(), TrackLocation, true);
-            if (TrackTypeIsBlockBrakes(trackType) || trackType == TrackElemType::endStation)
+            if (trackTypeIsBlockBrakes(trackType) || trackType == TrackElemType::endStation)
             {
                 if (!rideEntry.Cars[0].flags.has(CarEntryFlag::isPowered))
                 {
@@ -594,7 +594,7 @@ bool Vehicle::UpdateTrackMotionForwardsGetNewTrack(
             }
             MapInvalidateElement(TrackLocation, tileElement);
             BlockBrakesOpenPreviousSection(curRide, TrackLocation, tileElement);
-            if (TrackTypeIsBlockBrakes(trackType))
+            if (trackTypeIsBlockBrakes(trackType))
             {
                 BlockBrakeSetLinkedBrakesClosed(TrackLocation, *tileElement->AsTrack(), true);
             }
@@ -784,7 +784,7 @@ bool Vehicle::UpdateTrackMotionForwards(const CarEntry* carEntry, const Ride& cu
                 acceleration = 0x50000;
             }
         }
-        else if (TrackTypeIsBrakes(trackType))
+        else if (trackTypeIsBrakes(trackType))
         {
             if (!curRide.hasFailingBrakes())
             {
@@ -804,7 +804,7 @@ bool Vehicle::UpdateTrackMotionForwards(const CarEntry* carEntry, const Ride& cu
                 }
             }
         }
-        else if (TrackTypeIsBooster(trackType))
+        else if (trackTypeIsBooster(trackType))
         {
             auto boosterSpeed = GetUnifiedBoosterSpeed(curRide.type, brake_speed) << kTrackSpeedShiftAmount;
             if (boosterSpeed > _vehicleVelocityF64E08)
@@ -1170,7 +1170,7 @@ bool Vehicle::UpdateTrackMotionBackwards(const CarEntry* carEntry, const Ride& c
             }
         }
 
-        if (TrackTypeIsBrakes(trackType))
+        if (trackTypeIsBrakes(trackType))
         {
             auto brakeSpeed = ChooseBrakeSpeed();
 

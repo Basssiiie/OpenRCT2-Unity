@@ -14,7 +14,6 @@
 #include "../core/Guard.hpp"
 #include "../object/LargeSceneryEntry.h"
 #include "../ride/Station.h"
-#include "../ride/Track.h"
 #include "../ride/TrackData.h"
 #include "../ride/ted/TrackElementDescriptor.h"
 #include "../ui/WindowManager.h"

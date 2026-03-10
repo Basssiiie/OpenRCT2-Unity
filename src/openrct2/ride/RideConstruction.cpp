@@ -41,7 +41,6 @@
 #include "../world/tile_element/TrackElement.h"
 #include "Ride.h"
 #include "RideData.h"
-#include "Track.h"
 #include "TrackData.h"
 #include "TrackIteration.h"
 #include "TrainManager.h"
@@ -856,7 +855,7 @@ void RideConstructionSetDefaultNextPiece()
                 && ((slope != TrackPitch::down25 && slope != TrackPitch::down60)
                     || getGameState().cheats.enableChainLiftOnAllTrack);
 
-            if (TrackTypeHasSpeedSetting(trackElement->GetTrackType()))
+            if (trackTypeHasSpeedSetting(trackElement->GetTrackType()))
                 _currentBrakeSpeed = trackElement->GetBrakeBoosterSpeed();
             _currentColourScheme = static_cast<RideColourScheme>(trackElement->GetColourScheme());
             _currentSeatRotationAngle = trackElement->GetSeatRotation();
@@ -916,7 +915,7 @@ void RideConstructionSetDefaultNextPiece()
                 _currentTrackHasLiftHill = trackElement->HasChain();
             }
 
-            if (TrackTypeHasSpeedSetting(trackElement->GetTrackType()))
+            if (trackTypeHasSpeedSetting(trackElement->GetTrackType()))
                 _currentBrakeSpeed = trackElement->GetBrakeBoosterSpeed();
             _currentColourScheme = static_cast<RideColourScheme>(trackElement->GetColourScheme());
             _currentSeatRotationAngle = trackElement->GetSeatRotation();

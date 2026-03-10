@@ -17,7 +17,6 @@
 #include "../object/Object.h"
 #include "../rct12/TD46.h"
 #include "../ride/RideColour.h"
-#include "../ride/Track.h"
 #include "../ride/ted/TrackElemType.h"
 #include "RideRatings.h"
 #include "VehicleColour.h"

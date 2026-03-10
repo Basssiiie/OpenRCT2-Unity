@@ -18,7 +18,6 @@
 #include "../../object/SmallSceneryEntry.h"
 #include "../../object/WallSceneryEntry.h"
 #include "../../ride/RideData.h"
-#include "../../ride/Track.h"
 #include "../../ride/TrackData.h"
 #include "../../ride/TrackDesign.h"
 #include "../../ride/ted/TrackElementDescriptor.h"

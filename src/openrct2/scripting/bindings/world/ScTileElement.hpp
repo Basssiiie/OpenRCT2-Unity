@@ -14,7 +14,6 @@
     #include "../../../Context.h"
     #include "../../../core/Guard.hpp"
     #include "../../../entity/EntityRegistry.h"
-    #include "../../../ride/Track.h"
     #include "../../../world/Footpath.h"
     #include "../../../world/Scenery.h"
     #include "../../Duktape.hpp"

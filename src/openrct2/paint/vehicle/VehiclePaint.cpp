@@ -20,7 +20,6 @@
 #include "../../interface/Viewport.h"
 #include "../../ride/CarEntry.h"
 #include "../../ride/RideData.h"
-#include "../../ride/Track.h"
 #include "../../ride/Vehicle.h"
 #include "../Paint.h"
 

@@ -50,7 +50,6 @@
 #include "../rct12/RCT12.h"
 #include "../ride/Ride.h"
 #include "../ride/RideManager.hpp"
-#include "../ride/Track.h"
 #include "../sawyer_coding/SawyerCoding.h"
 #include "../ui/WindowManager.h"
 #include "../util/Util.h"

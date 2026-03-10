@@ -23,7 +23,6 @@
 #include "../world/tile_element/TrackElement.h"
 #include "Ride.h"
 #include "RideData.h"
-#include "Track.h"
 #include "TrackIteration.h"
 
 using namespace OpenRCT2;

@@ -39,6 +39,7 @@
 #include "../rct2/RCT2.h"
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
+#include "../ride/Track.h"
 #include "../ride/Vehicle.h"
 #include "../sawyer_coding/SawyerChunkReader.h"
 #include "../scenario/Scenario.h"
@@ -1415,7 +1416,7 @@ namespace OpenRCT2::RCT2
                     {
                         dst2->SetBrakeBoosterSpeed(kRCT2DefaultBlockBrakeSpeed);
                     }
-                    else if (TrackTypeHasSpeedSetting(trackType))
+                    else if (trackTypeHasSpeedSetting(trackType))
                     {
                         dst2->SetBrakeBoosterSpeed(src2->GetBrakeBoosterSpeed());
                     }

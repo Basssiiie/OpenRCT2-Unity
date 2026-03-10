@@ -14,7 +14,6 @@
 #include "../../RideData.h"
 #include "../../RideRatings.h"
 #include "../../ShopItem.h"
-#include "../../Track.h"
 
 // clang-format off
 namespace OpenRCT2

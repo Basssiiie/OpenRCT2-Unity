@@ -1114,6 +1114,7 @@
     <ClCompile Include="rct2\T6Importer.cpp" />
     <ClCompile Include="ReplayManager.cpp" />
     <ClCompile Include="ride\ted\PitchAndRoll.cpp" />
+    <ClCompile Include="ride\ted\TrackElemType.cpp" />
     <ClCompile Include="ride\CableLift.cpp" />
     <ClCompile Include="ride\CarEntry.cpp" />
     <ClCompile Include="ride\MazeCost.cpp" />

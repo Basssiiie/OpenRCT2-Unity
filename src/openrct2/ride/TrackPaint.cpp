@@ -2028,9 +2028,9 @@ void PaintTrack(PaintSession& session, Direction direction, int32_t height, cons
 
         const auto& rtd = GetRideTypeDescriptor(trackElement.GetRideType());
         bool isInverted = trackElement.IsInverted() && rtd.flags.has(RtdFlag::hasInvertedVariant);
-        const auto trackDrawerEntry = getTrackDrawerEntry(rtd, isInverted, TrackElementIsCovered(trackType));
+        const auto trackDrawerEntry = getTrackDrawerEntry(rtd, isInverted, trackTypeIsCovered(trackType));
 
-        trackType = UncoverTrackElement(trackType);
+        trackType = uncoverTrackType(trackType);
         TrackPaintFunction paintFunction = GetTrackPaintFunction(trackDrawerEntry.trackStyle, trackType);
         paintFunction(session, *ride, trackSequence, direction, height, trackElement, trackDrawerEntry.supportType);
     }
