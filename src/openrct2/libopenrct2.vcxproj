@@ -560,6 +560,7 @@
     <ClInclude Include="ride\ted\PitchAndRoll.h" />
     <ClInclude Include="ride\ted\TED.DiveLoop.h" />
     <ClInclude Include="ride\ted\TED.SBend.h" />
+    <ClInclude Include="ride\ted\TED.Station.h" />
     <ClInclude Include="ride\ted\TED.ZeroG.h" />
     <ClInclude Include="ride\ted\TrackElementDescriptor.h" />
     <ClInclude Include="ride\ted\TrackElemType.h" />

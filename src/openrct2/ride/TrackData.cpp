@@ -14,6 +14,7 @@
 #include "TrackPaint.h"
 #include "ted/TED.DiveLoop.h"
 #include "ted/TED.SBend.h"
+#include "ted/TED.Station.h"
 #include "ted/TED.ZeroG.h"
 #include "ted/TrackElementDescriptor.h"
 
@@ -131,33 +132,6 @@ namespace OpenRCT2::TrackMetadata
             EnumsToFlags(PS::centre, PS::topRight, PS::bottomLeft), // inverted
             kSegmentsAll,                                           // wide
         } },
-    };
-
-    static constexpr SequenceDescriptor kEndStationSeq0 = {
-        .clearance = { 0, 0, 0, 0, { 0b1111, 0 }, {} },
-        .flags = { SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin,
-                   SequenceFlag::disallowDoors, SequenceFlag::hasHeightMarker },
-        .woodenSupports = { WoodenSupportSubType::neSw },
-        .metalSupports = { MetalSupportPlace::centre, true },
-        .blockedSegments = blockedSegmentsAllTypes(kSegmentsAll),
-    };
-
-    static constexpr SequenceDescriptor kBeginStationSeq0 = {
-        .clearance = { 0, 0, 0, 0, { 0b1111, 0 }, {} },
-        .flags = { SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin,
-                   SequenceFlag::disallowDoors, SequenceFlag::hasHeightMarker },
-        .woodenSupports = { WoodenSupportSubType::neSw },
-        .metalSupports = { MetalSupportPlace::centre, true },
-        .blockedSegments = blockedSegmentsAllTypes(kSegmentsAll),
-    };
-
-    static constexpr SequenceDescriptor kMiddleStationSeq0 = {
-        .clearance = { 0, 0, 0, 0, { 0b1111, 0 }, {} },
-        .flags = { SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin,
-                   SequenceFlag::disallowDoors, SequenceFlag::hasHeightMarker },
-        .woodenSupports = { WoodenSupportSubType::neSw },
-        .metalSupports = { MetalSupportPlace::centre, true },
-        .blockedSegments = blockedSegmentsAllTypes(kSegmentsAll),
     };
 
     static constexpr SequenceDescriptor kUp25Seq0 = {
@@ -10213,40 +10187,6 @@ namespace OpenRCT2::TrackMetadata
         .flags = { TrackElementFlag::allowLiftHill },
         .definition = { TrackGroup::straight, TrackPitch::none, TrackPitch::none, TrackRoll::none, TrackRoll::none, 0 },
         .sequenceData = { 1, { kFlatSeq0 } },
-    };
-
-    constexpr auto kTEDEndStation = TrackElementDescriptor{
-        .description = STR_STATION_PLATFORM,
-        .coordinates = { 0, 0, 0, 0, 0, 0 },
-        .pieceLength = 32,
-        .curveChain = { TrackElemType::endStation, TrackElemType::endStation },
-        .priceModifier = 98304,
-        .mirrorElement = TrackElemType::endStation,
-        .flags = {},
-        .definition = { TrackGroup::stationEnd, TrackPitch::none, TrackPitch::none, TrackRoll::none, TrackRoll::none, 0 },
-        .sequenceData = { 1, { kEndStationSeq0 } },
-    };
-
-    constexpr auto kTEDBeginStation = TrackElementDescriptor{
-        .coordinates = { 0, 0, 0, 0, 0, 0 },
-        .pieceLength = 32,
-        .curveChain = { TrackElemType::endStation, TrackElemType::endStation },
-        .priceModifier = 98304,
-        .mirrorElement = TrackElemType::beginStation,
-        .flags = {},
-        .definition = { TrackGroup::stationEnd, TrackPitch::none, TrackPitch::none, TrackRoll::none, TrackRoll::none, 0 },
-        .sequenceData = { 1, { kBeginStationSeq0 } },
-    };
-
-    constexpr auto kTEDMiddleStation = TrackElementDescriptor{
-        .coordinates = { 0, 0, 0, 0, 0, 0 },
-        .pieceLength = 32,
-        .curveChain = { TrackElemType::endStation, TrackElemType::endStation },
-        .priceModifier = 98304,
-        .mirrorElement = TrackElemType::middleStation,
-        .flags = {},
-        .definition = { TrackGroup::stationEnd, TrackPitch::none, TrackPitch::none, TrackRoll::none, TrackRoll::none, 0 },
-        .sequenceData = { 1, { kMiddleStationSeq0 } },
     };
 
     constexpr auto kTEDUp25 = TrackElementDescriptor{
