@@ -2713,7 +2713,7 @@ namespace OpenRCT2::Ui::Windows
             const auto& ted = GetTrackElementDescriptor(trackType);
             const auto trackBlock = ted.sequenceData.sequences[ted.sequenceData.numSequences - 1].clearance;
             CoordsXYZ mapCoords{ trackBlock.x, trackBlock.y, trackBlock.z };
-            if (trackBlock.flags & RCT_PREVIEW_TRACK_FLAG_1)
+            if (trackBlock.flags.has(ClearanceFlag::flag1))
             {
                 mapCoords.x = 0;
                 mapCoords.y = 0;

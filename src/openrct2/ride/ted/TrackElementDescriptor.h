@@ -184,6 +184,14 @@ namespace OpenRCT2::TrackMetadata
         TypeOrCurve previous;
     };
 
+    enum class ClearanceFlag : uint8_t
+    {
+        flag0,
+        flag1,
+        isVertical,
+    };
+    using ClearanceFlags = FlagHolder<uint8_t, ClearanceFlag>;
+
     struct SequenceClearance
     {
         int16_t x{};
@@ -191,7 +199,7 @@ namespace OpenRCT2::TrackMetadata
         int16_t z{};
         uint8_t clearanceZ{};
         QuarterTile quarterTile = { 0, 0 };
-        uint8_t flags{};
+        ClearanceFlags flags{};
     };
 
     struct SequenceWoodenSupport
