@@ -565,6 +565,7 @@
     <ClInclude Include="ride\ted\TED.Heartline.h" />
     <ClInclude Include="ride\ted\TED.LongBase.h" />
     <ClInclude Include="ride\ted\TED.Loop.h" />
+    <ClInclude Include="ride\ted\TED.Maze.h" />
     <ClInclude Include="ride\ted\TED.MiniGolf.h" />
     <ClInclude Include="ride\ted\TED.SBend.h" />
     <ClInclude Include="ride\ted\TED.Station.h" />

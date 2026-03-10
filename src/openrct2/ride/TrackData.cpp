@@ -19,6 +19,7 @@
 #include "ted/TED.Heartline.h"
 #include "ted/TED.LongBase.h"
 #include "ted/TED.Loop.h"
+#include "ted/TED.Maze.h"
 #include "ted/TED.MiniGolf.h"
 #include "ted/TED.SBend.h"
 #include "ted/TED.Station.h"
@@ -1596,89 +1597,6 @@ namespace OpenRCT2::TrackMetadata
         .woodenSupports = { WoodenSupportSubType::neSw },
         .metalSupports = { MetalSupportPlace::centre, true },
         .blockedSegments = kFlatStraightBlockedSegments,
-    };
-
-    // Maze sequence blocks do not have the height marker flag set because they are handled differently
-    static constexpr SequenceDescriptor kMazeSeq0 = {
-        .clearance = { 0, 0, 0, 0, { 0b1111, 0 }, {} },
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-        .woodenSupports = { WoodenSupportSubType::neSw },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq1 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq2 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq3 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq4 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq5 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq6 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq7 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq8 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq9 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq10 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq11 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq12 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq13 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq14 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
-    };
-
-    static constexpr SequenceDescriptor kMazeSeq15 = {
-        .flags = { SequenceFlag::entranceConnectionNE, SequenceFlag::entranceConnectionSE, SequenceFlag::entranceConnectionSW,
-                   SequenceFlag::entranceConnectionNW, SequenceFlag::trackOrigin },
     };
 
     static constexpr SequenceDescriptor kLeftQuarterBankedHelixLargeUpSeq0 = {
@@ -7616,19 +7534,6 @@ namespace OpenRCT2::TrackMetadata
         .definition = { TrackGroup::booster, TrackPitch::none, TrackPitch::none, TrackRoll::none, TrackRoll::none, 0 },
         .spinFunction = SpinFunction::rc,
         .sequenceData = { 1, { kBoosterSeq0 } },
-    };
-
-    constexpr auto kTEDMaze = TrackElementDescriptor{
-        .coordinates = { 0, 0, 0, 0, 0, 0 },
-        .pieceLength = 32,
-        .curveChain = { TrackCurve::none, TrackCurve::none },
-        .priceModifier = 65536,
-        .mirrorElement = TrackElemType::maze,
-        .flags = { TrackElementFlag::onlyAboveGround },
-        .definition = { TrackGroup::flat, TrackPitch::none, TrackPitch::none, TrackRoll::none, TrackRoll::none, 0 },
-        .sequenceData = { 1,
-                          { kMazeSeq0, kMazeSeq1, kMazeSeq2, kMazeSeq3, kMazeSeq4, kMazeSeq5, kMazeSeq6, kMazeSeq7, kMazeSeq8,
-                            kMazeSeq9, kMazeSeq10, kMazeSeq11, kMazeSeq12, kMazeSeq13, kMazeSeq14, kMazeSeq15 } },
     };
 
     constexpr auto kTEDLeftQuarterBankedHelixLargeUp = TrackElementDescriptor{
