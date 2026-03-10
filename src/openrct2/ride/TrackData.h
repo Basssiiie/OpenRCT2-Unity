@@ -19,19 +19,6 @@ namespace OpenRCT2::TrackMetadata
     enum class TrackRoll : uint8_t;
     struct TrackElementDescriptor;
 
-    struct TrackDescriptor
-    {
-        bool startsDiagonally;
-        TrackPitch slopeStart;
-        TrackRoll rollStart;
-        TrackCurve trackCurve;
-        TrackPitch slopeEnd;
-        TrackRoll rollEnd;
-        TrackElemType trackElement;
-    };
-
-    extern const TrackDescriptor gTrackDescriptors[186];
-
     struct DodgemsTrackSize
     {
         uint8_t left;
