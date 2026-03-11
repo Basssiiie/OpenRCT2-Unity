@@ -1080,6 +1080,7 @@
     <ClCompile Include="paint\vehicle\Vehicle.RiverRapids.cpp" />
     <ClCompile Include="paint\vehicle\Vehicle.RotoDrop.cpp" />
     <ClCompile Include="paint\vehicle\Vehicle.SplashBoats.cpp" />
+    <ClCompile Include="paint\vehicle\Vehicle.ClassicMiniSpinning.cpp" />
     <ClCompile Include="paint\vehicle\Vehicle.Submarine.cpp" />
     <ClCompile Include="paint\vehicle\Vehicle.VirginiaReel.cpp" />
     <ClCompile Include="paint\VirtualFloor.cpp" />
