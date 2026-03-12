@@ -214,6 +214,13 @@ namespace OpenRCT2::TrackMetadata
         uint8_t alternates = false;
     };
 
+    using BlockedSegmentsPerType = std::array<uint16_t, kBlockedSegmentsTypeCount>;
+    constexpr BlockedSegmentsPerType kFlatStraightBlockedSegments = { {
+        EnumsToFlags(PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft), // narrow
+        EnumsToFlags(PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft), // inverted
+        kSegmentsAll,                                                                         // wide
+    } };
+
     struct SequenceDescriptor
     {
         SequenceClearance clearance{};
@@ -225,7 +232,7 @@ namespace OpenRCT2::TrackMetadata
         SequenceMetalSupport metalSupports{};
         int8_t extraSupportRotation = 0;
         bool invertSegmentBlocking = false;
-        std::array<uint16_t, kBlockedSegmentsTypeCount> blockedSegments{ kSegmentsNone, kSegmentsNone, kSegmentsNone };
+        BlockedSegmentsPerType blockedSegments{ kSegmentsNone, kSegmentsNone, kSegmentsNone };
 
         constexpr uint8_t getEntranceConnectionSides() const
         {
