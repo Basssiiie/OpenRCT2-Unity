@@ -226,7 +226,7 @@ namespace OpenRCT2::GameActions
             }
         }
 
-        auto* wallEntry = ObjectManager::GetObjectEntry<WallSceneryEntry>(_wallType);
+        auto* wallEntry = ObjectEntryManager::GetObjectEntry<WallSceneryEntry>(_wallType);
 
         if (wallEntry == nullptr)
         {
@@ -313,7 +313,7 @@ namespace OpenRCT2::GameActions
         }
         auto targetLoc = CoordsXYZ(_loc, targetHeight);
 
-        auto* wallEntry = ObjectManager::GetObjectEntry<WallSceneryEntry>(_wallType);
+        auto* wallEntry = ObjectEntryManager::GetObjectEntry<WallSceneryEntry>(_wallType);
 
         if (wallEntry == nullptr)
         {
