@@ -4819,8 +4819,7 @@ namespace OpenRCT2::Ui::Windows
         {
             const auto& rtd = ride->getRideTypeDescriptor();
 
-            if (rtd.flags.has(RtdFlag::noVehicles) || !rtd.flags.has(RtdFlag::hasVehicleColours))
-            {
+            auto disableVehicleRecolour = [this]() {
                 widgets[WIDX_VEHICLE_PREVIEW].type = WidgetType::empty;
                 widgets[WIDX_VEHICLE_COLOUR_SCHEME].type = WidgetType::empty;
                 widgets[WIDX_VEHICLE_COLOUR_SCHEME_DROPDOWN].type = WidgetType::empty;
@@ -4830,7 +4829,11 @@ namespace OpenRCT2::Ui::Windows
                 widgets[WIDX_VEHICLE_TRIM_COLOUR].type = WidgetType::empty;
                 widgets[WIDX_VEHICLE_TERTIARY_COLOUR].type = WidgetType::empty;
                 widgets[WIDX_RANDOMISE_VEHICLE_COLOURS].type = WidgetType::empty;
+            };
 
+            if (rtd.flags.has(RtdFlag::noVehicles) || !rtd.flags.has(RtdFlag::hasVehicleColours))
+            {
+                disableVehicleRecolour();
                 return startY;
             }
 
@@ -4866,6 +4869,12 @@ namespace OpenRCT2::Ui::Windows
 
                 if (rideEntry->Cars[vehicleTypeIndex].flags.has(CarEntryFlag::enableTertiaryColour))
                     allowChangingTertiaryColour = true;
+            }
+
+            if (!(allowChangingBodyColour || allowChangingTrimColour || allowChangingTertiaryColour))
+            {
+                disableVehicleRecolour();
+                return startY;
             }
 
             widgets[WIDX_VEHICLE_BODY_COLOUR].type = WidgetType::empty;
