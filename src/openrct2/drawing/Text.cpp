@@ -13,6 +13,7 @@
 #include "../drawing/Rectangle.h"
 #include "../localisation/Formatter.h"
 #include "../localisation/Formatting.h"
+#include "../localisation/Language.h"
 #include "Drawing.h"
 
 using namespace OpenRCT2;
@@ -112,11 +113,9 @@ void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& p
     }
 }
 
-void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format)
+void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint)
 {
-    Formatter ft{};
-    TextPaint textPaint{};
-    DrawTextBasic(rt, coords, format, ft, textPaint);
+    DrawTextBasic(rt, coords, LanguageGetString(format), textPaint);
 }
 
 void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const Formatter& ft, TextPaint textPaint)
@@ -126,11 +125,14 @@ void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId form
     DrawText(rt, coords, textPaint, buffer);
 }
 
-void DrawTextEllipsised(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format)
+void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
 {
-    Formatter ft{};
-    TextPaint textPaint{};
-    DrawTextEllipsised(rt, coords, width, format, ft, textPaint);
+    DrawText(rt, coords, textPaint, string);
+}
+
+void DrawTextEllipsised(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
+{
+    DrawTextEllipsised(rt, coords, width, LanguageGetString(format), textPaint);
 }
 
 void DrawTextEllipsised(
@@ -138,24 +140,31 @@ void DrawTextEllipsised(
 {
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
-    GfxClipString(buffer, width, textPaint.FontStyle);
-
-    DrawText(rt, coords, textPaint, buffer);
+    DrawTextEllipsised(rt, coords, width, buffer, textPaint);
 }
 
-int32_t DrawTextWrapped(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format)
+void DrawTextEllipsised(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string string, TextPaint textPaint)
 {
-    Formatter ft{};
-    TextPaint textPaint{};
-    return DrawTextWrapped(rt, coords, width, format, ft, textPaint);
+    GfxClipString(const_cast<utf8*>(string.c_str()), width, textPaint.FontStyle);
+    DrawText(rt, coords, textPaint, string);
+}
+
+int32_t DrawTextWrapped(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
+{
+    return DrawTextWrapped(rt, coords, width, LanguageGetString(format), textPaint);
 }
 
 int32_t DrawTextWrapped(
     RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, const Formatter& ft, TextPaint textPaint)
 {
-    const void* args = ft.Data();
+    auto formatted = FormatStringIDLegacy(format, ft.Data());
+    return DrawTextWrapped(rt, coords, width, formatted, textPaint);
+}
 
-    StaticLayout layout(FormatStringIDLegacy(format, args), textPaint, width);
+int32_t DrawTextWrapped(
+    RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string_view string, TextPaint textPaint)
+{
+    StaticLayout layout(string, textPaint, width);
 
     if (textPaint.Alignment == TextAlignment::centre)
     {

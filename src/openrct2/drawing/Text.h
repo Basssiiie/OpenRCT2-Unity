@@ -210,19 +210,30 @@ struct TextPaint
     }
 };
 
-void DrawTextBasic(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format);
-void DrawTextEllipsised(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format);
-int32_t DrawTextWrapped(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format);
-
-void DrawText(
-    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& paint, u8string_view text,
-    bool noFormatting = false);
+void DrawTextBasic(
+    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint = {});
 void DrawTextBasic(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const OpenRCT2::Formatter& ft,
+    TextPaint textPaint = {});
+void DrawTextBasic(
+    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint = {});
+
+void DrawTextEllipsised(
+    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format,
     TextPaint textPaint = {});
 void DrawTextEllipsised(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format,
     const OpenRCT2::Formatter& ft, TextPaint textPaint = {});
+void DrawTextEllipsised(
+    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string string,
+    TextPaint textPaint = {});
+
+int32_t DrawTextWrapped(
+    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format,
+    TextPaint textPaint = {});
 int32_t DrawTextWrapped(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format,
     const OpenRCT2::Formatter& ft, TextPaint textPaint = {});
+int32_t DrawTextWrapped(
+    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string_view string,
+    TextPaint textPaint = {});
