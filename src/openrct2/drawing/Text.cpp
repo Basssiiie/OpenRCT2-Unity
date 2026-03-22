@@ -57,7 +57,7 @@ public:
         const utf8* buffer = Buffer.data();
         for (int32_t line = 0; line < LineCount; ++line)
         {
-            DrawTextBasic(rt, lineCoords, buffer, tempPaint);
+            DrawText(rt, lineCoords, buffer, tempPaint);
             tempPaint.colour = OpenRCT2::Drawing::kColourNull;
             buffer = GetStringEnd(buffer) + 1;
             lineCoords.y += LineHeight;
@@ -93,19 +93,19 @@ static void drawTextUnderline(
     }
 }
 
-void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint)
+void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint)
 {
-    DrawTextBasic(rt, coords, LanguageGetString(format), textPaint);
+    DrawText(rt, coords, LanguageGetString(format), textPaint);
 }
 
-void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const Formatter& ft, TextPaint textPaint)
+void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const Formatter& ft, TextPaint textPaint)
 {
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
-    DrawTextBasic(rt, coords, buffer, textPaint);
+    DrawText(rt, coords, buffer, textPaint);
 }
 
-void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
+void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
 {
     auto noFormatting = textPaint.flags.has(TextPaintFlag::noFormatting);
     int32_t width = getStringWidth(string, textPaint.fontStyle, noFormatting);
@@ -143,7 +143,7 @@ void DrawTextEllipsised(
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
     clipString(buffer, width, textPaint.fontStyle);
-    DrawTextBasic(rt, coords, buffer, textPaint);
+    DrawText(rt, coords, buffer, textPaint);
 }
 
 void DrawTextEllipsised(
@@ -152,7 +152,7 @@ void DrawTextEllipsised(
     utf8 buffer[512]{};
     string.copy(buffer, std::min(string.length(), sizeof(buffer) - 1));
     clipString(buffer, width, textPaint.fontStyle);
-    DrawTextBasic(rt, coords, string, textPaint);
+    DrawText(rt, coords, string, textPaint);
 }
 
 int32_t DrawTextWrapped(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)

@@ -616,7 +616,7 @@ namespace OpenRCT2::Ui::Windows
             // Draw number of attractions on bottom
             auto ft = Formatter();
             ft.Add<uint16_t>(static_cast<uint16_t>(CountVisibleItems()));
-            DrawTextBasic(
+            DrawText(
                 rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_LIST].bottom + 2 }, ride_list_statusbar_count_strings[page],
                 ft);
         }

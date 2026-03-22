@@ -472,7 +472,7 @@ namespace OpenRCT2::Ui::Windows
                 screenCoords = windowPos + ScreenCoordsXY{ 4, widgets[WIDX_GUEST_LIST].bottom + 2 };
                 auto ft = Formatter();
                 ft.Add<int32_t>(static_cast<int32_t>(_guestList.size()));
-                DrawTextBasic(
+                DrawText(
                     rt, screenCoords, (_guestList.size() == 1 ? STR_FORMAT_NUM_GUESTS_SINGULAR : STR_FORMAT_NUM_GUESTS_PLURAL),
                     ft);
             }
@@ -759,7 +759,7 @@ namespace OpenRCT2::Ui::Windows
                     ft = Formatter();
                     ft.Add<StringId>(STR_GUESTS_COUNT_COMMA_SEP);
                     ft.Add<uint32_t>(group.NumGuests);
-                    DrawTextBasic(rt, { 326, y }, format, ft, { TextAlignment::right });
+                    DrawText(rt, { 326, y }, format, ft, { TextAlignment::right });
                 }
                 y += kSummarisedGuestsRowHeight;
                 index++;

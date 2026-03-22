@@ -240,7 +240,7 @@ namespace OpenRCT2::Scripting
 
         void text(const std::string& text, int32_t x, int32_t y)
         {
-            DrawTextBasic(_rt, { x, y }, text, { static_cast<Drawing::Colour>(_colour.value_or(0)) });
+            DrawText(_rt, { x, y }, text, { static_cast<Drawing::Colour>(_colour.value_or(0)) });
         }
     };
 } // namespace OpenRCT2::Scripting

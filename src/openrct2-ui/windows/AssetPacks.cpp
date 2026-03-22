@@ -269,7 +269,7 @@ namespace OpenRCT2::Ui::Windows
                 auto checkmark = Formatter();
                 checkmark.Add<StringId>(STR_STRING);
                 checkmark.Add<char*>(kCheckMarkString);
-                DrawTextBasic(rt, ScreenCoordsXY{ rect.GetLeft() + 1, rect.GetTop() }, STR_WINDOW_COLOUR_2_STRINGID, checkmark);
+                DrawText(rt, ScreenCoordsXY{ rect.GetLeft() + 1, rect.GetTop() }, STR_WINDOW_COLOUR_2_STRINGID, checkmark);
             }
         }
 

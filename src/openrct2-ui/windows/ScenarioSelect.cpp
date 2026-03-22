@@ -367,7 +367,7 @@ namespace OpenRCT2::Ui::Windows
 
                 auto ft = Formatter();
                 ft.Add<utf8*>(shortPath.c_str());
-                DrawTextBasic(rt, windowPos + ScreenCoordsXY{ kTabWidth + 3, height - 3 - 11 }, STR_STRING, ft, { colours[1] });
+                DrawText(rt, windowPos + ScreenCoordsXY{ kTabWidth + 3, height - 3 - 11 }, STR_STRING, ft, { colours[1] });
             }
 
             // Scenario name
@@ -385,7 +385,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 ft = Formatter();
                 ft.Add<StringId>(STR_LOADING_GENERIC);
-                DrawTextBasic(
+                DrawText(
                     rt, screenPos + ScreenCoordsXY{ previewPaneWidth / 2, 15 }, STR_BLACK_STRING, ft,
                     { TextAlignment::centre });
                 return;
@@ -606,7 +606,7 @@ namespace OpenRCT2::Ui::Windows
                         auto darkness = isDisabled ? TextDarkness::dark : TextDarkness::regular;
                         const auto scrollCentre = widgets[WIDX_SCENARIOLIST].width() / 2;
 
-                        DrawTextBasic(
+                        DrawText(
                             rt, { scrollCentre, y + 1 }, format, ft,
                             { colour, FontStyle::medium, TextAlignment::centre, darkness });
 
@@ -626,7 +626,7 @@ namespace OpenRCT2::Ui::Windows
                             ft.Add<StringId>(STR_COMPLETED_BY);
                             ft.Add<StringId>(STR_STRING);
                             ft.Add<const char*>(completedByName.c_str());
-                            DrawTextBasic(
+                            DrawText(
                                 rt, { scrollCentre, y + scenarioTitleHeight + 1 }, format, ft,
                                 { FontStyle::small, TextAlignment::centre });
                         }
@@ -647,7 +647,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Draw string
             int32_t centreX = (left + right) / 2;
-            DrawTextBasic(rt, { centreX, y }, stringId, {}, { baseColour, TextAlignment::centre });
+            DrawText(rt, { centreX, y }, stringId, {}, { baseColour, TextAlignment::centre });
 
             // Get string dimensions
             utf8 buffer[512];

@@ -310,7 +310,7 @@ namespace OpenRCT2::Ui::Windows
         {
             drawWidgets(rt);
 
-            DrawTextBasic(
+            DrawText(
                 rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PLAYER_NAME_INPUT].top }, STR_PLAYER_NAME, {},
                 { Drawing::Colour::white });
 
@@ -318,13 +318,13 @@ namespace OpenRCT2::Ui::Windows
             std::string version = Network::GetVersion();
             auto ft = Formatter();
             ft.Add<const char*>(version.c_str());
-            DrawTextBasic(
+            DrawText(
                 rt, windowPos + ScreenCoordsXY{ 324, widgets[WIDX_START_SERVER].top + 1 }, STR_NETWORK_VERSION, ft,
                 { Drawing::Colour::white });
 
             ft = Formatter();
             ft.Add<uint32_t>(_numPlayersOnline);
-            DrawTextBasic(rt, windowPos + ScreenCoordsXY{ 8, height - 15 }, _statusText, ft, { Drawing::Colour::white });
+            DrawText(rt, windowPos + ScreenCoordsXY{ 8, height - 15 }, _statusText, ft, { Drawing::Colour::white });
         }
 
         void onScrollDraw(int32_t scrollIndex, RenderTarget& rt) override
@@ -419,7 +419,7 @@ namespace OpenRCT2::Ui::Windows
 
                 // Draw number of players
                 screenCoords.x = right - numPlayersStringWidth;
-                DrawTextBasic(rt, screenCoords + ScreenCoordsXY{ 0, 3 }, players, { colours[1] });
+                DrawText(rt, screenCoords + ScreenCoordsXY{ 0, 3 }, players, { colours[1] });
 
                 screenCoords.y += kItemHeight;
             }

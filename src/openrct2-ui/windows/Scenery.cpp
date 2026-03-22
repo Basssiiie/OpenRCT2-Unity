@@ -909,7 +909,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<money64>(price);
 
                 // -14
-                DrawTextBasic(
+                DrawText(
                     rt, windowPos + ScreenCoordsXY{ width - 0x1A, height - 13 }, STR_COST_LABEL, ft, { TextAlignment::right });
             }
 

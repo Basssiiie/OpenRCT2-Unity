@@ -216,7 +216,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     auto ft = Formatter();
                     ft.Add<const char*>(providerName.c_str());
-                    DrawTextBasic(clippedRT, screenCoords, STR_PROVIDER_NAME, ft);
+                    DrawText(clippedRT, screenCoords, STR_PROVIDER_NAME, ft);
                     screenCoords.y += kListRowHeight;
                 }
 
@@ -225,7 +225,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     auto ft = Formatter();
                     ft.Add<const char*>(providerEmail.c_str());
-                    DrawTextBasic(clippedRT, screenCoords, STR_PROVIDER_EMAIL, ft);
+                    DrawText(clippedRT, screenCoords, STR_PROVIDER_EMAIL, ft);
                     screenCoords.y += kListRowHeight;
                 }
 
@@ -234,7 +234,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     auto ft = Formatter();
                     ft.Add<const char*>(providerWebsite.c_str());
-                    DrawTextBasic(clippedRT, screenCoords, STR_PROVIDER_WEBSITE, ft);
+                    DrawText(clippedRT, screenCoords, STR_PROVIDER_WEBSITE, ft);
                 }
             }
         }
@@ -246,7 +246,7 @@ namespace OpenRCT2::Ui::Windows
             auto screenCoords = windowPos + ScreenCoordsXY{ 4, widgets[WIDX_LIST].bottom + 2 };
             auto ft = Formatter();
             ft.Add<uint16_t>(numListItems);
-            DrawTextBasic(rt, screenCoords, stringId, ft, { colours[2] });
+            DrawText(rt, screenCoords, stringId, ft, { colours[2] });
         }
 
         void playersScrollPaint(int32_t scrollIndex, RenderTarget& rt) const
@@ -340,7 +340,7 @@ namespace OpenRCT2::Ui::Windows
                     _buffer += pingBuffer;
 
                     screenCoords.x = 356;
-                    DrawTextBasic(rt, screenCoords, _buffer, { colour });
+                    DrawText(rt, screenCoords, _buffer, { colour });
                 }
                 screenCoords.y += kScrollableRowHeight;
                 listPosition++;
@@ -368,7 +368,7 @@ namespace OpenRCT2::Ui::Windows
             auto screenPos = windowPos
                 + ScreenCoordsXY{ widgets[WIDX_CONTENT_PANEL].left + 4, widgets[WIDX_CONTENT_PANEL].top + 4 };
 
-            DrawTextBasic(rt, screenPos, STR_DEFAULT_GROUP, {}, { colours[2] });
+            DrawText(rt, screenPos, STR_DEFAULT_GROUP, {}, { colours[2] });
 
             screenPos.y += 20;
 
@@ -420,14 +420,14 @@ namespace OpenRCT2::Ui::Windows
                         if (Network::CanPerformAction(groupindex, static_cast<Network::Permission>(i)))
                         {
                             screenCoords.x = 0;
-                            DrawTextBasic(rt, screenCoords, u8"{WINDOW_COLOUR_2}✓");
+                            DrawText(rt, screenCoords, u8"{WINDOW_COLOUR_2}✓");
                         }
                     }
 
                     // Draw action name
                     auto ft = Formatter();
                     ft.Add<uint16_t>(Network::GetActionNameStringID(i));
-                    DrawTextBasic(rt, { 10, screenCoords.y }, STR_WINDOW_COLOUR_2_STRINGID, ft);
+                    DrawText(rt, { 10, screenCoords.y }, STR_WINDOW_COLOUR_2_STRINGID, ft);
                 }
                 screenCoords.y += kScrollableRowHeight;
             }

@@ -245,7 +245,7 @@ namespace OpenRCT2::Ui::Windows
             for (int32_t line = 0; line <= no_lines; line++)
             {
                 screenCoords.x = windowPos.x + 12;
-                DrawTextBasic(
+                DrawText(
                     rt, screenCoords, wrapPointer,
                     { colours[1], FontStyle::medium, { TextPaintFlag::noFormatting }, TextAlignment::left });
 

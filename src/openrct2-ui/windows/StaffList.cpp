@@ -285,12 +285,12 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<money64>(GetStaffWage(GetSelectedStaffType()));
                 auto y = widgets[WIDX_STAFF_LIST_TITLE].bottom + 17;
-                DrawTextBasic(rt, windowPos + ScreenCoordsXY{ width - 155, y }, STR_COST_PER_MONTH, ft);
+                DrawText(rt, windowPos + ScreenCoordsXY{ width - 155, y }, STR_COST_PER_MONTH, ft);
             }
 
             if (GetSelectedStaffType() != StaffType::entertainer)
             {
-                DrawTextBasic(
+                DrawText(
                     rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_STAFF_LIST_UNIFORM_COLOUR_PICKER].top + 1 },
                     STR_UNIFORM_COLOUR);
             }
@@ -302,8 +302,7 @@ namespace OpenRCT2::Ui::Windows
             ft.Add<uint32_t>(_staffList.size());
             ft.Add<StringId>(staffTypeStringId);
 
-            DrawTextBasic(
-                rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_STAFF_LIST_LIST].bottom + 2 }, STR_STAFF_LIST_COUNTER, ft);
+            DrawText(rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_STAFF_LIST_LIST].bottom + 2 }, STR_STAFF_LIST_COUNTER, ft);
         }
 
         ScreenSize onScrollGetSize(int32_t scrollIndex) override

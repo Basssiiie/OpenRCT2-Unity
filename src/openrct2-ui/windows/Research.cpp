@@ -367,7 +367,7 @@ namespace OpenRCT2::Ui::Windows
             // Expected
             ft = Formatter();
             ft.Add<StringId>(STR_RESEARCH_STAGE_UNKNOWN);
-            DrawTextBasic(rt, screenCoords, STR_RESEARCH_EXPECTED_LABEL, ft);
+            DrawText(rt, screenCoords, STR_RESEARCH_EXPECTED_LABEL, ft);
         }
         else
         {
@@ -426,7 +426,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 ft.Add<StringId>(STR_RESEARCH_STAGE_UNKNOWN);
             }
-            DrawTextBasic(rt, screenCoords, STR_RESEARCH_EXPECTED_LABEL, ft);
+            DrawText(rt, screenCoords, STR_RESEARCH_EXPECTED_LABEL, ft);
         }
 
         // Last development
@@ -584,8 +584,7 @@ namespace OpenRCT2::Ui::Windows
         int32_t currentResearchLevel = gameState.researchFundingLevel;
         auto ft = Formatter();
         ft.Add<money64>(kResearchCosts[currentResearchLevel]);
-        DrawTextBasic(
-            rt, w->windowPos + ScreenCoordsXY{ 10, w->widgets[WIDX_TAB_1].top + 60 }, STR_RESEARCH_COST_PER_MONTH, ft);
+        DrawText(rt, w->windowPos + ScreenCoordsXY{ 10, w->widgets[WIDX_TAB_1].top + 60 }, STR_RESEARCH_COST_PER_MONTH, ft);
     }
 
 #pragma endregion

@@ -491,7 +491,7 @@ namespace OpenRCT2::Ui::Windows
                     auto ft = Formatter();
                     ft.Add<StringId>(DateDayNames[newsItem.day - 1]);
                     ft.Add<StringId>(DateGameMonthNames[DateGetMonth(newsItem.monthYear)]);
-                    DrawTextBasic(rt, { 2, y }, STR_NEWS_DATE_FORMAT, ft, { Drawing::Colour::white, FontStyle::small });
+                    DrawText(rt, { 2, y }, STR_NEWS_DATE_FORMAT, ft, { Drawing::Colour::white, FontStyle::small });
                 }
                 // Item text
                 {

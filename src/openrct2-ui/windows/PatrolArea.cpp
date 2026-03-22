@@ -148,8 +148,7 @@ namespace OpenRCT2::Ui::Windows
                                                     windowPos.y + widgets[WIDX_PREVIEW].midY() };
                 auto ft = Formatter();
                 ft.Add<uint16_t>(gLandToolSize);
-                DrawTextBasic(
-                    rt, screenCoords - ScreenCoordsXY{ 0, 2 }, STR_LAND_TOOL_SIZE_VALUE, ft, { TextAlignment::centre });
+                DrawText(rt, screenCoords - ScreenCoordsXY{ 0, 2 }, STR_LAND_TOOL_SIZE_VALUE, ft, { TextAlignment::centre });
             }
         }
 

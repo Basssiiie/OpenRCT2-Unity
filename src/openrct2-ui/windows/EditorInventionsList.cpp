@@ -367,12 +367,12 @@ namespace OpenRCT2::Ui::Windows
             // Pre-researched items label
             screenPos = windowPos
                 + ScreenCoordsXY{ widgets[WIDX_PRE_RESEARCHED_SCROLL].left, widgets[WIDX_PRE_RESEARCHED_SCROLL].top - 11 };
-            DrawTextBasic(rt, screenPos - ScreenCoordsXY{ 0, 1 }, STR_INVENTION_PREINVENTED_ITEMS);
+            DrawText(rt, screenPos - ScreenCoordsXY{ 0, 1 }, STR_INVENTION_PREINVENTED_ITEMS);
 
             // Research order label
             screenPos = windowPos
                 + ScreenCoordsXY{ widgets[WIDX_RESEARCH_ORDER_SCROLL].left, widgets[WIDX_RESEARCH_ORDER_SCROLL].top - 11 };
-            DrawTextBasic(rt, screenPos - ScreenCoordsXY{ 0, 1 }, STR_INVENTION_TO_BE_INVENTED_ITEMS);
+            DrawText(rt, screenPos - ScreenCoordsXY{ 0, 1 }, STR_INVENTION_TO_BE_INVENTED_ITEMS);
 
             // Preview background
             auto& bkWidget = widgets[WIDX_PREVIEW];
@@ -441,7 +441,7 @@ namespace OpenRCT2::Ui::Windows
             screenPos.x = windowPos.x + widgets[WIDX_RESEARCH_ORDER_SCROLL].right + 4;
             ft = Formatter();
             ft.Add<StringId>(researchItem->GetCategoryInventionString());
-            DrawTextBasic(rt, screenPos, STR_INVENTION_RESEARCH_GROUP, ft);
+            DrawText(rt, screenPos, STR_INVENTION_RESEARCH_GROUP, ft);
         }
 
         void onPrepareDraw() override

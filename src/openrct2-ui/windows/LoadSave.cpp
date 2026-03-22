@@ -477,7 +477,7 @@ namespace OpenRCT2::Ui::Windows
                     previewText = STR_LOADING_GENERIC;
                 }
 
-                DrawTextBasic(
+                DrawText(
                     rt, textPos, previewText, {},
                     { ColourWithFlags{ Drawing::Colour::white }.withFlag(ColourFlag::withOutline, true),
                       TextAlignment::centre });
@@ -494,7 +494,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(DateDayNames[_preview.day]);
                 ft.Add<int16_t>(_preview.month);
                 ft.Add<int16_t>(_preview.year + 1);
-                DrawTextBasic(rt, summaryCoords, STR_SUMMARY_DATE, ft);
+                DrawText(rt, summaryCoords, STR_SUMMARY_DATE, ft);
                 summaryCoords.y += kListRowHeight;
             }
 
@@ -502,7 +502,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_preview.parkRating);
-                DrawTextBasic(rt, summaryCoords, STR_SUMMARY_PARK_RATING, ft);
+                DrawText(rt, summaryCoords, STR_SUMMARY_PARK_RATING, ft);
                 summaryCoords.y += kListRowHeight;
             }
 
@@ -511,7 +511,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_preview.cash);
-                DrawTextBasic(rt, summaryCoords, STR_SUMMARY_CASH, ft);
+                DrawText(rt, summaryCoords, STR_SUMMARY_CASH, ft);
                 summaryCoords.y += kListRowHeight;
             }
 
@@ -519,7 +519,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_preview.numRides);
-                DrawTextBasic(rt, summaryCoords, STR_SUMMARY_NUM_RIDES, ft);
+                DrawText(rt, summaryCoords, STR_SUMMARY_NUM_RIDES, ft);
                 summaryCoords.y += kListRowHeight;
             }
 
@@ -527,7 +527,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_preview.numGuests);
-                DrawTextBasic(rt, summaryCoords, STR_SUMMARY_NUM_GUESTS, ft);
+                DrawText(rt, summaryCoords, STR_SUMMARY_NUM_GUESTS, ft);
                 summaryCoords.y += kListRowHeight;
             }
         }
@@ -796,7 +796,7 @@ namespace OpenRCT2::Ui::Windows
             if (action == LoadSaveAction::save)
             {
                 auto& widget = widgets[WIDX_FILENAME_TEXTBOX];
-                DrawTextBasic(
+                DrawText(
                     rt, windowPos + ScreenCoordsXY{ 5, widget.top + 2 }, STR_FILENAME_LABEL, {}, { Drawing::Colour::grey });
             }
         }
@@ -1116,7 +1116,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     auto ft = Formatter();
                     ft.Add<StringId>(STR_RIGHTGUILLEMET);
-                    DrawTextBasic(rt, { 0, y }, stringId, ft);
+                    DrawText(rt, { 0, y }, stringId, ft);
                 }
 
                 // Folders get a folder icon

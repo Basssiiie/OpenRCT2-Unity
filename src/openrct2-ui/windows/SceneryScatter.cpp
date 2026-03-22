@@ -193,8 +193,7 @@ namespace OpenRCT2::Ui::Windows
                 const auto screenCoords = ScreenCoordsXY{ windowPos.x + preview.midX(), windowPos.y + preview.midY() };
                 auto ft = Formatter();
                 ft.Add<uint16_t>(gWindowSceneryScatterSize);
-                DrawTextBasic(
-                    rt, screenCoords - ScreenCoordsXY{ 0, 2 }, STR_LAND_TOOL_SIZE_VALUE, ft, { TextAlignment::centre });
+                DrawText(rt, screenCoords - ScreenCoordsXY{ 0, 2 }, STR_LAND_TOOL_SIZE_VALUE, ft, { TextAlignment::centre });
             }
         }
     };

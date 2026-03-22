@@ -197,28 +197,27 @@ namespace OpenRCT2::Ui::Windows
 
             auto screenCoords = windowPos + ScreenCoordsXY{ 10, 18 + widgets[WIDX_TITLE].height() - 1 };
 
-            DrawTextBasic(rt, screenCoords, STR_RATE, {}, { colours[1] });
+            DrawText(rt, screenCoords, STR_RATE, {}, { colours[1] });
 
             int32_t baseExchange = CurrencyDescriptors[EnumValue(CurrencyType::pounds)].rate;
             auto ft = Formatter();
             ft.Add<int32_t>(baseExchange);
-            DrawTextBasic(rt, screenCoords + ScreenCoordsXY{ 200, 0 }, STR_CUSTOM_CURRENCY_EQUIVALENCY, ft, { colours[1] });
+            DrawText(rt, screenCoords + ScreenCoordsXY{ 200, 0 }, STR_CUSTOM_CURRENCY_EQUIVALENCY, ft, { colours[1] });
 
             screenCoords.y += 20;
 
-            DrawTextBasic(rt, screenCoords, STR_CURRENCY_SYMBOL_TEXT, {}, { colours[1] });
+            DrawText(rt, screenCoords, STR_CURRENCY_SYMBOL_TEXT, {}, { colours[1] });
 
             screenCoords = windowPos + ScreenCoordsXY{ widgets[WIDX_SYMBOL_TEXT].left + 1, widgets[WIDX_SYMBOL_TEXT].top };
 
-            DrawTextBasic(
-                rt, screenCoords, CurrencyDescriptors[EnumValue(CurrencyType::custom)].symbol_unicode, { colours[1] });
+            DrawText(rt, screenCoords, CurrencyDescriptors[EnumValue(CurrencyType::custom)].symbol_unicode, { colours[1] });
 
             auto drawPos = windowPos
                 + ScreenCoordsXY{ widgets[WIDX_AFFIX_DROPDOWN].left + 1, widgets[WIDX_AFFIX_DROPDOWN].top };
             StringId stringId = (CurrencyDescriptors[EnumValue(CurrencyType::custom)].affix_unicode == CurrencyAffix::prefix)
                 ? STR_PREFIX
                 : STR_SUFFIX;
-            DrawTextBasic(rt, drawPos, stringId, {}, { colours[1] });
+            DrawText(rt, drawPos, stringId, {}, { colours[1] });
         }
     };
 

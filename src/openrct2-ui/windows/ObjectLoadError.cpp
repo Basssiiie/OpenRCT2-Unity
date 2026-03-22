@@ -544,19 +544,18 @@ namespace OpenRCT2::Ui::Windows
 
                 const auto& entry = _invalidEntries[i];
 
-                DrawTextBasic(rt, screenCoords, entry.GetName(), { Colour::darkGreen });
+                DrawText(rt, screenCoords, entry.GetName(), { Colour::darkGreen });
 
                 if (entry.Generation == ObjectGeneration::DAT)
                 {
                     // ... source game ...
                     const auto sourceStringId = ObjectManagerGetSourceGameString(entry.Entry.GetSourceGame());
-                    DrawTextBasic(
-                        rt, { kSourceColLeft - 3, screenCoords.y }, sourceStringId, {}, { Drawing::Colour::darkGreen });
+                    DrawText(rt, { kSourceColLeft - 3, screenCoords.y }, sourceStringId, {}, { Drawing::Colour::darkGreen });
                 }
 
                 // ... and type
                 const auto type = GetStringFromObjectType(entry.GetType());
-                DrawTextBasic(rt, { kTypeColLeft - 3, screenCoords.y }, type, {}, { Drawing::Colour::darkGreen });
+                DrawText(rt, { kTypeColLeft - 3, screenCoords.y }, type, {}, { Drawing::Colour::darkGreen });
             }
         }
 

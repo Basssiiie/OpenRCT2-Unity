@@ -764,7 +764,7 @@ namespace OpenRCT2::Ui::Windows
                         if (*listItem.flags & (ObjectSelectionFlags::InUse | ObjectSelectionFlags::AlwaysRequired))
                             colour2.flags.set(ColourFlag::inset, true);
 
-                        DrawTextBasic(rt, screenCoords, kCheckMarkString, { colour2, FontStyle::medium, darkness });
+                        DrawText(rt, screenCoords, kCheckMarkString, { colour2, FontStyle::medium, darkness });
                     }
 
                     screenCoords.x = gLegacyScene == LegacyScene::trackDesignsManager ? 0 : 15;
@@ -1082,7 +1082,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<uint16_t>(numSelected);
                 ft.Add<uint16_t>(totalSelectable);
-                DrawTextBasic(rt, screenPos, STR_OBJECT_SELECTION_SELECTION_SIZE, ft);
+                DrawText(rt, screenPos, STR_OBJECT_SELECTION_SELECTION_SIZE, ft);
             }
 
             // Draw sort button text
@@ -1367,8 +1367,7 @@ namespace OpenRCT2::Ui::Windows
             // Draw fallback image warning
             if (_loadedObject && _loadedObject->UsesFallbackImages())
             {
-                DrawTextBasic(
-                    rt, screenPos, STR_OBJECT_USES_FALLBACK_IMAGES, {}, { Drawing::Colour::white, TextAlignment::right });
+                DrawText(rt, screenPos, STR_OBJECT_USES_FALLBACK_IMAGES, {}, { Drawing::Colour::white, TextAlignment::right });
             }
             screenPos.y += kListRowHeight;
 
@@ -1376,7 +1375,7 @@ namespace OpenRCT2::Ui::Windows
             if (GetSelectedObjectType() == ObjectType::ride)
             {
                 auto stringId = GetRideTypeStringId(listItem->repositoryItem);
-                DrawTextBasic(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+                DrawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
             }
 
             // Draw peep animation object type
@@ -1384,14 +1383,14 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto* animObj = reinterpret_cast<PeepAnimationsObject*>(_loadedObject.get());
                 auto stringId = GetAnimationPeepTypeStringId(animObj->GetPeepType());
-                DrawTextBasic(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+                DrawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
             }
 
             screenPos.y += kListRowHeight;
 
             // Draw object source
             auto stringId = ObjectManagerGetSourceGameString(listItem->repositoryItem->GetFirstSourceGame());
-            DrawTextBasic(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+            DrawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
             screenPos.y += kListRowHeight;
 
             // Draw object filename
@@ -1400,7 +1399,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const utf8*>(path.c_str());
-                DrawTextBasic(
+                DrawText(
                     rt, { windowPos.x + this->width - 5, screenPos.y }, STR_WINDOW_COLOUR_2_STRINGID, ft,
                     { Drawing::Colour::black, TextAlignment::right });
                 screenPos.y += kListRowHeight;

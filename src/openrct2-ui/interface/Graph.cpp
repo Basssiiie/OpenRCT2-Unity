@@ -38,7 +38,7 @@ namespace OpenRCT2::Graph
             // Draw Y label text
             char buffer[64]{};
             FormatStringToBuffer(buffer, sizeof(buffer), fmt, curLabel);
-            DrawTextBasic(
+            DrawText(
                 rt, { internalBounds.GetLeft() - kYTickMarkPadding, curScreenPos }, buffer,
                 { FontStyle::small, TextAlignment::right });
             // Draw Y label tick mark
@@ -69,7 +69,7 @@ namespace OpenRCT2::Graph
                 // Draw month text
                 auto ft = Formatter();
                 ft.Add<StringId>(DateGameShortMonthNames[DateGetMonth((yearOver32 / 4) + MONTH_COUNT)]);
-                DrawTextBasic(
+                DrawText(
                     rt, screenCoords - ScreenCoordsXY{ 0, 14 }, STR_GRAPH_LABEL, ft,
                     { FontStyle::small, TextAlignment::centre });
                 // Draw month tick mark
@@ -102,7 +102,7 @@ namespace OpenRCT2::Graph
             kDashLength, PaletteIndex::pi10);
         GfxDrawDashedLine(rt, { { bounds.GetLeft(), coords.y }, coords }, kDashLength, PaletteIndex::pi10);
 
-        DrawTextBasic(rt, coords - ScreenCoordsXY{ 0, 16 }, text, { textCol, TextAlignment::centre });
+        DrawText(rt, coords - ScreenCoordsXY{ 0, 16 }, text, { textCol, TextAlignment::centre });
 
         Rectangle::fill(rt, { { coords - ScreenCoordsXY{ 2, 2 } }, coords + ScreenCoordsXY{ 2, 2 } }, PaletteIndex::pi10);
         Rectangle::fill(rt, { { coords - ScreenCoordsXY{ 1, 1 } }, { coords + ScreenCoordsXY{ 1, 1 } } }, PaletteIndex::pi21);

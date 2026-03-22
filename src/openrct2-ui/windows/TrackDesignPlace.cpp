@@ -390,7 +390,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<money64>(_placementCost);
                 const auto& priceWidget = widgets[WIDX_PRICE];
                 const auto priceCoords = windowPos + ScreenCoordsXY{ priceWidget.left, priceWidget.top };
-                DrawTextBasic(rt, priceCoords, STR_COST_LABEL, ft, { TextAlignment::centre });
+                DrawText(rt, priceCoords, STR_COST_LABEL, ft, { TextAlignment::centre });
             }
         }
 

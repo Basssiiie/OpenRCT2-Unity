@@ -307,7 +307,7 @@ static int32_t ChatHistoryDrawString(RenderTarget& rt, const char* text, const S
     int32_t lineY = screenCoords.y;
     for (int32_t line = 0; line <= numLines; ++line)
     {
-        DrawTextBasic(rt, { screenCoords.x, lineY - (numLines * lineHeight) }, bufferPtr, { OpenRCT2::Drawing::kColourNull });
+        DrawText(rt, { screenCoords.x, lineY - (numLines * lineHeight) }, bufferPtr, { OpenRCT2::Drawing::kColourNull });
         bufferPtr = GetStringEnd(bufferPtr) + 1;
         lineY += lineHeight;
     }

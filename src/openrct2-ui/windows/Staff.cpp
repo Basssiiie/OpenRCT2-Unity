@@ -941,13 +941,13 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(GetStaffWage(staff->AssignedStaffType));
-                DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_WAGES, ft);
+                DrawText(rt, screenCoords, STR_STAFF_STAT_WAGES, ft);
                 screenCoords.y += kListRowHeight;
             }
 
             auto ft = Formatter();
             ft.Add<int32_t>(staff->GetHireDate());
-            DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_EMPLOYED_FOR, ft);
+            DrawText(rt, screenCoords, STR_STAFF_STAT_EMPLOYED_FOR, ft);
             screenCoords.y += kListRowHeight;
 
             switch (staff->AssignedStaffType)
@@ -955,37 +955,37 @@ namespace OpenRCT2::Ui::Windows
                 case StaffType::handyman:
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffLawnsMown);
-                    DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_LAWNS_MOWN, ft);
+                    DrawText(rt, screenCoords, STR_STAFF_STAT_LAWNS_MOWN, ft);
                     screenCoords.y += kListRowHeight;
 
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffGardensWatered);
-                    DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_GARDENS_WATERED, ft);
+                    DrawText(rt, screenCoords, STR_STAFF_STAT_GARDENS_WATERED, ft);
                     screenCoords.y += kListRowHeight;
 
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffLitterSwept);
-                    DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_LITTER_SWEPT, ft);
+                    DrawText(rt, screenCoords, STR_STAFF_STAT_LITTER_SWEPT, ft);
                     screenCoords.y += kListRowHeight;
 
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffBinsEmptied);
-                    DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_BINS_EMPTIED, ft);
+                    DrawText(rt, screenCoords, STR_STAFF_STAT_BINS_EMPTIED, ft);
                     break;
                 case StaffType::mechanic:
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffRidesInspected);
-                    DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_RIDES_INSPECTED, ft);
+                    DrawText(rt, screenCoords, STR_STAFF_STAT_RIDES_INSPECTED, ft);
                     screenCoords.y += kListRowHeight;
 
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffRidesFixed);
-                    DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_RIDES_FIXED, ft);
+                    DrawText(rt, screenCoords, STR_STAFF_STAT_RIDES_FIXED, ft);
                     break;
                 case StaffType::security:
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffVandalsStopped);
-                    DrawTextBasic(rt, screenCoords, STR_STAFF_STAT_VANDALS_STOPPED, ft);
+                    DrawText(rt, screenCoords, STR_STAFF_STAT_VANDALS_STOPPED, ft);
                     break;
                 case StaffType::entertainer:
                 case StaffType::count:

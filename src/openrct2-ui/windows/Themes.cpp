@@ -398,7 +398,7 @@ namespace OpenRCT2::Ui::Windows
 
             if (_selectedTab == WINDOW_THEMES_TAB_SETTINGS)
             {
-                DrawTextBasic(
+                DrawText(
                     rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_THEMES_PRESETS].top + 1 }, STR_THEMES_LABEL_CURRENT_THEME,
                     {}, { colours[1] });
 
@@ -803,7 +803,7 @@ namespace OpenRCT2::Ui::Windows
                             Rectangle::FillBrightness::dark, Rectangle::FillMode::dontLightenWhenInset);
                         if (colour.flags.has(ColourFlag::translucent))
                         {
-                            DrawTextBasic(
+                            DrawText(
                                 rt, topLeft, kCheckMarkString, { colours[1].colour, FontStyle::medium, TextDarkness::dark });
                         }
                     }

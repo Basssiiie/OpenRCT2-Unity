@@ -211,12 +211,11 @@ struct TextPaint
     }
 };
 
-void DrawTextBasic(
-    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint = {});
-void DrawTextBasic(
+void DrawText(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint = {});
+void DrawText(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const OpenRCT2::Formatter& ft,
     TextPaint textPaint = {});
-void DrawTextBasic(
+void DrawText(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint = {});
 
 void DrawTextEllipsised(

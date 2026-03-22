@@ -28,12 +28,12 @@ namespace OpenRCT2::Ui::Windows
         {
             // Write name and version information
             const auto whiteOutline = ColourWithFlags{ Drawing::Colour::white }.withFlag(ColourFlag::withOutline, true);
-            DrawTextBasic(rt, windowPos, gVersionInfoFull, { whiteOutline });
+            DrawText(rt, windowPos, gVersionInfoFull, { whiteOutline });
             width = Drawing::getStringWidth(gVersionInfoFull, FontStyle::medium);
 
             // Write platform information
             constexpr const char platformInfo[] = OPENRCT2_PLATFORM " (" OPENRCT2_ARCHITECTURE ")";
-            DrawTextBasic(rt, windowPos + ScreenCoordsXY(0, kListRowHeight), platformInfo, { whiteOutline });
+            DrawText(rt, windowPos + ScreenCoordsXY(0, kListRowHeight), platformInfo, { whiteOutline });
             width = std::max<int16_t>(width, Drawing::getStringWidth(platformInfo, FontStyle::medium)) + kTextOffset;
         }
     };

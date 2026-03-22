@@ -624,36 +624,35 @@ static StringId window_cheats_page_titles[] = {
                 }
 
                 auto& widget = widgets[WIDX_MONEY_SPINNER];
-                DrawTextBasic(
-                    rt, windowPos + ScreenCoordsXY{ _xLcol, widget.top + 2 }, STR_BOTTOM_TOOLBAR_CASH, ft, { colour });
+                DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol, widget.top + 2 }, STR_BOTTOM_TOOLBAR_CASH, ft, { colour });
             }
             else if (page == WINDOW_CHEATS_PAGE_DATE)
             {
                 auto& yearBox = widgets[WIDX_YEAR_BOX];
-                DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol, yearBox.top + 2 }, STR_YEAR);
+                DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol, yearBox.top + 2 }, STR_YEAR);
 
                 auto& monthBox = widgets[WIDX_MONTH_BOX];
-                DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol, monthBox.top + 2 }, STR_MONTH);
+                DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol, monthBox.top + 2 }, STR_MONTH);
 
                 auto& dayBox = widgets[WIDX_DAY_BOX];
-                DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol, dayBox.top + 2 }, STR_DAY);
+                DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol, dayBox.top + 2 }, STR_DAY);
 
                 auto ft = Formatter();
                 ft.Add<int32_t>(_yearSpinnerValue);
-                DrawTextBasic(
+                DrawText(
                     rt, windowPos + ScreenCoordsXY{ _xRcol, yearBox.top + 2 }, STR_FORMAT_INTEGER, ft,
                     { colours[1], TextAlignment::right });
 
                 ft = Formatter();
                 int32_t actual_month = _monthSpinnerValue - 1;
                 ft.Add<int32_t>(actual_month);
-                DrawTextBasic(
+                DrawText(
                     rt, windowPos + ScreenCoordsXY{ _xRcol, monthBox.top + 2 }, STR_FORMAT_MONTH, ft,
                     { colours[1], TextAlignment::right });
 
                 ft = Formatter();
                 ft.Add<int32_t>(_daySpinnerValue);
-                DrawTextBasic(
+                DrawText(
                     rt, windowPos + ScreenCoordsXY{ _xRcol, dayBox.top + 2 }, STR_FORMAT_INTEGER, ft,
                     { colours[1], TextAlignment::right });
             }
@@ -663,55 +662,54 @@ static StringId window_cheats_page_titles[] = {
                 ft.Add<int32_t>(_parkRatingSpinnerValue);
 
                 auto& widget = widgets[WIDX_PARK_RATING_SPINNER];
-                DrawTextBasic(
+                DrawText(
                     rt, windowPos + ScreenCoordsXY{ widget.left + 1, widget.top + 2 }, STR_FORMAT_INTEGER, ft, { colours[1] });
             }
             else if (page == WINDOW_CHEATS_PAGE_STAFF)
             {
                 auto& widget = widgets[WIDX_STAFF_SPEED];
-                DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 1 }, STR_CHEAT_STAFF_SPEED);
+                DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 1 }, STR_CHEAT_STAFF_SPEED);
             }
             else if (page == WINDOW_CHEATS_PAGE_GUESTS)
             {
                 {
                     auto& widget = widgets[WIDX_GUEST_HAPPINESS_MIN];
-                    DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_HAPPINESS);
+                    DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_HAPPINESS);
                 }
                 {
                     auto& widget = widgets[WIDX_GUEST_ENERGY_MIN];
-                    DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_ENERGY);
+                    DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_ENERGY);
                 }
                 {
                     auto& widget = widgets[WIDX_GUEST_HUNGER_MIN];
-                    DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_HUNGER);
+                    DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_HUNGER);
                 }
                 {
                     auto& widget = widgets[WIDX_GUEST_THIRST_MIN];
-                    DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_THIRST);
+                    DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_THIRST);
                 }
                 {
                     auto& widget = widgets[WIDX_GUEST_NAUSEA_MIN];
-                    DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_NAUSEA);
+                    DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_NAUSEA);
                 }
                 {
                     auto& widget = widgets[WIDX_GUEST_NAUSEA_TOLERANCE_MIN];
-                    DrawTextBasic(
-                        rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_NAUSEA_TOLERANCE);
+                    DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_NAUSEA_TOLERANCE);
                 }
                 {
                     auto& widget = widgets[WIDX_GUEST_TOILET_MIN];
-                    DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_TOILET);
+                    DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 2 }, STR_CHEAT_GUEST_TOILET);
                 }
                 {
                     auto& widget = widgets[WIDX_GUEST_RIDE_INTENSITY_LESS_THAN_15];
-                    DrawTextBasic(
+                    DrawText(
                         rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top - 17 }, STR_CHEAT_GUEST_PREFERRED_INTENSITY);
                 }
             }
             else if (page == WINDOW_CHEATS_PAGE_WEATHER)
             {
                 auto& widget = widgets[WIDX_WEATHER];
-                DrawTextBasic(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 1 }, STR_CHANGE_WEATHER);
+                DrawText(rt, windowPos + ScreenCoordsXY{ _xLcol - 3, widget.top + 1 }, STR_CHANGE_WEATHER);
             }
         }
 

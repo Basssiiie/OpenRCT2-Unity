@@ -295,13 +295,13 @@ namespace OpenRCT2::Drawing
         RenderTarget& rt, const ScreenCoordsXY& coords, int32_t numLines, const utf8* text, FontStyle fontStyle)
     {
         ScreenCoordsXY screenCoords(rt.x, rt.y);
-        DrawTextBasic(rt, screenCoords, "", { Colour::black, fontStyle });
+        DrawText(rt, screenCoords, "", { Colour::black, fontStyle });
         screenCoords = coords;
 
         for (int32_t i = 0; i <= numLines; i++)
         {
             int32_t width = getStringWidth(text, fontStyle);
-            DrawTextBasic(rt, screenCoords - ScreenCoordsXY{ width / 2, 0 }, text, { kColourNull, fontStyle });
+            DrawText(rt, screenCoords - ScreenCoordsXY{ width / 2, 0 }, text, { kColourNull, fontStyle });
 
             const utf8* ch = text;
             const utf8* nextCh = nullptr;
@@ -393,7 +393,7 @@ namespace OpenRCT2::Drawing
         int32_t numLines, lineHeight, lineY;
         ScreenCoordsXY screenCoords(rt.x, rt.y);
 
-        DrawTextBasic(rt, screenCoords, "", { colour });
+        DrawText(rt, screenCoords, "", { colour });
 
         u8string wrappedString;
         wrapString(FormatStringID(format, args), width, FontStyle::small, &wrappedString, &numLines);
@@ -432,7 +432,7 @@ namespace OpenRCT2::Drawing
             }
 
             screenCoords = { coords.x - halfWidth, lineY };
-            DrawTextBasic(rt, screenCoords, buffer, { kColourNull, FontStyle::small });
+            DrawText(rt, screenCoords, buffer, { kColourNull, FontStyle::small });
 
             if (numCharactersDrawn > numCharactersToDraw)
             {

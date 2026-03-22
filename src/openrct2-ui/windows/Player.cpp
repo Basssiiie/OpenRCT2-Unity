@@ -448,10 +448,10 @@ namespace OpenRCT2::Ui::Windows
 
             auto ft = Formatter();
             ft.Add<StringId>(STR_PING);
-            DrawTextBasic(rt, screenCoords, STR_WINDOW_COLOUR_2_STRINGID, ft);
+            DrawText(rt, screenCoords, STR_WINDOW_COLOUR_2_STRINGID, ft);
             char ping[64];
             snprintf(ping, 64, "%d ms", Network::GetPlayerPing(player));
-            DrawTextBasic(rt, screenCoords + ScreenCoordsXY(30, 0), ping, { colours[2] });
+            DrawText(rt, screenCoords + ScreenCoordsXY(30, 0), ping, { colours[2] });
 
             // Draw last action
             screenCoords = windowPos + ScreenCoordsXY{ width / 2, height - 13 };
@@ -615,13 +615,13 @@ namespace OpenRCT2::Ui::Windows
 
             auto ft = Formatter();
             ft.Add<uint32_t>(Network::GetPlayerCommandsRan(player));
-            DrawTextBasic(rt, screenCoords, STR_COMMANDS_RAN, ft);
+            DrawText(rt, screenCoords, STR_COMMANDS_RAN, ft);
 
             screenCoords.y += kListRowHeight;
 
             ft = Formatter();
             ft.Add<uint32_t>(Network::GetPlayerMoneySpent(player));
-            DrawTextBasic(rt, screenCoords, STR_MONEY_SPENT, ft);
+            DrawText(rt, screenCoords, STR_MONEY_SPENT, ft);
         }
 
 #pragma endregion

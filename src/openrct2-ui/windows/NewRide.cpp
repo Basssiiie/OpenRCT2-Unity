@@ -984,7 +984,7 @@ namespace OpenRCT2::Ui::Windows
                 auto designCountStringId = GetDesignsAvailableStringId(count);
                 ft = Formatter();
                 ft.Add<int32_t>(count);
-                DrawTextBasic(rt, screenPos + ScreenCoordsXY{ 0, 51 }, designCountStringId, ft);
+                DrawText(rt, screenPos + ScreenCoordsXY{ 0, 51 }, designCountStringId, ft);
             }
 
             // Price
@@ -1004,7 +1004,7 @@ namespace OpenRCT2::Ui::Windows
 
                 ft = Formatter();
                 ft.Add<money64>(price);
-                DrawTextBasic(rt, screenPos + ScreenCoordsXY{ textWidth - 14, 51 }, stringId, ft, { TextAlignment::right });
+                DrawText(rt, screenPos + ScreenCoordsXY{ textWidth - 14, 51 }, stringId, ft, { TextAlignment::right });
             }
 
             // Draw object author(s) if debugging tools are active
