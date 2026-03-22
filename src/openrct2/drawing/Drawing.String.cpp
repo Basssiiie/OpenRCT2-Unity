@@ -783,12 +783,9 @@ static void TTFProcessInitialColour(ColourWithFlags colour, TextDrawInfo* info)
 }
 
 void TTFDrawString(
-    RenderTarget& rt, const_utf8string text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
+    RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
     FontStyle fontStyle, TextDarkness darkness)
 {
-    if (text == nullptr)
-        return;
-
     TextDrawInfo info{};
     info.fontStyle = fontStyle;
     info.startX = coords.x;

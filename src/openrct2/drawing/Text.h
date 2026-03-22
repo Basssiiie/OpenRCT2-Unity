@@ -215,7 +215,7 @@ void DrawTextEllipsised(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsX
 int32_t DrawTextWrapped(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format);
 
 void DrawText(
-    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& paint, const_utf8string text,
+    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& paint, u8string_view text,
     bool noFormatting = false);
 void DrawTextBasic(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const OpenRCT2::Formatter& ft,

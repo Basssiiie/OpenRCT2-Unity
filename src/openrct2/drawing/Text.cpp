@@ -78,7 +78,7 @@ public:
     }
 };
 
-void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& paint, const_utf8string text, bool noFormatting)
+void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& paint, u8string_view text, bool noFormatting)
 {
     int32_t width = noFormatting ? GfxGetStringWidthNoFormatting(text, paint.FontStyle)
                                  : GfxGetStringWidth(text, paint.FontStyle);
