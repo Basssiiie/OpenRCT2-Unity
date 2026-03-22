@@ -33,9 +33,9 @@ public:
     StaticLayout(u8string_view source, const TextPaint& paint, int32_t width)
         : Paint(paint)
     {
-        MaxWidth = wrapString(source, width, paint.FontStyle, &Buffer, &LineCount);
+        MaxWidth = wrapString(source, width, paint.fontStyle, &Buffer, &LineCount);
         LineCount += 1;
-        LineHeight = FontGetLineHeight(paint.FontStyle);
+        LineHeight = FontGetLineHeight(paint.fontStyle);
     }
 
     void Draw(RenderTarget& rt, const ScreenCoordsXY& coords)
@@ -43,7 +43,7 @@ public:
         TextPaint tempPaint = Paint;
 
         auto lineCoords = coords;
-        switch (Paint.Alignment)
+        switch (Paint.alignment)
         {
             case TextAlignment::left:
                 break;
@@ -58,7 +58,7 @@ public:
         for (int32_t line = 0; line < LineCount; ++line)
         {
             DrawTextBasic(rt, lineCoords, buffer, tempPaint);
-            tempPaint.Colour = OpenRCT2::Drawing::kColourNull;
+            tempPaint.colour = OpenRCT2::Drawing::kColourNull;
             buffer = GetStringEnd(buffer) + 1;
             lineCoords.y += LineHeight;
         }
@@ -83,10 +83,10 @@ public:
 static void DrawText(
     RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view text, const TextPaint& paint, bool noFormatting = false)
 {
-    int32_t width = getStringWidth(text, paint.FontStyle, noFormatting);
+    int32_t width = getStringWidth(text, paint.fontStyle, noFormatting);
 
     auto alignedCoords = coords;
-    switch (paint.Alignment)
+    switch (paint.alignment)
     {
         case TextAlignment::left:
             break;
@@ -98,9 +98,9 @@ static void DrawText(
             break;
     }
 
-    auto textPalette = TTFDrawString(rt, text, paint.Colour, alignedCoords, noFormatting, paint.FontStyle, paint.Darkness);
+    auto textPalette = TTFDrawString(rt, text, paint.colour, alignedCoords, noFormatting, paint.fontStyle, paint.darkness);
 
-    if (paint.UnderlineText == TextUnderline::on)
+    if (paint.underlineText == TextUnderline::on)
     {
         Rectangle::fill(
             rt, { { alignedCoords + ScreenCoordsXY{ 0, 11 } }, { alignedCoords + ScreenCoordsXY{ width, 11 } } },
@@ -146,7 +146,7 @@ void DrawTextEllipsised(
 {
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
-    clipString(buffer, width, textPaint.FontStyle);
+    clipString(buffer, width, textPaint.fontStyle);
     DrawText(rt, coords, buffer, textPaint);
 }
 
@@ -155,7 +155,7 @@ void DrawTextEllipsised(
 {
     utf8 buffer[512]{};
     string.copy(buffer, std::min(string.length(), sizeof(buffer) - 1));
-    clipString(buffer, width, textPaint.FontStyle);
+    clipString(buffer, width, textPaint.fontStyle);
     DrawText(rt, coords, string, textPaint);
 }
 
@@ -176,7 +176,7 @@ int32_t DrawTextWrapped(
 {
     StaticLayout layout(string, textPaint, width);
 
-    if (textPaint.Alignment == TextAlignment::centre)
+    if (textPaint.alignment == TextAlignment::centre)
     {
         // The original tried to vertically centre the text, but used line count - 1
         int32_t lineCount = layout.GetLineCount();
