@@ -68,6 +68,8 @@ namespace OpenRCT2::Platform
         NotFound,
     };
 
+    using AssetHandle = void*;
+
     struct SteamGameData
     {
         u8string nativeFolder;
@@ -129,7 +131,7 @@ namespace OpenRCT2::Platform
     struct AssetFileOpenResult
     {
         AssetCheckResult result;
-        void* handle;
+        AssetHandle handle;
         uint64_t size;
     };
 
@@ -149,11 +151,11 @@ namespace OpenRCT2::Platform
     AssetCheckResult CheckAssetDirectoryExists(u8string_view path);
     AssetCheckResult CheckAssetExists(u8string_view path);
     AssetFileOpenResult OpenAssetFile(u8string_view path);
-    void CloseAssetFile(void* handle);
-    uint64_t GetAssetPosition(void* handle);
-    void SeekAsset(void* handle, int64_t offset, int32_t origin);
-    uint64_t ReadAsset(void* handle, void* buffer, uint64_t length);
-    uint64_t TryReadAsset(void* handle, void* buffer, uint64_t length);
+    void CloseAssetFile(AssetHandle handle);
+    uint64_t GetAssetPosition(AssetHandle handle);
+    void SeekAsset(AssetHandle handle, int64_t offset, int32_t origin);
+    uint64_t ReadAsset(AssetHandle handle, void* buffer, uint64_t length);
+    uint64_t TryReadAsset(AssetHandle handle, void* buffer, uint64_t length);
     u8string GetAssetPath();
 
     uint16_t GetLocaleLanguage();

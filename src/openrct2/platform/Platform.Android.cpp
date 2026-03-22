@@ -347,7 +347,7 @@ namespace OpenRCT2::Platform
         return AssetFileOpenResult{ AssetCheckResult::Found, asset, assetSize };
     }
 
-    void CloseAssetFile(void* handle)
+    void CloseAssetFile(AssetHandle handle)
     {
         if (handle != nullptr)
         {
@@ -355,7 +355,7 @@ namespace OpenRCT2::Platform
         }
     }
 
-    uint64_t GetAssetPosition(void* handle)
+    uint64_t GetAssetPosition(AssetHandle handle)
     {
         if (handle == nullptr)
         {
@@ -364,7 +364,7 @@ namespace OpenRCT2::Platform
         return static_cast<uint64_t>(AAsset_seek64(static_cast<AAsset*>(handle), 0, SEEK_CUR));
     }
 
-    void SeekAsset(void* handle, int64_t offset, int32_t origin)
+    void SeekAsset(AssetHandle handle, int64_t offset, int32_t origin)
     {
         if (handle == nullptr)
         {
@@ -389,7 +389,7 @@ namespace OpenRCT2::Platform
         AAsset_seek64(static_cast<AAsset*>(handle), static_cast<off64_t>(offset), whence);
     }
 
-    uint64_t ReadAsset(void* handle, void* buffer, uint64_t length)
+    uint64_t ReadAsset(AssetHandle handle, void* buffer, uint64_t length)
     {
         if (handle == nullptr)
         {
@@ -403,7 +403,7 @@ namespace OpenRCT2::Platform
         return static_cast<uint64_t>(readBytes);
     }
 
-    uint64_t TryReadAsset(void* handle, void* buffer, uint64_t length)
+    uint64_t TryReadAsset(AssetHandle handle, void* buffer, uint64_t length)
     {
         return ReadAsset(handle, buffer, length);
     }
