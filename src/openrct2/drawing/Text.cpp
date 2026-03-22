@@ -98,18 +98,18 @@ static void DrawText(
             break;
     }
 
-    TTFDrawString(rt, text, paint.Colour, alignedCoords, noFormatting, paint.FontStyle, paint.Darkness);
+    auto textPalette = TTFDrawString(rt, text, paint.Colour, alignedCoords, noFormatting, paint.FontStyle, paint.Darkness);
 
     if (paint.UnderlineText == TextUnderline::on)
     {
         Rectangle::fill(
             rt, { { alignedCoords + ScreenCoordsXY{ 0, 11 } }, { alignedCoords + ScreenCoordsXY{ width, 11 } } },
-            gTextPalette.fill);
-        if (gTextPalette.sunnyOutline != PaletteIndex::transparent)
+            textPalette.fill);
+        if (textPalette.sunnyOutline != PaletteIndex::transparent)
         {
             Rectangle::fill(
                 rt, { { alignedCoords + ScreenCoordsXY{ 1, 12 } }, { alignedCoords + ScreenCoordsXY{ width + 1, 12 } } },
-                gTextPalette.sunnyOutline);
+                textPalette.sunnyOutline);
         }
     }
 }

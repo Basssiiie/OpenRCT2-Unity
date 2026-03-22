@@ -65,7 +65,7 @@ namespace OpenRCT2::Drawing
     int32_t getStringHeightRaw(std::string_view text, FontStyle fontStyle);
     int32_t clipString(char* buffer, int32_t width, FontStyle fontStyle);
     u8string shortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle);
-    void TTFDrawString(
+    TextColours TTFDrawString(
         RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
         FontStyle fontStyle, TextDarkness darkness);
     int32_t getStringWidth(std::string_view text, FontStyle fontStyle, bool noFormatting = false);

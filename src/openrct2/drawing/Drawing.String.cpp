@@ -30,6 +30,7 @@
 
 namespace OpenRCT2::Drawing
 {
+    static TextColours _savedTextPalette{};
     /**
      *
      *  rct2: 0x006C23B1
@@ -263,7 +264,7 @@ namespace OpenRCT2::Drawing
      * Changes the palette so that the next character changes colour
      * This is specific to changing to a predefined window related colour
      */
-    static void colourCharacterWindow(OpenRCT2::Drawing::Colour colour, bool withOutline, TextColours& textPalette)
+    static TextColours colourCharacterWindow(Colour colour, bool withOutline)
     {
         TextColours mapping = {
             getColourMap(colour).colour11,
@@ -277,7 +278,7 @@ namespace OpenRCT2::Drawing
             mapping.shadowOutline = PaletteIndex::pi10;
         }
 
-        textPalette = mapping;
+        return mapping;
     }
 
     /**
@@ -547,17 +548,17 @@ namespace OpenRCT2::Drawing
                 break;
             case FormatToken::colourWindow1:
             {
-                colourCharacterWindow(gCurrentWindowColours[0], info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                info->palette = colourCharacterWindow(gCurrentWindowColours[0], info->colourFlags.has(ColourFlag::withOutline));
                 break;
             }
             case FormatToken::colourWindow2:
             {
-                colourCharacterWindow(gCurrentWindowColours[1], info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                info->palette = colourCharacterWindow(gCurrentWindowColours[1], info->colourFlags.has(ColourFlag::withOutline));
                 break;
             }
             case FormatToken::colourWindow3:
             {
-                colourCharacterWindow(gCurrentWindowColours[2], info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                info->palette = colourCharacterWindow(gCurrentWindowColours[2], info->colourFlags.has(ColourFlag::withOutline));
                 break;
             }
             case FormatToken::inlineSprite:
@@ -723,7 +724,7 @@ namespace OpenRCT2::Drawing
             info->colourFlags = colour.flags;
             if (!colour.flags.has(ColourFlag::inset))
             {
-                colourCharacterWindow(colour.colour, info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                info->palette = colourCharacterWindow(colour.colour, info->colourFlags.has(ColourFlag::withOutline));
             }
             else
             {
@@ -751,7 +752,7 @@ namespace OpenRCT2::Drawing
         }
     }
 
-    void TTFDrawString(
+    TextColours TTFDrawString(
         RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
         FontStyle fontStyle, TextDarkness darkness)
     {
@@ -773,12 +774,14 @@ namespace OpenRCT2::Drawing
             info.textDrawFlags.set(TextDrawFlag::noFormatting);
         }
 
-        info.palette = gTextPalette;
+        info.palette = _savedTextPalette;
         processInitialColour(colour, &info);
         processString(rt, text, &info);
-        gTextPalette = info.palette;
+        _savedTextPalette = info.palette;
 
         rt.lastStringPos = { info.x, info.y };
+
+        return info.palette;
     }
 
     int32_t getStringWidth(std::string_view text, FontStyle fontStyle, bool noFormatting)
@@ -832,10 +835,10 @@ namespace OpenRCT2::Drawing
             info.textDrawFlags.set(TextDrawFlag::ttf);
         }
 
-        info.palette = gTextPalette;
+        info.palette = _savedTextPalette;
         processInitialColour(colour, &info);
         processString(rt, text, &info);
-        gTextPalette = info.palette;
+        _savedTextPalette = info.palette;
 
         rt.lastStringPos = { info.x, info.y };
     }

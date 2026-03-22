@@ -99,13 +99,6 @@ ImageId gPickupPeepImage;
 int32_t gPickupPeepX;
 int32_t gPickupPeepY;
 
-// Originally 0x9ABE04
-TextColours gTextPalette = {
-    PaletteIndex::transparent,
-    PaletteIndex::transparent,
-    PaletteIndex::transparent,
-};
-
 bool gPaintForceRedraw{ false };
 
 static constexpr FilterPaletteID kGlassPaletteIds[kColourNumTotal] = {
