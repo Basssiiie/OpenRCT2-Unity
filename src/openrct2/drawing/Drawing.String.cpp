@@ -451,7 +451,7 @@ namespace OpenRCT2::Drawing
 
         if (!info.textDrawFlags.has(TextDrawFlag::noDraw))
         {
-            auto screenCoords = ScreenCoordsXY{ info.x, info.y };
+            auto screenCoords = info.current;
             if (info.textDrawFlags.has(TextDrawFlag::yOffsetEffect))
             {
                 screenCoords.y += *info.yOffset++;
@@ -466,7 +466,7 @@ namespace OpenRCT2::Drawing
             GfxDrawGlyph(rt, sprite, screenCoords, paletteMap);
         }
 
-        info.x += characterWidth;
+        info.current.x += characterWidth;
     }
 
     static void drawStringRawSprite(RenderTarget& rt, std::string_view text, TextDrawInfo& info)
@@ -494,7 +494,7 @@ namespace OpenRCT2::Drawing
 
         if (info.textDrawFlags.has(TextDrawFlag::noDraw))
         {
-            info.x += TTFGetWidthCacheGetOrAdd(fontDesc->font, text);
+            info.current.x += TTFGetWidthCacheGetOrAdd(fontDesc->font, text);
             return;
         }
 
@@ -505,13 +505,13 @@ namespace OpenRCT2::Drawing
         auto drawingEngine = rt.DrawingEngine;
         if (drawingEngine != nullptr)
         {
-            int32_t drawX = info.x + fontDesc->offset_x;
-            int32_t drawY = info.y + fontDesc->offset_y;
+            int32_t drawX = info.current.x + fontDesc->offset_x;
+            int32_t drawY = info.current.y + fontDesc->offset_y;
             uint8_t hintThresh = Config::Get().fonts.enableHinting ? fontDesc->hinting_threshold : 0;
             IDrawingContext* dc = drawingEngine->GetDrawingContext();
             dc->DrawTTFBitmap(rt, info, surface, drawX, drawY, hintThresh);
         }
-        info.x += surface->w;
+        info.current.x += surface->w;
     }
 
 #endif // DISABLE_TTF
@@ -521,15 +521,15 @@ namespace OpenRCT2::Drawing
         switch (token.kind)
         {
             case FormatToken::move:
-                info.x = info.startX + token.parameter;
+                info.current.x = info.start.x + token.parameter;
                 break;
             case FormatToken::newline:
-                info.x = info.startX;
-                info.y += FontGetLineHeight(info.fontStyle);
+                info.current.x = info.start.x;
+                info.current.y += FontGetLineHeight(info.fontStyle);
                 break;
             case FormatToken::newlineSmall:
-                info.x = info.startX;
-                info.y += FontGetLineHeightSmall(info.fontStyle);
+                info.current.x = info.start.x;
+                info.current.y += FontGetLineHeightSmall(info.fontStyle);
                 break;
             case FormatToken::fontTiny:
                 info.fontStyle = FontStyle::tiny;
@@ -569,9 +569,9 @@ namespace OpenRCT2::Drawing
                 {
                     if (!info.textDrawFlags.has(TextDrawFlag::noDraw))
                     {
-                        GfxDrawSprite(rt, imageId, { info.x, info.y });
+                        GfxDrawSprite(rt, imageId, info.current);
                     }
-                    info.x += g1->width;
+                    info.current.x += g1->width;
                 }
                 break;
             }
@@ -690,8 +690,8 @@ namespace OpenRCT2::Drawing
         if (info.textDrawFlags.has(TextDrawFlag::noFormatting))
         {
             processStringLiteral(rt, text, info);
-            info.maxX = std::max(info.maxX, info.x);
-            info.maxY = std::max(info.maxY, info.y);
+            info.max.x = std::max(info.max.x, info.current.x);
+            info.max.y = std::max(info.max.y, info.current.y);
         }
         else
         {
@@ -711,8 +711,8 @@ namespace OpenRCT2::Drawing
                 {
                     processFormatCode(rt, token, info);
                 }
-                info.maxX = std::max(info.maxX, info.x);
-                info.maxY = std::max(info.maxY, info.y);
+                info.max.x = std::max(info.max.x, info.current.x);
+                info.max.y = std::max(info.max.y, info.current.y);
             }
         }
     }
@@ -758,10 +758,8 @@ namespace OpenRCT2::Drawing
     {
         TextDrawInfo info{};
         info.fontStyle = fontStyle;
-        info.startX = coords.x;
-        info.startY = coords.y;
-        info.x = coords.x;
-        info.y = coords.y;
+        info.start = coords;
+        info.current = coords;
         info.darkness = darkness;
 
         if (LocalisationService_UseTrueTypeFont())
@@ -779,7 +777,7 @@ namespace OpenRCT2::Drawing
         processString(rt, text, info);
         _savedTextPalette = info.palette;
 
-        rt.lastStringPos = { info.x, info.y };
+        rt.lastStringPos = info.current;
 
         return info.palette;
     }
@@ -788,12 +786,6 @@ namespace OpenRCT2::Drawing
     {
         TextDrawInfo info{};
         info.fontStyle = fontStyle;
-        info.startX = 0;
-        info.startY = 0;
-        info.x = 0;
-        info.y = 0;
-        info.maxX = 0;
-        info.maxY = 0;
 
         info.textDrawFlags.set(TextDrawFlag::noDraw);
         if (LocalisationService_UseTrueTypeFont())
@@ -809,7 +801,7 @@ namespace OpenRCT2::Drawing
         RenderTarget dummy{};
         processString(dummy, text, info);
 
-        return info.maxX;
+        return info.max.x;
     }
 
     /**
@@ -822,10 +814,8 @@ namespace OpenRCT2::Drawing
     {
         TextDrawInfo info{};
         info.fontStyle = fontStyle;
-        info.startX = coords.x;
-        info.startY = coords.y;
-        info.x = coords.x;
-        info.y = coords.y;
+        info.start = coords;
+        info.current = coords;
         info.yOffset = yOffsets;
 
         info.textDrawFlags.set(TextDrawFlag::yOffsetEffect);
@@ -840,7 +830,7 @@ namespace OpenRCT2::Drawing
         processString(rt, text, info);
         _savedTextPalette = info.palette;
 
-        rt.lastStringPos = { info.x, info.y };
+        rt.lastStringPos = info.current;
     }
 
     u8string shortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle)

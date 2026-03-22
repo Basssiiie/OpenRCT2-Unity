@@ -12,6 +12,7 @@
 #include "../core/FlagHolder.hpp"
 #include "../core/StringTypes.h"
 #include "../interface/ColourWithFlags.h"
+#include "../world/Location.hpp"
 #include "TextColour.h"
 
 #include <cstdint>
@@ -37,14 +38,11 @@ namespace OpenRCT2::Drawing
 
     struct TextDrawInfo
     {
-        int32_t startX{};
-        int32_t startY{};
-        int32_t x{};
-        int32_t y{};
-        int32_t maxX{};
-        int32_t maxY{};
+        ScreenCoordsXY start{};
+        ScreenCoordsXY current{};
+        ScreenCoordsXY max{};
         TextDrawFlags textDrawFlags{};
-        OpenRCT2::ColourFlags colourFlags{};
+        ColourFlags colourFlags{};
         TextDarkness darkness{};
         TextColours palette{};
         FontStyle fontStyle{};
