@@ -1135,6 +1135,23 @@ void ScriptEngine::Tick()
     JSContext* jobCtx;
     while (true)
     {
+        // TODO: this is a bit of a hack, perhaps the PluginScope class should be replaced by a better way of tracking context
+        // Lookup the plugin from the context with a slow linear search
+        JSContext* ctx = JS_GetPendingJobContext(_runtime);
+        std::shared_ptr<Plugin> plugin;
+        if (ctx != nullptr)
+        {
+            for (const auto& p : _plugins)
+            {
+                if (p->GetContext() == ctx)
+                {
+                    plugin = p;
+                    break;
+                }
+            }
+        }
+        ScriptExecutionInfo::PluginScope scope(_execInfo, plugin, false);
+
         if (JS_ExecutePendingJob(_runtime, &jobCtx) == 0)
             break;
     }
