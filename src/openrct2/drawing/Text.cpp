@@ -80,37 +80,16 @@ public:
     }
 };
 
-static void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view text, const TextPaint& paint)
+static void drawTextUnderline(
+    RenderTarget& rt, const ScreenCoordsXY& alignedCoords, int32_t width, const TextColours& textPalette)
 {
-    auto noFormatting = paint.flags.has(TextPaintFlag::noFormatting);
-    int32_t width = getStringWidth(text, paint.fontStyle, noFormatting);
-
-    auto alignedCoords = coords;
-    switch (paint.alignment)
-    {
-        case TextAlignment::left:
-            break;
-        case TextAlignment::centre:
-            alignedCoords.x -= (width - 1) / 2;
-            break;
-        case TextAlignment::right:
-            alignedCoords.x -= width;
-            break;
-    }
-
-    auto textPalette = TTFDrawString(rt, text, paint.colour, alignedCoords, noFormatting, paint.fontStyle, paint.darkness);
-
-    if (paint.flags.has(TextPaintFlag::underline))
+    Rectangle::fill(
+        rt, { { alignedCoords + ScreenCoordsXY{ 0, 11 } }, { alignedCoords + ScreenCoordsXY{ width, 11 } } }, textPalette.fill);
+    if (textPalette.sunnyOutline != PaletteIndex::transparent)
     {
         Rectangle::fill(
-            rt, { { alignedCoords + ScreenCoordsXY{ 0, 11 } }, { alignedCoords + ScreenCoordsXY{ width, 11 } } },
-            textPalette.fill);
-        if (textPalette.sunnyOutline != PaletteIndex::transparent)
-        {
-            Rectangle::fill(
-                rt, { { alignedCoords + ScreenCoordsXY{ 1, 12 } }, { alignedCoords + ScreenCoordsXY{ width + 1, 12 } } },
-                textPalette.sunnyOutline);
-        }
+            rt, { { alignedCoords + ScreenCoordsXY{ 1, 12 } }, { alignedCoords + ScreenCoordsXY{ width + 1, 12 } } },
+            textPalette.sunnyOutline);
     }
 }
 
@@ -123,12 +102,34 @@ void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId form
 {
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
-    DrawText(rt, coords, buffer, textPaint);
+    DrawTextBasic(rt, coords, buffer, textPaint);
 }
 
 void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
 {
-    DrawText(rt, coords, string, textPaint);
+    auto noFormatting = textPaint.flags.has(TextPaintFlag::noFormatting);
+    int32_t width = getStringWidth(string, textPaint.fontStyle, noFormatting);
+
+    auto alignedCoords = coords;
+    switch (textPaint.alignment)
+    {
+        case TextAlignment::left:
+            break;
+        case TextAlignment::centre:
+            alignedCoords.x -= (width - 1) / 2;
+            break;
+        case TextAlignment::right:
+            alignedCoords.x -= width;
+            break;
+    }
+
+    auto textPalette = TTFDrawString(
+        rt, string, textPaint.colour, alignedCoords, noFormatting, textPaint.fontStyle, textPaint.darkness);
+
+    if (textPaint.flags.has(TextPaintFlag::underline))
+    {
+        drawTextUnderline(rt, alignedCoords, width, textPalette);
+    }
 }
 
 void DrawTextEllipsised(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
@@ -142,7 +143,7 @@ void DrawTextEllipsised(
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
     clipString(buffer, width, textPaint.fontStyle);
-    DrawText(rt, coords, buffer, textPaint);
+    DrawTextBasic(rt, coords, buffer, textPaint);
 }
 
 void DrawTextEllipsised(
@@ -151,7 +152,7 @@ void DrawTextEllipsised(
     utf8 buffer[512]{};
     string.copy(buffer, std::min(string.length(), sizeof(buffer) - 1));
     clipString(buffer, width, textPaint.fontStyle);
-    DrawText(rt, coords, string, textPaint);
+    DrawTextBasic(rt, coords, string, textPaint);
 }
 
 int32_t DrawTextWrapped(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
