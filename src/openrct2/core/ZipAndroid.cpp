@@ -42,6 +42,8 @@ public:
         jobject zip = env->NewObject(jniClass, constructor, activity, jniPath);
         if (env->ExceptionCheck())
         {
+            LOG_ERROR("JNI exception occurred while opening zip archive '%s':", std::string(path).c_str());
+            env->ExceptionDescribe();
             env->ExceptionClear();
             env->DeleteLocalRef(jniClass);
             env->DeleteLocalRef(jniPath);
@@ -73,6 +75,8 @@ public:
         env->CallVoidMethod(_zip, closeMethod);
         if (env->ExceptionCheck())
         {
+            LOG_ERROR("JNI exception occurred while closing zip archive:");
+            env->ExceptionDescribe();
             env->ExceptionClear();
         }
 
@@ -96,6 +100,8 @@ public:
         jint count = env->CallIntMethod(_zip, fileCountMethod);
         if (env->ExceptionCheck())
         {
+            LOG_ERROR("JNI exception occurred while getting file count:");
+            env->ExceptionDescribe();
             env->ExceptionClear();
             count = 0;
         }
@@ -121,6 +127,8 @@ public:
         jstring jniString = (jstring)env->CallObjectMethod(_zip, fileNameMethod, (jint)index);
         if (env->ExceptionCheck())
         {
+            LOG_ERROR("JNI exception occurred while getting file name at index %zu:", index);
+            env->ExceptionDescribe();
             env->ExceptionClear();
             env->DeleteLocalRef(zipClass);
             return std::string();
@@ -156,6 +164,8 @@ public:
         jlong size = env->CallLongMethod(_zip, fileSizeMethod, (jint)index);
         if (env->ExceptionCheck())
         {
+            LOG_ERROR("JNI exception occurred while getting file size at index %zu:", index);
+            env->ExceptionDescribe();
             env->ExceptionClear();
             size = 0;
         }
@@ -181,6 +191,8 @@ public:
         jint index = env->CallIntMethod(_zip, indexMethod, javaPath);
         if (env->ExceptionCheck())
         {
+            LOG_ERROR("JNI exception occurred while getting file index for path: %s", std::string(path).c_str());
+            env->ExceptionDescribe();
             env->ExceptionClear();
             index = -1;
         }
@@ -192,6 +204,8 @@ public:
             jbyteArray array = (jbyteArray)env->CallObjectMethod(_zip, fileMethod, index);
             if (env->ExceptionCheck())
             {
+                LOG_ERROR("JNI exception occurred while getting file data at index %d:", index);
+                env->ExceptionDescribe();
                 env->ExceptionClear();
                 array = nullptr;
             }
