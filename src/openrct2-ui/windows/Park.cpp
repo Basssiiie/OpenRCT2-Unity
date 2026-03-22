@@ -25,6 +25,7 @@
 #include <openrct2/actions/park/ParkSetNameAction.h>
 #include <openrct2/config/Config.h>
 #include <openrct2/core/UnitConversion.h>
+#include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
 #include <openrct2/localisation/Currency.h>

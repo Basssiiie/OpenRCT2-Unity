@@ -106,29 +106,6 @@ void FASTCALL GfxDrawSpriteSolid(
 void FASTCALL GfxDrawSpriteRawMasked(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, ImageId maskImage, ImageId colourImage);
 
-// string
-void GfxDrawStringLeftCentred(
-    OpenRCT2::Drawing::RenderTarget& rt, StringId format, void* args, ColourWithFlags colour, const ScreenCoordsXY& coords);
-void DrawStringCentredRaw(
-    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t numLines, const utf8* text, FontStyle fontStyle);
-void DrawNewsTicker(
-    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, OpenRCT2::Drawing::Colour colour,
-    StringId format, u8string_view args, int32_t ticks);
-void GfxDrawStringWithYOffsets(
-    OpenRCT2::Drawing::RenderTarget& rt, const utf8* text, ColourWithFlags colour, const ScreenCoordsXY& coords,
-    const int8_t* yOffsets, bool forceSpriteFont, FontStyle fontStyle);
-
-int32_t GfxWrapString(u8string_view text, int32_t width, FontStyle fontStyle, u8string* outWrappedText, int32_t* outNumLines);
-int32_t GfxGetStringWidth(std::string_view text, FontStyle fontStyle);
-int32_t GfxGetStringWidthNewLined(std::string_view text, FontStyle fontStyle);
-int32_t GfxGetStringWidthNoFormatting(std::string_view text, FontStyle fontStyle);
-int32_t StringGetHeightRaw(std::string_view text, FontStyle fontStyle);
-int32_t GfxClipString(char* buffer, int32_t width, FontStyle fontStyle);
-u8string ShortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle);
-void TTFDrawString(
-    OpenRCT2::Drawing::RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords,
-    bool noFormatting, FontStyle fontStyle, TextDarkness darkness);
-
 void MaskSse4_1(
     int32_t width, int32_t height, const uint8_t* RESTRICT maskSrc, const uint8_t* RESTRICT colourSrc,
     OpenRCT2::Drawing::PaletteIndex* RESTRICT dst, int32_t maskWrap, int32_t colourWrap, int32_t dstWrap);

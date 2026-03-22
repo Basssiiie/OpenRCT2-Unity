@@ -14,6 +14,7 @@
 #include "../audio/Audio.h"
 #include "../audio/AudioMixer.h"
 #include "../core/UTF8.h"
+#include "../drawing/Drawing.String.h"
 #include "../drawing/Drawing.h"
 #include "../drawing/Rectangle.h"
 #include "../drawing/Text.h"

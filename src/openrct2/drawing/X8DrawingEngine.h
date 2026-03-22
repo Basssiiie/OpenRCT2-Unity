@@ -16,8 +16,6 @@
 
 #include <memory>
 
-struct TextDrawInfo;
-
 namespace OpenRCT2
 {
     namespace Ui
@@ -27,6 +25,7 @@ namespace OpenRCT2
 
     namespace Drawing
     {
+        struct TextDrawInfo;
         class X8DrawingContext;
 
         class X8WeatherDrawer final : public IWeatherDrawer

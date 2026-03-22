@@ -11,6 +11,7 @@
 #include <openrct2-ui/windows/Windows.h>
 #include <openrct2/Context.h>
 #include <openrct2/Version.h>
+#include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/interface/ColourWithFlags.h>
 #include <openrct2/ui/WindowManager.h>
@@ -28,12 +29,12 @@ namespace OpenRCT2::Ui::Windows
             // Write name and version information
             const auto whiteOutline = ColourWithFlags{ Drawing::Colour::white }.withFlag(ColourFlag::withOutline, true);
             DrawTextBasic(rt, windowPos, gVersionInfoFull, { whiteOutline });
-            width = GfxGetStringWidth(gVersionInfoFull, FontStyle::medium);
+            width = Drawing::GfxGetStringWidth(gVersionInfoFull, FontStyle::medium);
 
             // Write platform information
             constexpr const char platformInfo[] = OPENRCT2_PLATFORM " (" OPENRCT2_ARCHITECTURE ")";
             DrawTextBasic(rt, windowPos + ScreenCoordsXY(0, kListRowHeight), platformInfo, { whiteOutline });
-            width = std::max<int16_t>(width, GfxGetStringWidth(platformInfo, FontStyle::medium)) + kTextOffset;
+            width = std::max<int16_t>(width, Drawing::GfxGetStringWidth(platformInfo, FontStyle::medium)) + kTextOffset;
         }
     };
 

@@ -13,6 +13,7 @@
 
     #include "CustomImages.h"
 
+    #include <openrct2/drawing/Drawing.String.h>
     #include <openrct2/drawing/Drawing.h>
     #include <openrct2/drawing/Rectangle.h>
     #include <openrct2/drawing/RenderTarget.h>
@@ -158,8 +159,8 @@ namespace OpenRCT2::Scripting
 
         DukValue measureText(const std::string& text)
         {
-            auto width = GfxGetStringWidth(text, FontStyle::medium);
-            auto height = StringGetHeightRaw(text.c_str(), FontStyle::medium);
+            auto width = Drawing::GfxGetStringWidth(text, FontStyle::medium);
+            auto height = Drawing::StringGetHeightRaw(text.c_str(), FontStyle::medium);
             return ToDuk<ScreenSize>(_ctx, { width, height });
         }
 

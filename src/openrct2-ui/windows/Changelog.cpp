@@ -16,6 +16,7 @@
 #include <openrct2/core/File.h>
 #include <openrct2/core/FileSystem.hpp>
 #include <openrct2/core/String.hpp>
+#include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatting.h>
@@ -261,7 +262,7 @@ namespace OpenRCT2::Ui::Windows
             _changelogLongestLineWidth = 0;
             for (const auto& line : _changelogLines)
             {
-                int32_t linewidth = GfxGetStringWidth(line.c_str(), FontStyle::medium);
+                int32_t linewidth = Drawing::GfxGetStringWidth(line.c_str(), FontStyle::medium);
                 _changelogLongestLineWidth = std::max(linewidth, _changelogLongestLineWidth);
             }
         }

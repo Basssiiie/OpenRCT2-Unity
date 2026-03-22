@@ -20,6 +20,7 @@
 #include "../localisation/LocalisationService.h"
 #include "../paint/Paint.h"
 #include "BlendColourMap.h"
+#include "Drawing.String.h"
 #include "Drawing.h"
 #include "TTF.h"
 

@@ -20,6 +20,7 @@
 #include <openrct2/core/BitSet.hpp>
 #include <openrct2/core/String.hpp>
 #include <openrct2/drawing/ColourMap.h>
+#include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
 #include <openrct2/interface/ColourWithFlags.h>
