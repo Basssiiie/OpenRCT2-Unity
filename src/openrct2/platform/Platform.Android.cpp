@@ -487,6 +487,16 @@ namespace OpenRCT2::Platform
     }
 } // namespace OpenRCT2::Platform
 
+/**
+ * JNI function to expose the Android asset path prefix constant to Java.
+ * Called from io.openrct2.PlatformConstants.getAndroidAssetPathPrefix()
+ */
+extern "C" JNIEXPORT jstring JNICALL
+    Java_io_openrct2_PlatformConstants_getAndroidAssetPathPrefix(JNIEnv* env, jclass /* clazz */)
+{
+    return env->NewStringUTF(std::string(OpenRCT2::Platform::kAndroidAssetPathPrefix).c_str());
+}
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* pjvm, void* reserved)
 {
     // Due to an issue where JNI_OnLoad could be called multiple times, we need
