@@ -80,7 +80,7 @@ public:
 };
 
 static void DrawText(
-    RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& paint, u8string_view text, bool noFormatting = false)
+    RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view text, const TextPaint& paint, bool noFormatting = false)
 {
     int32_t width = noFormatting ? GfxGetStringWidthNoFormatting(text, paint.FontStyle)
                                  : GfxGetStringWidth(text, paint.FontStyle);
@@ -116,7 +116,7 @@ static void DrawText(
 
 void DrawTextNoFormatting(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
 {
-    DrawText(rt, coords, textPaint, string, true);
+    DrawText(rt, coords, string, textPaint, true);
 }
 
 void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint)
@@ -128,12 +128,12 @@ void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId form
 {
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
-    DrawText(rt, coords, textPaint, buffer);
+    DrawText(rt, coords, buffer, textPaint);
 }
 
 void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
 {
-    DrawText(rt, coords, textPaint, string);
+    DrawText(rt, coords, string, textPaint);
 }
 
 void DrawTextEllipsised(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
@@ -152,7 +152,7 @@ void DrawTextEllipsised(
 void DrawTextEllipsised(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string string, TextPaint textPaint)
 {
     GfxClipString(const_cast<utf8*>(string.c_str()), width, textPaint.FontStyle);
-    DrawText(rt, coords, textPaint, string);
+    DrawText(rt, coords, string, textPaint);
 }
 
 int32_t DrawTextWrapped(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)

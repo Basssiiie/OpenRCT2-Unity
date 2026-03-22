@@ -210,7 +210,8 @@ struct TextPaint
     }
 };
 
-void DrawTextNoFormatting(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint = {});
+void DrawTextNoFormatting(
+    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint = {});
 
 void DrawTextBasic(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint = {});

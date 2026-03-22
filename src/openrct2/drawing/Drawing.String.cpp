@@ -462,8 +462,7 @@ void DrawNewsTicker(
         }
 
         screenCoords = { coords.x - halfWidth, lineY };
-        DrawTextBasic(rt, screenCoords, buffer, kColourNull, FontStyle::small
-    });
+        DrawTextBasic(rt, screenCoords, buffer, { kColourNull, FontStyle::small });
 
         if (numCharactersDrawn > numCharactersToDraw)
         {
