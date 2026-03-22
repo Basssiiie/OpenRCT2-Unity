@@ -764,7 +764,7 @@ namespace OpenRCT2::Ui::Windows
                         if (*listItem.flags & (ObjectSelectionFlags::InUse | ObjectSelectionFlags::AlwaysRequired))
                             colour2.flags.set(ColourFlag::inset, true);
 
-                        DrawText(rt, screenCoords, { colour2, FontStyle::medium, darkness }, kCheckMarkString);
+                        DrawTextBasic(rt, screenCoords, kCheckMarkString, { colour2, FontStyle::medium, darkness });
                     }
 
                     screenCoords.x = gLegacyScene == LegacyScene::trackDesignsManager ? 0 : 15;

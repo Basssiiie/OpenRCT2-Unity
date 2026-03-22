@@ -544,10 +544,7 @@ namespace OpenRCT2::Ui::Windows
 
                 const auto& entry = _invalidEntries[i];
 
-                auto name = entry.GetName();
-                char buffer[256];
-                String::set(buffer, sizeof(buffer), name.data(), name.size());
-                DrawText(rt, screenCoords, { Drawing::Colour::darkGreen }, buffer);
+                DrawTextBasic(rt, screenCoords, entry.GetName(), { Colour::darkGreen });
 
                 if (entry.Generation == ObjectGeneration::DAT)
                 {

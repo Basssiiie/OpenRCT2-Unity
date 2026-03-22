@@ -38,9 +38,9 @@ namespace OpenRCT2::Graph
             // Draw Y label text
             char buffer[64]{};
             FormatStringToBuffer(buffer, sizeof(buffer), fmt, curLabel);
-            DrawText(
-                rt, { internalBounds.GetLeft() - kYTickMarkPadding, curScreenPos }, { FontStyle::small, TextAlignment::right },
-                buffer);
+            DrawTextBasic(
+                rt, { internalBounds.GetLeft() - kYTickMarkPadding, curScreenPos }, buffer,
+                { FontStyle::small, TextAlignment::right });
             // Draw Y label tick mark
             Rectangle::fill(
                 rt, { { internalBounds.GetLeft() - 5, curScreenPos + 5 }, { internalBounds.GetLeft(), curScreenPos + 5 } },
@@ -102,7 +102,7 @@ namespace OpenRCT2::Graph
             kDashLength, PaletteIndex::pi10);
         GfxDrawDashedLine(rt, { { bounds.GetLeft(), coords.y }, coords }, kDashLength, PaletteIndex::pi10);
 
-        DrawText(rt, coords - ScreenCoordsXY{ 0, 16 }, { textCol, TextAlignment::centre }, text);
+        DrawTextBasic(rt, coords - ScreenCoordsXY{ 0, 16 }, text, { textCol, TextAlignment::centre });
 
         Rectangle::fill(rt, { { coords - ScreenCoordsXY{ 2, 2 } }, coords + ScreenCoordsXY{ 2, 2 } }, PaletteIndex::pi10);
         Rectangle::fill(rt, { { coords - ScreenCoordsXY{ 1, 1 } }, { coords + ScreenCoordsXY{ 1, 1 } } }, PaletteIndex::pi21);

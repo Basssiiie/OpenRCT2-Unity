@@ -2371,9 +2371,9 @@ namespace OpenRCT2::Ui::Windows
                     if (currentRide->flags.has(RideFlag::indestructible))
                     {
                         auto darkness = stringId == STR_WINDOW_COLOUR_2_STRINGID ? TextDarkness::extraDark : TextDarkness::dark;
-                        DrawText(
-                            rt, { 2, y }, { colours[1].withFlag(ColourFlag::translucent, false), FontStyle::medium, darkness },
-                            kCheckMarkString);
+                        DrawTextBasic(
+                            rt, { 2, y }, kCheckMarkString,
+                            { colours[1].withFlag(ColourFlag::translucent, false), FontStyle::medium, darkness });
                     }
 
                     // Ride name

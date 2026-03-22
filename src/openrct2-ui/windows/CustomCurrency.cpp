@@ -210,7 +210,8 @@ namespace OpenRCT2::Ui::Windows
 
             screenCoords = windowPos + ScreenCoordsXY{ widgets[WIDX_SYMBOL_TEXT].left + 1, widgets[WIDX_SYMBOL_TEXT].top };
 
-            DrawText(rt, screenCoords, { colours[1] }, CurrencyDescriptors[EnumValue(CurrencyType::custom)].symbol_unicode);
+            DrawTextBasic(
+                rt, screenCoords, CurrencyDescriptors[EnumValue(CurrencyType::custom)].symbol_unicode, { colours[1] });
 
             auto drawPos = windowPos
                 + ScreenCoordsXY{ widgets[WIDX_AFFIX_DROPDOWN].left + 1, widgets[WIDX_AFFIX_DROPDOWN].top };

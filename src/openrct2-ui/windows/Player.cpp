@@ -451,7 +451,7 @@ namespace OpenRCT2::Ui::Windows
             DrawTextBasic(rt, screenCoords, STR_WINDOW_COLOUR_2_STRINGID, ft);
             char ping[64];
             snprintf(ping, 64, "%d ms", Network::GetPlayerPing(player));
-            DrawText(rt, screenCoords + ScreenCoordsXY(30, 0), { colours[2] }, ping);
+            DrawTextBasic(rt, screenCoords + ScreenCoordsXY(30, 0), ping, { colours[2] });
 
             // Draw last action
             screenCoords = windowPos + ScreenCoordsXY{ width / 2, height - 13 };

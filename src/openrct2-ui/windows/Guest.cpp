@@ -1875,7 +1875,7 @@ namespace OpenRCT2::Ui::Windows
                     FormatStringLegacy(buffer2, sizeof(buffer2), STR_PEEP_DEBUG_NEXT_SLOPE, ft2.Data());
                     String::safeConcat(buffer, buffer2, sizeof(buffer));
                 }
-                DrawText(rt, screenCoords, {}, buffer);
+                DrawTextBasic(rt, screenCoords, buffer);
             }
             screenCoords.y += kListRowHeight;
             {

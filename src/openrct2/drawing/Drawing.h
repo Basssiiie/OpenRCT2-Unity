@@ -126,7 +126,7 @@ int32_t StringGetHeightRaw(std::string_view text, FontStyle fontStyle);
 int32_t GfxClipString(char* buffer, int32_t width, FontStyle fontStyle);
 u8string ShortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle);
 void TTFDrawString(
-    OpenRCT2::Drawing::RenderTarget& rt, const_utf8string text, ColourWithFlags colour, const ScreenCoordsXY& coords,
+    OpenRCT2::Drawing::RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords,
     bool noFormatting, FontStyle fontStyle, TextDarkness darkness);
 
 void MaskSse4_1(

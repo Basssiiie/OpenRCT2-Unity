@@ -802,8 +802,8 @@ namespace OpenRCT2::Ui::Windows
                             Rectangle::FillBrightness::dark, Rectangle::FillMode::dontLightenWhenInset);
                         if (colour.flags.has(ColourFlag::translucent))
                         {
-                            DrawText(
-                                rt, topLeft, { colours[1].colour, FontStyle::medium, TextDarkness::dark }, kCheckMarkString);
+                            DrawTextBasic(
+                                rt, topLeft, kCheckMarkString, { colours[1].colour, FontStyle::medium, TextDarkness::dark });
                         }
                     }
                 }

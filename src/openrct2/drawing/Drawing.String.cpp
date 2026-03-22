@@ -271,7 +271,7 @@ void GfxDrawStringLeftCentred(
     auto bufferPtr = buffer;
     FormatStringLegacy(bufferPtr, sizeof(buffer), format, args);
     int32_t height = StringGetHeightRaw(bufferPtr, FontStyle::medium);
-    DrawText(rt, coords - ScreenCoordsXY{ 0, (height / 2) }, { colour }, bufferPtr);
+    DrawTextBasic(rt, coords - ScreenCoordsXY{ 0, (height / 2) }, bufferPtr, { colour });
 }
 
 /**
@@ -325,13 +325,13 @@ void DrawStringCentredRaw(
     RenderTarget& rt, const ScreenCoordsXY& coords, int32_t numLines, const utf8* text, FontStyle fontStyle)
 {
     ScreenCoordsXY screenCoords(rt.x, rt.y);
-    DrawText(rt, screenCoords, { OpenRCT2::Drawing::Colour::black, fontStyle }, "");
+    DrawTextBasic(rt, screenCoords, "", { Colour::black, fontStyle });
     screenCoords = coords;
 
     for (int32_t i = 0; i <= numLines; i++)
     {
         int32_t width = GfxGetStringWidth(text, fontStyle);
-        DrawText(rt, screenCoords - ScreenCoordsXY{ width / 2, 0 }, { OpenRCT2::Drawing::kColourNull, fontStyle }, text);
+        DrawTextBasic(rt, screenCoords - ScreenCoordsXY{ width / 2, 0 }, text, { kColourNull, fontStyle });
 
         const utf8* ch = text;
         const utf8* nextCh = nullptr;
@@ -423,7 +423,7 @@ void DrawNewsTicker(
     int32_t numLines, lineHeight, lineY;
     ScreenCoordsXY screenCoords(rt.x, rt.y);
 
-    DrawText(rt, screenCoords, { colour }, "");
+    DrawTextBasic(rt, screenCoords, "", { colour });
 
     u8string wrappedString;
     GfxWrapString(FormatStringID(format, args), width, FontStyle::small, &wrappedString, &numLines);
@@ -462,7 +462,7 @@ void DrawNewsTicker(
         }
 
         screenCoords = { coords.x - halfWidth, lineY };
-        DrawText(rt, screenCoords, { OpenRCT2::Drawing::kColourNull, FontStyle::small }, buffer);
+        DrawTextBasic(rt, screenCoords, buffer, { kColourNull, FontStyle::small });
 
         if (numCharactersDrawn > numCharactersToDraw)
         {
@@ -783,12 +783,9 @@ static void TTFProcessInitialColour(ColourWithFlags colour, TextDrawInfo* info)
 }
 
 void TTFDrawString(
-    RenderTarget& rt, const_utf8string text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
+    RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
     FontStyle fontStyle, TextDarkness darkness)
 {
-    if (text == nullptr)
-        return;
-
     TextDrawInfo info{};
     info.fontStyle = fontStyle;
     info.startX = coords.x;

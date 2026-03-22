@@ -342,19 +342,19 @@ void InGameConsole::Draw(RenderTarget& rt) const
             // as opposed to a desaturated grey
             if (textColour.colour == OpenRCT2::Drawing::Colour::black)
             {
-                DrawText(rt, screenCoords, { textColour, style }, "{BLACK}");
-                DrawText(rt, screenCoords, { OpenRCT2::Drawing::kColourNull, style }, _consoleLines[index].first.c_str(), true);
+                DrawTextBasic(rt, screenCoords, "{BLACK}", { textColour, style });
+                DrawTextNoFormatting(rt, screenCoords, _consoleLines[index].first, { kColourNull, style });
             }
             else
             {
-                DrawText(rt, screenCoords, { textColour, style }, _consoleLines[index].first.c_str(), true);
+                DrawTextNoFormatting(rt, screenCoords, _consoleLines[index].first, { textColour, style });
             }
         }
         else
         {
             std::string lineColour = FormatTokenToStringWithBraces(_consoleLines[index].second);
-            DrawText(rt, screenCoords, { textColour, style }, lineColour.c_str());
-            DrawText(rt, screenCoords, { OpenRCT2::Drawing::kColourNull, style }, _consoleLines[index].first.c_str(), true);
+            DrawTextBasic(rt, screenCoords, lineColour, { textColour, style });
+            DrawTextNoFormatting(rt, screenCoords, _consoleLines[index].first, { OpenRCT2::Drawing::kColourNull, style });
         }
 
         screenCoords.y += lineHeight;
@@ -365,12 +365,12 @@ void InGameConsole::Draw(RenderTarget& rt) const
     // Draw current line
     if (textColour.colour == OpenRCT2::Drawing::Colour::black)
     {
-        DrawText(rt, screenCoords, { textColour, style }, "{BLACK}");
-        DrawText(rt, screenCoords, { OpenRCT2::Drawing::kColourNull, style }, _consoleCurrentLine.c_str(), true);
+        DrawTextBasic(rt, screenCoords, "{BLACK}", { textColour, style });
+        DrawTextNoFormatting(rt, screenCoords, _consoleCurrentLine, { OpenRCT2::Drawing::kColourNull, style });
     }
     else
     {
-        DrawText(rt, screenCoords, { textColour, style }, _consoleCurrentLine.c_str(), true);
+        DrawTextNoFormatting(rt, screenCoords, _consoleCurrentLine, { textColour, style });
     }
 
     // Draw caret
