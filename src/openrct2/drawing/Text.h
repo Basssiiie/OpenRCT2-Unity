@@ -35,11 +35,11 @@ enum class TextAlignment
     right,
 };
 
-enum class TextUnderline
+enum class TextPaintFlag
 {
-    off,
-    on,
+    underline,
 };
+using TextPaintFlags = FlagHolder<uint8_t, TextPaintFlag>;
 
 enum class TextDarkness : uint8_t
 {
@@ -52,7 +52,7 @@ struct TextPaint
 {
     ColourWithFlags colour = { OpenRCT2::Drawing::Colour::black };
     ::FontStyle fontStyle = FontStyle::medium;
-    TextUnderline underlineText = TextUnderline::off;
+    TextPaintFlags flags{};
     TextAlignment alignment = TextAlignment::left;
     TextDarkness darkness = TextDarkness::regular;
 
@@ -69,8 +69,8 @@ struct TextPaint
         : fontStyle(_fontStyle)
     {
     }
-    TextPaint(TextUnderline _underlineText)
-        : underlineText(_underlineText)
+    TextPaint(TextPaintFlags _flags)
+        : flags(_flags)
     {
     }
     TextPaint(TextAlignment _alignment)
@@ -88,14 +88,14 @@ struct TextPaint
         , fontStyle(_fontStyle)
     {
     }
-    TextPaint(ColourWithFlags _colour, TextUnderline _underlineText)
+    TextPaint(ColourWithFlags _colour, TextPaintFlags _flags)
         : colour(_colour)
-        , underlineText(_underlineText)
+        , flags(_flags)
     {
     }
-    TextPaint(OpenRCT2::Drawing::Colour _colour, TextUnderline _underlineText)
+    TextPaint(OpenRCT2::Drawing::Colour _colour, TextPaintFlags _flags)
         : colour(ColourWithFlags{ _colour })
-        , underlineText(_underlineText)
+        , flags(_flags)
     {
     }
     TextPaint(ColourWithFlags _colour, TextAlignment _alignment)
@@ -109,9 +109,9 @@ struct TextPaint
     {
     }
 
-    TextPaint(::FontStyle _fontStyle, TextUnderline _underlineText)
+    TextPaint(::FontStyle _fontStyle, TextPaintFlags _flags)
         : fontStyle(_fontStyle)
-        , underlineText(_underlineText)
+        , flags(_flags)
     {
     }
     TextPaint(::FontStyle _fontStyle, TextAlignment _alignment)
@@ -119,22 +119,22 @@ struct TextPaint
         , alignment(_alignment)
     {
     }
-    TextPaint(TextUnderline _underlineText, TextAlignment _alignment)
-        : underlineText(_underlineText)
+    TextPaint(TextPaintFlags _flags, TextAlignment _alignment)
+        : flags(_flags)
         , alignment(_alignment)
     {
     }
 
-    TextPaint(ColourWithFlags _colour, ::FontStyle _fontStyle, TextUnderline _underlineText)
+    TextPaint(ColourWithFlags _colour, ::FontStyle _fontStyle, TextPaintFlags _flags)
         : colour(_colour)
         , fontStyle(_fontStyle)
-        , underlineText(_underlineText)
+        , flags(_flags)
     {
     }
-    TextPaint(OpenRCT2::Drawing::Colour _colour, ::FontStyle _fontStyle, TextUnderline _underlineText)
+    TextPaint(OpenRCT2::Drawing::Colour _colour, ::FontStyle _fontStyle, TextPaintFlags _flags)
         : colour(ColourWithFlags{ _colour })
         , fontStyle(_fontStyle)
-        , underlineText(_underlineText)
+        , flags(_flags)
     {
     }
     TextPaint(ColourWithFlags _colour, ::FontStyle _fontStyle, TextAlignment _alignment)
@@ -161,36 +161,36 @@ struct TextPaint
         , darkness(_darkness)
     {
     }
-    TextPaint(ColourWithFlags _colour, TextUnderline _underlineText, TextAlignment _alignment)
+    TextPaint(ColourWithFlags _colour, TextPaintFlags _flags, TextAlignment _alignment)
         : colour(_colour)
-        , underlineText(_underlineText)
+        , flags(_flags)
         , alignment(_alignment)
     {
     }
-    TextPaint(OpenRCT2::Drawing::Colour _colour, TextUnderline _underlineText, TextAlignment _alignment)
+    TextPaint(OpenRCT2::Drawing::Colour _colour, TextPaintFlags _flags, TextAlignment _alignment)
         : colour(ColourWithFlags{ _colour })
-        , underlineText(_underlineText)
+        , flags(_flags)
         , alignment(_alignment)
     {
     }
-    TextPaint(::FontStyle _fontStyle, TextUnderline _underlineText, TextAlignment _alignment)
+    TextPaint(::FontStyle _fontStyle, TextPaintFlags _flags, TextAlignment _alignment)
         : fontStyle(_fontStyle)
-        , underlineText(_underlineText)
+        , flags(_flags)
         , alignment(_alignment)
     {
     }
 
-    TextPaint(ColourWithFlags _colour, ::FontStyle _fontStyle, TextUnderline _underlineText, TextAlignment _alignment)
+    TextPaint(ColourWithFlags _colour, ::FontStyle _fontStyle, TextPaintFlags _flags, TextAlignment _alignment)
         : colour(_colour)
         , fontStyle(_fontStyle)
-        , underlineText(_underlineText)
+        , flags(_flags)
         , alignment(_alignment)
     {
     }
-    TextPaint(OpenRCT2::Drawing::Colour _colour, ::FontStyle _fontStyle, TextUnderline _underlineText, TextAlignment _alignment)
+    TextPaint(OpenRCT2::Drawing::Colour _colour, ::FontStyle _fontStyle, TextPaintFlags _flags, TextAlignment _alignment)
         : colour(ColourWithFlags{ _colour })
         , fontStyle(_fontStyle)
-        , underlineText(_underlineText)
+        , flags(_flags)
         , alignment(_alignment)
     {
     }

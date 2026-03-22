@@ -100,7 +100,7 @@ static void DrawText(
 
     auto textPalette = TTFDrawString(rt, text, paint.colour, alignedCoords, noFormatting, paint.fontStyle, paint.darkness);
 
-    if (paint.underlineText == TextUnderline::on)
+    if (paint.flags.has(TextPaintFlag::underline))
     {
         Rectangle::fill(
             rt, { { alignedCoords + ScreenCoordsXY{ 0, 11 } }, { alignedCoords + ScreenCoordsXY{ width, 11 } } },
