@@ -38,6 +38,7 @@ enum class TextAlignment
 enum class TextPaintFlag
 {
     underline,
+    noFormatting,
 };
 using TextPaintFlags = FlagHolder<uint8_t, TextPaintFlag>;
 
@@ -209,9 +210,6 @@ struct TextPaint
     {
     }
 };
-
-void DrawTextNoFormatting(
-    OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint = {});
 
 void DrawTextBasic(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint = {});

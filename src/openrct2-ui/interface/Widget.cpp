@@ -1196,7 +1196,8 @@ namespace OpenRCT2::Ui
             {
                 u8string wrappedString;
                 wrapString(widget.string, bottomRight.x - topLeft.x - 5, FontStyle::medium, &wrappedString, nullptr);
-                DrawTextNoFormatting(rt, { topLeft.x + 2, topLeft.y }, wrappedString, { w.colours[1] });
+                DrawTextBasic(
+                    rt, { topLeft.x + 2, topLeft.y }, wrappedString, { w.colours[1], { TextPaintFlag::noFormatting } });
             }
             return;
         }
@@ -1206,7 +1207,7 @@ namespace OpenRCT2::Ui
         u8string wrappedString;
         wrapString(*textInput->Buffer, bottomRight.x - topLeft.x - 5 - 6, FontStyle::medium, &wrappedString, nullptr);
 
-        DrawTextNoFormatting(rt, { topLeft.x + 2, topLeft.y }, wrappedString, { w.colours[1] });
+        DrawTextBasic(rt, { topLeft.x + 2, topLeft.y }, wrappedString, { w.colours[1], { TextPaintFlag::noFormatting } });
 
         // Make a trimmed view of the string for measuring the width.
         int32_t curX = topLeft.x

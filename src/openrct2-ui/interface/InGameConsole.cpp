@@ -344,18 +344,21 @@ void InGameConsole::Draw(RenderTarget& rt) const
             if (textColour.colour == OpenRCT2::Drawing::Colour::black)
             {
                 DrawTextBasic(rt, screenCoords, "{BLACK}", { textColour, style });
-                DrawTextNoFormatting(rt, screenCoords, _consoleLines[index].first, { kColourNull, style });
+                DrawTextBasic(
+                    rt, screenCoords, _consoleLines[index].first, { kColourNull, style, { TextPaintFlag::noFormatting } });
             }
             else
             {
-                DrawTextNoFormatting(rt, screenCoords, _consoleLines[index].first, { textColour, style });
+                DrawTextBasic(
+                    rt, screenCoords, _consoleLines[index].first, { textColour, style, { TextPaintFlag::noFormatting } });
             }
         }
         else
         {
             std::string lineColour = FormatTokenToStringWithBraces(_consoleLines[index].second);
             DrawTextBasic(rt, screenCoords, lineColour, { textColour, style });
-            DrawTextNoFormatting(rt, screenCoords, _consoleLines[index].first, { OpenRCT2::Drawing::kColourNull, style });
+            DrawTextBasic(
+                rt, screenCoords, _consoleLines[index].first, { kColourNull, style, { TextPaintFlag::noFormatting } });
         }
 
         screenCoords.y += lineHeight;
@@ -367,11 +370,11 @@ void InGameConsole::Draw(RenderTarget& rt) const
     if (textColour.colour == OpenRCT2::Drawing::Colour::black)
     {
         DrawTextBasic(rt, screenCoords, "{BLACK}", { textColour, style });
-        DrawTextNoFormatting(rt, screenCoords, _consoleCurrentLine, { OpenRCT2::Drawing::kColourNull, style });
+        DrawTextBasic(rt, screenCoords, _consoleCurrentLine, { kColourNull, style, { TextPaintFlag::noFormatting } });
     }
     else
     {
-        DrawTextNoFormatting(rt, screenCoords, _consoleCurrentLine, { textColour, style });
+        DrawTextBasic(rt, screenCoords, _consoleCurrentLine, { textColour, style, { TextPaintFlag::noFormatting } });
     }
 
     // Draw caret

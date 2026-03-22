@@ -80,9 +80,9 @@ public:
     }
 };
 
-static void DrawText(
-    RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view text, const TextPaint& paint, bool noFormatting = false)
+static void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view text, const TextPaint& paint)
 {
+    auto noFormatting = paint.flags.has(TextPaintFlag::noFormatting);
     int32_t width = getStringWidth(text, paint.fontStyle, noFormatting);
 
     auto alignedCoords = coords;
@@ -112,11 +112,6 @@ static void DrawText(
                 textPalette.sunnyOutline);
         }
     }
-}
-
-void DrawTextNoFormatting(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
-{
-    DrawText(rt, coords, string, textPaint, true);
 }
 
 void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint)
