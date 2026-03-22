@@ -51,8 +51,6 @@ namespace OpenRCT2::Drawing
         const int8_t* yOffset{};
     };
 
-    void GfxDrawStringLeftCentred(
-        RenderTarget& rt, StringId format, void* args, ColourWithFlags colour, const ScreenCoordsXY& coords);
     void DrawStringCentredRaw(
         RenderTarget& rt, const ScreenCoordsXY& coords, int32_t numLines, const utf8* text, FontStyle fontStyle);
     void DrawNewsTicker(

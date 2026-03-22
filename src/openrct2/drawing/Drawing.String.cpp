@@ -263,19 +263,6 @@ namespace OpenRCT2::Drawing
     }
 
     /**
-     * Draws text that is left aligned and vertically centred.
-     */
-    void GfxDrawStringLeftCentred(
-        RenderTarget& rt, StringId format, void* args, ColourWithFlags colour, const ScreenCoordsXY& coords)
-    {
-        char buffer[512];
-        auto bufferPtr = buffer;
-        FormatStringLegacy(bufferPtr, sizeof(buffer), format, args);
-        int32_t height = StringGetHeightRaw(bufferPtr, FontStyle::medium);
-        DrawTextBasic(rt, coords - ScreenCoordsXY{ 0, (height / 2) }, bufferPtr, { colour });
-    }
-
-    /**
      * Changes the palette so that the next character changes colour
      */
     static void ColourCharacter(TextColour colour, bool withOutline, TextColours& textPalette)
