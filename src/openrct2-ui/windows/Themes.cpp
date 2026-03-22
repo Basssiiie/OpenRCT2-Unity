@@ -398,7 +398,7 @@ namespace OpenRCT2::Ui::Windows
 
             if (_selectedTab == WINDOW_THEMES_TAB_SETTINGS)
             {
-                DrawText(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_THEMES_PRESETS].top + 1 }, STR_THEMES_LABEL_CURRENT_THEME,
                     {}, { colours[1] });
 
@@ -412,7 +412,7 @@ namespace OpenRCT2::Ui::Windows
                 auto newWidth = windowPos.x + widgets[WIDX_THEMES_PRESETS_DROPDOWN].left - widgets[WIDX_THEMES_PRESETS].left
                     - 4;
 
-                DrawTextEllipsised(rt, screenPos, newWidth, STR_STRING, ft, { colours[1] });
+                drawTextEllipsised(rt, screenPos, newWidth, STR_STRING, ft, { colours[1] });
             }
         }
 
@@ -780,7 +780,7 @@ namespace OpenRCT2::Ui::Windows
 
                     for (uint8_t j = 0; j < numColours; j++)
                     {
-                        DrawTextWrapped(
+                        drawTextWrapped(
                             rt, { 2, screenCoords.y + 4 }, kWindowHeaderWidth, ThemeDescGetName(wc), {}, { colours[1] });
 
                         // Don't draw the empty row
@@ -803,7 +803,7 @@ namespace OpenRCT2::Ui::Windows
                             Rectangle::FillBrightness::dark, Rectangle::FillMode::dontLightenWhenInset);
                         if (colour.flags.has(ColourFlag::translucent))
                         {
-                            DrawText(
+                            drawText(
                                 rt, topLeft, kCheckMarkString, { colours[1].colour, FontStyle::medium, TextDarkness::dark });
                         }
                     }

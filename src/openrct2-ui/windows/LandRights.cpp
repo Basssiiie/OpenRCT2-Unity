@@ -404,7 +404,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<uint16_t>(gLandToolSize);
-                DrawText(rt, screenCoords - ScreenCoordsXY{ 0, 2 }, STR_LAND_TOOL_SIZE_VALUE, ft, { TextAlignment::centre });
+                drawText(rt, screenCoords - ScreenCoordsXY{ 0, 2 }, STR_LAND_TOOL_SIZE_VALUE, ft, { TextAlignment::centre });
             }
 
             // Draw cost amount
@@ -418,7 +418,7 @@ namespace OpenRCT2::Ui::Windows
 
                 screenCoords = { widgets[WIDX_PREVIEW].midX() + windowPos.x,
                                  widgets[WIDX_PREVIEW].bottom + windowPos.y + offset };
-                DrawText(rt, screenCoords, STR_COST_AMOUNT, ft, { TextAlignment::centre });
+                drawText(rt, screenCoords, STR_COST_AMOUNT, ft, { TextAlignment::centre });
             }
         }
 

@@ -328,7 +328,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(kScenarioOriginStringIds[i]);
 
                 auto stringCoords = windowPos + ScreenCoordsXY{ widget.midX(), widget.midY() - 3 };
-                DrawTextWrapped(
+                drawTextWrapped(
                     rt, stringCoords, 87, format, ft, { Drawing::Colour::lightWater, fontStyle, TextAlignment::centre });
             }
 
@@ -343,11 +343,11 @@ namespace OpenRCT2::Ui::Windows
                     // Show locked information
                     auto screenPos = windowPos
                         + ScreenCoordsXY{ widgets[WIDX_SCENARIOLIST].right + 4, widgets[WIDX_TABCONTENT].top + 5 };
-                    DrawTextEllipsised(
+                    drawTextEllipsised(
                         rt, screenPos + ScreenCoordsXY{ previewPaneWidth / 2, 0 }, previewPaneWidth, STR_SCENARIO_LOCKED, {},
                         { TextAlignment::centre });
 
-                    DrawTextWrapped(rt, screenPos + ScreenCoordsXY{ 0, 15 }, previewPaneWidth, STR_SCENARIO_LOCKED_DESC);
+                    drawTextWrapped(rt, screenPos + ScreenCoordsXY{ 0, 15 }, previewPaneWidth, STR_SCENARIO_LOCKED_DESC);
                 }
                 else
                 {
@@ -355,7 +355,7 @@ namespace OpenRCT2::Ui::Windows
                     auto screenPos = windowPos
                         + ScreenCoordsXY{ widgets[WIDX_SCENARIOLIST].right + 4, widgets[WIDX_TABCONTENT].top + 5 };
 
-                    DrawTextWrapped(rt, screenPos + ScreenCoordsXY{ 0, 15 }, previewPaneWidth, STR_SCENARIO_HOVER_HINT);
+                    drawTextWrapped(rt, screenPos + ScreenCoordsXY{ 0, 15 }, previewPaneWidth, STR_SCENARIO_HOVER_HINT);
                 }
                 return;
             }
@@ -367,7 +367,7 @@ namespace OpenRCT2::Ui::Windows
 
                 auto ft = Formatter();
                 ft.Add<utf8*>(shortPath.c_str());
-                DrawText(rt, windowPos + ScreenCoordsXY{ kTabWidth + 3, height - 3 - 11 }, STR_STRING, ft, { colours[1] });
+                drawText(rt, windowPos + ScreenCoordsXY{ kTabWidth + 3, height - 3 - 11 }, STR_STRING, ft, { colours[1] });
             }
 
             // Scenario name
@@ -376,7 +376,7 @@ namespace OpenRCT2::Ui::Windows
             auto ft = Formatter();
             ft.Add<StringId>(STR_STRING);
             ft.Add<const char*>(scenario->Name.c_str());
-            DrawTextEllipsised(
+            drawTextEllipsised(
                 rt, screenPos + ScreenCoordsXY{ previewPaneWidth / 2, 0 }, previewPaneWidth, STR_WINDOW_COLOUR_2_STRINGID, ft,
                 { TextAlignment::centre });
 
@@ -385,7 +385,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 ft = Formatter();
                 ft.Add<StringId>(STR_LOADING_GENERIC);
-                DrawText(
+                drawText(
                     rt, screenPos + ScreenCoordsXY{ previewPaneWidth / 2, 15 }, STR_BLACK_STRING, ft,
                     { TextAlignment::centre });
                 return;
@@ -399,7 +399,7 @@ namespace OpenRCT2::Ui::Windows
             ft = Formatter();
             ft.Add<StringId>(STR_STRING);
             ft.Add<const char*>(scenario->Details.c_str());
-            screenPos.y += DrawTextWrapped(rt, screenPos, previewPaneWidth, STR_BLACK_STRING, ft) + 5;
+            screenPos.y += drawTextWrapped(rt, screenPos, previewPaneWidth, STR_BLACK_STRING, ft) + 5;
 
             // Scenario objective
             Scenario::Objective objective = { .Type = scenario->ObjectiveType,
@@ -410,7 +410,7 @@ namespace OpenRCT2::Ui::Windows
             ft = Formatter();
             ft.Add<StringId>(kObjectiveNames[EnumValue(scenario->ObjectiveType)]);
             formatObjective(ft, objective);
-            screenPos.y += DrawTextWrapped(rt, screenPos, previewPaneWidth, STR_OBJECTIVE, ft) + 5;
+            screenPos.y += drawTextWrapped(rt, screenPos, previewPaneWidth, STR_OBJECTIVE, ft) + 5;
 
             // Scenario score
             if (scenario->Highscore != nullptr)
@@ -425,7 +425,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const char*>(completedByName.c_str());
                 ft.Add<money64>(scenario->Highscore->company_value);
-                screenPos.y += DrawTextWrapped(rt, screenPos, previewPaneWidth, STR_COMPLETED_BY_WITH_COMPANY_VALUE, ft);
+                screenPos.y += drawTextWrapped(rt, screenPos, previewPaneWidth, STR_COMPLETED_BY_WITH_COMPANY_VALUE, ft);
             }
         }
 
@@ -606,7 +606,7 @@ namespace OpenRCT2::Ui::Windows
                         auto darkness = isDisabled ? TextDarkness::dark : TextDarkness::regular;
                         const auto scrollCentre = widgets[WIDX_SCENARIOLIST].width() / 2;
 
-                        DrawText(
+                        drawText(
                             rt, { scrollCentre, y + 1 }, format, ft,
                             { colour, FontStyle::medium, TextAlignment::centre, darkness });
 
@@ -626,7 +626,7 @@ namespace OpenRCT2::Ui::Windows
                             ft.Add<StringId>(STR_COMPLETED_BY);
                             ft.Add<StringId>(STR_STRING);
                             ft.Add<const char*>(completedByName.c_str());
-                            DrawText(
+                            drawText(
                                 rt, { scrollCentre, y + scenarioTitleHeight + 1 }, format, ft,
                                 { FontStyle::small, TextAlignment::centre });
                         }
@@ -647,7 +647,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Draw string
             int32_t centreX = (left + right) / 2;
-            DrawText(rt, { centreX, y }, stringId, {}, { baseColour, TextAlignment::centre });
+            drawText(rt, { centreX, y }, stringId, {}, { baseColour, TextAlignment::centre });
 
             // Get string dimensions
             utf8 buffer[512];

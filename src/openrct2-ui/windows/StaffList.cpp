@@ -285,12 +285,12 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<money64>(GetStaffWage(GetSelectedStaffType()));
                 auto y = widgets[WIDX_STAFF_LIST_TITLE].bottom + 17;
-                DrawText(rt, windowPos + ScreenCoordsXY{ width - 155, y }, STR_COST_PER_MONTH, ft);
+                drawText(rt, windowPos + ScreenCoordsXY{ width - 155, y }, STR_COST_PER_MONTH, ft);
             }
 
             if (GetSelectedStaffType() != StaffType::entertainer)
             {
-                DrawText(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_STAFF_LIST_UNIFORM_COLOUR_PICKER].top + 1 },
                     STR_UNIFORM_COLOUR);
             }
@@ -302,7 +302,7 @@ namespace OpenRCT2::Ui::Windows
             ft.Add<uint32_t>(_staffList.size());
             ft.Add<StringId>(staffTypeStringId);
 
-            DrawText(rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_STAFF_LIST_LIST].bottom + 2 }, STR_STAFF_LIST_COUNTER, ft);
+            drawText(rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_STAFF_LIST_LIST].bottom + 2 }, STR_STAFF_LIST_COUNTER, ft);
         }
 
         ScreenSize onScrollGetSize(int32_t scrollIndex) override
@@ -413,11 +413,11 @@ namespace OpenRCT2::Ui::Windows
 
                     auto ft = Formatter();
                     peep->FormatNameTo(ft);
-                    DrawTextEllipsised(rt, { 0, y }, nameColumnSize, format, ft);
+                    drawTextEllipsised(rt, { 0, y }, nameColumnSize, format, ft);
 
                     ft = Formatter();
                     peep->FormatActionTo(ft);
-                    DrawTextEllipsised(rt, { actionOffset, y }, actionColumnSize, format, ft);
+                    drawTextEllipsised(rt, { actionOffset, y }, actionColumnSize, format, ft);
 
                     // True if a patrol path is set for the worker
                     if (peep->HasPatrolArea())

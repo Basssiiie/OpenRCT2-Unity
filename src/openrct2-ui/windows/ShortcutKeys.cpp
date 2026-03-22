@@ -138,7 +138,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const char*>(_shortcutCustomName.c_str());
             }
-            DrawTextWrapped(rt, stringCoords, 242, STR_SHORTCUT_CHANGE_PROMPT, ft, { TextAlignment::centre });
+            drawTextWrapped(rt, stringCoords, 242, STR_SHORTCUT_CHANGE_PROMPT, ft, { TextAlignment::centre });
         }
 
     private:
@@ -531,14 +531,14 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const char*>(shortcut.CustomString.c_str());
             }
-            DrawTextEllipsised(rt, { 0, y - 1 }, bindingOffset, format, ft);
+            drawTextEllipsised(rt, { 0, y - 1 }, bindingOffset, format, ft);
 
             if (!shortcut.Binding.empty())
             {
                 ft = Formatter();
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const char*>(shortcut.Binding.c_str());
-                DrawTextEllipsised(rt, { bindingOffset, y - 1 }, 150, format, ft);
+                drawTextEllipsised(rt, { bindingOffset, y - 1 }, 150, format, ft);
             }
         }
     };

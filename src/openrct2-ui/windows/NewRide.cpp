@@ -958,7 +958,7 @@ namespace OpenRCT2::Ui::Windows
             // Ride name and description
             ft.Add<StringId>(rideNaming.Name);
             ft.Add<StringId>(rideNaming.Description);
-            DrawTextWrapped(rt, screenPos, textWidth, STR_NEW_RIDE_NAME_AND_DESCRIPTION, ft);
+            drawTextWrapped(rt, screenPos, textWidth, STR_NEW_RIDE_NAME_AND_DESCRIPTION, ft);
 
             if (!_vehicleAvailability.empty())
             {
@@ -966,14 +966,14 @@ namespace OpenRCT2::Ui::Windows
                 {
                     ft = Formatter();
                     ft.Add<StringId>(rideEntry.naming.Name);
-                    DrawTextEllipsised(
+                    drawTextEllipsised(
                         rt, screenPos + ScreenCoordsXY{ 0, 39 }, kWindowSize.width - 2, STR_NEW_RIDE_VEHICLE_NAME, ft);
                 }
                 else
                 {
                     ft = Formatter();
                     ft.Add<const utf8*>(_vehicleAvailability.c_str());
-                    DrawTextEllipsised(
+                    drawTextEllipsised(
                         rt, screenPos + ScreenCoordsXY{ 0, 39 }, kWindowSize.width - 2, STR_AVAILABLE_VEHICLES, ft);
                 }
             }
@@ -984,7 +984,7 @@ namespace OpenRCT2::Ui::Windows
                 auto designCountStringId = GetDesignsAvailableStringId(count);
                 ft = Formatter();
                 ft.Add<int32_t>(count);
-                DrawText(rt, screenPos + ScreenCoordsXY{ 0, 51 }, designCountStringId, ft);
+                drawText(rt, screenPos + ScreenCoordsXY{ 0, 51 }, designCountStringId, ft);
             }
 
             // Price
@@ -1004,7 +1004,7 @@ namespace OpenRCT2::Ui::Windows
 
                 ft = Formatter();
                 ft.Add<money64>(price);
-                DrawText(rt, screenPos + ScreenCoordsXY{ textWidth - 14, 51 }, stringId, ft, { TextAlignment::right });
+                drawText(rt, screenPos + ScreenCoordsXY{ textWidth - 14, 51 }, stringId, ft, { TextAlignment::right });
             }
 
             // Draw object author(s) if debugging tools are active
@@ -1025,7 +1025,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(authors.size() > 1 ? STR_AUTHORS_STRING : STR_AUTHOR_STRING);
                 ft.Add<const char*>(authorsString.c_str());
 
-                DrawTextEllipsised(
+                drawTextEllipsised(
                     rt, screenPos + ScreenCoordsXY{ textWidth, 0 }, kWindowSize.width - 2, STR_WINDOW_COLOUR_2_STRINGID, ft,
                     { TextAlignment::right });
             }

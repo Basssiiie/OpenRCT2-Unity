@@ -596,7 +596,7 @@ namespace OpenRCT2::Ui::Windows
             ft.Add<StringId>(Park::IsOpen(getGameState().park) ? STR_PARK_OPEN : STR_PARK_CLOSED);
 
             auto* labelWidget = &widgets[WIDX_STATUS];
-            DrawTextEllipsised(
+            drawTextEllipsised(
                 rt, windowPos + ScreenCoordsXY{ labelWidget->midX(), labelWidget->top }, labelWidget->width() - 1,
                 STR_BLACK_STRING, ft, { TextAlignment::centre });
         }
@@ -703,7 +703,7 @@ namespace OpenRCT2::Ui::Windows
             // Current value
             Formatter ft;
             ft.Add<uint16_t>(getGameState().park.rating);
-            DrawText(rt, windowPos + ScreenCoordsXY{ widget->left + 3, widget->top + 2 }, STR_PARK_RATING_LABEL, ft);
+            drawText(rt, windowPos + ScreenCoordsXY{ widget->left + 3, widget->top + 2 }, STR_PARK_RATING_LABEL, ft);
 
             // Graph border
             Rectangle::fillInset(
@@ -784,7 +784,7 @@ namespace OpenRCT2::Ui::Windows
             // Current value
             Formatter ft;
             ft.Add<uint32_t>(getGameState().park.numGuestsInPark);
-            DrawText(rt, windowPos + ScreenCoordsXY{ widget->left + 3, widget->top + 2 }, STR_GUESTS_IN_PARK_LABEL, ft);
+            drawText(rt, windowPos + ScreenCoordsXY{ widget->left + 3, widget->top + 2 }, STR_GUESTS_IN_PARK_LABEL, ft);
 
             // Graph border
             Rectangle::fillInset(
@@ -884,7 +884,7 @@ namespace OpenRCT2::Ui::Windows
                 + ScreenCoordsXY{ widgets[WIDX_PAGE_BACKGROUND].left + 4, widgets[WIDX_PAGE_BACKGROUND].top + 30 };
             auto ft = Formatter();
             ft.Add<money64>(getGameState().park.totalIncomeFromAdmissions);
-            DrawText(rt, screenCoords, STR_INCOME_FROM_ADMISSIONS, ft);
+            drawText(rt, screenCoords, STR_INCOME_FROM_ADMISSIONS, ft);
 
             money64 parkEntranceFee = Park::GetEntranceFee();
             ft = Formatter();
@@ -895,7 +895,7 @@ namespace OpenRCT2::Ui::Windows
                 stringId = STR_FREE;
 
             screenCoords = windowPos + ScreenCoordsXY{ widgets[WIDX_PRICE].left + 1, widgets[WIDX_PRICE].top + 1 };
-            DrawText(rt, screenCoords, stringId, ft, { colours[1] });
+            drawText(rt, screenCoords, stringId, ft, { colours[1] });
         }
 #pragma endregion
 
@@ -954,7 +954,7 @@ namespace OpenRCT2::Ui::Windows
             }
             auto ft = Formatter();
             ft.Add<uint32_t>(parkSize);
-            DrawText(rt, screenCoords, stringIndex, ft);
+            drawText(rt, screenCoords, stringIndex, ft);
             screenCoords.y += kListRowHeight;
 
             // Draw number of rides / attractions
@@ -962,7 +962,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 ft = Formatter();
                 ft.Add<uint32_t>(_numberOfRides);
-                DrawText(rt, screenCoords, STR_NUMBER_OF_RIDES_LABEL, ft);
+                drawText(rt, screenCoords, STR_NUMBER_OF_RIDES_LABEL, ft);
             }
             screenCoords.y += kListRowHeight;
 
@@ -971,19 +971,19 @@ namespace OpenRCT2::Ui::Windows
             {
                 ft = Formatter();
                 ft.Add<uint32_t>(_numberOfStaff);
-                DrawText(rt, screenCoords, STR_STAFF_LABEL, ft);
+                drawText(rt, screenCoords, STR_STAFF_LABEL, ft);
             }
             screenCoords.y += kListRowHeight;
 
             // Draw number of guests in park
             ft = Formatter();
             ft.Add<uint32_t>(gameState.park.numGuestsInPark);
-            DrawText(rt, screenCoords, STR_GUESTS_IN_PARK_LABEL, ft);
+            drawText(rt, screenCoords, STR_GUESTS_IN_PARK_LABEL, ft);
             screenCoords.y += kListRowHeight;
 
             ft = Formatter();
             ft.Add<uint32_t>(gameState.park.totalAdmissions);
-            DrawText(rt, screenCoords, STR_TOTAL_ADMISSIONS, ft);
+            drawText(rt, screenCoords, STR_TOTAL_ADMISSIONS, ft);
         }
 #pragma endregion
 
@@ -1073,18 +1073,18 @@ namespace OpenRCT2::Ui::Windows
             auto ft = Formatter();
             ft.Add<StringId>(STR_STRING);
             ft.Add<const char*>(gameState.scenarioOptions.details.c_str());
-            screenCoords.y += DrawTextWrapped(rt, screenCoords, 222, STR_BLACK_STRING, ft);
+            screenCoords.y += drawTextWrapped(rt, screenCoords, 222, STR_BLACK_STRING, ft);
             screenCoords.y += 5;
 
             // Your objective:
-            DrawText(rt, screenCoords, STR_OBJECTIVE_LABEL);
+            drawText(rt, screenCoords, STR_OBJECTIVE_LABEL);
             screenCoords.y += kListRowHeight;
 
             // Objective
             ft = Formatter();
             formatObjective(ft, gameState.scenarioOptions.objective);
 
-            screenCoords.y += DrawTextWrapped(
+            screenCoords.y += drawTextWrapped(
                 rt, screenCoords, 221, kObjectiveNames[EnumValue(gameState.scenarioOptions.objective.Type)], ft);
             screenCoords.y += 5;
 
@@ -1094,14 +1094,14 @@ namespace OpenRCT2::Ui::Windows
                 if (gameState.scenarioCompletedCompanyValue == kCompanyValueOnFailedObjective)
                 {
                     // Objective failed
-                    DrawTextWrapped(rt, screenCoords, 222, STR_OBJECTIVE_FAILED);
+                    drawTextWrapped(rt, screenCoords, 222, STR_OBJECTIVE_FAILED);
                 }
                 else
                 {
                     // Objective completed
                     ft = Formatter();
                     ft.Add<money64>(gameState.scenarioCompletedCompanyValue);
-                    DrawTextWrapped(rt, screenCoords, 222, STR_OBJECTIVE_ACHIEVED, ft);
+                    drawTextWrapped(rt, screenCoords, 222, STR_OBJECTIVE_ACHIEVED, ft);
                 }
             }
         }
@@ -1140,13 +1140,13 @@ namespace OpenRCT2::Ui::Windows
             for (const auto& award : currentAwards)
             {
                 GfxDrawSprite(rt, ImageId(AwardGetSprite(award.Type)), screenCoords);
-                DrawTextWrapped(rt, screenCoords + ScreenCoordsXY{ 34, 6 }, 180, AwardGetText(award.Type));
+                drawTextWrapped(rt, screenCoords + ScreenCoordsXY{ 34, 6 }, 180, AwardGetText(award.Type));
 
                 screenCoords.y += 32;
             }
 
             if (currentAwards.empty())
-                DrawText(rt, screenCoords + ScreenCoordsXY{ 6, 6 }, STR_NO_RECENT_AWARDS);
+                drawText(rt, screenCoords + ScreenCoordsXY{ 6, 6 }, STR_NO_RECENT_AWARDS);
         }
 #pragma endregion
 

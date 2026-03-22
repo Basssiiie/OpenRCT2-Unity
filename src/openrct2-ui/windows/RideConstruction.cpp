@@ -1721,14 +1721,14 @@ namespace OpenRCT2::Ui::Windows
             // Draw cost
             screenCoords = { windowPos.x + widget->midX(), windowPos.y + widget->bottom - 23 };
             if (_rideConstructionState != RideConstructionState::Place)
-                DrawText(rt, screenCoords, STR_BUILD_THIS, {}, { TextAlignment::centre });
+                drawText(rt, screenCoords, STR_BUILD_THIS, {}, { TextAlignment::centre });
 
             screenCoords.y += 11;
             if (_currentTrackPrice != kMoney64Undefined && !(getGameState().park.flags & PARK_FLAGS_NO_MONEY))
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_currentTrackPrice);
-                DrawText(rt, screenCoords, STR_COST_LABEL, ft, { TextAlignment::centre });
+                drawText(rt, screenCoords, STR_COST_LABEL, ft, { TextAlignment::centre });
             }
         }
 

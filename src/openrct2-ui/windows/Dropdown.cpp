@@ -172,7 +172,7 @@ namespace OpenRCT2::Ui::Windows
             Formatter ft;
             ft.Add<const utf8*>(item.text);
 
-            DrawTextEllipsised(rt, { screenCoords.x + 2, screenCoords.y + yOffset }, ddWidth - 7, format, ft, { colour });
+            drawTextEllipsised(rt, { screenCoords.x + 2, screenCoords.y + yOffset }, ddWidth - 7, format, ft, { colour });
         }
 
         void onDraw(RenderTarget& rt) override

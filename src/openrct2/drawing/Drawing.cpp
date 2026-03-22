@@ -928,8 +928,8 @@ void DebugRT(RenderTarget& rt)
     GfxDrawLine(rt, { topLeft, topLeft + ScreenCoordsXY{ 4, 0 } }, PaletteIndex::pi136);
 
     const auto str = std::to_string(rt.x);
-    DrawText(rt, ScreenCoordsXY{ rt.x, rt.y }, str, { Colour::white, FontStyle::tiny });
+    drawText(rt, ScreenCoordsXY{ rt.x, rt.y }, str, { Colour::white, FontStyle::tiny });
 
     const auto str2 = std::to_string(rt.y);
-    DrawText(rt, ScreenCoordsXY{ rt.x, rt.y + 6 }, str2, { Colour::white, FontStyle::tiny });
+    drawText(rt, ScreenCoordsXY{ rt.x, rt.y + 6 }, str2, { Colour::white, FontStyle::tiny });
 }

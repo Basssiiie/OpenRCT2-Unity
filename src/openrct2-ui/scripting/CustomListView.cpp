@@ -699,13 +699,13 @@ void CustomListView::PaintHeading(
     {
         auto ft = Formatter();
         ft.Add<StringId>(STR_UP);
-        DrawText(rt, pos + ScreenCoordsXY{ size.width - 1, 0 }, STR_BLACK_STRING, ft, { TextAlignment::right });
+        drawText(rt, pos + ScreenCoordsXY{ size.width - 1, 0 }, STR_BLACK_STRING, ft, { TextAlignment::right });
     }
     else if (sortOrder == ColumnSortOrder::Descending)
     {
         auto ft = Formatter();
         ft.Add<StringId>(STR_DOWN);
-        DrawText(rt, pos + ScreenCoordsXY{ size.width - 1, 0 }, STR_BLACK_STRING, ft, { TextAlignment::right });
+        drawText(rt, pos + ScreenCoordsXY{ size.width - 1, 0 }, STR_BLACK_STRING, ft, { TextAlignment::right });
     }
 }
 
@@ -727,7 +727,7 @@ void CustomListView::PaintSeparator(RenderTarget& rt, const ScreenCoordsXY& pos,
         // Draw string
         Formatter ft;
         ft.Add<const char*>(text);
-        DrawText(rt, { centreX, pos.y }, STR_STRING, ft, { baseColour, TextAlignment::centre });
+        drawText(rt, { centreX, pos.y }, STR_STRING, ft, { baseColour, TextAlignment::centre });
 
         // Get string dimensions
         utf8 stringBuffer[512]{};
@@ -776,7 +776,7 @@ void CustomListView::PaintCell(
     auto ft = Formatter();
     ft.Add<StringId>(STR_STRING);
     ft.Add<const char*>(text);
-    DrawTextEllipsised(rt, pos, size.width, stringId, ft, {});
+    drawTextEllipsised(rt, pos, size.width, stringId, ft, {});
 }
 
 std::optional<RowColumn> CustomListView::GetItemIndexAt(const ScreenCoordsXY& pos)

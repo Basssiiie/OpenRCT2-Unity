@@ -432,7 +432,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const char*>(_preview.parkName.c_str());
-                DrawTextEllipsised(
+                drawTextEllipsised(
                     rt, namePos, previewPaneSize.width - kPadding * 2, STR_WINDOW_COLOUR_2_STRINGID, ft,
                     { TextAlignment::centre });
             }
@@ -477,7 +477,7 @@ namespace OpenRCT2::Ui::Windows
                     previewText = STR_LOADING_GENERIC;
                 }
 
-                DrawText(
+                drawText(
                     rt, textPos, previewText, {},
                     { ColourWithFlags{ Drawing::Colour::white }.withFlag(ColourFlag::withOutline, true),
                       TextAlignment::centre });
@@ -494,7 +494,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(DateDayNames[_preview.day]);
                 ft.Add<int16_t>(_preview.month);
                 ft.Add<int16_t>(_preview.year + 1);
-                DrawText(rt, summaryCoords, STR_SUMMARY_DATE, ft);
+                drawText(rt, summaryCoords, STR_SUMMARY_DATE, ft);
                 summaryCoords.y += kListRowHeight;
             }
 
@@ -502,7 +502,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_preview.parkRating);
-                DrawText(rt, summaryCoords, STR_SUMMARY_PARK_RATING, ft);
+                drawText(rt, summaryCoords, STR_SUMMARY_PARK_RATING, ft);
                 summaryCoords.y += kListRowHeight;
             }
 
@@ -511,7 +511,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_preview.cash);
-                DrawText(rt, summaryCoords, STR_SUMMARY_CASH, ft);
+                drawText(rt, summaryCoords, STR_SUMMARY_CASH, ft);
                 summaryCoords.y += kListRowHeight;
             }
 
@@ -519,7 +519,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_preview.numRides);
-                DrawText(rt, summaryCoords, STR_SUMMARY_NUM_RIDES, ft);
+                drawText(rt, summaryCoords, STR_SUMMARY_NUM_RIDES, ft);
                 summaryCoords.y += kListRowHeight;
             }
 
@@ -527,7 +527,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_preview.numGuests);
-                DrawText(rt, summaryCoords, STR_SUMMARY_NUM_GUESTS, ft);
+                drawText(rt, summaryCoords, STR_SUMMARY_NUM_GUESTS, ft);
                 summaryCoords.y += kListRowHeight;
             }
         }
@@ -759,7 +759,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<const char*>(normalisedPathC);
 
                 auto pathPos = windowPos + ScreenCoordsXY{ 4, widget.top + 4 };
-                DrawTextEllipsised(rt, pathPos, pathWidth, STR_STRING, ft);
+                drawTextEllipsised(rt, pathPos, pathWidth, STR_STRING, ft);
             }
 
             const auto drawButtonCaption =
@@ -774,7 +774,7 @@ namespace OpenRCT2::Ui::Windows
                     ft.Add<StringId>(indicatorId);
 
                     auto cRT = const_cast<const RenderTarget&>(rt);
-                    DrawTextEllipsised(
+                    drawTextEllipsised(
                         cRT, windowPos + ScreenCoordsXY{ widget.left + 5, widget.top + 1 }, widget.width() - 1, strId, ft,
                         { Drawing::Colour::grey });
                 };
@@ -796,7 +796,7 @@ namespace OpenRCT2::Ui::Windows
             if (action == LoadSaveAction::save)
             {
                 auto& widget = widgets[WIDX_FILENAME_TEXTBOX];
-                DrawText(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ 5, widget.top + 2 }, STR_FILENAME_LABEL, {}, { Drawing::Colour::grey });
             }
         }
@@ -1116,7 +1116,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     auto ft = Formatter();
                     ft.Add<StringId>(STR_RIGHTGUILLEMET);
-                    DrawText(rt, { 0, y }, stringId, ft);
+                    drawText(rt, { 0, y }, stringId, ft);
                 }
 
                 // Folders get a folder icon
@@ -1130,7 +1130,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<char*>(_listItems[i].name.c_str());
                 int32_t max_file_width = widgets[WIDX_SORT_NAME].width() - 16;
-                DrawTextEllipsised(rt, { 15, y }, max_file_width, stringId, ft);
+                drawTextEllipsised(rt, { 15, y }, max_file_width, stringId, ft);
 
                 // Print formatted modified date, if this is a file
                 if (_listItems[i].type != FileType::file)
@@ -1142,7 +1142,7 @@ namespace OpenRCT2::Ui::Windows
                     ft.Add<StringId>(STR_FILEBROWSER_FILE_SIZE_VALUE);
                     ft.Add<uint32_t>(_listItems[i].fileSizeFormatted);
                     ft.Add<StringId>(_listItems[i].fileSizeUnit);
-                    DrawTextEllipsised(rt, { sizeColumnLeft + 2, y }, maxDateWidth + maxTimeWidth, stringId, ft);
+                    drawTextEllipsised(rt, { sizeColumnLeft + 2, y }, maxDateWidth + maxTimeWidth, stringId, ft);
                 }
 
                 if (config.fileBrowserShowDateColumn)
@@ -1150,13 +1150,13 @@ namespace OpenRCT2::Ui::Windows
                     ft = Formatter();
                     ft.Add<StringId>(STR_STRING);
                     ft.Add<char*>(_listItems[i].dateFormatted.c_str());
-                    DrawTextEllipsised(
+                    drawTextEllipsised(
                         rt, { dateAnchor - kDateTimeGap, y }, maxDateWidth, stringId, ft, { TextAlignment::right });
 
                     ft = Formatter();
                     ft.Add<StringId>(STR_STRING);
                     ft.Add<char*>(_listItems[i].timeFormatted.c_str());
-                    DrawTextEllipsised(rt, { dateAnchor + kDateTimeGap, y }, maxTimeWidth, stringId, ft);
+                    drawTextEllipsised(rt, { dateAnchor + kDateTimeGap, y }, maxTimeWidth, stringId, ft);
                 }
             }
         }

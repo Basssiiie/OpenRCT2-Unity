@@ -211,29 +211,29 @@ struct TextPaint
     }
 };
 
-void DrawText(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint = {});
-void DrawText(
+void drawText(OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint = {});
+void drawText(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const OpenRCT2::Formatter& ft,
     TextPaint textPaint = {});
-void DrawText(
+void drawText(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint = {});
 
-void DrawTextEllipsised(
+void drawTextEllipsised(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format,
     TextPaint textPaint = {});
-void DrawTextEllipsised(
+void drawTextEllipsised(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format,
     const OpenRCT2::Formatter& ft, TextPaint textPaint = {});
-void DrawTextEllipsised(
+void drawTextEllipsised(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string_view string,
     TextPaint textPaint = {});
 
-int32_t DrawTextWrapped(
+int32_t drawTextWrapped(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format,
     TextPaint textPaint = {});
-int32_t DrawTextWrapped(
+int32_t drawTextWrapped(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format,
     const OpenRCT2::Formatter& ft, TextPaint textPaint = {});
-int32_t DrawTextWrapped(
+int32_t drawTextWrapped(
     OpenRCT2::Drawing::RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string_view string,
     TextPaint textPaint = {});

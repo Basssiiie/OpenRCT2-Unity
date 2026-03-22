@@ -57,7 +57,7 @@ public:
         const utf8* buffer = Buffer.data();
         for (int32_t line = 0; line < LineCount; ++line)
         {
-            DrawText(rt, lineCoords, buffer, tempPaint);
+            drawText(rt, lineCoords, buffer, tempPaint);
             tempPaint.colour = OpenRCT2::Drawing::kColourNull;
             buffer = GetStringEnd(buffer) + 1;
             lineCoords.y += LineHeight;
@@ -93,19 +93,19 @@ static void drawTextUnderline(
     }
 }
 
-void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint)
+void drawText(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint)
 {
-    DrawText(rt, coords, LanguageGetString(format), textPaint);
+    drawText(rt, coords, LanguageGetString(format), textPaint);
 }
 
-void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const Formatter& ft, TextPaint textPaint)
+void drawText(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, const Formatter& ft, TextPaint textPaint)
 {
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
-    DrawText(rt, coords, buffer, textPaint);
+    drawText(rt, coords, buffer, textPaint);
 }
 
-void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
+void drawText(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
 {
     auto noFormatting = textPaint.flags.has(TextPaintFlag::noFormatting);
     int32_t width = getStringWidth(string, textPaint.fontStyle, noFormatting);
@@ -132,42 +132,42 @@ void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view stri
     }
 }
 
-void DrawTextEllipsised(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
+void drawTextEllipsised(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
 {
-    DrawTextEllipsised(rt, coords, width, LanguageGetString(format), textPaint);
+    drawTextEllipsised(rt, coords, width, LanguageGetString(format), textPaint);
 }
 
-void DrawTextEllipsised(
+void drawTextEllipsised(
     RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, const Formatter& ft, TextPaint textPaint)
 {
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
     clipString(buffer, width, textPaint.fontStyle);
-    DrawText(rt, coords, buffer, textPaint);
+    drawText(rt, coords, buffer, textPaint);
 }
 
-void DrawTextEllipsised(
+void drawTextEllipsised(
     RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string_view string, TextPaint textPaint)
 {
     utf8 buffer[512]{};
     string.copy(buffer, std::min(string.length(), sizeof(buffer) - 1));
     clipString(buffer, width, textPaint.fontStyle);
-    DrawText(rt, coords, string, textPaint);
+    drawText(rt, coords, string, textPaint);
 }
 
-int32_t DrawTextWrapped(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
+int32_t drawTextWrapped(RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, TextPaint textPaint)
 {
-    return DrawTextWrapped(rt, coords, width, LanguageGetString(format), textPaint);
+    return drawTextWrapped(rt, coords, width, LanguageGetString(format), textPaint);
 }
 
-int32_t DrawTextWrapped(
+int32_t drawTextWrapped(
     RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, StringId format, const Formatter& ft, TextPaint textPaint)
 {
     auto formatted = FormatStringIDLegacy(format, ft.Data());
-    return DrawTextWrapped(rt, coords, width, formatted, textPaint);
+    return drawTextWrapped(rt, coords, width, formatted, textPaint);
 }
 
-int32_t DrawTextWrapped(
+int32_t drawTextWrapped(
     RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, u8string_view string, TextPaint textPaint)
 {
     StaticLayout layout(string, textPaint, width);

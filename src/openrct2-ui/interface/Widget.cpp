@@ -393,11 +393,11 @@ namespace OpenRCT2::Ui
         ScreenCoordsXY coords = { (topLeft.x + r + 1) / 2 - 1, topLeft.y };
         if (widget.type == WidgetType::labelCentred)
         {
-            DrawTextWrapped(rt, coords, widget.width() - 3, stringId, ft, { colour, TextAlignment::centre });
+            drawTextWrapped(rt, coords, widget.width() - 3, stringId, ft, { colour, TextAlignment::centre });
         }
         else
         {
-            DrawTextEllipsised(rt, coords, widget.width() - 3, stringId, ft, { colour, TextAlignment::centre });
+            drawTextEllipsised(rt, coords, widget.width() - 3, stringId, ft, { colour, TextAlignment::centre });
         }
     }
 
@@ -441,11 +441,11 @@ namespace OpenRCT2::Ui
         ScreenCoordsXY coords = { l + 1, t };
         if (widget.type == WidgetType::labelCentred)
         {
-            DrawTextWrapped(rt, coords, r - l, stringId, ft, { colour, TextAlignment::centre });
+            drawTextWrapped(rt, coords, r - l, stringId, ft, { colour, TextAlignment::centre });
         }
         else
         {
-            DrawTextEllipsised(rt, coords, r - l, stringId, ft, colour);
+            drawTextEllipsised(rt, coords, r - l, stringId, ft, colour);
         }
     }
 
@@ -511,7 +511,7 @@ namespace OpenRCT2::Ui
 
             auto ft = Formatter();
             ft.Add<utf8*>(buffer);
-            DrawText(rt, { l, t }, STR_STRING, ft, { colour });
+            drawText(rt, { l, t }, STR_STRING, ft, { colour });
             textRight = l + getStringWidth(buffer, FontStyle::medium) + 1;
         }
 
@@ -608,7 +608,7 @@ namespace OpenRCT2::Ui
             ft.Add<const utf8*>(widget->string);
         }
 
-        DrawTextEllipsised(
+        drawTextEllipsised(
             rt, topLeft, width, formatString, ft,
             { ColourWithFlags{ Drawing::Colour::white }.withFlag(ColourFlag::withOutline, true), TextAlignment::centre });
     }
@@ -648,7 +648,7 @@ namespace OpenRCT2::Ui
         if (widgetIsDisabled(w, widgetIndex))
             colour.flags.set(ColourFlag::inset, true);
 
-        DrawText(rt, crossMidPoint, widget.string, { colour, TextAlignment::centre });
+        drawText(rt, crossMidPoint, widget.string, { colour, TextAlignment::centre });
     }
 
     /**
@@ -680,7 +680,7 @@ namespace OpenRCT2::Ui
         // fill it when checkbox is pressed
         if (widgetIsPressed(w, widgetIndex))
         {
-            DrawText(
+            drawText(
                 rt, { midLeft - ScreenCoordsXY{ 0, 5 } }, kCheckMarkString,
                 { colour.withFlag(ColourFlag::translucent, false) });
         }
@@ -697,7 +697,7 @@ namespace OpenRCT2::Ui
             ft.Add<utf8*>(widget.string);
         }
 
-        DrawTextEllipsised(
+        drawTextEllipsised(
             rt, w.windowPos + ScreenCoordsXY{ widget.left + 14, widget.textTop() }, widget.width() - 15, stringId, ft, colour);
     }
 
@@ -805,7 +805,7 @@ namespace OpenRCT2::Ui
                                                                         : Rectangle::BorderStyle::outset;
 
             Rectangle::fillInset(rt, { { l, t }, { l + (kScrollBarWidth - 1), b } }, colour, borderStyle);
-            DrawText(rt, { l + 1, t }, kBlackLeftArrowString);
+            drawText(rt, { l + 1, t }, kBlackLeftArrowString);
         }
 
         // Thumb
@@ -824,7 +824,7 @@ namespace OpenRCT2::Ui
                                                                          : Rectangle::BorderStyle::outset;
 
             Rectangle::fillInset(rt, { { r - (kScrollBarWidth - 1), t }, { r, b } }, colour, borderStyle);
-            DrawText(rt, { r - 6, t }, kBlackRightArrowString);
+            drawText(rt, { r - 6, t }, kBlackRightArrowString);
         }
     }
 
@@ -850,7 +850,7 @@ namespace OpenRCT2::Ui
         Rectangle::fillInset(
             rt, { { l, t }, { r, t + (kScrollBarWidth - 1) } }, colour,
             ((scroll.flags & VSCROLLBAR_UP_PRESSED) ? Rectangle::BorderStyle::inset : Rectangle::BorderStyle::outset));
-        DrawText(rt, { l + 1, t - 1 }, kBlackUpArrowString);
+        drawText(rt, { l + 1, t - 1 }, kBlackUpArrowString);
 
         // Thumb
         Rectangle::fillInset(
@@ -864,7 +864,7 @@ namespace OpenRCT2::Ui
         Rectangle::fillInset(
             rt, { { l, b - (kScrollBarWidth - 1) }, { r, b } }, colour,
             ((scroll.flags & VSCROLLBAR_DOWN_PRESSED) ? Rectangle::BorderStyle::inset : Rectangle::BorderStyle::outset));
-        DrawText(rt, { l + 1, b - (kScrollBarWidth - 1) }, kBlackDownArrowString);
+        drawText(rt, { l + 1, b - (kScrollBarWidth - 1) }, kBlackDownArrowString);
     }
 
     /**
@@ -1196,7 +1196,7 @@ namespace OpenRCT2::Ui
             {
                 u8string wrappedString;
                 wrapString(widget.string, bottomRight.x - topLeft.x - 5, FontStyle::medium, &wrappedString, nullptr);
-                DrawText(rt, { topLeft.x + 2, topLeft.y }, wrappedString, { w.colours[1], { TextPaintFlag::noFormatting } });
+                drawText(rt, { topLeft.x + 2, topLeft.y }, wrappedString, { w.colours[1], { TextPaintFlag::noFormatting } });
             }
             return;
         }
@@ -1206,7 +1206,7 @@ namespace OpenRCT2::Ui
         u8string wrappedString;
         wrapString(*textInput->Buffer, bottomRight.x - topLeft.x - 5 - 6, FontStyle::medium, &wrappedString, nullptr);
 
-        DrawText(rt, { topLeft.x + 2, topLeft.y }, wrappedString, { w.colours[1], { TextPaintFlag::noFormatting } });
+        drawText(rt, { topLeft.x + 2, topLeft.y }, wrappedString, { w.colours[1], { TextPaintFlag::noFormatting } });
 
         // Make a trimmed view of the string for measuring the width.
         int32_t curX = topLeft.x

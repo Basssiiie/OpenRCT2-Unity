@@ -70,7 +70,7 @@ namespace OpenRCT2
 
             auto ft = Formatter();
             ft.Add<uint16_t>(dist[i] * 100 / totalSize);
-            DrawTextEllipsised(
+            drawTextEllipsised(
                 rt, coords + ScreenCoordsXY{ 12, 22 }, 35, STR_CLIMATE_WEATHER_PERCENT, ft,
                 { FontStyle::small, TextAlignment::centre });
         }

@@ -195,7 +195,7 @@ void ChatDraw(RenderTarget& rt, ColourWithFlags chatBackgroundColor)
         auto lineCh = lineBuffer.c_str();
         auto ft = Formatter();
         ft.Add<const char*>(lineCh);
-        inputLineHeight = DrawTextWrapped(
+        inputLineHeight = drawTextWrapped(
             rt, screenCoords + ScreenCoordsXY{ 0, 3 }, _chatWidth - 10, STR_STRING, ft, { OpenRCT2::Drawing::kColourNull });
         GfxSetDirtyBlocks({ screenCoords, { screenCoords + ScreenCoordsXY{ _chatWidth, inputLineHeight + 15 } } });
 
@@ -307,7 +307,7 @@ static int32_t ChatHistoryDrawString(RenderTarget& rt, const char* text, const S
     int32_t lineY = screenCoords.y;
     for (int32_t line = 0; line <= numLines; ++line)
     {
-        DrawText(rt, { screenCoords.x, lineY - (numLines * lineHeight) }, bufferPtr, { OpenRCT2::Drawing::kColourNull });
+        drawText(rt, { screenCoords.x, lineY - (numLines * lineHeight) }, bufferPtr, { OpenRCT2::Drawing::kColourNull });
         bufferPtr = GetStringEnd(bufferPtr) + 1;
         lineY += lineHeight;
     }

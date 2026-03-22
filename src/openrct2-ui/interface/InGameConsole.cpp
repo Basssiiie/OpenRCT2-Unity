@@ -343,19 +343,19 @@ void InGameConsole::Draw(RenderTarget& rt) const
             // as opposed to a desaturated grey
             if (textColour.colour == OpenRCT2::Drawing::Colour::black)
             {
-                DrawText(rt, screenCoords, "{BLACK}", { textColour, style });
-                DrawText(rt, screenCoords, _consoleLines[index].first, { kColourNull, style, { TextPaintFlag::noFormatting } });
+                drawText(rt, screenCoords, "{BLACK}", { textColour, style });
+                drawText(rt, screenCoords, _consoleLines[index].first, { kColourNull, style, { TextPaintFlag::noFormatting } });
             }
             else
             {
-                DrawText(rt, screenCoords, _consoleLines[index].first, { textColour, style, { TextPaintFlag::noFormatting } });
+                drawText(rt, screenCoords, _consoleLines[index].first, { textColour, style, { TextPaintFlag::noFormatting } });
             }
         }
         else
         {
             std::string lineColour = FormatTokenToStringWithBraces(_consoleLines[index].second);
-            DrawText(rt, screenCoords, lineColour, { textColour, style });
-            DrawText(rt, screenCoords, _consoleLines[index].first, { kColourNull, style, { TextPaintFlag::noFormatting } });
+            drawText(rt, screenCoords, lineColour, { textColour, style });
+            drawText(rt, screenCoords, _consoleLines[index].first, { kColourNull, style, { TextPaintFlag::noFormatting } });
         }
 
         screenCoords.y += lineHeight;
@@ -366,12 +366,12 @@ void InGameConsole::Draw(RenderTarget& rt) const
     // Draw current line
     if (textColour.colour == OpenRCT2::Drawing::Colour::black)
     {
-        DrawText(rt, screenCoords, "{BLACK}", { textColour, style });
-        DrawText(rt, screenCoords, _consoleCurrentLine, { kColourNull, style, { TextPaintFlag::noFormatting } });
+        drawText(rt, screenCoords, "{BLACK}", { textColour, style });
+        drawText(rt, screenCoords, _consoleCurrentLine, { kColourNull, style, { TextPaintFlag::noFormatting } });
     }
     else
     {
-        DrawText(rt, screenCoords, _consoleCurrentLine, { textColour, style, { TextPaintFlag::noFormatting } });
+        drawText(rt, screenCoords, _consoleCurrentLine, { textColour, style, { TextPaintFlag::noFormatting } });
     }
 
     // Draw caret

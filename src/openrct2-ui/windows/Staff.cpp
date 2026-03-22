@@ -565,7 +565,7 @@ namespace OpenRCT2::Ui::Windows
             const auto& widget = widgets[WIDX_BTM_LABEL];
             auto screenPos = windowPos + ScreenCoordsXY{ widget.midX(), widget.top };
             int32_t widgetWidth = widget.width() - 1;
-            DrawTextEllipsised(rt, screenPos, widgetWidth, STR_BLACK_STRING, ft, { TextAlignment::centre });
+            drawTextEllipsised(rt, screenPos, widgetWidth, STR_BLACK_STRING, ft, { TextAlignment::centre });
         }
 
         void DrawOverviewTabImage(Drawing::RenderTarget& rt)
@@ -941,13 +941,13 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<money64>(GetStaffWage(staff->AssignedStaffType));
-                DrawText(rt, screenCoords, STR_STAFF_STAT_WAGES, ft);
+                drawText(rt, screenCoords, STR_STAFF_STAT_WAGES, ft);
                 screenCoords.y += kListRowHeight;
             }
 
             auto ft = Formatter();
             ft.Add<int32_t>(staff->GetHireDate());
-            DrawText(rt, screenCoords, STR_STAFF_STAT_EMPLOYED_FOR, ft);
+            drawText(rt, screenCoords, STR_STAFF_STAT_EMPLOYED_FOR, ft);
             screenCoords.y += kListRowHeight;
 
             switch (staff->AssignedStaffType)
@@ -955,37 +955,37 @@ namespace OpenRCT2::Ui::Windows
                 case StaffType::handyman:
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffLawnsMown);
-                    DrawText(rt, screenCoords, STR_STAFF_STAT_LAWNS_MOWN, ft);
+                    drawText(rt, screenCoords, STR_STAFF_STAT_LAWNS_MOWN, ft);
                     screenCoords.y += kListRowHeight;
 
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffGardensWatered);
-                    DrawText(rt, screenCoords, STR_STAFF_STAT_GARDENS_WATERED, ft);
+                    drawText(rt, screenCoords, STR_STAFF_STAT_GARDENS_WATERED, ft);
                     screenCoords.y += kListRowHeight;
 
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffLitterSwept);
-                    DrawText(rt, screenCoords, STR_STAFF_STAT_LITTER_SWEPT, ft);
+                    drawText(rt, screenCoords, STR_STAFF_STAT_LITTER_SWEPT, ft);
                     screenCoords.y += kListRowHeight;
 
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffBinsEmptied);
-                    DrawText(rt, screenCoords, STR_STAFF_STAT_BINS_EMPTIED, ft);
+                    drawText(rt, screenCoords, STR_STAFF_STAT_BINS_EMPTIED, ft);
                     break;
                 case StaffType::mechanic:
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffRidesInspected);
-                    DrawText(rt, screenCoords, STR_STAFF_STAT_RIDES_INSPECTED, ft);
+                    drawText(rt, screenCoords, STR_STAFF_STAT_RIDES_INSPECTED, ft);
                     screenCoords.y += kListRowHeight;
 
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffRidesFixed);
-                    DrawText(rt, screenCoords, STR_STAFF_STAT_RIDES_FIXED, ft);
+                    drawText(rt, screenCoords, STR_STAFF_STAT_RIDES_FIXED, ft);
                     break;
                 case StaffType::security:
                     ft = Formatter();
                     ft.Add<uint32_t>(staff->StaffVandalsStopped);
-                    DrawText(rt, screenCoords, STR_STAFF_STAT_VANDALS_STOPPED, ft);
+                    drawText(rt, screenCoords, STR_STAFF_STAT_VANDALS_STOPPED, ft);
                     break;
                 case StaffType::entertainer:
                 case StaffType::count:

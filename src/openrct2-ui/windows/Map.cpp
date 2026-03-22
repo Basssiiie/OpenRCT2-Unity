@@ -692,7 +692,7 @@ namespace OpenRCT2::Ui::Windows
                         Rectangle::fill(
                             rt, { screenCoords + ScreenCoordsXY{ 0, 2 }, screenCoords + ScreenCoordsXY{ 6, 8 } },
                             kRideKeyColours[i].b);
-                        DrawText(rt, screenCoords + ScreenCoordsXY{ kListRowHeight, 0 }, MapLabels[i]);
+                        drawText(rt, screenCoords + ScreenCoordsXY{ kListRowHeight, 0 }, MapLabels[i]);
                         screenCoords.y += kListRowHeight;
                         if (i == 3)
                         {
@@ -703,7 +703,7 @@ namespace OpenRCT2::Ui::Windows
             }
             else if (!isToolActive(*this, WIDX_SET_LAND_RIGHTS))
             {
-                DrawText(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_MAP_SIZE_SPINNER_Y].top + 1 }, STR_MAP_SIZE, {},
                     { colours[1] });
             }

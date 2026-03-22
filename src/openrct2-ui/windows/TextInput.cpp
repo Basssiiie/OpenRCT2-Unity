@@ -208,11 +208,11 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<const char*>(_description.c_str());
-                DrawTextWrapped(rt, screenCoords, kWindowSize.width, STR_STRING, ft, { colours[1], TextAlignment::centre });
+                drawTextWrapped(rt, screenCoords, kWindowSize.width, STR_STRING, ft, { colours[1], TextAlignment::centre });
             }
             else
             {
-                DrawTextWrapped(
+                drawTextWrapped(
                     rt, screenCoords, kWindowSize.width, _descriptionStringId, _descriptionArgs,
                     { colours[1], TextAlignment::centre });
             }
@@ -245,7 +245,7 @@ namespace OpenRCT2::Ui::Windows
             for (int32_t line = 0; line <= no_lines; line++)
             {
                 screenCoords.x = windowPos.x + 12;
-                DrawText(
+                drawText(
                     rt, screenCoords, wrapPointer,
                     { colours[1], FontStyle::medium, { TextPaintFlag::noFormatting }, TextAlignment::left });
 

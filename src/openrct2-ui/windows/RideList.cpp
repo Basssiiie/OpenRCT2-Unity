@@ -603,7 +603,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(indicatorId);
 
                 auto cRT = const_cast<const RenderTarget&>(rt);
-                DrawTextEllipsised(
+                drawTextEllipsised(
                     cRT, windowPos + ScreenCoordsXY{ widget.left + 1, widget.top + 1 }, widget.width() - 1,
                     STR_RIDE_LIST_HEADER_FORMAT, ft, { colours[1] });
             };
@@ -616,7 +616,7 @@ namespace OpenRCT2::Ui::Windows
             // Draw number of attractions on bottom
             auto ft = Formatter();
             ft.Add<uint16_t>(static_cast<uint16_t>(CountVisibleItems()));
-            DrawText(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_LIST].bottom + 2 }, ride_list_statusbar_count_strings[page],
                 ft);
         }
@@ -660,7 +660,7 @@ namespace OpenRCT2::Ui::Windows
                 ridePtr->formatNameTo(ft);
 
                 auto& nameHeader = widgets[WIDX_HEADER_NAME];
-                DrawTextEllipsised(rt, { 0, y - 1 }, nameHeader.width() - 3, format, ft);
+                drawTextEllipsised(rt, { 0, y - 1 }, nameHeader.width() - 3, format, ft);
 
                 // Ride information
                 ft = Formatter();
@@ -866,7 +866,7 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 auto infoHeader = widgets[WIDX_HEADER_OTHER];
-                DrawTextEllipsised(rt, { infoHeader.left - 4, y - 1 }, infoHeader.width() - 3, format, ft);
+                drawTextEllipsised(rt, { infoHeader.left - 4, y - 1 }, infoHeader.width() - 3, format, ft);
                 y += kScrollableRowHeight;
             }
         }

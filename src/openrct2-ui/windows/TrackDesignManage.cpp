@@ -196,7 +196,7 @@ namespace OpenRCT2::Ui::Windows
 
             auto ft = Formatter();
             ft.Add<const utf8*>(_trackDesignFileReference->name.c_str());
-            DrawTextWrapped(
+            drawTextWrapped(
                 rt, windowPos + ScreenCoordsXY{ width / 2, messageTop }, (width - 4),
                 STR_ARE_YOU_SURE_YOU_WANT_TO_PERMANENTLY_DELETE_TRACK, ft, { TextAlignment::centre });
         }
