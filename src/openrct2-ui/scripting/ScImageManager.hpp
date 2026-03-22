@@ -185,7 +185,7 @@ namespace OpenRCT2::Scripting
             }
 
             JSDrawCustomImage(
-                scriptEngine, id, { static_cast<int32_t>(width.value()), static_cast<int32_t>(height.value()) }, callback);
+                ctx, scriptEngine, id, { static_cast<int32_t>(width.value()), static_cast<int32_t>(height.value()) }, callback);
             return JS_UNDEFINED;
         }
 

@@ -25,7 +25,8 @@ namespace OpenRCT2::Scripting
     JSValue JSGetImageInfo(JSContext* ctx, ImageIndex id);
     JSValue JSGetImagePixelData(JSContext* ctx, ImageIndex id);
     void JSSetPixelData(JSContext* ctx, ImageIndex id, JSValue jsPixelData);
-    void JSDrawCustomImage(ScriptEngine& scriptEngine, ImageIndex id, ScreenSize size, const JSCallback& callback);
+    void JSDrawCustomImage(
+        JSContext* ctx, ScriptEngine& scriptEngine, ImageIndex id, ScreenSize size, const JSCallback& callback);
 
 } // namespace OpenRCT2::Scripting
 

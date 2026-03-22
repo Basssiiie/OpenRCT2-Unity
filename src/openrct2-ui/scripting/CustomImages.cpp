@@ -386,9 +386,9 @@ namespace OpenRCT2::Scripting
         JS_FreeValue(ctx, pixelData.Data);
     }
 
-    void JSDrawCustomImage(ScriptEngine& scriptEngine, ImageIndex id, ScreenSize size, const JSCallback& callback)
+    void JSDrawCustomImage(
+        JSContext* ctx, ScriptEngine& scriptEngine, ImageIndex id, ScreenSize size, const JSCallback& callback)
     {
-        auto* ctx = scriptEngine.GetContext();
         auto plugin = scriptEngine.GetExecInfo().GetCurrentPlugin();
 
         auto drawingEngine = std::make_unique<X8DrawingEngine>(GetContext()->GetUiContext());
