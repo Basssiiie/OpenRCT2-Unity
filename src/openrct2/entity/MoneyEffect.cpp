@@ -109,7 +109,7 @@ namespace OpenRCT2
             auto [stringId, newValue] = GetStringId();
             char buffer[128];
             FormatStringLegacy(buffer, 128, stringId, &newValue);
-            offsetX = -(Drawing::GfxGetStringWidth(buffer, FontStyle::medium) / 2);
+            offsetX = -(Drawing::getStringWidth(buffer, FontStyle::medium) / 2);
         }
         OffsetX = offsetX;
         Wiggle = 0;

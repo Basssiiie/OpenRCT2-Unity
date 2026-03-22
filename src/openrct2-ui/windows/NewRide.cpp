@@ -429,7 +429,7 @@ namespace OpenRCT2::Ui::Windows
 
             const auto& ls = GetContext()->GetLocalisationService();
             auto string = ls.GetString(STR_GROUP_BY_TRACK_TYPE);
-            auto strWidth = GfxGetStringWidth(string, FontStyle::medium);
+            auto strWidth = getStringWidth(string, FontStyle::medium);
             auto localizedGroupByTrackTypeWidth = strWidth + 14;
             widgets[WIDX_GROUP_BY_TRACK_TYPE].left = width - 8 - localizedGroupByTrackTypeWidth;
         }

@@ -83,8 +83,7 @@ public:
 static void DrawText(
     RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view text, const TextPaint& paint, bool noFormatting = false)
 {
-    int32_t width = noFormatting ? GfxGetStringWidthNoFormatting(text, paint.FontStyle)
-                                 : GfxGetStringWidth(text, paint.FontStyle);
+    int32_t width = getStringWidth(text, paint.FontStyle, noFormatting);
 
     auto alignedCoords = coords;
     switch (paint.Alignment)

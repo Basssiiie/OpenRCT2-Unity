@@ -322,7 +322,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Check how this date is represented (e.g. 2000-02-20, or 00/02/20)
             std::string date = Platform::FormatShortDate(long_time);
-            maxDateWidth = GfxGetStringWidth(date.c_str(), FontStyle::medium) + kDateTimeGap;
+            maxDateWidth = getStringWidth(date.c_str(), FontStyle::medium) + kDateTimeGap;
 
             // Some locales do not use leading zeros for months and days, so let's try October, too.
             tm.tm_mon = 10;
@@ -331,12 +331,12 @@ namespace OpenRCT2::Ui::Windows
 
             // Again, check how this date is represented (e.g. 2000-10-20, or 00/10/20)
             date = Platform::FormatShortDate(long_time);
-            maxDateWidth = std::max(maxDateWidth, GfxGetStringWidth(date.c_str(), FontStyle::medium) + kDateTimeGap);
+            maxDateWidth = std::max(maxDateWidth, getStringWidth(date.c_str(), FontStyle::medium) + kDateTimeGap);
 
             // Time appears to be universally represented with two digits for minutes, so 12:00 or 00:00 should be
             // representable.
             std::string time = Platform::FormatTime(long_time);
-            maxTimeWidth = GfxGetStringWidth(time.c_str(), FontStyle::medium) + kDateTimeGap;
+            maxTimeWidth = getStringWidth(time.c_str(), FontStyle::medium) + kDateTimeGap;
         }
 
         void LoadPreview()
@@ -709,7 +709,7 @@ namespace OpenRCT2::Ui::Windows
 
                 // Get 'Save' button string width
                 auto saveLabel = LanguageGetString(STR_FILEBROWSER_SAVE_BUTTON);
-                auto saveLabelWidth = GfxGetStringWidth(saveLabel, FontStyle::medium) + 12;
+                auto saveLabelWidth = getStringWidth(saveLabel, FontStyle::medium) + 12;
 
                 widgets[WIDX_SAVE].type = WidgetType::button;
                 widgets[WIDX_SAVE].top = height - paddingBottom - 15;
@@ -719,7 +719,7 @@ namespace OpenRCT2::Ui::Windows
 
                 // Get 'Filename:' string width
                 auto filenameLabel = LanguageGetString(STR_FILENAME_LABEL);
-                auto filenameLabelWidth = GfxGetStringWidth(filenameLabel, FontStyle::medium);
+                auto filenameLabelWidth = getStringWidth(filenameLabel, FontStyle::medium);
 
                 widgets[WIDX_FILENAME_TEXTBOX].type = WidgetType::textBox;
                 widgets[WIDX_FILENAME_TEXTBOX].top = height - paddingBottom - 15;

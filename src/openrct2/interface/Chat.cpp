@@ -200,10 +200,10 @@ void ChatDraw(RenderTarget& rt, ColourWithFlags chatBackgroundColor)
         GfxSetDirtyBlocks({ screenCoords, { screenCoords + ScreenCoordsXY{ _chatWidth, inputLineHeight + 15 } } });
 
         // TODO: Show caret if the input text has multiple lines
-        if (_chatCaretTicks < 15 && GfxGetStringWidth(lineBuffer, FontStyle::medium) < (_chatWidth - 10))
+        if (_chatCaretTicks < 15 && getStringWidth(lineBuffer, FontStyle::medium) < (_chatWidth - 10))
         {
             lineBuffer.assign(_chatCurrentLine.c_str(), _chatTextInputSession->SelectionStart);
-            int32_t caretX = screenCoords.x + GfxGetStringWidth(lineBuffer, FontStyle::medium);
+            int32_t caretX = screenCoords.x + getStringWidth(lineBuffer, FontStyle::medium);
             int32_t caretY = screenCoords.y + 14;
 
             Rectangle::fill(rt, { { caretX, caretY }, { caretX + 6, caretY + 1 } }, PaletteIndex::yellow10);

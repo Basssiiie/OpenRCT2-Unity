@@ -62,14 +62,13 @@ namespace OpenRCT2::Drawing
 
     int32_t GfxWrapString(
         u8string_view text, int32_t width, FontStyle fontStyle, u8string* outWrappedText, int32_t* outNumLines);
-    int32_t GfxGetStringWidth(std::string_view text, FontStyle fontStyle);
     int32_t GfxGetStringWidthNewLined(std::string_view text, FontStyle fontStyle);
-    int32_t GfxGetStringWidthNoFormatting(std::string_view text, FontStyle fontStyle);
     int32_t StringGetHeightRaw(std::string_view text, FontStyle fontStyle);
     int32_t GfxClipString(char* buffer, int32_t width, FontStyle fontStyle);
     u8string ShortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle);
     void TTFDrawString(
         RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
         FontStyle fontStyle, TextDarkness darkness);
+    int32_t getStringWidth(std::string_view text, FontStyle fontStyle, bool noFormatting = false);
 
 } // namespace OpenRCT2::Drawing

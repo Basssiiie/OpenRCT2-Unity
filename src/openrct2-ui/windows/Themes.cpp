@@ -865,7 +865,7 @@ namespace OpenRCT2::Ui::Windows
 
             std::string str = FormatStringIDLegacy(format, args);
 
-            return GfxGetStringWidth(str, FontStyle::medium);
+            return getStringWidth(str, FontStyle::medium);
         }
 
         int8_t GetTotalColoursUpTo(int8_t index)

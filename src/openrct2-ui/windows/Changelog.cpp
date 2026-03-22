@@ -262,7 +262,7 @@ namespace OpenRCT2::Ui::Windows
             _changelogLongestLineWidth = 0;
             for (const auto& line : _changelogLines)
             {
-                int32_t linewidth = Drawing::GfxGetStringWidth(line.c_str(), FontStyle::medium);
+                int32_t linewidth = Drawing::getStringWidth(line.c_str(), FontStyle::medium);
                 _changelogLongestLineWidth = std::max(linewidth, _changelogLongestLineWidth);
             }
         }

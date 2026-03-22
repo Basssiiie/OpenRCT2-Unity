@@ -2181,7 +2181,7 @@ namespace OpenRCT2::Ui::Windows
 
                 // Get 'Clear' button string width
                 auto clearLabel = LanguageGetString(STR_CLEAR_BUTTON);
-                auto clearLabelWidth = GfxGetStringWidth(clearLabel, FontStyle::medium) + 12;
+                auto clearLabelWidth = getStringWidth(clearLabel, FontStyle::medium) + 12;
 
                 widgets[WIDX_PATH_TO_RCT1_CLEAR].right = widgets[WIDX_PAGE_BACKGROUND].right - 12;
                 widgets[WIDX_PATH_TO_RCT1_CLEAR].left = widgets[WIDX_PATH_TO_RCT1_BROWSE].right - clearLabelWidth;
@@ -2194,7 +2194,7 @@ namespace OpenRCT2::Ui::Windows
 
                 // Get 'Browse' button string width
                 auto browseLabel = LanguageGetString(STR_BROWSE);
-                auto browseLabelWidth = GfxGetStringWidth(browseLabel, FontStyle::medium) + 12;
+                auto browseLabelWidth = getStringWidth(browseLabel, FontStyle::medium) + 12;
 
                 widgets[WIDX_PATH_TO_RCT1_BROWSE].right = widgets[WIDX_PAGE_BACKGROUND].right - 12;
                 widgets[WIDX_PATH_TO_RCT1_BROWSE].left = widgets[WIDX_PATH_TO_RCT1_BROWSE].right - browseLabelWidth;

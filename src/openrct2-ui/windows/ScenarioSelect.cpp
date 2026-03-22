@@ -653,7 +653,7 @@ namespace OpenRCT2::Ui::Windows
             utf8 buffer[512];
             auto bufferPtr = buffer;
             FormatStringLegacy(bufferPtr, sizeof(buffer), stringId, nullptr);
-            int32_t categoryStringHalfWidth = (GfxGetStringWidth(bufferPtr, FontStyle::medium) / 2) + 4;
+            int32_t categoryStringHalfWidth = (getStringWidth(bufferPtr, FontStyle::medium) / 2) + 4;
             int32_t strLeft = centreX - categoryStringHalfWidth;
             int32_t strRight = centreX + categoryStringHalfWidth;
 

@@ -127,7 +127,7 @@ namespace OpenRCT2::Ui::Windows
                     const auto& stringIdx = widgets[widgetIndex].text;
                     auto string = ls.GetString(stringIdx);
                     Guard::ArgumentNotNull(string);
-                    const auto strWidth = Drawing::GfxGetStringWidth(string, FontStyle::medium);
+                    const auto strWidth = Drawing::getStringWidth(string, FontStyle::medium);
                     newWidth = std::max<int16_t>(strWidth, newWidth);
                 }
 

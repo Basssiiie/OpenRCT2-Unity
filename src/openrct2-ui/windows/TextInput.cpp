@@ -252,8 +252,9 @@ namespace OpenRCT2::Ui::Windows
                 {
                     // Make a view of the string for measuring the width.
                     cursorX = windowPos.x + 13
-                        + GfxGetStringWidthNoFormatting(
-                                  u8string_view{ wrapPointer, textInput->SelectionStart - char_count }, FontStyle::medium);
+                        + getStringWidth(
+                                  u8string_view{ wrapPointer, textInput->SelectionStart - char_count }, FontStyle::medium,
+                                  true);
                     cursorY = screenCoords.y;
 
                     int32_t textWidth = 6;
@@ -264,7 +265,7 @@ namespace OpenRCT2::Ui::Windows
                         utf8 tmp[5] = {}; // This is easier than setting temp_string[0..5]
                         uint32_t codepoint = UTF8GetNext(_buffer.data() + textInput->SelectionStart, nullptr);
                         UTF8WriteCodepoint(tmp, codepoint);
-                        textWidth = std::max(GfxGetStringWidthNoFormatting(tmp, FontStyle::medium) - 2, 4);
+                        textWidth = std::max(getStringWidth(tmp, FontStyle::medium, true) - 2, 4);
                     }
 
                     if (_cursorBlink > 15)

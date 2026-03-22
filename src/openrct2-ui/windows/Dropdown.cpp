@@ -380,7 +380,7 @@ namespace OpenRCT2::Ui::Windows
         int32_t maxStringWidth = 0;
         for (size_t i = 0; i < num_items; i++)
         {
-            int32_t stringWidth = GfxGetStringWidth(gDropdown.items[i].text, FontStyle::medium);
+            int32_t stringWidth = getStringWidth(gDropdown.items[i].text, FontStyle::medium);
             if (gDropdown.items[i].type != Dropdown::ItemType::plain)
                 stringWidth += kDropdownItemLeftPadding;
             maxStringWidth = std::max(stringWidth, maxStringWidth);

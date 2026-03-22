@@ -5304,8 +5304,8 @@ namespace OpenRCT2::Ui::Windows
                 if (track->Name.empty())
                     continue;
 
-                auto nameWidth = GfxGetStringWidth(track->Name.c_str(), FontStyle::small);
-                auto composerWidth = GfxGetStringWidth(track->Composer.c_str(), FontStyle::small);
+                auto nameWidth = getStringWidth(track->Name.c_str(), FontStyle::small);
+                auto composerWidth = getStringWidth(track->Composer.c_str(), FontStyle::small);
                 newWidth = std::max(newWidth, nameWidth + composerWidth + 24);
             }
 

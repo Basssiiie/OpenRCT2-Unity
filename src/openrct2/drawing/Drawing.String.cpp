@@ -30,8 +30,6 @@
 
 namespace OpenRCT2::Drawing
 {
-    static int32_t TTFGetStringWidth(std::string_view text, FontStyle fontStyle, bool noFormatting);
-
     /**
      *
      *  rct2: 0x006C23B1
@@ -46,7 +44,7 @@ namespace OpenRCT2::Drawing
         {
             if (token.kind == FormatToken::newline || token.kind == FormatToken::newlineSmall)
             {
-                auto width = GfxGetStringWidth(buffer, fontStyle);
+                auto width = getStringWidth(buffer, fontStyle);
                 if (!maxWidth.has_value() || maxWidth.value() > width)
                 {
                     maxWidth = width;
@@ -60,25 +58,9 @@ namespace OpenRCT2::Drawing
         }
         if (!maxWidth.has_value())
         {
-            maxWidth = GfxGetStringWidth(buffer, fontStyle);
+            maxWidth = getStringWidth(buffer, fontStyle);
         }
         return maxWidth.value();
-    }
-
-    /**
-     * Return the width of the string in buffer
-     *
-     *  rct2: 0x006C2321
-     * buffer (esi)
-     */
-    int32_t GfxGetStringWidth(std::string_view text, FontStyle fontStyle)
-    {
-        return TTFGetStringWidth(text, fontStyle, false);
-    }
-
-    int32_t GfxGetStringWidthNoFormatting(std::string_view text, FontStyle fontStyle)
-    {
-        return TTFGetStringWidth(text, fontStyle, true);
     }
 
     /**
@@ -97,7 +79,7 @@ namespace OpenRCT2::Drawing
         }
 
         // If width of the full string is less than allowed width then we don't need to clip
-        auto clippedWidth = GfxGetStringWidth(text, fontStyle);
+        auto clippedWidth = getStringWidth(text, fontStyle);
         if (clippedWidth <= width)
         {
             return clippedWidth;
@@ -119,7 +101,7 @@ namespace OpenRCT2::Drawing
                 // Add the ellipsis before checking the width
                 buffer.append("...");
 
-                auto currentWidth = GfxGetStringWidth(buffer, fontStyle);
+                auto currentWidth = getStringWidth(buffer, fontStyle);
                 if (currentWidth < width)
                 {
                     bestLength = buffer.size();
@@ -148,7 +130,7 @@ namespace OpenRCT2::Drawing
                 buffer.append(cb);
             }
         }
-        return GfxGetStringWidth(text, fontStyle);
+        return getStringWidth(text, fontStyle);
     }
 
     /**
@@ -188,7 +170,7 @@ namespace OpenRCT2::Drawing
                     UTF8WriteCodepoint(cb, codepoint);
                     buffer.append(cb);
 
-                    auto lineWidth = GfxGetStringWidth(&buffer[currentLineIndex], fontStyle);
+                    auto lineWidth = getStringWidth(&buffer[currentLineIndex], fontStyle);
                     if (lineWidth <= width || (splitIndex == kNullIndex && bestSplitIndex == kNullIndex))
                     {
                         if (codepoint == ' ')
@@ -212,7 +194,7 @@ namespace OpenRCT2::Drawing
                         buffer.insert(buffer.begin() + splitIndex, '\0');
 
                         // Recalculate the line length after splitting
-                        lineWidth = GfxGetStringWidth(&buffer[currentLineIndex], fontStyle);
+                        lineWidth = getStringWidth(&buffer[currentLineIndex], fontStyle);
                         maxWidth = std::max(maxWidth, lineWidth);
                         numLines++;
 
@@ -232,7 +214,7 @@ namespace OpenRCT2::Drawing
             {
                 buffer.push_back('\0');
 
-                auto lineWidth = GfxGetStringWidth(&buffer[currentLineIndex], fontStyle);
+                auto lineWidth = getStringWidth(&buffer[currentLineIndex], fontStyle);
                 maxWidth = std::max(maxWidth, lineWidth);
                 numLines++;
 
@@ -247,7 +229,7 @@ namespace OpenRCT2::Drawing
         }
         {
             // Final line width calculation
-            auto lineWidth = GfxGetStringWidth(&buffer[currentLineIndex], fontStyle);
+            auto lineWidth = getStringWidth(&buffer[currentLineIndex], fontStyle);
             maxWidth = std::max(maxWidth, lineWidth);
         }
 
@@ -318,7 +300,7 @@ namespace OpenRCT2::Drawing
 
         for (int32_t i = 0; i <= numLines; i++)
         {
-            int32_t width = GfxGetStringWidth(text, fontStyle);
+            int32_t width = getStringWidth(text, fontStyle);
             DrawTextBasic(rt, screenCoords - ScreenCoordsXY{ width / 2, 0 }, text, { kColourNull, fontStyle });
 
             const utf8* ch = text;
@@ -424,7 +406,7 @@ namespace OpenRCT2::Drawing
         lineY = coords.y - ((numLines * lineHeight) / 2);
         for (int32_t line = 0; line <= numLines; line++)
         {
-            int32_t halfWidth = GfxGetStringWidth(buffer, FontStyle::small) / 2;
+            int32_t halfWidth = getStringWidth(buffer, FontStyle::small) / 2;
 
             FmtString fmt(buffer);
             for (const auto& token : fmt)
@@ -800,7 +782,7 @@ namespace OpenRCT2::Drawing
         rt.lastStringPos = { info.x, info.y };
     }
 
-    static int32_t TTFGetStringWidth(std::string_view text, FontStyle fontStyle, bool noFormatting)
+    int32_t getStringWidth(std::string_view text, FontStyle fontStyle, bool noFormatting)
     {
         TextDrawInfo info{};
         info.fontStyle = fontStyle;
@@ -861,7 +843,7 @@ namespace OpenRCT2::Drawing
 
     u8string ShortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle)
     {
-        if (GfxGetStringWidth(path, fontStyle) <= availableWidth)
+        if (getStringWidth(path, fontStyle) <= availableWidth)
         {
             return path;
         }
@@ -876,7 +858,7 @@ namespace OpenRCT2::Drawing
                 break;
 
             shortenedPath = u8"..." + path.substr(begin);
-            if (GfxGetStringWidth(shortenedPath, fontStyle) <= availableWidth)
+            if (getStringWidth(shortenedPath, fontStyle) <= availableWidth)
             {
                 return shortenedPath;
             }

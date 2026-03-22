@@ -170,7 +170,7 @@ void InGameConsole::RefreshCaret(size_t position)
     _selectionStart = position;
 
     auto text = u8string_view{ _consoleCurrentLine }.substr(0, _selectionStart);
-    _caretScreenPosX = GfxGetStringWidthNoFormatting(text, InGameConsoleGetFontStyle());
+    _caretScreenPosX = getStringWidth(text, InGameConsoleGetFontStyle(), true);
 }
 
 void InGameConsole::Scroll(int32_t linesToScroll)

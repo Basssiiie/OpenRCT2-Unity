@@ -512,7 +512,7 @@ namespace OpenRCT2::Ui
             auto ft = Formatter();
             ft.Add<utf8*>(buffer);
             DrawTextBasic(rt, { l, t }, STR_STRING, ft, { colour });
-            textRight = l + GfxGetStringWidth(buffer, FontStyle::medium) + 1;
+            textRight = l + getStringWidth(buffer, FontStyle::medium) + 1;
         }
 
         // Border
@@ -1210,9 +1210,9 @@ namespace OpenRCT2::Ui
 
         // Make a trimmed view of the string for measuring the width.
         int32_t curX = topLeft.x
-            + GfxGetStringWidthNoFormatting(
+            + getStringWidth(
                            u8string_view{ wrappedString.c_str(), std::min(wrappedString.length(), textInput->SelectionStart) },
-                           FontStyle::medium)
+                           FontStyle::medium, true)
             + 3;
 
         int32_t width = 6;
@@ -1221,9 +1221,7 @@ namespace OpenRCT2::Ui
             // Make a new 1 character wide string for measuring the width
             // of the character that the cursor is under. (NOTE: this is broken for multi byte utf8 codepoints)
             width = std::max(
-                GfxGetStringWidthNoFormatting(u8string{ (*textInput->Buffer)[textInput->SelectionStart] }, FontStyle::medium)
-                    - 2,
-                4);
+                getStringWidth(u8string{ (*textInput->Buffer)[textInput->SelectionStart] }, FontStyle::medium, true) - 2, 4);
         }
 
         if (Windows::TextBoxCaretIsFlashed())

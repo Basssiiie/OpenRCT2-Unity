@@ -685,7 +685,7 @@ namespace OpenRCT2::Ui::Windows
 
             char buffer[64]{};
             FormatStringToBuffer(buffer, sizeof(buffer), "{BLACK}{COMMA32}", _ratingProps.max);
-            int32_t maxGraphWidth = GfxGetStringWidth(buffer, FontStyle::small) + Graph::kYTickMarkPadding + 1;
+            int32_t maxGraphWidth = getStringWidth(buffer, FontStyle::small) + Graph::kYTickMarkPadding + 1;
             const ScreenCoordsXY dynamicPadding{ std::max(maxGraphWidth, kGraphTopLeftPadding.x), kGraphTopLeftPadding.y };
 
             _ratingProps.RecalculateLayout(
@@ -766,7 +766,7 @@ namespace OpenRCT2::Ui::Windows
 
             char buffer[64]{};
             FormatStringToBuffer(buffer, sizeof(buffer), "{BLACK}{COMMA32}", _guestProps.max);
-            int32_t maxGraphWidth = GfxGetStringWidth(buffer, FontStyle::small) + Graph::kYTickMarkPadding + 1;
+            int32_t maxGraphWidth = getStringWidth(buffer, FontStyle::small) + Graph::kYTickMarkPadding + 1;
             const ScreenCoordsXY dynamicPadding{ std::max(maxGraphWidth, kGraphTopLeftPadding.x), kGraphTopLeftPadding.y };
 
             _guestProps.RecalculateLayout(
