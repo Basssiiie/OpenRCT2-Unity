@@ -444,32 +444,32 @@ namespace OpenRCT2::Drawing
         }
     }
 
-    static void drawCharacterSprite(RenderTarget& rt, int32_t codepoint, TextDrawInfo* info)
+    static void drawCharacterSprite(RenderTarget& rt, int32_t codepoint, TextDrawInfo& info)
     {
-        int32_t characterWidth = FontSpriteGetCodepointWidth(info->fontStyle, codepoint);
-        auto sprite = FontSpriteGetCodepointSprite(info->fontStyle, codepoint);
+        int32_t characterWidth = FontSpriteGetCodepointWidth(info.fontStyle, codepoint);
+        auto sprite = FontSpriteGetCodepointSprite(info.fontStyle, codepoint);
 
-        if (!info->textDrawFlags.has(TextDrawFlag::noDraw))
+        if (!info.textDrawFlags.has(TextDrawFlag::noDraw))
         {
-            auto screenCoords = ScreenCoordsXY{ info->x, info->y };
-            if (info->textDrawFlags.has(TextDrawFlag::yOffsetEffect))
+            auto screenCoords = ScreenCoordsXY{ info.x, info.y };
+            if (info.textDrawFlags.has(TextDrawFlag::yOffsetEffect))
             {
-                screenCoords.y += *info->yOffset++;
+                screenCoords.y += *info.yOffset++;
             }
 
             PaletteIndex palette[8]{};
-            palette[1] = info->palette.fill;
-            palette[2] = info->palette.sunnyOutline;
-            palette[3] = info->palette.shadowOutline;
+            palette[1] = info.palette.fill;
+            palette[2] = info.palette.sunnyOutline;
+            palette[3] = info.palette.shadowOutline;
 
             PaletteMap paletteMap(palette);
             GfxDrawGlyph(rt, sprite, screenCoords, paletteMap);
         }
 
-        info->x += characterWidth;
+        info.x += characterWidth;
     }
 
-    static void drawStringRawSprite(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
+    static void drawStringRawSprite(RenderTarget& rt, std::string_view text, TextDrawInfo& info)
     {
         CodepointView codepoints(text);
         for (auto codepoint : codepoints)
@@ -480,21 +480,21 @@ namespace OpenRCT2::Drawing
 
 #ifndef DISABLE_TTF
 
-    static void drawStringRawTTF(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
+    static void drawStringRawTTF(RenderTarget& rt, std::string_view text, TextDrawInfo& info)
     {
         if (!TTFInitialise())
             return;
 
-        TTFFontDescriptor* fontDesc = TTFGetFontFromSpriteBase(info->fontStyle);
+        TTFFontDescriptor* fontDesc = TTFGetFontFromSpriteBase(info.fontStyle);
         if (fontDesc->font == nullptr)
         {
             drawStringRawSprite(rt, text, info);
             return;
         }
 
-        if (info->textDrawFlags.has(TextDrawFlag::noDraw))
+        if (info.textDrawFlags.has(TextDrawFlag::noDraw))
         {
-            info->x += TTFGetWidthCacheGetOrAdd(fontDesc->font, text);
+            info.x += TTFGetWidthCacheGetOrAdd(fontDesc->font, text);
             return;
         }
 
@@ -505,60 +505,60 @@ namespace OpenRCT2::Drawing
         auto drawingEngine = rt.DrawingEngine;
         if (drawingEngine != nullptr)
         {
-            int32_t drawX = info->x + fontDesc->offset_x;
-            int32_t drawY = info->y + fontDesc->offset_y;
+            int32_t drawX = info.x + fontDesc->offset_x;
+            int32_t drawY = info.y + fontDesc->offset_y;
             uint8_t hintThresh = Config::Get().fonts.enableHinting ? fontDesc->hinting_threshold : 0;
             IDrawingContext* dc = drawingEngine->GetDrawingContext();
             dc->DrawTTFBitmap(rt, info, surface, drawX, drawY, hintThresh);
         }
-        info->x += surface->w;
+        info.x += surface->w;
     }
 
 #endif // DISABLE_TTF
 
-    static void processFormatCode(RenderTarget& rt, const FmtString::Token& token, TextDrawInfo* info)
+    static void processFormatCode(RenderTarget& rt, const FmtString::Token& token, TextDrawInfo& info)
     {
         switch (token.kind)
         {
             case FormatToken::move:
-                info->x = info->startX + token.parameter;
+                info.x = info.startX + token.parameter;
                 break;
             case FormatToken::newline:
-                info->x = info->startX;
-                info->y += FontGetLineHeight(info->fontStyle);
+                info.x = info.startX;
+                info.y += FontGetLineHeight(info.fontStyle);
                 break;
             case FormatToken::newlineSmall:
-                info->x = info->startX;
-                info->y += FontGetLineHeightSmall(info->fontStyle);
+                info.x = info.startX;
+                info.y += FontGetLineHeightSmall(info.fontStyle);
                 break;
             case FormatToken::fontTiny:
-                info->fontStyle = FontStyle::tiny;
+                info.fontStyle = FontStyle::tiny;
                 break;
             case FormatToken::fontSmall:
-                info->fontStyle = FontStyle::small;
+                info.fontStyle = FontStyle::small;
                 break;
             case FormatToken::fontMedium:
-                info->fontStyle = FontStyle::medium;
+                info.fontStyle = FontStyle::medium;
                 break;
             case FormatToken::outlineEnable:
-                info->colourFlags.set(ColourFlag::withOutline);
+                info.colourFlags.set(ColourFlag::withOutline);
                 break;
             case FormatToken::outlineDisable:
-                info->colourFlags.unset(ColourFlag::withOutline);
+                info.colourFlags.unset(ColourFlag::withOutline);
                 break;
             case FormatToken::colourWindow1:
             {
-                info->palette = colourCharacterWindow(gCurrentWindowColours[0], info->colourFlags.has(ColourFlag::withOutline));
+                info.palette = colourCharacterWindow(gCurrentWindowColours[0], info.colourFlags.has(ColourFlag::withOutline));
                 break;
             }
             case FormatToken::colourWindow2:
             {
-                info->palette = colourCharacterWindow(gCurrentWindowColours[1], info->colourFlags.has(ColourFlag::withOutline));
+                info.palette = colourCharacterWindow(gCurrentWindowColours[1], info.colourFlags.has(ColourFlag::withOutline));
                 break;
             }
             case FormatToken::colourWindow3:
             {
-                info->palette = colourCharacterWindow(gCurrentWindowColours[2], info->colourFlags.has(ColourFlag::withOutline));
+                info.palette = colourCharacterWindow(gCurrentWindowColours[2], info.colourFlags.has(ColourFlag::withOutline));
                 break;
             }
             case FormatToken::inlineSprite:
@@ -567,11 +567,11 @@ namespace OpenRCT2::Drawing
                 auto g1 = GfxGetG1Element(imageId);
                 if (g1 != nullptr && g1->width <= 32 && g1->height <= 32)
                 {
-                    if (!info->textDrawFlags.has(TextDrawFlag::noDraw))
+                    if (!info.textDrawFlags.has(TextDrawFlag::noDraw))
                     {
-                        GfxDrawSprite(rt, imageId, { info->x, info->y });
+                        GfxDrawSprite(rt, imageId, { info.x, info.y });
                     }
-                    info->x += g1->width;
+                    info.x += g1->width;
                 }
                 break;
             }
@@ -579,7 +579,7 @@ namespace OpenRCT2::Drawing
                 if (FormatTokenIsColour(token.kind))
                 {
                     auto colourIndex = FormatTokenToTextColour(token.kind);
-                    colourCharacter(colourIndex, info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                    colourCharacter(colourIndex, info.colourFlags.has(ColourFlag::withOutline), info.palette);
                 }
                 break;
         }
@@ -616,10 +616,10 @@ namespace OpenRCT2::Drawing
     }
 #endif // DISABLE_TTF
 
-    static void processStringLiteral(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
+    static void processStringLiteral(RenderTarget& rt, std::string_view text, TextDrawInfo& info)
     {
 #ifndef DISABLE_TTF
-        bool isTTF = info->textDrawFlags.has(TextDrawFlag::ttf);
+        bool isTTF = info.textDrawFlags.has(TextDrawFlag::ttf);
 #else
         bool isTTF = false;
 #endif // DISABLE_TTF
@@ -678,20 +678,20 @@ namespace OpenRCT2::Drawing
 #endif // DISABLE_TTF
     }
 
-    static void processStringCodepoint(RenderTarget& rt, codepoint_t codepoint, TextDrawInfo* info)
+    static void processStringCodepoint(RenderTarget& rt, codepoint_t codepoint, TextDrawInfo& info)
     {
         char buffer[8]{};
         UTF8WriteCodepoint(buffer, codepoint);
         processStringLiteral(rt, buffer, info);
     }
 
-    static void processString(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
+    static void processString(RenderTarget& rt, std::string_view text, TextDrawInfo& info)
     {
-        if (info->textDrawFlags.has(TextDrawFlag::noFormatting))
+        if (info.textDrawFlags.has(TextDrawFlag::noFormatting))
         {
             processStringLiteral(rt, text, info);
-            info->maxX = std::max(info->maxX, info->x);
-            info->maxY = std::max(info->maxY, info->y);
+            info.maxX = std::max(info.maxX, info.x);
+            info.maxY = std::max(info.maxY, info.y);
         }
         else
         {
@@ -711,25 +711,25 @@ namespace OpenRCT2::Drawing
                 {
                     processFormatCode(rt, token, info);
                 }
-                info->maxX = std::max(info->maxX, info->x);
-                info->maxY = std::max(info->maxY, info->y);
+                info.maxX = std::max(info.maxX, info.x);
+                info.maxY = std::max(info.maxY, info.y);
             }
         }
     }
 
-    static void processInitialColour(ColourWithFlags colour, TextDrawInfo* info)
+    static void processInitialColour(ColourWithFlags colour, TextDrawInfo& info)
     {
         if (colour.colour != OpenRCT2::Drawing::kColourNull)
         {
-            info->colourFlags = colour.flags;
+            info.colourFlags = colour.flags;
             if (!colour.flags.has(ColourFlag::inset))
             {
-                info->palette = colourCharacterWindow(colour.colour, info->colourFlags.has(ColourFlag::withOutline));
+                info.palette = colourCharacterWindow(colour.colour, info.colourFlags.has(ColourFlag::withOutline));
             }
             else
             {
                 TextColours newPalette = {};
-                switch (info->darkness)
+                switch (info.darkness)
                 {
                     case TextDarkness::extraDark:
                         newPalette.fill = getColourMap(colour.colour).dark;
@@ -747,7 +747,7 @@ namespace OpenRCT2::Drawing
                         break;
                 }
 
-                info->palette = newPalette;
+                info.palette = newPalette;
             }
         }
     }
@@ -775,8 +775,8 @@ namespace OpenRCT2::Drawing
         }
 
         info.palette = _savedTextPalette;
-        processInitialColour(colour, &info);
-        processString(rt, text, &info);
+        processInitialColour(colour, info);
+        processString(rt, text, info);
         _savedTextPalette = info.palette;
 
         rt.lastStringPos = { info.x, info.y };
@@ -807,7 +807,7 @@ namespace OpenRCT2::Drawing
         }
 
         RenderTarget dummy{};
-        processString(dummy, text, &info);
+        processString(dummy, text, info);
 
         return info.maxX;
     }
@@ -836,8 +836,8 @@ namespace OpenRCT2::Drawing
         }
 
         info.palette = _savedTextPalette;
-        processInitialColour(colour, &info);
-        processString(rt, text, &info);
+        processInitialColour(colour, info);
+        processString(rt, text, info);
         _savedTextPalette = info.palette;
 
         rt.lastStringPos = { info.x, info.y };

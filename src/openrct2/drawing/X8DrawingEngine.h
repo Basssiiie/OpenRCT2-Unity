@@ -146,7 +146,7 @@ namespace OpenRCT2
             void DrawSpriteSolid(RenderTarget& rt, ImageId image, int32_t x, int32_t y, PaletteIndex colour) override;
             void DrawGlyph(RenderTarget& rt, ImageId image, int32_t x, int32_t y, const PaletteMap& paletteMap) override;
             void DrawTTFBitmap(
-                RenderTarget& rt, TextDrawInfo* info, TTFSurface* surface, int32_t x, int32_t y,
+                RenderTarget& rt, const TextDrawInfo& info, TTFSurface* surface, int32_t x, int32_t y,
                 uint8_t hintingThreshold) override;
 
             bool IsActive() const noexcept
