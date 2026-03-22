@@ -256,7 +256,7 @@ namespace OpenRCT2::Ui::Windows
             // Text
             auto screenCoords = windowPos + ScreenCoordsXY{ middleOutsetWidget.midX(), middleOutsetWidget.top + 11 };
             int32_t itemWidth = middleOutsetWidget.width() - 63;
-            DrawNewsTicker(
+            drawNewsTicker(
                 rt, screenCoords, itemWidth, Drawing::Colour::brightGreen, STR_BOTTOM_TOOLBAR_NEWS_TEXT, newsItem->text,
                 newsItem->ticks);
 

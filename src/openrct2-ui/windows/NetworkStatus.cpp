@@ -94,7 +94,7 @@ namespace OpenRCT2::Ui::Windows
 
             _buffer.assign("{WHITE}");
             _buffer += _windowNetworkStatusText;
-            Drawing::GfxClipString(_buffer.data(), widgets[WIDX_BACKGROUND].right - 50, FontStyle::medium);
+            Drawing::clipString(_buffer.data(), widgets[WIDX_BACKGROUND].right - 50, FontStyle::medium);
 
             ScreenCoordsXY screenCoords(windowPos.x + (width / 2), windowPos.y + (height / 2));
             screenCoords.x -= Drawing::getStringWidth(_buffer, FontStyle::medium) / 2;

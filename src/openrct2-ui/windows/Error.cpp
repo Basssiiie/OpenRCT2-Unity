@@ -73,7 +73,7 @@ namespace OpenRCT2::Ui::Windows
             WindowDrawWidgets(*this, rt);
 
             auto screenCoords = windowPos + ScreenCoordsXY{ (width + 1) / 2 - 1, kPadding - 1 };
-            DrawStringCentredRaw(rt, screenCoords, _numLines, _text.data(), FontStyle::medium);
+            drawStringCentredRaw(rt, screenCoords, _numLines, _text.data(), FontStyle::medium);
         }
 
         void onPeriodicUpdate() override
@@ -127,12 +127,12 @@ namespace OpenRCT2::Ui::Windows
         windowMgr->CloseByClass(WindowClass::error);
 
         // How wide is the error string?
-        int32_t width = Drawing::GfxGetStringWidthNewLined(buffer.data(), FontStyle::medium);
+        int32_t width = Drawing::getStringWidthNewlined(buffer.data(), FontStyle::medium);
         width = std::clamp(width + 2 * kPadding, kMinWidth, kMaxWidth);
 
         // How high is the error string?
         int32_t numLines{};
-        Drawing::GfxWrapString(buffer, width + 1, FontStyle::medium, &buffer, &numLines);
+        Drawing::wrapString(buffer, width + 1, FontStyle::medium, &buffer, &numLines);
         int32_t height = (numLines + 1) * FontGetLineHeight(FontStyle::medium) + (2 * kPadding);
 
         // Position error message around the cursor

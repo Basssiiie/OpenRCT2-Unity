@@ -480,7 +480,7 @@ namespace OpenRCT2::Ui::Windows
             // Show track file path (in debug mode)
             if (Config::Get().general.debuggingTools)
             {
-                const auto shortPath = ShortenPath(path, width, FontStyle::medium);
+                const auto shortPath = shortenPath(path, width, FontStyle::medium);
                 auto ft = Formatter();
                 ft.Add<utf8*>(shortPath.c_str());
                 DrawTextBasic(

@@ -51,21 +51,20 @@ namespace OpenRCT2::Drawing
         const int8_t* yOffset{};
     };
 
-    void DrawStringCentredRaw(
+    void drawStringCentredRaw(
         RenderTarget& rt, const ScreenCoordsXY& coords, int32_t numLines, const utf8* text, FontStyle fontStyle);
-    void DrawNewsTicker(
+    void drawNewsTicker(
         RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, Colour colour, StringId format, u8string_view args,
         int32_t ticks);
-    void GfxDrawStringWithYOffsets(
+    void drawStringWithYOffsets(
         RenderTarget& rt, const utf8* text, ColourWithFlags colour, const ScreenCoordsXY& coords, const int8_t* yOffsets,
         bool forceSpriteFont, FontStyle fontStyle);
 
-    int32_t GfxWrapString(
-        u8string_view text, int32_t width, FontStyle fontStyle, u8string* outWrappedText, int32_t* outNumLines);
-    int32_t GfxGetStringWidthNewLined(std::string_view text, FontStyle fontStyle);
-    int32_t StringGetHeightRaw(std::string_view text, FontStyle fontStyle);
-    int32_t GfxClipString(char* buffer, int32_t width, FontStyle fontStyle);
-    u8string ShortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle);
+    int32_t wrapString(u8string_view text, int32_t width, FontStyle fontStyle, u8string* outWrappedText, int32_t* outNumLines);
+    int32_t getStringWidthNewlined(std::string_view text, FontStyle fontStyle);
+    int32_t getStringHeightRaw(std::string_view text, FontStyle fontStyle);
+    int32_t clipString(char* buffer, int32_t width, FontStyle fontStyle);
+    u8string shortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle);
     void TTFDrawString(
         RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
         FontStyle fontStyle, TextDarkness darkness);

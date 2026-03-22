@@ -34,7 +34,7 @@ namespace OpenRCT2::Drawing
      *
      *  rct2: 0x006C23B1
      */
-    int32_t GfxGetStringWidthNewLined(std::string_view text, FontStyle fontStyle)
+    int32_t getStringWidthNewlined(std::string_view text, FontStyle fontStyle)
     {
         u8string buffer;
 
@@ -70,7 +70,7 @@ namespace OpenRCT2::Drawing
      * buffer (esi)
      * width (edi)
      */
-    int32_t GfxClipString(utf8* text, int32_t width, FontStyle fontStyle)
+    int32_t clipString(utf8* text, int32_t width, FontStyle fontStyle)
     {
         if (width < 6)
         {
@@ -146,8 +146,7 @@ namespace OpenRCT2::Drawing
      * num_lines (edi) - out
      * font_height (ebx) - out
      */
-    int32_t GfxWrapString(
-        u8string_view text, int32_t width, FontStyle fontStyle, u8string* outWrappedText, int32_t* outNumLines)
+    int32_t wrapString(u8string_view text, int32_t width, FontStyle fontStyle, u8string* outWrappedText, int32_t* outNumLines)
     {
         constexpr size_t kNullIndex = std::numeric_limits<size_t>::max();
         u8string buffer;
@@ -247,7 +246,7 @@ namespace OpenRCT2::Drawing
     /**
      * Changes the palette so that the next character changes colour
      */
-    static void ColourCharacter(TextColour colour, bool withOutline, TextColours& textPalette)
+    static void colourCharacter(TextColour colour, bool withOutline, TextColours& textPalette)
     {
         auto mapping = getTextColourMapping(colour);
 
@@ -264,7 +263,7 @@ namespace OpenRCT2::Drawing
      * Changes the palette so that the next character changes colour
      * This is specific to changing to a predefined window related colour
      */
-    static void ColourCharacterWindow(OpenRCT2::Drawing::Colour colour, bool withOutline, TextColours& textPalette)
+    static void colourCharacterWindow(OpenRCT2::Drawing::Colour colour, bool withOutline, TextColours& textPalette)
     {
         TextColours mapping = {
             getColourMap(colour).colour11,
@@ -291,7 +290,7 @@ namespace OpenRCT2::Drawing
      * text     : esi
      * rt      : edi
      */
-    void DrawStringCentredRaw(
+    void drawStringCentredRaw(
         RenderTarget& rt, const ScreenCoordsXY& coords, int32_t numLines, const utf8* text, FontStyle fontStyle)
     {
         ScreenCoordsXY screenCoords(rt.x, rt.y);
@@ -316,7 +315,7 @@ namespace OpenRCT2::Drawing
         }
     }
 
-    int32_t StringGetHeightRaw(std::string_view text, FontStyle fontStyle)
+    int32_t getStringHeightRaw(std::string_view text, FontStyle fontStyle)
     {
         int32_t height = 0;
         if (fontStyle <= FontStyle::medium)
@@ -386,7 +385,7 @@ namespace OpenRCT2::Drawing
      * width    : bp
      * ticks    : ebp >> 16
      */
-    void DrawNewsTicker(
+    void drawNewsTicker(
         RenderTarget& rt, const ScreenCoordsXY& coords, int32_t width, OpenRCT2::Drawing::Colour colour, StringId format,
         u8string_view args, int32_t ticks)
     {
@@ -396,7 +395,7 @@ namespace OpenRCT2::Drawing
         DrawTextBasic(rt, screenCoords, "", { colour });
 
         u8string wrappedString;
-        GfxWrapString(FormatStringID(format, args), width, FontStyle::small, &wrappedString, &numLines);
+        wrapString(FormatStringID(format, args), width, FontStyle::small, &wrappedString, &numLines);
         lineHeight = FontGetLineHeight(FontStyle::small);
 
         int32_t numCharactersDrawn = 0;
@@ -444,7 +443,7 @@ namespace OpenRCT2::Drawing
         }
     }
 
-    static void TTFDrawCharacterSprite(RenderTarget& rt, int32_t codepoint, TextDrawInfo* info)
+    static void drawCharacterSprite(RenderTarget& rt, int32_t codepoint, TextDrawInfo* info)
     {
         int32_t characterWidth = FontSpriteGetCodepointWidth(info->fontStyle, codepoint);
         auto sprite = FontSpriteGetCodepointSprite(info->fontStyle, codepoint);
@@ -469,18 +468,18 @@ namespace OpenRCT2::Drawing
         info->x += characterWidth;
     }
 
-    static void TTFDrawStringRawSprite(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
+    static void drawStringRawSprite(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
     {
         CodepointView codepoints(text);
         for (auto codepoint : codepoints)
         {
-            TTFDrawCharacterSprite(rt, codepoint, info);
+            drawCharacterSprite(rt, codepoint, info);
         }
     }
 
 #ifndef DISABLE_TTF
 
-    static void TTFDrawStringRawTTF(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
+    static void drawStringRawTTF(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
     {
         if (!TTFInitialise())
             return;
@@ -488,7 +487,7 @@ namespace OpenRCT2::Drawing
         TTFFontDescriptor* fontDesc = TTFGetFontFromSpriteBase(info->fontStyle);
         if (fontDesc->font == nullptr)
         {
-            TTFDrawStringRawSprite(rt, text, info);
+            drawStringRawSprite(rt, text, info);
             return;
         }
 
@@ -516,7 +515,7 @@ namespace OpenRCT2::Drawing
 
 #endif // DISABLE_TTF
 
-    static void TTFProcessFormatCode(RenderTarget& rt, const FmtString::Token& token, TextDrawInfo* info)
+    static void processFormatCode(RenderTarget& rt, const FmtString::Token& token, TextDrawInfo* info)
     {
         switch (token.kind)
         {
@@ -548,17 +547,17 @@ namespace OpenRCT2::Drawing
                 break;
             case FormatToken::colourWindow1:
             {
-                ColourCharacterWindow(gCurrentWindowColours[0], info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                colourCharacterWindow(gCurrentWindowColours[0], info->colourFlags.has(ColourFlag::withOutline), info->palette);
                 break;
             }
             case FormatToken::colourWindow2:
             {
-                ColourCharacterWindow(gCurrentWindowColours[1], info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                colourCharacterWindow(gCurrentWindowColours[1], info->colourFlags.has(ColourFlag::withOutline), info->palette);
                 break;
             }
             case FormatToken::colourWindow3:
             {
-                ColourCharacterWindow(gCurrentWindowColours[2], info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                colourCharacterWindow(gCurrentWindowColours[2], info->colourFlags.has(ColourFlag::withOutline), info->palette);
                 break;
             }
             case FormatToken::inlineSprite:
@@ -579,14 +578,14 @@ namespace OpenRCT2::Drawing
                 if (FormatTokenIsColour(token.kind))
                 {
                     auto colourIndex = FormatTokenToTextColour(token.kind);
-                    ColourCharacter(colourIndex, info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                    colourCharacter(colourIndex, info->colourFlags.has(ColourFlag::withOutline), info->palette);
                 }
                 break;
         }
     }
 
 #ifndef DISABLE_TTF
-    static bool ShouldUseSpriteForCodepoint(char32_t codepoint)
+    static bool shouldUseSpriteForCodepoint(char32_t codepoint)
     {
         switch (codepoint)
         {
@@ -616,7 +615,7 @@ namespace OpenRCT2::Drawing
     }
 #endif // DISABLE_TTF
 
-    static void TTFProcessStringLiteral(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
+    static void processStringLiteral(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
     {
 #ifndef DISABLE_TTF
         bool isTTF = info->textDrawFlags.has(TextDrawFlag::ttf);
@@ -626,7 +625,7 @@ namespace OpenRCT2::Drawing
 
         if (!isTTF)
         {
-            TTFDrawStringRawSprite(rt, text, info);
+            drawStringRawSprite(rt, text, info);
         }
 #ifndef DISABLE_TTF
         else
@@ -636,7 +635,7 @@ namespace OpenRCT2::Drawing
             for (auto it = codepoints.begin(); it != codepoints.end(); it++)
             {
                 auto codepoint = *it;
-                if (ShouldUseSpriteForCodepoint(codepoint))
+                if (shouldUseSpriteForCodepoint(codepoint))
                 {
                     if (ttfRunIndex.has_value())
                     {
@@ -649,7 +648,7 @@ namespace OpenRCT2::Drawing
         #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     #endif
                         auto len = it.GetIndex() - ttfRunIndex.value();
-                        TTFDrawStringRawTTF(rt, text.substr(ttfRunIndex.value(), len), info);
+                        drawStringRawTTF(rt, text.substr(ttfRunIndex.value(), len), info);
     #if defined(__GNUC__) && !defined(__clang__)
         #pragma GCC diagnostic pop
     #endif
@@ -657,7 +656,7 @@ namespace OpenRCT2::Drawing
                     }
 
                     // Draw the sprite font glyph
-                    TTFDrawCharacterSprite(rt, codepoint, info);
+                    drawCharacterSprite(rt, codepoint, info);
                 }
                 else
                 {
@@ -672,24 +671,24 @@ namespace OpenRCT2::Drawing
             {
                 // Final TTF run
                 auto len = text.size() - *ttfRunIndex;
-                TTFDrawStringRawTTF(rt, text.substr(ttfRunIndex.value(), len), info);
+                drawStringRawTTF(rt, text.substr(ttfRunIndex.value(), len), info);
             }
         }
 #endif // DISABLE_TTF
     }
 
-    static void TTFProcessStringCodepoint(RenderTarget& rt, codepoint_t codepoint, TextDrawInfo* info)
+    static void processStringCodepoint(RenderTarget& rt, codepoint_t codepoint, TextDrawInfo* info)
     {
         char buffer[8]{};
         UTF8WriteCodepoint(buffer, codepoint);
-        TTFProcessStringLiteral(rt, buffer, info);
+        processStringLiteral(rt, buffer, info);
     }
 
-    static void TTFProcessString(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
+    static void processString(RenderTarget& rt, std::string_view text, TextDrawInfo* info)
     {
         if (info->textDrawFlags.has(TextDrawFlag::noFormatting))
         {
-            TTFProcessStringLiteral(rt, text, info);
+            processStringLiteral(rt, text, info);
             info->maxX = std::max(info->maxX, info->x);
             info->maxY = std::max(info->maxY, info->y);
         }
@@ -700,16 +699,16 @@ namespace OpenRCT2::Drawing
             {
                 if (token.IsLiteral())
                 {
-                    TTFProcessStringLiteral(rt, token.text, info);
+                    processStringLiteral(rt, token.text, info);
                 }
                 else if (token.IsCodepoint())
                 {
                     auto codepoint = token.GetCodepoint();
-                    TTFProcessStringCodepoint(rt, codepoint, info);
+                    processStringCodepoint(rt, codepoint, info);
                 }
                 else
                 {
-                    TTFProcessFormatCode(rt, token, info);
+                    processFormatCode(rt, token, info);
                 }
                 info->maxX = std::max(info->maxX, info->x);
                 info->maxY = std::max(info->maxY, info->y);
@@ -717,14 +716,14 @@ namespace OpenRCT2::Drawing
         }
     }
 
-    static void TTFProcessInitialColour(ColourWithFlags colour, TextDrawInfo* info)
+    static void processInitialColour(ColourWithFlags colour, TextDrawInfo* info)
     {
         if (colour.colour != OpenRCT2::Drawing::kColourNull)
         {
             info->colourFlags = colour.flags;
             if (!colour.flags.has(ColourFlag::inset))
             {
-                ColourCharacterWindow(colour.colour, info->colourFlags.has(ColourFlag::withOutline), info->palette);
+                colourCharacterWindow(colour.colour, info->colourFlags.has(ColourFlag::withOutline), info->palette);
             }
             else
             {
@@ -775,8 +774,8 @@ namespace OpenRCT2::Drawing
         }
 
         info.palette = gTextPalette;
-        TTFProcessInitialColour(colour, &info);
-        TTFProcessString(rt, text, &info);
+        processInitialColour(colour, &info);
+        processString(rt, text, &info);
         gTextPalette = info.palette;
 
         rt.lastStringPos = { info.x, info.y };
@@ -805,7 +804,7 @@ namespace OpenRCT2::Drawing
         }
 
         RenderTarget dummy{};
-        TTFProcessString(dummy, text, &info);
+        processString(dummy, text, &info);
 
         return info.maxX;
     }
@@ -814,7 +813,7 @@ namespace OpenRCT2::Drawing
      *
      *  rct2: 0x00682F28
      */
-    void GfxDrawStringWithYOffsets(
+    void drawStringWithYOffsets(
         RenderTarget& rt, const utf8* text, ColourWithFlags colour, const ScreenCoordsXY& coords, const int8_t* yOffsets,
         bool forceSpriteFont, FontStyle fontStyle)
     {
@@ -834,14 +833,14 @@ namespace OpenRCT2::Drawing
         }
 
         info.palette = gTextPalette;
-        TTFProcessInitialColour(colour, &info);
-        TTFProcessString(rt, text, &info);
+        processInitialColour(colour, &info);
+        processString(rt, text, &info);
         gTextPalette = info.palette;
 
         rt.lastStringPos = { info.x, info.y };
     }
 
-    u8string ShortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle)
+    u8string shortenPath(const u8string& path, int32_t availableWidth, FontStyle fontStyle)
     {
         if (getStringWidth(path, fontStyle) <= availableWidth)
         {

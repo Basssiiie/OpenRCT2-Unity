@@ -744,7 +744,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 const auto& widget = widgets[WIDX_PARENT_FOLDER];
                 const auto pathWidth = widget.left - 8;
-                const auto shortPath = ShortenPath(_directory, pathWidth, FontStyle::medium);
+                const auto shortPath = shortenPath(_directory, pathWidth, FontStyle::medium);
 
                 // Format text
                 std::string buffer;

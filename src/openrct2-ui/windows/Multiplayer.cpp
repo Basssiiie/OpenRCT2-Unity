@@ -476,7 +476,7 @@ namespace OpenRCT2::Ui::Windows
             // Server name is displayed word-wrapped, so figure out how high it will be.
             {
                 int32_t numLines;
-                GfxWrapString(Network::GetServerName(), baseWidth, FontStyle::medium, nullptr, &numLines);
+                wrapString(Network::GetServerName(), baseWidth, FontStyle::medium, nullptr, &numLines);
                 baseHeight += (numLines + 1) * lineHeight + (kListRowHeight / 2);
             }
 
@@ -485,7 +485,7 @@ namespace OpenRCT2::Ui::Windows
             if (!descString.empty())
             {
                 int32_t numLines;
-                GfxWrapString(descString, baseWidth, FontStyle::medium, nullptr, &numLines);
+                wrapString(descString, baseWidth, FontStyle::medium, nullptr, &numLines);
                 baseHeight += (numLines + 1) * lineHeight + (kListRowHeight / 2);
             }
 

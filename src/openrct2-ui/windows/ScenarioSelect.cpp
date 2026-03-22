@@ -363,7 +363,7 @@ namespace OpenRCT2::Ui::Windows
             // Scenario path
             if (Config::Get().general.debuggingTools)
             {
-                const auto shortPath = ShortenPath(scenario->Path, width - 6 - kTabWidth, FontStyle::medium);
+                const auto shortPath = shortenPath(scenario->Path, width - 6 - kTabWidth, FontStyle::medium);
 
                 auto ft = Formatter();
                 ft.Add<utf8*>(shortPath.c_str());

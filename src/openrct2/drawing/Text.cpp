@@ -33,7 +33,7 @@ public:
     StaticLayout(u8string_view source, const TextPaint& paint, int32_t width)
         : Paint(paint)
     {
-        MaxWidth = GfxWrapString(source, width, paint.FontStyle, &Buffer, &LineCount);
+        MaxWidth = wrapString(source, width, paint.FontStyle, &Buffer, &LineCount);
         LineCount += 1;
         LineHeight = FontGetLineHeight(paint.FontStyle);
     }
@@ -146,7 +146,7 @@ void DrawTextEllipsised(
 {
     utf8 buffer[512];
     FormatStringLegacy(buffer, sizeof(buffer), format, ft.Data());
-    GfxClipString(buffer, width, textPaint.FontStyle);
+    clipString(buffer, width, textPaint.FontStyle);
     DrawText(rt, coords, buffer, textPaint);
 }
 
@@ -155,7 +155,7 @@ void DrawTextEllipsised(
 {
     utf8 buffer[512]{};
     string.copy(buffer, std::min(string.length(), sizeof(buffer) - 1));
-    GfxClipString(buffer, width, textPaint.FontStyle);
+    clipString(buffer, width, textPaint.FontStyle);
     DrawText(rt, coords, string, textPaint);
 }
 
