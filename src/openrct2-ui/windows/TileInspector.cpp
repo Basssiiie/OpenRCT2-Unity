@@ -1070,8 +1070,8 @@ static uint64_t PageDisabledWidgets[] = {
             }
             else
             {
-                DrawText(rt, screenCoords + ScreenCoordsXY(43 - 7, yOffset), { colours[1] }, "-");
-                DrawText(rt, screenCoords + ScreenCoordsXY(113 - 7, yOffset), { colours[1] }, "-");
+                DrawTextBasic(rt, screenCoords + ScreenCoordsXY(43 - 7, yOffset), "-", { colours[1] });
+                DrawTextBasic(rt, screenCoords + ScreenCoordsXY(113 - 7, yOffset), "-", { colours[1] });
             }
 
             if (windowTileInspectorSelectedIndex != -1)

@@ -418,7 +418,7 @@ namespace OpenRCT2::Ui::Windows
 
                 // Draw number of players
                 screenCoords.x = right - numPlayersStringWidth;
-                DrawText(rt, screenCoords + ScreenCoordsXY{ 0, 3 }, { colours[1] }, players);
+                DrawTextBasic(rt, screenCoords + ScreenCoordsXY{ 0, 3 }, players, { colours[1] });
 
                 screenCoords.y += kItemHeight;
             }

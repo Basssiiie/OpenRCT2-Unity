@@ -292,8 +292,7 @@ namespace OpenRCT2::Ui::Windows
                         _buffer += Network::GetPlayerName(player);
                     }
                     screenCoords.x = 0;
-                    GfxClipString(_buffer.data(), 230, FontStyle::medium);
-                    DrawText(rt, screenCoords, { colour }, _buffer.c_str());
+                    DrawTextEllipsised(rt, screenCoords, 230, _buffer, { colour });
 
                     // Draw group name
                     _buffer.resize(0);
@@ -303,8 +302,7 @@ namespace OpenRCT2::Ui::Windows
                         _buffer += "{BLACK}";
                         screenCoords.x = 173;
                         _buffer += Network::GetGroupName(group);
-                        GfxClipString(_buffer.data(), 80, FontStyle::medium);
-                        DrawText(rt, screenCoords, { colour }, _buffer.c_str());
+                        DrawTextEllipsised(rt, screenCoords, 80, _buffer, { colour });
                     }
 
                     // Draw last action
@@ -341,7 +339,7 @@ namespace OpenRCT2::Ui::Windows
                     _buffer += pingBuffer;
 
                     screenCoords.x = 356;
-                    DrawText(rt, screenCoords, { colour }, _buffer.c_str());
+                    DrawTextBasic(rt, screenCoords, _buffer, { colour });
                 }
                 screenCoords.y += kScrollableRowHeight;
                 listPosition++;
@@ -421,7 +419,7 @@ namespace OpenRCT2::Ui::Windows
                         if (Network::CanPerformAction(groupindex, static_cast<Network::Permission>(i)))
                         {
                             screenCoords.x = 0;
-                            DrawText(rt, screenCoords, {}, u8"{WINDOW_COLOUR_2}✓");
+                            DrawTextBasic(rt, screenCoords, u8"{WINDOW_COLOUR_2}✓");
                         }
                     }
 

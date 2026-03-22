@@ -56,7 +56,7 @@ public:
         const utf8* buffer = Buffer.data();
         for (int32_t line = 0; line < LineCount; ++line)
         {
-            DrawText(rt, lineCoords, tempPaint, buffer);
+            DrawTextBasic(rt, lineCoords, buffer, tempPaint);
             tempPaint.Colour = OpenRCT2::Drawing::kColourNull;
             buffer = GetStringEnd(buffer) + 1;
             lineCoords.y += LineHeight;
@@ -79,7 +79,8 @@ public:
     }
 };
 
-void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& paint, u8string_view text, bool noFormatting)
+static void DrawText(
+    RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& paint, u8string_view text, bool noFormatting = false)
 {
     int32_t width = noFormatting ? GfxGetStringWidthNoFormatting(text, paint.FontStyle)
                                  : GfxGetStringWidth(text, paint.FontStyle);
@@ -111,6 +112,11 @@ void DrawText(RenderTarget& rt, const ScreenCoordsXY& coords, const TextPaint& p
                 gTextPalette.sunnyOutline);
         }
     }
+}
+
+void DrawTextNoFormatting(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view string, TextPaint textPaint)
+{
+    DrawText(rt, coords, textPaint, string, true);
 }
 
 void DrawTextBasic(RenderTarget& rt, const ScreenCoordsXY& coords, StringId format, TextPaint textPaint)

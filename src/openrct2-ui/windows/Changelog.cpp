@@ -187,7 +187,7 @@ namespace OpenRCT2::Ui::Windows
                 if (screenCoords.y + lineHeight < rt.y || screenCoords.y >= rt.y + rt.height)
                     continue;
 
-                DrawText(rt, screenCoords, { colours[0] }, line.c_str());
+                DrawTextBasic(rt, screenCoords, line, { colours[0] });
             }
         }
 

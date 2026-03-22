@@ -244,7 +244,7 @@ namespace OpenRCT2::Ui::Windows
             for (int32_t line = 0; line <= no_lines; line++)
             {
                 screenCoords.x = windowPos.x + 12;
-                DrawText(rt, screenCoords, { colours[1], FontStyle::medium, TextAlignment::left }, wrapPointer, true);
+                DrawTextNoFormatting(rt, screenCoords, wrapPointer, { colours[1], FontStyle::medium, TextAlignment::left });
 
                 size_t string_length = GetStringSize(wrapPointer) - 1;
                 if (!cur_drawn && (textInput->SelectionStart <= char_count + string_length))
