@@ -119,6 +119,13 @@ namespace OpenRCT2::Platform
         u8"RCT Classic+.app" PATH_SEPARATOR "Contents" PATH_SEPARATOR "Resources";
     // clang-format on
 
+#ifdef __ANDROID__
+    // Android asset path prefix
+    constexpr u8string_view kAndroidAssetPathPrefix = u8"/android_asset/";
+    // Android asset path must end with slash
+    static_assert(kAndroidAssetPathPrefix.back() == '/', "kAndroidAssetPathPrefix must end with a slash");
+#endif // __ANDROID__
+
     struct AssetFileOpenResult
     {
         AssetCheckResult result;
@@ -192,7 +199,14 @@ namespace OpenRCT2::Platform
     bool SetupUriProtocol();
 #endif
 #ifdef __ANDROID__
+    struct AssetInfo
+    {
+        std::string Path;
+        uint64_t Size;
+    };
     jclass AndroidFindClass(JNIEnv* env, std::string_view name);
+    void* GetAssetManager();
+    const std::vector<AssetInfo>& GetAssetList();
 #endif
 
     bool IsRunningInWine();

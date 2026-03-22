@@ -91,6 +91,7 @@ namespace OpenRCT2::Platform
         return outTime;
     }
 
+#ifndef __ANDROID__
     AssetCheckResult CheckAssetDirectoryExists([[maybe_unused]] u8string_view path)
     {
         return AssetCheckResult::NotApplicable;
@@ -133,6 +134,7 @@ namespace OpenRCT2::Platform
     {
         return {};
     }
+#endif
 
     std::optional<RCT2Variant> classifyGamePath(std::string_view path)
     {
