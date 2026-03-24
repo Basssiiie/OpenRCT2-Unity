@@ -1,10 +1,10 @@
 /*
  * QuickJS Javascript Engine
  *
- * Copyright (c) 2017-2024 Fabrice Bellard
+ * Copyright (c) 2017-2026 Fabrice Bellard
  * Copyright (c) 2017-2024 Charlie Gordon
- * Copyright (c) 2023-2025 Ben Noordhuis
- * Copyright (c) 2023-2025 Saúl Ibarra Corretgé
+ * Copyright (c) 2023-2026 Ben Noordhuis
+ * Copyright (c) 2023-2026 Saúl Ibarra Corretgé
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -545,20 +545,20 @@ JS_EXTERN JSValue JS_GetFunctionProto(JSContext *ctx);
 /* the following functions are used to select the intrinsic object to
    save memory */
 JS_EXTERN JSContext *JS_NewContextRaw(JSRuntime *rt);
-JS_EXTERN void JS_AddIntrinsicBaseObjects(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicDate(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicEval(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicBaseObjects(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicDate(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicEval(JSContext *ctx);
 JS_EXTERN void JS_AddIntrinsicRegExpCompiler(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicRegExp(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicJSON(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicProxy(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicMapSet(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicTypedArrays(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicPromise(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicBigInt(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicWeakRef(JSContext *ctx);
-JS_EXTERN void JS_AddPerformance(JSContext *ctx);
-JS_EXTERN void JS_AddIntrinsicDOMException(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicRegExp(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicJSON(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicProxy(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicMapSet(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicTypedArrays(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicPromise(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicBigInt(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicWeakRef(JSContext *ctx);
+JS_EXTERN int JS_AddPerformance(JSContext *ctx);
+JS_EXTERN int JS_AddIntrinsicDOMException(JSContext *ctx);
 
 /* for equality comparisons and sameness */
 JS_EXTERN int JS_IsEqual(JSContext *ctx, JSValueConst op1, JSValueConst op2);
@@ -1061,6 +1061,10 @@ JS_EXTERN JSValue JS_NewArrayBufferCopy(JSContext *ctx, const uint8_t *buf, size
 JS_EXTERN void JS_DetachArrayBuffer(JSContext *ctx, JSValueConst obj);
 JS_EXTERN uint8_t *JS_GetArrayBuffer(JSContext *ctx, size_t *psize, JSValueConst obj);
 JS_EXTERN bool JS_IsArrayBuffer(JSValueConst obj);
+// returns true or false if obj is an ArrayBuffer, -1 otherwise
+JS_EXTERN int JS_IsImmutableArrayBuffer(JSValueConst obj);
+// returns 0 if obj is an ArrayBuffer, -1 otherwise
+JS_EXTERN int JS_SetImmutableArrayBuffer(JSValueConst obj, bool immutable);
 JS_EXTERN uint8_t *JS_GetUint8Array(JSContext *ctx, size_t *psize, JSValueConst obj);
 
 typedef enum JSTypedArrayEnum {
@@ -1111,6 +1115,7 @@ JS_EXTERN JSPromiseStateEnum JS_PromiseState(JSContext *ctx,
                                              JSValueConst promise);
 JS_EXTERN JSValue JS_PromiseResult(JSContext *ctx, JSValueConst promise);
 JS_EXTERN bool JS_IsPromise(JSValueConst val);
+JS_EXTERN JSValue JS_NewSettledPromise(JSContext *ctx, bool is_reject, JSValueConst value);
 
 JS_EXTERN JSValue JS_NewSymbol(JSContext *ctx, const char *description, bool is_global);
 
@@ -1152,6 +1157,11 @@ typedef struct JSModuleDef JSModuleDef;
 typedef char *JSModuleNormalizeFunc(JSContext *ctx,
                                     const char *module_base_name,
                                     const char *module_name, void *opaque);
+typedef char *JSModuleNormalizeFunc2(JSContext *ctx,
+                                     const char *module_base_name,
+                                     const char *module_name,
+                                     JSValueConst attributes,
+                                     void *opaque);
 typedef JSModuleDef *JSModuleLoaderFunc(JSContext *ctx,
                                         const char *module_name, void *opaque);
 
@@ -1177,6 +1187,10 @@ JS_EXTERN void JS_SetModuleLoaderFunc2(JSRuntime *rt,
                                        JSModuleCheckSupportedImportAttributes *module_check_attrs,
                                        void *opaque);
 
+/* Set an attributes-aware module normalizer. Call after JS_SetModuleLoaderFunc2. */
+JS_EXTERN void JS_SetModuleNormalizeFunc2(JSRuntime *rt,
+                                          JSModuleNormalizeFunc2 *module_normalize);
+
 /* return the import.meta object of a module */
 JS_EXTERN JSValue JS_GetImportMeta(JSContext *ctx, JSModuleDef *m);
 JS_EXTERN JSAtom JS_GetModuleName(JSContext *ctx, JSModuleDef *m);
@@ -1193,7 +1207,6 @@ JS_EXTERN int JS_EnqueueJob(JSContext *ctx, JSJobFunc *job_func,
                             int argc, JSValueConst *argv);
 
 JS_EXTERN bool JS_IsJobPending(JSRuntime *rt);
-JS_EXTERN JSContext *JS_GetPendingJobContext(JSRuntime *rt);
 JS_EXTERN int JS_ExecutePendingJob(JSRuntime *rt, JSContext **pctx);
 
 /* Structure to retrieve (de)serialized SharedArrayBuffer objects. */
@@ -1272,7 +1285,7 @@ JS_EXTERN JSValue JS_NewCFunction2(JSContext *ctx, JSCFunction *func,
 JS_EXTERN JSValue JS_NewCFunction3(JSContext *ctx, JSCFunction *func,
                                    const char *name,
                                    int length, JSCFunctionEnum cproto, int magic,
-                                   JSValueConst proto_val);
+                                   JSValueConst proto_val, int n_fields);
 JS_EXTERN JSValue JS_NewCFunctionData(JSContext *ctx, JSCFunctionData *func,
                                       int length, int magic, int data_len,
                                       JSValueConst *data);
@@ -1301,8 +1314,8 @@ static inline JSValue JS_NewCFunctionMagic(JSContext *ctx, JSCFunctionMagic *fun
     ft.generic_magic = func;
     return JS_NewCFunction2(ctx, ft.generic, name, length, cproto, magic);
 }
-JS_EXTERN void JS_SetConstructor(JSContext *ctx, JSValueConst func_obj,
-                                 JSValueConst proto);
+JS_EXTERN int JS_SetConstructor(JSContext *ctx, JSValueConst func_obj,
+                                JSValueConst proto);
 
 /* C property definition */
 
@@ -1347,6 +1360,8 @@ typedef struct JSCFunctionListEntry {
 #define JS_DEF_PROP_UNDEFINED 7
 #define JS_DEF_OBJECT         8
 #define JS_DEF_ALIAS          9
+#define JS_DEF_PROP_SYMBOL   10
+#define JS_DEF_PROP_BOOL     11
 
 /* Note: c++ does not like nested designators */
 #define JS_CFUNC_DEF(name, length, func1) { name, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE, JS_DEF_CFUNC, 0, { .func = { length, JS_CFUNC_generic, { .generic = func1 } } } }
@@ -1363,6 +1378,8 @@ typedef struct JSCFunctionListEntry {
 #define JS_PROP_DOUBLE_DEF(name, val, prop_flags) { name, prop_flags, JS_DEF_PROP_DOUBLE, 0, { .f64 = val } }
 #define JS_PROP_U2D_DEF(name, val, prop_flags) { name, prop_flags, JS_DEF_PROP_DOUBLE, 0, { .u64 = val } }
 #define JS_PROP_UNDEFINED_DEF(name, prop_flags) { name, prop_flags, JS_DEF_PROP_UNDEFINED, 0, { .i32 = 0 } }
+#define JS_PROP_SYMBOL_DEF(name, val, prop_flags) { name, prop_flags, JS_DEF_PROP_SYMBOL, 0, { .i32 = val } }
+#define JS_PROP_BOOL_DEF(name, val, prop_flags) { name, prop_flags, JS_DEF_PROP_BOOL, 0, { .i32 = val } }
 #define JS_OBJECT_DEF(name, tab, len, prop_flags) { name, prop_flags, JS_DEF_OBJECT, 0, { .prop_list = { tab, len } } }
 #define JS_ALIAS_DEF(name, from) { name, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE, JS_DEF_ALIAS, 0, { .alias = { from, -1 } } }
 #define JS_ALIAS_BASE_DEF(name, from, base) { name, JS_PROP_WRITABLE | JS_PROP_CONFIGURABLE, JS_DEF_ALIAS, 0, { .alias = { from, base } } }
@@ -1390,8 +1407,8 @@ JS_EXTERN int JS_SetModuleExportList(JSContext *ctx, JSModuleDef *m,
 /* Version */
 
 #define QJS_VERSION_MAJOR 0
-#define QJS_VERSION_MINOR 12
-#define QJS_VERSION_PATCH 1
+#define QJS_VERSION_MINOR 13
+#define QJS_VERSION_PATCH 0
 #define QJS_VERSION_SUFFIX ""
 
 JS_EXTERN const char* JS_GetVersion(void);
