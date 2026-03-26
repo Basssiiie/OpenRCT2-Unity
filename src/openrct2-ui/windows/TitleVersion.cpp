@@ -13,6 +13,7 @@
 #include <openrct2/Version.h>
 #include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/interface/ColourWithFlags.h>
 #include <openrct2/ui/WindowManager.h>
 

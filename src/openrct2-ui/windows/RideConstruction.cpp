@@ -36,6 +36,7 @@
 #include <openrct2/config/Config.h>
 #include <openrct2/core/Numerics.hpp>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/interface/Viewport.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Formatting.h>

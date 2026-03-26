@@ -16,6 +16,7 @@
 #include <openrct2/SpriteIds.h>
 #include <openrct2/Version.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/StringIds.h>
 #include <openrct2/ui/UiContext.h>

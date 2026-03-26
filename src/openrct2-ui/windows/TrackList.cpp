@@ -23,6 +23,7 @@
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/IDrawingEngine.h>
 #include <openrct2/drawing/Rectangle.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatting.h>
 #include <openrct2/ride/RideConstruction.h>
 #include <openrct2/ride/RideData.h>

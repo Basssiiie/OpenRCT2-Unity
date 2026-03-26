@@ -19,6 +19,7 @@
 #include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/terraform/ClearAction.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/ui/WindowManager.h>
 #include <openrct2/world/MapSelection.h>

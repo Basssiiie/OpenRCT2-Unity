@@ -22,6 +22,7 @@
 #include <openrct2/actions/peep/StaffSetPatrolAreaAction.h>
 #include <openrct2/core/String.hpp>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/entity/EntityRegistry.h>
 #include <openrct2/entity/PatrolArea.h>
 #include <openrct2/entity/Staff.h>

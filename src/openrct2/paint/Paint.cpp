@@ -16,6 +16,7 @@
 #include "../core/Numerics.hpp"
 #include "../drawing/Drawing.String.h"
 #include "../drawing/Drawing.h"
+#include "../drawing/Font.h"
 #include "../interface/Viewport.h"
 #include "../localisation/Currency.h"
 #include "../localisation/Formatting.h"

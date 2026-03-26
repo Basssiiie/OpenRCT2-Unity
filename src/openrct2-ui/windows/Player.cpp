@@ -19,6 +19,7 @@
 #include <openrct2/actions/network/PlayerKickAction.h>
 #include <openrct2/actions/network/PlayerSetGroupAction.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/network/Network.h>
 #include <openrct2/network/NetworkAction.h>

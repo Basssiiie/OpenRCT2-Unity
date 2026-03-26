@@ -14,6 +14,7 @@
 #include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/peep/StaffFireAction.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/entity/EntityRegistry.h>
 #include <openrct2/entity/Staff.h>
 #include <openrct2/localisation/Formatter.h>

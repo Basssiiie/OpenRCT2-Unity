@@ -14,6 +14,7 @@
 #include "../core/IStream.hpp"
 #include "../core/Json.hpp"
 #include "../drawing/Drawing.h"
+#include "../drawing/Text.h"
 #include "../localisation/Formatter.h"
 #include "../localisation/StringIds.h"
 #include "../world/Location.hpp"

@@ -16,6 +16,7 @@
 #include "../core/Json.hpp"
 #include "../drawing/Drawing.h"
 #include "../drawing/ImageImporter.h"
+#include "../drawing/Text.h"
 #include "../localisation/Formatter.h"
 #include "../localisation/Language.h"
 #include "../localisation/StringIds.h"

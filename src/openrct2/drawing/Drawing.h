@@ -16,13 +16,10 @@
 #include "ColourPalette.h"
 #include "Drawing.Sprite.h"
 #include "FilterPaletteIds.h"
-#include "Font.h"
 #include "G1Element.h"
 #include "ImageId.hpp"
 #include "PaletteMap.h"
 #include "RenderTarget.h"
-#include "Text.h"
-#include "TextColour.h"
 
 #include <array>
 #include <memory>

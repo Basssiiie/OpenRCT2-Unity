@@ -20,6 +20,7 @@
 #include "../core/Path.hpp"
 #include "../drawing/Drawing.h"
 #include "../drawing/Image.h"
+#include "../drawing/Text.h"
 #include "../localisation/Formatter.h"
 #include "../localisation/StringIds.h"
 #include "../ride/Ride.h"

@@ -23,6 +23,7 @@
 #include <openrct2/audio/Audio.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/management/Research.h>
 #include <openrct2/scenario/Scenario.h>
 #include <openrct2/scripting/ScriptEngine.h>

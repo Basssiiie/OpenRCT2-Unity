@@ -37,6 +37,7 @@
 #include <openrct2/core/Numerics.hpp>
 #include <openrct2/core/String.hpp>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/entity/Staff.h>
 #include <openrct2/interface/Chat.h>
 #include <openrct2/interface/ColourWithFlags.h>

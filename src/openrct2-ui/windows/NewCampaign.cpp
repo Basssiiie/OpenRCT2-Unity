@@ -18,6 +18,7 @@
 #include <openrct2/core/BitSet.hpp>
 #include <openrct2/core/String.hpp>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/management/Marketing.h>
 #include <openrct2/ride/Ride.h>

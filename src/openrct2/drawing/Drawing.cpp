@@ -23,8 +23,10 @@
 #include "../util/Util.h"
 #include "../world/Location.hpp"
 #include "../world/Weather.h"
+#include "Font.h"
 #include "LightFX.h"
 #include "Rectangle.h"
+#include "Text.h"
 
 #include <array>
 #include <cassert>

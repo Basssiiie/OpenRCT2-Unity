@@ -14,6 +14,7 @@
 #include <openrct2/actions/GameActionRunner.h>
 #include <openrct2/actions/ride/RideDemolishAction.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/ui/WindowManager.h>
 #include <openrct2/windows/Intent.h>
 #include <openrct2/world/Park.h>

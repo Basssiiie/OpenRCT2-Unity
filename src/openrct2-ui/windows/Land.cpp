@@ -25,6 +25,7 @@
 #include <openrct2/actions/terraform/LandSmoothAction.h>
 #include <openrct2/actions/terraform/SurfaceSetStyleAction.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/object/ObjectManager.h>
 #include <openrct2/object/TerrainEdgeObject.h>
