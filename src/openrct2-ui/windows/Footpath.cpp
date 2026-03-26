@@ -30,6 +30,7 @@
 #include <openrct2/audio/Audio.h>
 #include <openrct2/core/FlagHolder.hpp>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/network/NetworkAction.h>
 #include <openrct2/object/FootpathObject.h>
@@ -606,7 +607,7 @@ namespace OpenRCT2::Ui::Windows
                 // Draw build this... label
                 screenCoords = this->windowPos
                     + ScreenCoordsXY{ widgets[WIDX_CONSTRUCT].midX(), widgets[WIDX_CONSTRUCT].bottom - 23 };
-                DrawTextBasic(rt, screenCoords, STR_BUILD_THIS, {}, { TextAlignment::centre });
+                drawText(rt, screenCoords, STR_BUILD_THIS, {}, { TextAlignment::centre });
             }
 
             // Draw cost
@@ -618,7 +619,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     auto ft = Formatter();
                     ft.Add<money64>(_windowFootpathCost);
-                    DrawTextBasic(rt, screenCoords, STR_COST_LABEL, ft, { TextAlignment::centre });
+                    drawText(rt, screenCoords, STR_COST_LABEL, ft, { TextAlignment::centre });
                 }
             }
         }

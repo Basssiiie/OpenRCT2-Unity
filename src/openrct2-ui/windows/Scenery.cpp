@@ -39,6 +39,7 @@
 #include <openrct2/drawing/ColourMap.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/management/Research.h>
 #include <openrct2/network/Network.h>
@@ -909,13 +910,13 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<money64>(price);
 
                 // -14
-                DrawTextBasic(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ width - 0x1A, height - 13 }, STR_COST_LABEL, ft, { TextAlignment::right });
             }
 
             auto ft = Formatter();
             ft.Add<StringId>(name);
-            DrawTextEllipsised(rt, { windowPos.x + 3, windowPos.y + height - 23 }, width - 19, STR_BLACK_STRING, ft);
+            drawTextEllipsised(rt, { windowPos.x + 3, windowPos.y + height - 23 }, width - 19, STR_BLACK_STRING, ft);
 
             // Draw object author(s) if debugging tools are active
             if (Config::Get().general.debuggingTools)
@@ -937,7 +938,7 @@ namespace OpenRCT2::Ui::Windows
                     }
                     ft = Formatter();
                     ft.Add<const char*>(authorsString.c_str());
-                    DrawTextEllipsised(
+                    drawTextEllipsised(
                         rt, windowPos + ScreenCoordsXY{ 3, height - 13 }, width - 19,
                         (sceneryObject->GetAuthors().size() == 1 ? STR_SCENERY_AUTHOR : STR_SCENERY_AUTHOR_PLURAL), ft);
                 }

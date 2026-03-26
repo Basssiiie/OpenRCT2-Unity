@@ -32,9 +32,11 @@
 #include <openrct2/core/File.h>
 #include <openrct2/core/String.hpp>
 #include <openrct2/drawing/ColourMap.h>
+#include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/IDrawingEngine.h>
 #include <openrct2/drawing/ScrollingText.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Currency.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Formatting.h>
@@ -1029,7 +1031,7 @@ namespace OpenRCT2::Ui::Windows
         {
             auto ft = Formatter();
             ft.Add<int32_t>(static_cast<int32_t>(Config::Get().general.windowScale * 100));
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ widgets[WIDX_SCALE].left + 1, widgets[WIDX_SCALE].top + 1 },
                 STR_WINDOW_COLOUR_2_COMMA2DP32, ft, { colours[1] });
         }
@@ -2180,7 +2182,7 @@ namespace OpenRCT2::Ui::Windows
 
                 // Get 'Clear' button string width
                 auto clearLabel = LanguageGetString(STR_CLEAR_BUTTON);
-                auto clearLabelWidth = GfxGetStringWidth(clearLabel, FontStyle::medium) + 12;
+                auto clearLabelWidth = getStringWidth(clearLabel, FontStyle::medium) + 12;
 
                 widgets[WIDX_PATH_TO_RCT1_CLEAR].right = widgets[WIDX_PAGE_BACKGROUND].right - 12;
                 widgets[WIDX_PATH_TO_RCT1_CLEAR].left = widgets[WIDX_PATH_TO_RCT1_BROWSE].right - clearLabelWidth;
@@ -2193,7 +2195,7 @@ namespace OpenRCT2::Ui::Windows
 
                 // Get 'Browse' button string width
                 auto browseLabel = LanguageGetString(STR_BROWSE);
-                auto browseLabelWidth = GfxGetStringWidth(browseLabel, FontStyle::medium) + 12;
+                auto browseLabelWidth = getStringWidth(browseLabel, FontStyle::medium) + 12;
 
                 widgets[WIDX_PATH_TO_RCT1_BROWSE].right = widgets[WIDX_PAGE_BACKGROUND].right - 12;
                 widgets[WIDX_PATH_TO_RCT1_BROWSE].left = widgets[WIDX_PATH_TO_RCT1_BROWSE].right - browseLabelWidth;
@@ -2220,7 +2222,7 @@ namespace OpenRCT2::Ui::Windows
         {
             auto ft = Formatter();
             ft.Add<int32_t>(Config::Get().general.autosaveAmount);
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ widgets[WIDX_AUTOSAVE_AMOUNT].left + 1, widgets[WIDX_AUTOSAVE_AMOUNT].top + 1 },
                 STR_WINDOW_COLOUR_2_COMMA32, ft, { colours[1] });
 
@@ -2238,7 +2240,7 @@ namespace OpenRCT2::Ui::Windows
             int32_t padding = widgetHeight > lineHeight ? (widgetHeight - lineHeight) / 2 : 0;
 
             auto screenCoords = windowPos + ScreenCoordsXY{ pathWidget.left + 1, pathWidget.top + padding };
-            DrawTextEllipsised(rt, screenCoords, pathWidget.width() - 1, STR_BLACK_STRING, ft);
+            drawTextEllipsised(rt, screenCoords, pathWidget.width() - 1, STR_BLACK_STRING, ft);
         }
 
         StringWithArgs AdvancedTooltip(WidgetIndex widgetIndex, StringId fallback)

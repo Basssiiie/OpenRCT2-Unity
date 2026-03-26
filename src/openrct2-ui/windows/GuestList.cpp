@@ -20,6 +20,7 @@
 #include <openrct2/drawing/ColourMap.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/entity/EntityList.h>
 #include <openrct2/entity/EntityRegistry.h>
 #include <openrct2/entity/Guest.h>
@@ -463,7 +464,7 @@ namespace OpenRCT2::Ui::Windows
 
             {
                 Formatter ft(_filterArguments.args);
-                DrawTextEllipsised(rt, screenCoords, 310, format, ft);
+                drawTextEllipsised(rt, screenCoords, 310, format, ft);
             }
 
             // Number of guests (list items)
@@ -472,7 +473,7 @@ namespace OpenRCT2::Ui::Windows
                 screenCoords = windowPos + ScreenCoordsXY{ 4, widgets[WIDX_GUEST_LIST].bottom + 2 };
                 auto ft = Formatter();
                 ft.Add<int32_t>(static_cast<int32_t>(_guestList.size()));
-                DrawTextBasic(
+                drawText(
                     rt, screenCoords, (_guestList.size() == 1 ? STR_FORMAT_NUM_GUESTS_SINGULAR : STR_FORMAT_NUM_GUESTS_PLURAL),
                     ft);
             }
@@ -673,7 +674,7 @@ namespace OpenRCT2::Ui::Windows
                     }
                     auto ft = Formatter();
                     peep->FormatNameTo(ft);
-                    DrawTextEllipsised(rt, { 0, y }, 113, format, ft);
+                    drawTextEllipsised(rt, { 0, y }, 113, format, ft);
 
                     switch (_selectedView)
                     {
@@ -688,7 +689,7 @@ namespace OpenRCT2::Ui::Windows
                             // Action
                             ft = Formatter();
                             peep->FormatActionTo(ft);
-                            DrawTextEllipsised(rt, { 133, y }, 314, format, ft);
+                            drawTextEllipsised(rt, { 133, y }, 314, format, ft);
                             break;
                         case GuestViewType::Thoughts:
                             // For each thought
@@ -703,7 +704,7 @@ namespace OpenRCT2::Ui::Windows
 
                                 ft = Formatter();
                                 PeepThoughtSetFormatArgs(&thought, ft);
-                                DrawTextEllipsised(rt, { 118, y }, 329, format, ft, { FontStyle::small });
+                                drawTextEllipsised(rt, { 118, y }, 329, format, ft, { FontStyle::small });
                                 break;
                             }
                             break;
@@ -748,18 +749,18 @@ namespace OpenRCT2::Ui::Windows
                     // Draw small font if displaying guests
                     if (_selectedView == GuestViewType::Thoughts)
                     {
-                        DrawTextEllipsised(rt, { 0, y }, 414, format, ft, { FontStyle::small });
+                        drawTextEllipsised(rt, { 0, y }, 414, format, ft, { FontStyle::small });
                     }
                     else
                     {
-                        DrawTextEllipsised(rt, { 0, y }, 414, format, ft);
+                        drawTextEllipsised(rt, { 0, y }, 414, format, ft);
                     }
 
                     // Draw guest count
                     ft = Formatter();
                     ft.Add<StringId>(STR_GUESTS_COUNT_COMMA_SEP);
                     ft.Add<uint32_t>(group.NumGuests);
-                    DrawTextBasic(rt, { 326, y }, format, ft, { TextAlignment::right });
+                    drawText(rt, { 326, y }, format, ft, { TextAlignment::right });
                 }
                 y += kSummarisedGuestsRowHeight;
                 index++;

@@ -36,6 +36,7 @@
 #include <openrct2/config/Config.h>
 #include <openrct2/core/Numerics.hpp>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/interface/Viewport.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Formatting.h>
@@ -1721,14 +1722,14 @@ namespace OpenRCT2::Ui::Windows
             // Draw cost
             screenCoords = { windowPos.x + widget->midX(), windowPos.y + widget->bottom - 23 };
             if (_rideConstructionState != RideConstructionState::Place)
-                DrawTextBasic(rt, screenCoords, STR_BUILD_THIS, {}, { TextAlignment::centre });
+                drawText(rt, screenCoords, STR_BUILD_THIS, {}, { TextAlignment::centre });
 
             screenCoords.y += 11;
             if (_currentTrackPrice != kMoney64Undefined && !(getGameState().park.flags & PARK_FLAGS_NO_MONEY))
             {
                 auto ft = Formatter();
                 ft.Add<money64>(_currentTrackPrice);
-                DrawTextBasic(rt, screenCoords, STR_COST_LABEL, ft, { TextAlignment::centre });
+                drawText(rt, screenCoords, STR_COST_LABEL, ft, { TextAlignment::centre });
             }
         }
 

@@ -20,6 +20,7 @@
 #include <openrct2/core/UnitConversion.h>
 #include <openrct2/drawing/ColourMap.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/object/ObjectManager.h>
 #include <openrct2/object/TerrainEdgeObject.h>
@@ -619,13 +620,13 @@ namespace OpenRCT2::Ui::Windows
 
             {
                 auto textColour = isWidgetDisabled(WIDX_MAP_SIZE_Y) ? disabledColour : enabledColour;
-                DrawTextBasic(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_MAP_SIZE_Y].top + 1 }, STR_MAP_SIZE, {}, { textColour });
             }
 
             {
                 auto textColour = enabledColour;
-                DrawTextBasic(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_SOURCE].top + 1 }, STR_HEIGHTMAP_SOURCE, {},
                     { textColour });
             }
@@ -776,24 +777,24 @@ namespace OpenRCT2::Ui::Windows
             const auto textColour = _settings.trees ? enabledColour : disabledColour;
 
             // Tree to land ratio, label and value
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_LAND_RATIO].top + 1 }, STR_MAPGEN_TREE_TO_LAND_RATIO, {},
                 { textColour });
 
             auto ft = Formatter();
             ft.Add<uint16_t>(_settings.treeToLandRatio);
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ widgets[WIDX_TREE_LAND_RATIO].left + 1, widgets[WIDX_TREE_LAND_RATIO].top + 1 },
                 STR_MAPGEN_TREE_TO_LAND_RATIO_PCT, ft, { textColour });
 
             // Minimum tree altitude, label and value
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_ALTITUDE_MIN].top + 1 }, STR_MAPGEN_TREE_MIN_ALTITUDE, {},
                 { textColour });
 
             ft = Formatter();
             ft.Add<int16_t>(BaseZToMetres(_settings.minTreeAltitude));
-            DrawTextBasic(
+            drawText(
                 rt,
                 windowPos + ScreenCoordsXY{ widgets[WIDX_TREE_ALTITUDE_MIN].left + 1, widgets[WIDX_TREE_ALTITUDE_MIN].top + 1 },
                 STR_RIDE_LENGTH_ENTRY, ft, { textColour });
@@ -802,13 +803,13 @@ namespace OpenRCT2::Ui::Windows
             const bool isFlatland = _settings.algorithm == MapGenerator::Algorithm::blank;
             const auto maxTreeTextColour = _settings.trees && !isFlatland ? enabledColour : disabledColour;
 
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_ALTITUDE_MAX].top + 1 }, STR_MAPGEN_TREE_MAX_ALTITUDE, {},
                 { maxTreeTextColour });
 
             ft = Formatter();
             ft.Add<int16_t>(BaseZToMetres(_settings.maxTreeAltitude));
-            DrawTextBasic(
+            drawText(
                 rt,
                 windowPos + ScreenCoordsXY{ widgets[WIDX_TREE_ALTITUDE_MAX].left + 1, widgets[WIDX_TREE_ALTITUDE_MAX].top + 1 },
                 STR_RIDE_LENGTH_ENTRY, ft, { maxTreeTextColour });
@@ -876,23 +877,23 @@ namespace OpenRCT2::Ui::Windows
 
             const auto textColour = colours[1];
 
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_SIMPLEX_BASE_FREQ].top + 1 },
                 STR_MAPGEN_SIMPLEX_NOISE_BASE_FREQUENCY, {}, { textColour });
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_SIMPLEX_OCTAVES].top + 1 }, STR_MAPGEN_SIMPLEX_NOISE_OCTAVES,
                 {}, { textColour });
 
             auto ft = Formatter();
             ft.Add<uint16_t>(_settings.simplex_base_freq);
-            DrawTextBasic(
+            drawText(
                 rt,
                 windowPos + ScreenCoordsXY{ widgets[WIDX_SIMPLEX_BASE_FREQ].left + 1, widgets[WIDX_SIMPLEX_BASE_FREQ].top + 1 },
                 STR_WINDOW_COLOUR_2_COMMA2DP32, ft, { textColour });
 
             ft = Formatter();
             ft.Add<uint16_t>(_settings.simplex_octaves);
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ widgets[WIDX_SIMPLEX_OCTAVES].left + 1, widgets[WIDX_SIMPLEX_OCTAVES].top + 1 },
                 STR_COMMA16, ft, { textColour });
         }
@@ -989,7 +990,7 @@ namespace OpenRCT2::Ui::Windows
             const auto strengthColour = strengthDisabled ? disabledColour : enabledColour;
 
             // Smooth strength label
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 24, widgets[WIDX_HEIGHTMAP_STRENGTH].top + 1 }, STR_MAPGEN_SMOOTH_STRENGTH, {},
                 { strengthColour });
 
@@ -997,7 +998,7 @@ namespace OpenRCT2::Ui::Windows
             auto ft = Formatter();
             ft.Add<uint16_t>(_settings.smooth_strength);
             auto pos = ScreenCoordsXY{ widgets[WIDX_HEIGHTMAP_STRENGTH].left + 1, widgets[WIDX_HEIGHTMAP_STRENGTH].top + 1 };
-            DrawTextBasic(rt, windowPos + pos, STR_COMMA16, ft, { strengthColour });
+            drawText(rt, windowPos + pos, STR_COMMA16, ft, { strengthColour });
 
             // Current heightmap image filename
             ft = Formatter();
@@ -1008,7 +1009,7 @@ namespace OpenRCT2::Ui::Windows
 
             pos = ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_BROWSE].top + 1 };
             auto textWidth = widgets[WIDX_HEIGHTMAP_BROWSE].left - 11;
-            DrawTextEllipsised(rt, windowPos + pos, textWidth, STR_MAPGEN_CURRENT_HEIGHTMAP_FILE, ft);
+            drawTextEllipsised(rt, windowPos + pos, textWidth, STR_MAPGEN_CURRENT_HEIGHTMAP_FILE, ft);
         }
 
         void HeightmapTextInput(WidgetIndex widgetIndex, int32_t value)
@@ -1239,31 +1240,31 @@ namespace OpenRCT2::Ui::Windows
             const auto disabledColour = enabledColour.withFlag(ColourFlag::inset, true);
 
             // Floor texture label
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_FLOOR_TEXTURE].top + 1 }, STR_TERRAIN_LABEL, {},
                 { enabledColour });
 
             // Minimum land height label and value
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_LOW].top + 1 }, STR_MAPGEN_MIN_LAND_HEIGHT, {},
                 { enabledColour });
 
             auto ft = Formatter();
             ft.Add<int32_t>(BaseZToMetres(_settings.heightmapLow));
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ widgets[WIDX_HEIGHTMAP_LOW].left + 1, widgets[WIDX_HEIGHTMAP_LOW].top + 1 },
                 STR_RIDE_LENGTH_ENTRY, ft, { enabledColour });
 
             const auto maxLandColour = isWidgetDisabled(WIDX_HEIGHTMAP_HIGH) ? disabledColour : enabledColour;
 
             // Maximum land height label and value
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_HIGH].top + 1 }, STR_MAPGEN_MAX_LAND_HEIGHT, {},
                 { maxLandColour });
 
             ft = Formatter();
             ft.Add<int32_t>(BaseZToMetres(_settings.heightmapHigh));
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ widgets[WIDX_HEIGHTMAP_HIGH].left + 1, widgets[WIDX_HEIGHTMAP_HIGH].top + 1 },
                 STR_RIDE_LENGTH_ENTRY, ft, { maxLandColour });
         }
@@ -1347,13 +1348,13 @@ namespace OpenRCT2::Ui::Windows
 
             const auto textColour = colours[1];
 
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_WATER_LEVEL].top + 1 }, STR_WATER_LEVEL_LABEL, {},
                 { textColour });
 
             auto ft = Formatter();
             ft.Add<int32_t>(BaseZToMetres(_settings.waterLevel));
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ widgets[WIDX_WATER_LEVEL].left + 1, widgets[WIDX_WATER_LEVEL].top + 1 },
                 STR_RIDE_LENGTH_ENTRY, ft, { colours[1] });
         }

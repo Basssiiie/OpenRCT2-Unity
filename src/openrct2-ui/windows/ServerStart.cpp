@@ -19,6 +19,7 @@
     #include <openrct2/config/Config.h>
     #include <openrct2/core/String.hpp>
     #include <openrct2/drawing/Drawing.h>
+    #include <openrct2/drawing/Text.h>
     #include <openrct2/interface/Chat.h>
     #include <openrct2/network/Network.h>
     #include <openrct2/ui/WindowManager.h>
@@ -236,18 +237,15 @@ namespace OpenRCT2::Ui::Windows
         void onDraw(Drawing::RenderTarget& rt) override
         {
             drawWidgets(rt);
-            DrawTextBasic(rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PORT_INPUT].top }, STR_PORT, {}, { colours[1] });
-            DrawTextBasic(
-                rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_NAME_INPUT].top }, STR_SERVER_NAME, {}, { colours[1] });
-            DrawTextBasic(
+            drawText(rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PORT_INPUT].top }, STR_PORT, {}, { colours[1] });
+            drawText(rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_NAME_INPUT].top }, STR_SERVER_NAME, {}, { colours[1] });
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_DESCRIPTION_INPUT].top }, STR_SERVER_DESCRIPTION, {},
                 { colours[1] });
-            DrawTextBasic(
+            drawText(
                 rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_GREETING_INPUT].top }, STR_SERVER_GREETING, {}, { colours[1] });
-            DrawTextBasic(
-                rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PASSWORD_INPUT].top }, STR_PASSWORD, {}, { colours[1] });
-            DrawTextBasic(
-                rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_MAXPLAYERS].top }, STR_MAX_PLAYERS, {}, { colours[1] });
+            drawText(rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PASSWORD_INPUT].top }, STR_PASSWORD, {}, { colours[1] });
+            drawText(rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_MAXPLAYERS].top }, STR_MAX_PLAYERS, {}, { colours[1] });
         }
 
     private:

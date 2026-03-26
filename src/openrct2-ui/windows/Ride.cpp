@@ -42,8 +42,10 @@
 #include <openrct2/core/String.hpp>
 #include <openrct2/core/UnitConversion.h>
 #include <openrct2/drawing/ColourMap.h>
+#include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/entity/EntityList.h>
 #include <openrct2/entity/Staff.h>
 #include <openrct2/localisation/Currency.h>
@@ -2208,7 +2210,7 @@ namespace OpenRCT2::Ui::Windows
             ft.Add<const utf8*>(item.text);
 
             // Draw text label
-            DrawTextEllipsised(rt, ScreenCoordsXY{ 2, yOffset }, ddWidth - 7, formatString, ft, { colour });
+            drawTextEllipsised(rt, ScreenCoordsXY{ 2, yOffset }, ddWidth - 7, formatString, ft, { colour });
 
             // Draw icon in front of the label
             auto stationObjectIndex = item.value;
@@ -2716,7 +2718,7 @@ namespace OpenRCT2::Ui::Windows
             }
 
             auto* widget = &widgets[WIDX_VIEW];
-            DrawTextBasic(
+            drawText(
                 rt, { windowPos.x + (widget->left + widget->right - 11) / 2, windowPos.y + widget->textTop() },
                 STR_WINDOW_COLOUR_2_STRINGID, ft, { TextAlignment::centre });
 
@@ -2724,7 +2726,7 @@ namespace OpenRCT2::Ui::Windows
             ft = Formatter();
             widget = &widgets[WIDX_STATUS];
             StringId rideStatus = GetStatus(ft);
-            DrawTextEllipsised(
+            drawTextEllipsised(
                 rt, windowPos + ScreenCoordsXY{ (widget->left + widget->right) / 2, widget->top }, widget->width() - 1,
                 rideStatus, ft, { TextAlignment::centre });
         }
@@ -2969,13 +2971,13 @@ namespace OpenRCT2::Ui::Windows
             // Description
             auto ft = Formatter();
             ft.Add<StringId>(rideEntry->naming.Description);
-            screenCoords.y += DrawTextWrapped(rt, screenCoords, 300, STR_BLACK_STRING, ft, { TextAlignment::left });
+            screenCoords.y += drawTextWrapped(rt, screenCoords, 300, STR_BLACK_STRING, ft, { TextAlignment::left });
             screenCoords.y += 2;
 
             // Capacity
             ft = Formatter();
             ft.Add<StringId>(rideEntry->capacity);
-            DrawTextBasic(rt, screenCoords, STR_CAPACITY, ft);
+            drawText(rt, screenCoords, STR_CAPACITY, ft);
 
             // Excitement Factor
             if (rideEntry->excitement_multiplier != 0)
@@ -2986,7 +2988,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<int16_t>(abs(rideEntry->excitement_multiplier));
                 StringId stringId = rideEntry->excitement_multiplier > 0 ? STR_EXCITEMENT_FACTOR
                                                                          : STR_EXCITEMENT_FACTOR_NEGATIVE;
-                DrawTextBasic(rt, screenCoords, stringId, ft);
+                drawText(rt, screenCoords, stringId, ft);
             }
 
             // Intensity Factor
@@ -3001,7 +3003,7 @@ namespace OpenRCT2::Ui::Windows
                 ft = Formatter();
                 ft.Add<int16_t>(abs(rideEntry->intensity_multiplier));
                 StringId stringId = rideEntry->intensity_multiplier > 0 ? STR_INTENSITY_FACTOR : STR_INTENSITY_FACTOR_NEGATIVE;
-                DrawTextBasic(rt, screenCoords, stringId, ft);
+                drawText(rt, screenCoords, stringId, ft);
 
                 if (lineHeight != 10)
                     screenCoords.x -= 150;
@@ -3015,7 +3017,7 @@ namespace OpenRCT2::Ui::Windows
                 ft = Formatter();
                 ft.Add<int16_t>(abs(rideEntry->nausea_multiplier));
                 StringId stringId = rideEntry->nausea_multiplier > 0 ? STR_NAUSEA_FACTOR : STR_NAUSEA_FACTOR_NEGATIVE;
-                DrawTextBasic(rt, screenCoords, stringId, ft);
+                drawText(rt, screenCoords, stringId, ft);
             }
 
             const auto minimumPreviewStart = screenCoords.y - windowPos.y + kListRowHeight + 5;
@@ -3785,7 +3787,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<uint16_t>(ride->numBlockBrakes + ride->numStations);
                 auto underWidget = ride->mode == RideMode::poweredLaunchBlockSectioned ? WIDX_MODE_TWEAK : WIDX_MODE;
-                DrawTextBasic(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ 21, widgets[underWidget].bottom + 3 }, STR_BLOCK_SECTIONS, ft,
                     { Drawing::Colour::black });
             }
@@ -4122,21 +4124,21 @@ namespace OpenRCT2::Ui::Windows
             // Inspection label
             widget = &widgets[WIDX_INSPECTION_INTERVAL];
             screenCoords = windowPos + ScreenCoordsXY{ 4, widget->top + 1 };
-            DrawTextBasic(rt, screenCoords, STR_INSPECTION);
+            drawText(rt, screenCoords, STR_INSPECTION);
 
             // Reliability
             widget = &widgets[WIDX_RELIABILITY_BAR];
             screenCoords = windowPos + ScreenCoordsXY{ 4, widget->top + 1 };
             auto ft = Formatter();
             ft.Add<uint16_t>(reliability);
-            DrawTextBasic(rt, screenCoords, STR_RELIABILITY_LABEL_1757, ft);
+            drawText(rt, screenCoords, STR_RELIABILITY_LABEL_1757, ft);
 
             // Down time
             widget = &widgets[WIDX_DOWN_TIME_BAR];
             screenCoords = windowPos + ScreenCoordsXY{ 4, widget->top + 1 };
             ft = Formatter();
             ft.Add<uint16_t>(downTime);
-            DrawTextBasic(rt, screenCoords, STR_DOWN_TIME_LABEL_1889, ft);
+            drawText(rt, screenCoords, STR_DOWN_TIME_LABEL_1889, ft);
             screenCoords.y += 30;
 
             // Last inspection
@@ -4150,7 +4152,7 @@ namespace OpenRCT2::Ui::Windows
 
             ft = Formatter();
             ft.Add<uint16_t>(ride->lastInspection);
-            DrawTextBasic(rt, screenCoords, stringId, ft);
+            drawText(rt, screenCoords, stringId, ft);
             screenCoords.y += 15;
 
             // Last / current breakdown
@@ -4160,7 +4162,7 @@ namespace OpenRCT2::Ui::Windows
             stringId = ride->flags.has(RideFlag::brokenDown) ? STR_CURRENT_BREAKDOWN : STR_LAST_BREAKDOWN;
             ft = Formatter();
             ft.Add<StringId>(RideBreakdownReasonNames[EnumValue(ride->breakdownReason)]);
-            DrawTextBasic(rt, screenCoords, stringId, ft);
+            drawText(rt, screenCoords, stringId, ft);
             screenCoords.y += 15;
 
             // Mechanic status
@@ -4198,7 +4200,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     if (stringId == STR_CALLING_MECHANIC || stringId == STR_NO_MECHANICS_ARE_HIRED_MESSAGE)
                     {
-                        DrawTextWrapped(rt, screenCoords, 280, stringId, {}, { TextAlignment::left });
+                        drawTextWrapped(rt, screenCoords, 280, stringId, {}, { TextAlignment::left });
                     }
                     else
                     {
@@ -4207,7 +4209,7 @@ namespace OpenRCT2::Ui::Windows
                         {
                             ft = Formatter();
                             staff->FormatNameTo(ft);
-                            DrawTextWrapped(rt, screenCoords, 280, stringId, ft, { TextAlignment::left });
+                            drawTextWrapped(rt, screenCoords, 280, stringId, ft, { TextAlignment::left });
                         }
                     }
                 }
@@ -5040,7 +5042,7 @@ namespace OpenRCT2::Ui::Windows
             auto* stationObj = ride->getStationObject();
             Formatter ft;
             ft.Add<StringId>(stationObj->NameStringId);
-            DrawTextEllipsised(clippedRT, { 19, 1 }, widget.width() - 12 - 19, STR_WINDOW_COLOUR_2_STRINGID, ft);
+            drawTextEllipsised(clippedRT, { 19, 1 }, widget.width() - 12 - 19, STR_WINDOW_COLOUR_2_STRINGID, ft);
         }
 
         void ColourOnDrawEntrancePreview(RenderTarget& rt, const Ride* ride, const Widget& widget)
@@ -5303,8 +5305,8 @@ namespace OpenRCT2::Ui::Windows
                 if (track->Name.empty())
                     continue;
 
-                auto nameWidth = GfxGetStringWidth(track->Name.c_str(), FontStyle::small);
-                auto composerWidth = GfxGetStringWidth(track->Composer.c_str(), FontStyle::small);
+                auto nameWidth = getStringWidth(track->Name.c_str(), FontStyle::small);
+                auto composerWidth = getStringWidth(track->Composer.c_str(), FontStyle::small);
                 newWidth = std::max(newWidth, nameWidth + composerWidth + 24);
             }
 
@@ -5386,7 +5388,7 @@ namespace OpenRCT2::Ui::Windows
 
             // 'Tracks' caption
             auto trackLabelPos = windowPos + ScreenCoordsXY{ widgets[WIDX_MUSIC_DATA].left, widgets[WIDX_MUSIC_DATA].top - 13 };
-            DrawTextWrapped(rt, trackLabelPos, width, STR_MUSIC_OBJECT_TRACK_HEADER, {}, { TextAlignment::left });
+            drawTextWrapped(rt, trackLabelPos, width, STR_MUSIC_OBJECT_TRACK_HEADER, {}, { TextAlignment::left });
 
             // Do we have a preview image to draw?
             auto musicObj = ride->getMusicObject();
@@ -5452,7 +5454,7 @@ namespace OpenRCT2::Ui::Windows
                                                         : STR_MUSIC_OBJECT_TRACK_LIST_ITEM_WITH_COMPOSER;
 
                 // Draw the track
-                DrawTextBasic(rt, { 0, y }, stringId, ft, { FontStyle::small });
+                drawText(rt, { 0, y }, stringId, ft, { FontStyle::small });
                 y += kScrollableRowHeight;
             }
         }
@@ -5757,7 +5759,7 @@ namespace OpenRCT2::Ui::Windows
                 Widget* widget = &widgets[WIDX_PAGE_BACKGROUND];
 
                 ScreenCoordsXY widgetCoords(windowPos.x + widget->midX(), windowPos.y + widget->top + 40);
-                DrawTextWrapped(
+                drawTextWrapped(
                     rt, widgetCoords, width - 8, STR_CLICK_ITEMS_OF_SCENERY_TO_SELECT, {}, { TextAlignment::centre });
 
                 widgetCoords.x = windowPos.x + 4;
@@ -5783,7 +5785,7 @@ namespace OpenRCT2::Ui::Windows
                     ft.Add<StringId>(ratingName);
                     StringId stringId = !RideHasRatings(*ride) ? STR_EXCITEMENT_RATING_NOT_YET_AVAILABLE
                                                                : STR_EXCITEMENT_RATING;
-                    DrawTextBasic(rt, screenCoords, stringId, ft);
+                    drawText(rt, screenCoords, stringId, ft);
                     screenCoords.y += kListRowHeight;
 
                     // Intensity
@@ -5798,7 +5800,7 @@ namespace OpenRCT2::Ui::Windows
                     else if (ride->ratings.intensity >= RideRating::make(10, 00))
                         stringId = STR_INTENSITY_RATING_RED;
 
-                    DrawTextBasic(rt, screenCoords, stringId, ft);
+                    drawText(rt, screenCoords, stringId, ft);
                     screenCoords.y += kListRowHeight;
 
                     // Nausea
@@ -5807,7 +5809,7 @@ namespace OpenRCT2::Ui::Windows
                     ft.Add<uint32_t>(ride->ratings.nausea);
                     ft.Add<StringId>(ratingName);
                     stringId = !RideHasRatings(*ride) ? STR_NAUSEA_RATING_NOT_YET_AVAILABLE : STR_NAUSEA_RATING;
-                    DrawTextBasic(rt, screenCoords, stringId, ft);
+                    drawText(rt, screenCoords, stringId, ft);
                     screenCoords.y += 2 * kListRowHeight;
 
                     // Horizontal rule
@@ -5822,7 +5824,7 @@ namespace OpenRCT2::Ui::Windows
                             // Holes
                             ft = Formatter();
                             ft.Add<uint16_t>(ride->numHoles);
-                            DrawTextBasic(rt, screenCoords, STR_HOLES, ft);
+                            drawText(rt, screenCoords, STR_HOLES, ft);
                             screenCoords.y += kListRowHeight;
                         }
                         else
@@ -5830,13 +5832,13 @@ namespace OpenRCT2::Ui::Windows
                             // Max speed
                             ft = Formatter();
                             ft.Add<int32_t>(ToHumanReadableSpeed(ride->maxSpeed));
-                            DrawTextBasic(rt, screenCoords, STR_MAX_SPEED, ft);
+                            drawText(rt, screenCoords, STR_MAX_SPEED, ft);
                             screenCoords.y += kListRowHeight;
 
                             // Average speed
                             ft = Formatter();
                             ft.Add<int32_t>(ToHumanReadableSpeed(ride->averageSpeed));
-                            DrawTextBasic(rt, screenCoords, STR_AVERAGE_SPEED, ft);
+                            drawText(rt, screenCoords, STR_AVERAGE_SPEED, ft);
                             screenCoords.y += kListRowHeight;
 
                             // Ride time
@@ -5876,7 +5878,7 @@ namespace OpenRCT2::Ui::Windows
                             ft.Add<uint16_t>(0);
                             ft.Add<uint16_t>(0);
                             ft.Add<uint16_t>(0);
-                            DrawTextEllipsised(rt, screenCoords, 308, STR_RIDE_TIME, ft);
+                            drawTextEllipsised(rt, screenCoords, 308, STR_RIDE_TIME, ft);
                             screenCoords.y += kListRowHeight;
                         }
 
@@ -5916,7 +5918,7 @@ namespace OpenRCT2::Ui::Windows
                         ft.Add<uint16_t>(0);
                         ft.Add<uint16_t>(0);
                         ft.Add<uint16_t>(0);
-                        DrawTextEllipsised(rt, screenCoords, 308, STR_RIDE_LENGTH, ft);
+                        drawTextEllipsised(rt, screenCoords, 308, STR_RIDE_LENGTH, ft);
 
                         screenCoords.y += kListRowHeight;
 
@@ -5927,7 +5929,7 @@ namespace OpenRCT2::Ui::Windows
 
                             ft = Formatter();
                             ft.Add<fixed16_2dp>(ride->maxPositiveVerticalG);
-                            DrawTextBasic(rt, screenCoords, stringId, ft);
+                            drawText(rt, screenCoords, stringId, ft);
                             screenCoords.y += kListRowHeight;
 
                             // Max. negative vertical G's
@@ -5936,20 +5938,20 @@ namespace OpenRCT2::Ui::Windows
                                 : STR_MAX_NEGATIVE_VERTICAL_G;
                             ft = Formatter();
                             ft.Add<int32_t>(ride->maxNegativeVerticalG);
-                            DrawTextBasic(rt, screenCoords, stringId, ft);
+                            drawText(rt, screenCoords, stringId, ft);
                             screenCoords.y += kListRowHeight;
 
                             // Max lateral G's
                             stringId = ride->maxLateralG > kRideGForcesRedLateral ? STR_MAX_LATERAL_G_RED : STR_MAX_LATERAL_G;
                             ft = Formatter();
                             ft.Add<fixed16_2dp>(ride->maxLateralG);
-                            DrawTextBasic(rt, screenCoords, stringId, ft);
+                            drawText(rt, screenCoords, stringId, ft);
                             screenCoords.y += kListRowHeight;
 
                             // Total 'air' time
                             ft = Formatter();
                             ft.Add<fixed32_2dp>(ToHumanReadableAirTime(ride->totalAirTime));
-                            DrawTextBasic(rt, screenCoords, STR_TOTAL_AIR_TIME, ft);
+                            drawText(rt, screenCoords, STR_TOTAL_AIR_TIME, ft);
                             screenCoords.y += kListRowHeight;
                         }
 
@@ -5957,14 +5959,14 @@ namespace OpenRCT2::Ui::Windows
                         {
                             ft = Formatter();
                             ft.Add<uint16_t>(ride->numDrops);
-                            DrawTextBasic(rt, screenCoords, STR_DROPS, ft);
+                            drawText(rt, screenCoords, STR_DROPS, ft);
                             screenCoords.y += kListRowHeight;
 
                             // Highest drop height
                             auto highestDropHeight = (ride->highestDropHeight * 3) / 4;
                             ft = Formatter();
                             ft.Add<int32_t>(highestDropHeight);
-                            DrawTextBasic(rt, screenCoords, STR_HIGHEST_DROP_HEIGHT, ft);
+                            drawText(rt, screenCoords, STR_HIGHEST_DROP_HEIGHT, ft);
                             screenCoords.y += kListRowHeight;
                         }
 
@@ -5975,7 +5977,7 @@ namespace OpenRCT2::Ui::Windows
                             {
                                 ft = Formatter();
                                 ft.Add<uint16_t>(ride->numInversions);
-                                DrawTextBasic(rt, screenCoords, STR_INVERSIONS, ft);
+                                drawText(rt, screenCoords, STR_INVERSIONS, ft);
                                 screenCoords.y += kListRowHeight;
                             }
                         }
@@ -5983,7 +5985,7 @@ namespace OpenRCT2::Ui::Windows
                 }
                 else
                 {
-                    DrawTextBasic(rt, screenCoords, STR_NO_TEST_RESULTS_YET);
+                    drawText(rt, screenCoords, STR_NO_TEST_RESULTS_YET);
                 }
             }
         }
@@ -6212,7 +6214,7 @@ namespace OpenRCT2::Ui::Windows
                 // No measurement message
                 ScreenCoordsXY stringCoords(widget->width() / 2, widget->height() - 1 / 2 - 5);
                 int32_t txtWidth = widget->width() - 3;
-                DrawTextWrapped(rt, stringCoords, txtWidth, message.str, message.args, { TextAlignment::centre });
+                drawTextWrapped(rt, stringCoords, txtWidth, message.str, message.args, { TextAlignment::centre });
                 return;
             }
 
@@ -6263,7 +6265,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<int16_t>(scaled_yUnit);
 
-                DrawTextBasic(rt, { scrolls[0].contentOffsetX + 1, y - 4 }, stringID, ft, { FontStyle::small });
+                drawText(rt, { scrolls[0].contentOffsetX + 1, y - 4 }, stringID, ft, { FontStyle::small });
             }
 
             // Time marks
@@ -6273,7 +6275,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<int32_t>(time);
                 if (x + 80 >= rt.x)
-                    DrawTextBasic(rt, { x + 2, 1 }, STR_RIDE_STATS_TIME, ft, { FontStyle::small });
+                    drawText(rt, { x + 2, 1 }, STR_RIDE_STATS_TIME, ft, { FontStyle::small });
                 time += 5;
             }
 
@@ -6787,7 +6789,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<money64>(profit);
 
-                DrawTextBasic(rt, screenCoords, stringId, ft);
+                drawText(rt, screenCoords, stringId, ft);
             }
             screenCoords.y += 44;
 
@@ -6811,7 +6813,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<money64>(profit);
 
-                DrawTextBasic(rt, screenCoords, stringId, ft);
+                drawText(rt, screenCoords, stringId, ft);
             }
             screenCoords.y += 18;
 
@@ -6821,7 +6823,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<money64>(ride->incomePerHour);
 
-                DrawTextBasic(rt, screenCoords, STR_INCOME_PER_HOUR, ft);
+                drawText(rt, screenCoords, STR_INCOME_PER_HOUR, ft);
                 screenCoords.y += kListRowHeight;
             }
 
@@ -6830,7 +6832,7 @@ namespace OpenRCT2::Ui::Windows
             stringId = ride->upkeepCost == kMoney64Undefined ? STR_RUNNING_COST_UNKNOWN : STR_RUNNING_COST_PER_HOUR;
             auto ft = Formatter();
             ft.Add<money64>(costPerHour);
-            DrawTextBasic(rt, screenCoords, stringId, ft);
+            drawText(rt, screenCoords, stringId, ft);
             screenCoords.y += kListRowHeight;
 
             // Profit per hour
@@ -6838,7 +6840,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 ft = Formatter();
                 ft.Add<money64>(ride->profit);
-                DrawTextBasic(rt, screenCoords, STR_PROFIT_PER_HOUR, ft);
+                drawText(rt, screenCoords, STR_PROFIT_PER_HOUR, ft);
                 screenCoords.y += kListRowHeight;
             }
             screenCoords.y += 5;
@@ -6846,7 +6848,7 @@ namespace OpenRCT2::Ui::Windows
             // Total profit
             ft = Formatter();
             ft.Add<money64>(ride->totalProfit);
-            DrawTextBasic(rt, screenCoords, STR_TOTAL_PROFIT, ft);
+            drawText(rt, screenCoords, STR_TOTAL_PROFIT, ft);
         }
 
 #pragma endregion
@@ -6967,14 +6969,14 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto ft = Formatter();
                 ft.Add<int16_t>(ride->numRiders);
-                DrawTextBasic(rt, screenCoords, STR_CUSTOMERS_ON_RIDE, ft);
+                drawText(rt, screenCoords, STR_CUSTOMERS_ON_RIDE, ft);
                 screenCoords.y += kListRowHeight;
             }
 
             // Customers per hour
             auto ft = Formatter();
             ft.Add<int32_t>(RideCustomersPerHour(*ride));
-            DrawTextBasic(rt, screenCoords, STR_CUSTOMERS_PER_HOUR, ft);
+            drawText(rt, screenCoords, STR_CUSTOMERS_PER_HOUR, ft);
             screenCoords.y += kListRowHeight;
 
             // Popularity
@@ -6990,7 +6992,7 @@ namespace OpenRCT2::Ui::Windows
             }
             ft = Formatter();
             ft.Add<int16_t>(popularity);
-            DrawTextBasic(rt, screenCoords, stringId, ft);
+            drawText(rt, screenCoords, stringId, ft);
             screenCoords.y += kListRowHeight;
 
             // Satisfaction
@@ -7006,7 +7008,7 @@ namespace OpenRCT2::Ui::Windows
             }
             ft = Formatter();
             ft.Add<int16_t>(satisfaction);
-            DrawTextBasic(rt, screenCoords, stringId, ft);
+            drawText(rt, screenCoords, stringId, ft);
             screenCoords.y += kListRowHeight;
 
             // Queue time
@@ -7016,7 +7018,7 @@ namespace OpenRCT2::Ui::Windows
                 stringId = queueTime == 1 ? STR_QUEUE_TIME_MINUTE : STR_QUEUE_TIME_MINUTES;
                 ft = Formatter();
                 ft.Add<int32_t>(queueTime);
-                screenCoords.y += DrawTextWrapped(rt, screenCoords, 308, stringId, ft, { TextAlignment::left });
+                screenCoords.y += drawTextWrapped(rt, screenCoords, 308, stringId, ft, { TextAlignment::left });
                 screenCoords.y += 5;
             }
 
@@ -7027,7 +7029,7 @@ namespace OpenRCT2::Ui::Windows
                 ft = Formatter();
                 ft.Add<StringId>(GetShopItemDescriptor(shopItem).Naming.Plural);
                 ft.Add<uint32_t>(ride->numPrimaryItemsSold);
-                DrawTextBasic(rt, screenCoords, STR_ITEMS_SOLD, ft);
+                drawText(rt, screenCoords, STR_ITEMS_SOLD, ft);
                 screenCoords.y += kListRowHeight;
             }
 
@@ -7039,14 +7041,14 @@ namespace OpenRCT2::Ui::Windows
                 ft = Formatter();
                 ft.Add<StringId>(GetShopItemDescriptor(shopItem).Naming.Plural);
                 ft.Add<uint32_t>(ride->numSecondaryItemsSold);
-                DrawTextBasic(rt, screenCoords, STR_ITEMS_SOLD, ft);
+                drawText(rt, screenCoords, STR_ITEMS_SOLD, ft);
                 screenCoords.y += kListRowHeight;
             }
 
             // Total customers
             ft = Formatter();
             ft.Add<uint32_t>(ride->totalCustomers);
-            DrawTextBasic(rt, screenCoords, STR_TOTAL_CUSTOMERS, ft);
+            drawText(rt, screenCoords, STR_TOTAL_CUSTOMERS, ft);
             screenCoords.y += kListRowHeight;
 
             // Guests favourite
@@ -7055,7 +7057,7 @@ namespace OpenRCT2::Ui::Windows
                 ft = Formatter();
                 ft.Add<uint32_t>(ride->guestsFavourite);
                 stringId = ride->guestsFavourite == 1 ? STR_FAVOURITE_RIDE_OF_GUEST : STR_FAVOURITE_RIDE_OF_GUESTS;
-                DrawTextBasic(rt, screenCoords, stringId, ft);
+                drawText(rt, screenCoords, stringId, ft);
                 screenCoords.y += kListRowHeight;
             }
             screenCoords.y += 2;
@@ -7066,7 +7068,7 @@ namespace OpenRCT2::Ui::Windows
             stringId = age == 0 ? STR_BUILT_THIS_YEAR : age == 1 ? STR_BUILT_LAST_YEAR : STR_BUILT_YEARS_AGO;
             ft = Formatter();
             ft.Add<int16_t>(age);
-            DrawTextBasic(rt, screenCoords, stringId, ft);
+            drawText(rt, screenCoords, stringId, ft);
         }
 
 #pragma endregion

@@ -31,6 +31,7 @@
 #include <openrct2/drawing/ColourMap.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Formatting.h>
 #include <openrct2/object/ClimateObject.h>
@@ -764,7 +765,7 @@ namespace OpenRCT2::Ui::Windows
                         if (*listItem.flags & (ObjectSelectionFlags::InUse | ObjectSelectionFlags::AlwaysRequired))
                             colour2.flags.set(ColourFlag::inset, true);
 
-                        DrawTextBasic(rt, screenCoords, kCheckMarkString, { colour2, FontStyle::medium, darkness });
+                        drawText(rt, screenCoords, kCheckMarkString, { colour2, FontStyle::medium, darkness });
                     }
 
                     screenCoords.x = gLegacyScene == LegacyScene::trackDesignsManager ? 0 : 15;
@@ -791,7 +792,7 @@ namespace OpenRCT2::Ui::Windows
                         String::safeUtf8Copy(buffer, LanguageGetString(rideTypeStringId), 256 - (buffer - bufferWithColour));
                         auto ft = Formatter();
                         ft.Add<const char*>(itemBuffer);
-                        DrawTextEllipsised(
+                        drawTextEllipsised(
                             rt, screenCoords, width_limit - 15, STR_STRING, ft, { colour, FontStyle::medium, darkness });
                         screenCoords.x = widgets[WIDX_LIST_SORT_RIDE].left - widgets[WIDX_LIST].left;
                     }
@@ -807,7 +808,7 @@ namespace OpenRCT2::Ui::Windows
                     }
                     auto ft = Formatter();
                     ft.Add<const char*>(itemBuffer);
-                    DrawTextEllipsised(rt, screenCoords, width_limit, STR_STRING, ft, { colour, FontStyle::medium, darkness });
+                    drawTextEllipsised(rt, screenCoords, width_limit, STR_STRING, ft, { colour, FontStyle::medium, darkness });
                 }
                 screenCoords.y += kScrollableRowHeight;
             }
@@ -1082,7 +1083,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<uint16_t>(numSelected);
                 ft.Add<uint16_t>(totalSelectable);
-                DrawTextBasic(rt, screenPos, STR_OBJECT_SELECTION_SELECTION_SIZE, ft);
+                drawText(rt, screenPos, STR_OBJECT_SELECTION_SELECTION_SIZE, ft);
             }
 
             // Draw sort button text
@@ -1094,7 +1095,7 @@ namespace OpenRCT2::Ui::Windows
                                                                 : kStringIdNone;
                 ft.Add<StringId>(stringId);
                 auto screenPos = windowPos + ScreenCoordsXY{ listSortTypeWidget.left + 1, listSortTypeWidget.top + 1 };
-                DrawTextEllipsised(rt, screenPos, listSortTypeWidget.width() - 1, STR_OBJECTS_SORT_TYPE, ft, { colours[1] });
+                drawTextEllipsised(rt, screenPos, listSortTypeWidget.width() - 1, STR_OBJECTS_SORT_TYPE, ft, { colours[1] });
             }
             const auto& listSortRideWidget = widgets[WIDX_LIST_SORT_RIDE];
             if (listSortRideWidget.type != WidgetType::empty)
@@ -1104,7 +1105,7 @@ namespace OpenRCT2::Ui::Windows
                                                                 : kStringIdNone;
                 ft.Add<StringId>(stringId);
                 auto screenPos = windowPos + ScreenCoordsXY{ listSortRideWidget.left + 1, listSortRideWidget.top + 1 };
-                DrawTextEllipsised(rt, screenPos, listSortRideWidget.width() - 1, STR_OBJECTS_SORT_RIDE, ft, { colours[1] });
+                drawTextEllipsised(rt, screenPos, listSortRideWidget.width() - 1, STR_OBJECTS_SORT_RIDE, ft, { colours[1] });
             }
 
             if (selectedListItem == -1 || _loadedObject == nullptr)
@@ -1263,7 +1264,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const char*>(listItem->repositoryItem->Name.c_str());
-                screenPos.y += DrawTextWrapped(
+                screenPos.y += drawTextWrapped(
                     rt, screenPos, descriptionWidth, STR_WINDOW_COLOUR_2_STRINGID, ft, { TextAlignment::centre });
 
                 // Leave some space between name and description
@@ -1275,7 +1276,7 @@ namespace OpenRCT2::Ui::Windows
             // Compatibility object?
             if (_loadedObject->IsCompatibilityObject())
             {
-                screenPos.y += DrawTextWrapped(
+                screenPos.y += drawTextWrapped(
                                    rt, screenPos, descriptionWidth, STR_OBJECT_SELECTION_COMPAT_OBJECT_DESCRIPTION, {},
                                    { Drawing::Colour::brightRed })
                     + kListRowHeight;
@@ -1288,7 +1289,7 @@ namespace OpenRCT2::Ui::Windows
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const char*>(description.c_str());
 
-                screenPos.y += DrawTextWrapped(rt, screenPos, descriptionWidth, STR_WINDOW_COLOUR_2_STRINGID, ft);
+                screenPos.y += drawTextWrapped(rt, screenPos, descriptionWidth, STR_WINDOW_COLOUR_2_STRINGID, ft);
                 screenPos.y += kListRowHeight;
             }
 
@@ -1311,7 +1312,7 @@ namespace OpenRCT2::Ui::Windows
                     }
                     auto ft = Formatter();
                     ft.Add<const char*>(sells.c_str());
-                    screenPos.y += DrawTextWrapped(rt, screenPos, descriptionWidth, STR_RIDE_OBJECT_SHOP_SELLS, ft) + 2;
+                    screenPos.y += drawTextWrapped(rt, screenPos, descriptionWidth, STR_RIDE_OBJECT_SHOP_SELLS, ft) + 2;
                 }
             }
             else if (GetSelectedObjectType() == ObjectType::sceneryGroup)
@@ -1319,11 +1320,11 @@ namespace OpenRCT2::Ui::Windows
                 const auto* sceneryGroupObject = reinterpret_cast<SceneryGroupObject*>(_loadedObject.get());
                 auto ft = Formatter();
                 ft.Add<uint16_t>(sceneryGroupObject->GetNumIncludedObjects());
-                screenPos.y += DrawTextWrapped(rt, screenPos, descriptionWidth, STR_INCLUDES_X_OBJECTS, ft) + 2;
+                screenPos.y += drawTextWrapped(rt, screenPos, descriptionWidth, STR_INCLUDES_X_OBJECTS, ft) + 2;
             }
             else if (GetSelectedObjectType() == ObjectType::music)
             {
-                screenPos.y += DrawTextWrapped(rt, screenPos, descriptionWidth, STR_MUSIC_OBJECT_TRACK_HEADER) + 2;
+                screenPos.y += drawTextWrapped(rt, screenPos, descriptionWidth, STR_MUSIC_OBJECT_TRACK_HEADER) + 2;
                 const auto* musicObject = reinterpret_cast<MusicObject*>(_loadedObject.get());
                 for (size_t i = 0; i < musicObject->GetTrackCount(); i++)
                 {
@@ -1336,7 +1337,7 @@ namespace OpenRCT2::Ui::Windows
                     auto ft = Formatter();
                     ft.Add<const char*>(track->Name.c_str());
                     ft.Add<const char*>(track->Composer.c_str());
-                    screenPos.y += DrawTextWrapped(rt, screenPos + ScreenCoordsXY{ 10, 0 }, descriptionWidth, stringId, ft);
+                    screenPos.y += drawTextWrapped(rt, screenPos + ScreenCoordsXY{ 10, 0 }, descriptionWidth, stringId, ft);
                 }
             }
         }
@@ -1367,8 +1368,7 @@ namespace OpenRCT2::Ui::Windows
             // Draw fallback image warning
             if (_loadedObject && _loadedObject->UsesFallbackImages())
             {
-                DrawTextBasic(
-                    rt, screenPos, STR_OBJECT_USES_FALLBACK_IMAGES, {}, { Drawing::Colour::white, TextAlignment::right });
+                drawText(rt, screenPos, STR_OBJECT_USES_FALLBACK_IMAGES, {}, { Drawing::Colour::white, TextAlignment::right });
             }
             screenPos.y += kListRowHeight;
 
@@ -1376,7 +1376,7 @@ namespace OpenRCT2::Ui::Windows
             if (GetSelectedObjectType() == ObjectType::ride)
             {
                 auto stringId = GetRideTypeStringId(listItem->repositoryItem);
-                DrawTextBasic(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+                drawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
             }
 
             // Draw peep animation object type
@@ -1384,14 +1384,14 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto* animObj = reinterpret_cast<PeepAnimationsObject*>(_loadedObject.get());
                 auto stringId = GetAnimationPeepTypeStringId(animObj->GetPeepType());
-                DrawTextBasic(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+                drawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
             }
 
             screenPos.y += kListRowHeight;
 
             // Draw object source
             auto stringId = ObjectManagerGetSourceGameString(listItem->repositoryItem->GetFirstSourceGame());
-            DrawTextBasic(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+            drawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
             screenPos.y += kListRowHeight;
 
             // Draw object filename
@@ -1400,7 +1400,7 @@ namespace OpenRCT2::Ui::Windows
                 auto ft = Formatter();
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const utf8*>(path.c_str());
-                DrawTextBasic(
+                drawText(
                     rt, { windowPos.x + this->width - 5, screenPos.y }, STR_WINDOW_COLOUR_2_STRINGID, ft,
                     { Drawing::Colour::black, TextAlignment::right });
                 screenPos.y += kListRowHeight;
@@ -1420,7 +1420,7 @@ namespace OpenRCT2::Ui::Windows
                 }
                 ft.Add<StringId>(STR_STRING);
                 ft.Add<const char*>(authorsString.c_str());
-                DrawTextEllipsised(
+                drawTextEllipsised(
                     rt, { windowPos.x + width - 5, screenPos.y }, width - widgets[WIDX_LIST].right - 4,
                     STR_WINDOW_COLOUR_2_STRINGID, ft, { TextAlignment::right });
             }

@@ -24,8 +24,10 @@
 #include <openrct2/actions/peep/PeepSpawnPlaceAction.h>
 #include <openrct2/actions/terraform/SurfaceSetStyleAction.h>
 #include <openrct2/audio/Audio.h>
+#include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/entity/EntityList.h>
 #include <openrct2/entity/EntityRegistry.h>
 #include <openrct2/entity/Staff.h>
@@ -691,7 +693,7 @@ namespace OpenRCT2::Ui::Windows
                         Rectangle::fill(
                             rt, { screenCoords + ScreenCoordsXY{ 0, 2 }, screenCoords + ScreenCoordsXY{ 6, 8 } },
                             kRideKeyColours[i].b);
-                        DrawTextBasic(rt, screenCoords + ScreenCoordsXY{ kListRowHeight, 0 }, MapLabels[i]);
+                        drawText(rt, screenCoords + ScreenCoordsXY{ kListRowHeight, 0 }, MapLabels[i]);
                         screenCoords.y += kListRowHeight;
                         if (i == 3)
                         {
@@ -702,7 +704,7 @@ namespace OpenRCT2::Ui::Windows
             }
             else if (!isToolActive(*this, WIDX_SET_LAND_RIGHTS))
             {
-                DrawTextBasic(
+                drawText(
                     rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_MAP_SIZE_SPINNER_Y].top + 1 }, STR_MAP_SIZE, {},
                     { colours[1] });
             }
@@ -1250,7 +1252,7 @@ namespace OpenRCT2::Ui::Windows
             for (uint32_t i = 0; i < 4; i++)
             {
                 const auto* labelStr = LanguageGetString(MapLabels[i]);
-                _firstColumnWidth = std::max(textOffset + GfxGetStringWidth(labelStr, FontStyle::medium), _firstColumnWidth);
+                _firstColumnWidth = std::max(textOffset + getStringWidth(labelStr, FontStyle::medium), _firstColumnWidth);
             }
 
             textOffset += _firstColumnWidth + 4;
@@ -1258,8 +1260,7 @@ namespace OpenRCT2::Ui::Windows
             for (uint32_t i = 4; i < std::size(MapLabels); i++)
             {
                 const auto* labelStr = LanguageGetString(MapLabels[i]);
-                minWidth = std::max(
-                    static_cast<int16_t>(textOffset + GfxGetStringWidth(labelStr, FontStyle::medium)), minWidth);
+                minWidth = std::max(static_cast<int16_t>(textOffset + getStringWidth(labelStr, FontStyle::medium)), minWidth);
             }
             width = std::max(minWidth, width);
             _recalculateScrollbars = true;

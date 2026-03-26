@@ -11,6 +11,7 @@
 #include <openrct2-ui/windows/Windows.h>
 #include <openrct2/Context.h>
 #include <openrct2/drawing/Drawing.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/StringIds.h>
 #include <openrct2/platform/Platform.h>
@@ -196,7 +197,7 @@ namespace OpenRCT2::Ui::Windows
 
             auto ft = Formatter();
             ft.Add<const utf8*>(_trackDesignFileReference->name.c_str());
-            DrawTextWrapped(
+            drawTextWrapped(
                 rt, windowPos + ScreenCoordsXY{ width / 2, messageTop }, (width - 4),
                 STR_ARE_YOU_SURE_YOU_WANT_TO_PERMANENTLY_DELETE_TRACK, ft, { TextAlignment::centre });
         }

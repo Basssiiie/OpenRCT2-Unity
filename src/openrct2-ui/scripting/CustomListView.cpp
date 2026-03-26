@@ -19,8 +19,10 @@
     #include <openrct2/Context.h>
     #include <openrct2/core/String.hpp>
     #include <openrct2/drawing/ColourMap.h>
+    #include <openrct2/drawing/Drawing.String.h>
     #include <openrct2/drawing/Drawing.h>
     #include <openrct2/drawing/Rectangle.h>
+    #include <openrct2/drawing/Text.h>
     #include <openrct2/localisation/Formatter.h>
     #include <openrct2/localisation/Formatting.h>
 
@@ -698,13 +700,13 @@ void CustomListView::PaintHeading(
     {
         auto ft = Formatter();
         ft.Add<StringId>(STR_UP);
-        DrawTextBasic(rt, pos + ScreenCoordsXY{ size.width - 1, 0 }, STR_BLACK_STRING, ft, { TextAlignment::right });
+        drawText(rt, pos + ScreenCoordsXY{ size.width - 1, 0 }, STR_BLACK_STRING, ft, { TextAlignment::right });
     }
     else if (sortOrder == ColumnSortOrder::Descending)
     {
         auto ft = Formatter();
         ft.Add<StringId>(STR_DOWN);
-        DrawTextBasic(rt, pos + ScreenCoordsXY{ size.width - 1, 0 }, STR_BLACK_STRING, ft, { TextAlignment::right });
+        drawText(rt, pos + ScreenCoordsXY{ size.width - 1, 0 }, STR_BLACK_STRING, ft, { TextAlignment::right });
     }
 }
 
@@ -726,12 +728,12 @@ void CustomListView::PaintSeparator(RenderTarget& rt, const ScreenCoordsXY& pos,
         // Draw string
         Formatter ft;
         ft.Add<const char*>(text);
-        DrawTextBasic(rt, { centreX, pos.y }, STR_STRING, ft, { baseColour, TextAlignment::centre });
+        drawText(rt, { centreX, pos.y }, STR_STRING, ft, { baseColour, TextAlignment::centre });
 
         // Get string dimensions
         utf8 stringBuffer[512]{};
         FormatStringLegacy(stringBuffer, sizeof(stringBuffer), STR_STRING, ft.Data());
-        int32_t categoryStringHalfWidth = (GfxGetStringWidth(stringBuffer, FontStyle::medium) / 2) + 4;
+        int32_t categoryStringHalfWidth = (getStringWidth(stringBuffer, FontStyle::medium) / 2) + 4;
         int32_t strLeft = centreX - categoryStringHalfWidth;
         int32_t strRight = centreX + categoryStringHalfWidth;
 
@@ -775,7 +777,7 @@ void CustomListView::PaintCell(
     auto ft = Formatter();
     ft.Add<StringId>(STR_STRING);
     ft.Add<const char*>(text);
-    DrawTextEllipsised(rt, pos, size.width, stringId, ft, {});
+    drawTextEllipsised(rt, pos, size.width, stringId, ft, {});
 }
 
 std::optional<RowColumn> CustomListView::GetItemIndexAt(const ScreenCoordsXY& pos)

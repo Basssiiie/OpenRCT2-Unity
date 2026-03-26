@@ -20,8 +20,10 @@
 #include <openrct2/core/BitSet.hpp>
 #include <openrct2/core/String.hpp>
 #include <openrct2/drawing/ColourMap.h>
+#include <openrct2/drawing/Drawing.String.h>
 #include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Rectangle.h>
+#include <openrct2/drawing/Text.h>
 #include <openrct2/interface/ColourWithFlags.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Formatting.h>
@@ -171,7 +173,7 @@ namespace OpenRCT2::Ui::Windows
             Formatter ft;
             ft.Add<const utf8*>(item.text);
 
-            DrawTextEllipsised(rt, { screenCoords.x + 2, screenCoords.y + yOffset }, ddWidth - 7, format, ft, { colour });
+            drawTextEllipsised(rt, { screenCoords.x + 2, screenCoords.y + yOffset }, ddWidth - 7, format, ft, { colour });
         }
 
         void onDraw(RenderTarget& rt) override
@@ -379,7 +381,7 @@ namespace OpenRCT2::Ui::Windows
         int32_t maxStringWidth = 0;
         for (size_t i = 0; i < num_items; i++)
         {
-            int32_t stringWidth = GfxGetStringWidth(gDropdown.items[i].text, FontStyle::medium);
+            int32_t stringWidth = getStringWidth(gDropdown.items[i].text, FontStyle::medium);
             if (gDropdown.items[i].type != Dropdown::ItemType::plain)
                 stringWidth += kDropdownItemLeftPadding;
             maxStringWidth = std::max(stringWidth, maxStringWidth);
