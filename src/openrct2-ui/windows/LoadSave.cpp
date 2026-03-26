@@ -754,13 +754,8 @@ namespace OpenRCT2::Ui::Windows
 
                 // Draw path text
                 const auto normalisedPath = Platform::StrDecompToPrecomp(buffer.data());
-                const auto* normalisedPathC = normalisedPath.c_str();
-
-                auto ft = Formatter();
-                ft.Add<const char*>(normalisedPathC);
-
                 auto pathPos = windowPos + ScreenCoordsXY{ 4, widget.top + 4 };
-                drawTextEllipsised(rt, pathPos, pathWidth, STR_STRING, ft);
+                drawTextEllipsised(rt, pathPos, pathWidth, normalisedPath);
             }
 
             const auto drawButtonCaption =

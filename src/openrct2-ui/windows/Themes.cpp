@@ -405,15 +405,13 @@ namespace OpenRCT2::Ui::Windows
 
                 size_t activeAvailableThemeIndex = ThemeManagerGetAvailableThemeIndex();
                 const utf8* activeThemeName = ThemeManagerGetAvailableThemeName(activeAvailableThemeIndex);
-                auto ft = Formatter();
-                ft.Add<const utf8*>(activeThemeName);
 
                 auto screenPos = windowPos
                     + ScreenCoordsXY{ widgets[WIDX_THEMES_PRESETS].left + 1, widgets[WIDX_THEMES_PRESETS].top };
                 auto newWidth = windowPos.x + widgets[WIDX_THEMES_PRESETS_DROPDOWN].left - widgets[WIDX_THEMES_PRESETS].left
                     - 4;
 
-                drawTextEllipsised(rt, screenPos, newWidth, STR_STRING, ft, { colours[1] });
+                drawTextEllipsised(rt, screenPos, newWidth, activeThemeName, { colours[1] });
             }
         }
 

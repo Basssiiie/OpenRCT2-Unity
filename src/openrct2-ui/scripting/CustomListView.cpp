@@ -726,14 +726,10 @@ void CustomListView::PaintSeparator(RenderTarget& rt, const ScreenCoordsXY& pos,
     if (hasText)
     {
         // Draw string
-        Formatter ft;
-        ft.Add<const char*>(text);
-        drawText(rt, { centreX, pos.y }, STR_STRING, ft, { baseColour, TextAlignment::centre });
+        drawText(rt, { centreX, pos.y }, text, { baseColour, TextAlignment::centre });
 
         // Get string dimensions
-        utf8 stringBuffer[512]{};
-        FormatStringLegacy(stringBuffer, sizeof(stringBuffer), STR_STRING, ft.Data());
-        int32_t categoryStringHalfWidth = (getStringWidth(stringBuffer, FontStyle::medium) / 2) + 4;
+        int32_t categoryStringHalfWidth = (getStringWidth(text, FontStyle::medium) / 2) + 4;
         int32_t strLeft = centreX - categoryStringHalfWidth;
         int32_t strRight = centreX + categoryStringHalfWidth;
 

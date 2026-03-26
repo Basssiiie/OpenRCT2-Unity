@@ -365,10 +365,7 @@ namespace OpenRCT2::Ui::Windows
             if (Config::Get().general.debuggingTools)
             {
                 const auto shortPath = shortenPath(scenario->Path, width - 6 - kTabWidth, FontStyle::medium);
-
-                auto ft = Formatter();
-                ft.Add<utf8*>(shortPath.c_str());
-                drawText(rt, windowPos + ScreenCoordsXY{ kTabWidth + 3, height - 3 - 11 }, STR_STRING, ft, { colours[1] });
+                drawText(rt, windowPos + ScreenCoordsXY{ kTabWidth + 3, height - 3 - 11 }, shortPath, { colours[1] });
             }
 
             // Scenario name

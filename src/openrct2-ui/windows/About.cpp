@@ -228,15 +228,11 @@ namespace OpenRCT2::Ui::Windows
             auto logoCoords = windowPos + ScreenCoordsXY(logoWidget.left, logoWidget.top);
             GfxDrawSprite(rt, ImageId(SPR_G2_LOGO), logoCoords);
 
-            u8string versionInfo = gVersionInfoFull;
-            auto ft = Formatter();
-            ft.Add<const char*>(versionInfo.c_str());
-
             const auto& versionWidget = widgets[WIDX_VERSION];
             auto centreX = versionWidget.midX();
             auto centreY = versionWidget.midY() - FontGetLineHeight(FontStyle::medium) / 2;
             auto centrePos = windowPos + ScreenCoordsXY(centreX, centreY);
-            drawTextWrapped(rt, centrePos, versionWidget.width() - 1, STR_STRING, ft, { colours[1], TextAlignment::centre });
+            drawTextWrapped(rt, centrePos, versionWidget.width() - 1, gVersionInfoFull, { colours[1], TextAlignment::centre });
 
             // Shows the update available button
             if (GetContext()->HasNewVersionInfo())

@@ -482,10 +482,8 @@ namespace OpenRCT2::Ui::Windows
             if (Config::Get().general.debuggingTools)
             {
                 const auto shortPath = shortenPath(path, width, FontStyle::medium);
-                auto ft = Formatter();
-                ft.Add<utf8*>(shortPath.c_str());
                 drawText(
-                    rt, windowPos + ScreenCoordsXY{ 0, height - kDebugPathHeight - 3 }, STR_STRING, ft,
+                    rt, windowPos + ScreenCoordsXY{ 0, height - kDebugPathHeight - 3 }, shortPath,
                     { colours[1] }); // TODO Check dpi
             }
 

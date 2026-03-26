@@ -790,10 +790,8 @@ namespace OpenRCT2::Ui::Windows
                         // Draw ride type
                         StringId rideTypeStringId = GetRideTypeStringId(listItem.repositoryItem);
                         String::safeUtf8Copy(buffer, LanguageGetString(rideTypeStringId), 256 - (buffer - bufferWithColour));
-                        auto ft = Formatter();
-                        ft.Add<const char*>(itemBuffer);
                         drawTextEllipsised(
-                            rt, screenCoords, width_limit - 15, STR_STRING, ft, { colour, FontStyle::medium, darkness });
+                            rt, screenCoords, width_limit - 15, itemBuffer, { colour, FontStyle::medium, darkness });
                         screenCoords.x = widgets[WIDX_LIST_SORT_RIDE].left - widgets[WIDX_LIST].left;
                     }
 
@@ -806,9 +804,7 @@ namespace OpenRCT2::Ui::Windows
 
                         *buffer = 0;
                     }
-                    auto ft = Formatter();
-                    ft.Add<const char*>(itemBuffer);
-                    drawTextEllipsised(rt, screenCoords, width_limit, STR_STRING, ft, { colour, FontStyle::medium, darkness });
+                    drawTextEllipsised(rt, screenCoords, width_limit, itemBuffer, { colour, FontStyle::medium, darkness });
                 }
                 screenCoords.y += kScrollableRowHeight;
             }
