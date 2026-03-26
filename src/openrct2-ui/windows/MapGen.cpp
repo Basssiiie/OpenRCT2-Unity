@@ -620,14 +620,13 @@ namespace OpenRCT2::Ui::Windows
 
             {
                 auto textColour = isWidgetDisabled(WIDX_MAP_SIZE_Y) ? disabledColour : enabledColour;
-                drawText(
-                    rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_MAP_SIZE_Y].top + 1 }, STR_MAP_SIZE, {}, { textColour });
+                drawText(rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_MAP_SIZE_Y].top + 1 }, STR_MAP_SIZE, { textColour });
             }
 
             {
                 auto textColour = enabledColour;
                 drawText(
-                    rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_SOURCE].top + 1 }, STR_HEIGHTMAP_SOURCE, {},
+                    rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_SOURCE].top + 1 }, STR_HEIGHTMAP_SOURCE,
                     { textColour });
             }
         }
@@ -778,7 +777,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Tree to land ratio, label and value
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_LAND_RATIO].top + 1 }, STR_MAPGEN_TREE_TO_LAND_RATIO, {},
+                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_LAND_RATIO].top + 1 }, STR_MAPGEN_TREE_TO_LAND_RATIO,
                 { textColour });
 
             auto ft = Formatter();
@@ -789,7 +788,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Minimum tree altitude, label and value
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_ALTITUDE_MIN].top + 1 }, STR_MAPGEN_TREE_MIN_ALTITUDE, {},
+                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_ALTITUDE_MIN].top + 1 }, STR_MAPGEN_TREE_MIN_ALTITUDE,
                 { textColour });
 
             ft = Formatter();
@@ -804,7 +803,7 @@ namespace OpenRCT2::Ui::Windows
             const auto maxTreeTextColour = _settings.trees && !isFlatland ? enabledColour : disabledColour;
 
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_ALTITUDE_MAX].top + 1 }, STR_MAPGEN_TREE_MAX_ALTITUDE, {},
+                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_TREE_ALTITUDE_MAX].top + 1 }, STR_MAPGEN_TREE_MAX_ALTITUDE,
                 { maxTreeTextColour });
 
             ft = Formatter();
@@ -879,7 +878,7 @@ namespace OpenRCT2::Ui::Windows
 
             drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_SIMPLEX_BASE_FREQ].top + 1 },
-                STR_MAPGEN_SIMPLEX_NOISE_BASE_FREQUENCY, {}, { textColour });
+                STR_MAPGEN_SIMPLEX_NOISE_BASE_FREQUENCY, { textColour });
             drawText(
                 rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_SIMPLEX_OCTAVES].top + 1 }, STR_MAPGEN_SIMPLEX_NOISE_OCTAVES,
                 {}, { textColour });
@@ -991,7 +990,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Smooth strength label
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 24, widgets[WIDX_HEIGHTMAP_STRENGTH].top + 1 }, STR_MAPGEN_SMOOTH_STRENGTH, {},
+                rt, windowPos + ScreenCoordsXY{ 24, widgets[WIDX_HEIGHTMAP_STRENGTH].top + 1 }, STR_MAPGEN_SMOOTH_STRENGTH,
                 { strengthColour });
 
             // Smooth strength value
@@ -1241,12 +1240,12 @@ namespace OpenRCT2::Ui::Windows
 
             // Floor texture label
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_FLOOR_TEXTURE].top + 1 }, STR_TERRAIN_LABEL, {},
+                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_FLOOR_TEXTURE].top + 1 }, STR_TERRAIN_LABEL,
                 { enabledColour });
 
             // Minimum land height label and value
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_LOW].top + 1 }, STR_MAPGEN_MIN_LAND_HEIGHT, {},
+                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_LOW].top + 1 }, STR_MAPGEN_MIN_LAND_HEIGHT,
                 { enabledColour });
 
             auto ft = Formatter();
@@ -1259,7 +1258,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Maximum land height label and value
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_HIGH].top + 1 }, STR_MAPGEN_MAX_LAND_HEIGHT, {},
+                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_HEIGHTMAP_HIGH].top + 1 }, STR_MAPGEN_MAX_LAND_HEIGHT,
                 { maxLandColour });
 
             ft = Formatter();
@@ -1349,8 +1348,7 @@ namespace OpenRCT2::Ui::Windows
             const auto textColour = colours[1];
 
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_WATER_LEVEL].top + 1 }, STR_WATER_LEVEL_LABEL, {},
-                { textColour });
+                rt, windowPos + ScreenCoordsXY{ 10, widgets[WIDX_WATER_LEVEL].top + 1 }, STR_WATER_LEVEL_LABEL, { textColour });
 
             auto ft = Formatter();
             ft.Add<int32_t>(BaseZToMetres(_settings.waterLevel));

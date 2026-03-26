@@ -607,7 +607,7 @@ namespace OpenRCT2::Ui::Windows
                 // Draw build this... label
                 screenCoords = this->windowPos
                     + ScreenCoordsXY{ widgets[WIDX_CONSTRUCT].midX(), widgets[WIDX_CONSTRUCT].bottom - 23 };
-                drawText(rt, screenCoords, STR_BUILD_THIS, {}, { TextAlignment::centre });
+                drawText(rt, screenCoords, STR_BUILD_THIS, { TextAlignment::centre });
             }
 
             // Draw cost

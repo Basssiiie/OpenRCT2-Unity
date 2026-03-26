@@ -529,7 +529,7 @@ namespace OpenRCT2::Ui::Windows
                 && gLegacyScene != LegacyScene::trackDesignsManager)
             {
                 // Vehicle design not available
-                drawTextEllipsised(rt, screenPos, 368, STR_VEHICLE_DESIGN_UNAVAILABLE, {}, { TextAlignment::centre });
+                drawTextEllipsised(rt, screenPos, 368, STR_VEHICLE_DESIGN_UNAVAILABLE, { TextAlignment::centre });
                 screenPos.y -= kScrollableRowHeight;
             }
 
@@ -539,7 +539,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     // Scenery not available
                     drawTextEllipsised(
-                        rt, screenPos, 368, STR_DESIGN_INCLUDES_SCENERY_WHICH_IS_UNAVAILABLE, {}, { TextAlignment::centre });
+                        rt, screenPos, 368, STR_DESIGN_INCLUDES_SCENERY_WHICH_IS_UNAVAILABLE, { TextAlignment::centre });
                     screenPos.y -= kScrollableRowHeight;
                 }
             }

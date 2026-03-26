@@ -1277,7 +1277,7 @@ namespace OpenRCT2::Ui::Windows
             if (_loadedObject->IsCompatibilityObject())
             {
                 screenPos.y += drawTextWrapped(
-                                   rt, screenPos, descriptionWidth, STR_OBJECT_SELECTION_COMPAT_OBJECT_DESCRIPTION, {},
+                                   rt, screenPos, descriptionWidth, STR_OBJECT_SELECTION_COMPAT_OBJECT_DESCRIPTION,
                                    { Drawing::Colour::brightRed })
                     + kListRowHeight;
             }
@@ -1368,7 +1368,7 @@ namespace OpenRCT2::Ui::Windows
             // Draw fallback image warning
             if (_loadedObject && _loadedObject->UsesFallbackImages())
             {
-                drawText(rt, screenPos, STR_OBJECT_USES_FALLBACK_IMAGES, {}, { Drawing::Colour::white, TextAlignment::right });
+                drawText(rt, screenPos, STR_OBJECT_USES_FALLBACK_IMAGES, { Drawing::Colour::white, TextAlignment::right });
             }
             screenPos.y += kListRowHeight;
 
@@ -1376,7 +1376,7 @@ namespace OpenRCT2::Ui::Windows
             if (GetSelectedObjectType() == ObjectType::ride)
             {
                 auto stringId = GetRideTypeStringId(listItem->repositoryItem);
-                drawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+                drawText(rt, screenPos, stringId, { Drawing::Colour::white, TextAlignment::right });
             }
 
             // Draw peep animation object type
@@ -1384,14 +1384,14 @@ namespace OpenRCT2::Ui::Windows
             {
                 auto* animObj = reinterpret_cast<PeepAnimationsObject*>(_loadedObject.get());
                 auto stringId = GetAnimationPeepTypeStringId(animObj->GetPeepType());
-                drawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+                drawText(rt, screenPos, stringId, { Drawing::Colour::white, TextAlignment::right });
             }
 
             screenPos.y += kListRowHeight;
 
             // Draw object source
             auto stringId = ObjectManagerGetSourceGameString(listItem->repositoryItem->GetFirstSourceGame());
-            drawText(rt, screenPos, stringId, {}, { Drawing::Colour::white, TextAlignment::right });
+            drawText(rt, screenPos, stringId, { Drawing::Colour::white, TextAlignment::right });
             screenPos.y += kListRowHeight;
 
             // Draw object filename

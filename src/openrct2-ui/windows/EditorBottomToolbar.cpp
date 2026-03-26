@@ -372,8 +372,8 @@ namespace OpenRCT2::Ui::Windows
             if (gLegacyScene == LegacyScene::trackDesigner)
                 stringId = STR_EDITOR_STEP_OBJECT_SELECTION;
 
-            drawText(rt, { textX, textY }, STR_BACK_TO_PREVIOUS_STEP, {}, { textColour, TextAlignment::centre });
-            drawText(rt, { textX, textY + 10 }, stringId, {}, { textColour, TextAlignment::centre });
+            drawText(rt, { textX, textY }, STR_BACK_TO_PREVIOUS_STEP, { textColour, TextAlignment::centre });
+            drawText(rt, { textX, textY + 10 }, stringId, { textColour, TextAlignment::centre });
         }
 
         void DrawRightButtonBack(RenderTarget& rt)
@@ -413,8 +413,8 @@ namespace OpenRCT2::Ui::Windows
             if (gLegacyScene == LegacyScene::trackDesigner)
                 stringId = STR_EDITOR_STEP_ROLLERCOASTER_DESIGNER;
 
-            drawText(rt, { textX, textY }, STR_FORWARD_TO_NEXT_STEP, {}, { textColour, TextAlignment::centre });
-            drawText(rt, { textX, textY + 10 }, stringId, {}, { textColour, TextAlignment::centre });
+            drawText(rt, { textX, textY }, STR_FORWARD_TO_NEXT_STEP, { textColour, TextAlignment::centre });
+            drawText(rt, { textX, textY + 10 }, stringId, { textColour, TextAlignment::centre });
         }
 
         void DrawStepText(RenderTarget& rt)
@@ -423,7 +423,7 @@ namespace OpenRCT2::Ui::Windows
             int16_t stateY = height - 0x0C + windowPos.y;
             auto colour = colours[2].withFlag(ColourFlag::translucent, false).withFlag(ColourFlag::withOutline, true);
             drawText(
-                rt, { stateX, stateY }, kEditorStepNames[EnumValue(getGameState().editorStep)], {},
+                rt, { stateX, stateY }, kEditorStepNames[EnumValue(getGameState().editorStep)],
                 { colour, TextAlignment::centre });
         }
 

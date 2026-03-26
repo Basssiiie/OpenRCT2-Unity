@@ -597,7 +597,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Expenditure / Income heading
             drawText(
-                rt, screenCoords, STR_FINANCES_SUMMARY_EXPENDITURE_INCOME, {},
+                rt, screenCoords, STR_FINANCES_SUMMARY_EXPENDITURE_INCOME,
                 { Drawing::Colour::black, { TextPaintFlag::underline }, TextAlignment::left });
             screenCoords.y += 14;
 

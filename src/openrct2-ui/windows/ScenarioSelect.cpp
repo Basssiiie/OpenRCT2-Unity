@@ -345,7 +345,7 @@ namespace OpenRCT2::Ui::Windows
                     auto screenPos = windowPos
                         + ScreenCoordsXY{ widgets[WIDX_SCENARIOLIST].right + 4, widgets[WIDX_TABCONTENT].top + 5 };
                     drawTextEllipsised(
-                        rt, screenPos + ScreenCoordsXY{ previewPaneWidth / 2, 0 }, previewPaneWidth, STR_SCENARIO_LOCKED, {},
+                        rt, screenPos + ScreenCoordsXY{ previewPaneWidth / 2, 0 }, previewPaneWidth, STR_SCENARIO_LOCKED,
                         { TextAlignment::centre });
 
                     drawTextWrapped(rt, screenPos + ScreenCoordsXY{ 0, 15 }, previewPaneWidth, STR_SCENARIO_LOCKED_DESC);
@@ -648,7 +648,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Draw string
             int32_t centreX = (left + right) / 2;
-            drawText(rt, { centreX, y }, stringId, {}, { baseColour, TextAlignment::centre });
+            drawText(rt, { centreX, y }, stringId, { baseColour, TextAlignment::centre });
 
             // Get string dimensions
             utf8 buffer[512];

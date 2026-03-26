@@ -1722,7 +1722,7 @@ namespace OpenRCT2::Ui::Windows
             // Draw cost
             screenCoords = { windowPos.x + widget->midX(), windowPos.y + widget->bottom - 23 };
             if (_rideConstructionState != RideConstructionState::Place)
-                drawText(rt, screenCoords, STR_BUILD_THIS, {}, { TextAlignment::centre });
+                drawText(rt, screenCoords, STR_BUILD_THIS, { TextAlignment::centre });
 
             screenCoords.y += 11;
             if (_currentTrackPrice != kMoney64Undefined && !(getGameState().park.flags & PARK_FLAGS_NO_MONEY))

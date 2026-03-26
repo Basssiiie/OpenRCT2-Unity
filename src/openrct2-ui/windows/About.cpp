@@ -249,7 +249,7 @@ namespace OpenRCT2::Ui::Windows
             auto textCoords = windowPos + ScreenCoordsXY((width / 2) - 1, 240);
             auto textWidth = kWindowSize.width - (kPadding * 2);
             for (auto stringId : _OpenRCT2InfoStrings)
-                textCoords.y += drawTextWrapped(rt, textCoords, textWidth, stringId, {}, tp) + 5;
+                textCoords.y += drawTextWrapped(rt, textCoords, textWidth, stringId, tp) + 5;
 
             return textCoords.y - windowPos.y;
         }
@@ -270,7 +270,7 @@ namespace OpenRCT2::Ui::Windows
                     continue;
                 }
 
-                textCoords.y += drawTextWrapped(rt, textCoords, textWidth, stringId, {}, tp);
+                textCoords.y += drawTextWrapped(rt, textCoords, textWidth, stringId, tp);
                 if (stringId == STR_COPYRIGHT_CS)
                     textCoords.y += 74;
             }

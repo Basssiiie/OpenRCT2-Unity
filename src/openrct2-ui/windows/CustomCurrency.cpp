@@ -197,7 +197,7 @@ namespace OpenRCT2::Ui::Windows
 
             auto screenCoords = windowPos + ScreenCoordsXY{ 10, 18 + widgets[WIDX_TITLE].height() - 1 };
 
-            drawText(rt, screenCoords, STR_RATE, {}, { colours[1] });
+            drawText(rt, screenCoords, STR_RATE, { colours[1] });
 
             int32_t baseExchange = CurrencyDescriptors[EnumValue(CurrencyType::pounds)].rate;
             auto ft = Formatter();
@@ -206,7 +206,7 @@ namespace OpenRCT2::Ui::Windows
 
             screenCoords.y += 20;
 
-            drawText(rt, screenCoords, STR_CURRENCY_SYMBOL_TEXT, {}, { colours[1] });
+            drawText(rt, screenCoords, STR_CURRENCY_SYMBOL_TEXT, { colours[1] });
 
             screenCoords = windowPos + ScreenCoordsXY{ widgets[WIDX_SYMBOL_TEXT].left + 1, widgets[WIDX_SYMBOL_TEXT].top };
 
@@ -217,7 +217,7 @@ namespace OpenRCT2::Ui::Windows
             StringId stringId = (CurrencyDescriptors[EnumValue(CurrencyType::custom)].affix_unicode == CurrencyAffix::prefix)
                 ? STR_PREFIX
                 : STR_SUFFIX;
-            drawText(rt, drawPos, stringId, {}, { colours[1] });
+            drawText(rt, drawPos, stringId, { colours[1] });
         }
     };
 

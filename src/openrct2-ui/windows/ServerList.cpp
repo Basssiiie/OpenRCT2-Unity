@@ -312,7 +312,7 @@ namespace OpenRCT2::Ui::Windows
             drawWidgets(rt);
 
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PLAYER_NAME_INPUT].top }, STR_PLAYER_NAME, {},
+                rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PLAYER_NAME_INPUT].top }, STR_PLAYER_NAME,
                 { Drawing::Colour::white });
 
             // Draw version number

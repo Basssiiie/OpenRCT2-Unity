@@ -180,7 +180,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     // Scenery not available
                     drawTextEllipsised(
-                        rt, screenPos, 308, STR_DESIGN_INCLUDES_SCENERY_WHICH_IS_UNAVAILABLE, {}, { TextAlignment::centre });
+                        rt, screenPos, 308, STR_DESIGN_INCLUDES_SCENERY_WHICH_IS_UNAVAILABLE, { TextAlignment::centre });
                     screenPos.y -= kListRowHeight;
                 }
             }

@@ -369,7 +369,7 @@ namespace OpenRCT2::Ui::Windows
             auto screenPos = windowPos
                 + ScreenCoordsXY{ widgets[WIDX_CONTENT_PANEL].left + 4, widgets[WIDX_CONTENT_PANEL].top + 4 };
 
-            drawText(rt, screenPos, STR_DEFAULT_GROUP, {}, { colours[2] });
+            drawText(rt, screenPos, STR_DEFAULT_GROUP, { colours[2] });
 
             screenPos.y += 20;
 

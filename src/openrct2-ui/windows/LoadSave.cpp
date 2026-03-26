@@ -479,7 +479,7 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 drawText(
-                    rt, textPos, previewText, {},
+                    rt, textPos, previewText,
                     { ColourWithFlags{ Drawing::Colour::white }.withFlag(ColourFlag::withOutline, true),
                       TextAlignment::centre });
                 return;
@@ -797,8 +797,7 @@ namespace OpenRCT2::Ui::Windows
             if (action == LoadSaveAction::save)
             {
                 auto& widget = widgets[WIDX_FILENAME_TEXTBOX];
-                drawText(
-                    rt, windowPos + ScreenCoordsXY{ 5, widget.top + 2 }, STR_FILENAME_LABEL, {}, { Drawing::Colour::grey });
+                drawText(rt, windowPos + ScreenCoordsXY{ 5, widget.top + 2 }, STR_FILENAME_LABEL, { Drawing::Colour::grey });
             }
         }
 

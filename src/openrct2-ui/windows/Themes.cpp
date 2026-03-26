@@ -782,7 +782,7 @@ namespace OpenRCT2::Ui::Windows
                     for (uint8_t j = 0; j < numColours; j++)
                     {
                         drawTextWrapped(
-                            rt, { 2, screenCoords.y + 4 }, kWindowHeaderWidth, ThemeDescGetName(wc), {}, { colours[1] });
+                            rt, { 2, screenCoords.y + 4 }, kWindowHeaderWidth, ThemeDescGetName(wc), { colours[1] });
 
                         // Don't draw the empty row
                         if (emptyRow && j == 1)

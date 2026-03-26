@@ -63,7 +63,7 @@ namespace OpenRCT2
     {
         // Write (no image)
         auto screenCoords = ScreenCoordsXY{ width / 2, height / 2 };
-        drawText(rt, screenCoords, STR_WINDOW_NO_IMAGE, {}, { TextAlignment::centre });
+        drawText(rt, screenCoords, STR_WINDOW_NO_IMAGE, { TextAlignment::centre });
     }
 
     void WaterObject::ReadJson([[maybe_unused]] IReadObjectContext* context, json_t& root)
