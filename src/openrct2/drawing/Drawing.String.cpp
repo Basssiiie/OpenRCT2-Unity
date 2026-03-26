@@ -752,7 +752,7 @@ namespace OpenRCT2::Drawing
         }
     }
 
-    TextColours TTFDrawString(
+    TextColours ttfDrawString(
         RenderTarget& rt, u8string_view text, ColourWithFlags colour, const ScreenCoordsXY& coords, bool noFormatting,
         FontStyle fontStyle, TextDarkness darkness)
     {

@@ -123,7 +123,7 @@ void drawText(RenderTarget& rt, const ScreenCoordsXY& coords, u8string_view stri
             break;
     }
 
-    auto textPalette = TTFDrawString(
+    auto textPalette = ttfDrawString(
         rt, string, textPaint.colour, alignedCoords, noFormatting, textPaint.fontStyle, textPaint.darkness);
 
     if (textPaint.flags.has(TextPaintFlag::underline))
