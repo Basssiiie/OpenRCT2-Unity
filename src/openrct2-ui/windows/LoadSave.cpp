@@ -479,7 +479,7 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 drawText(
-                    rt, textPos, previewText, {},
+                    rt, textPos, previewText,
                     { ColourWithFlags{ Drawing::Colour::white }.withFlag(ColourFlag::withOutline, true),
                       TextAlignment::centre });
                 return;
@@ -754,13 +754,8 @@ namespace OpenRCT2::Ui::Windows
 
                 // Draw path text
                 const auto normalisedPath = Platform::StrDecompToPrecomp(buffer.data());
-                const auto* normalisedPathC = normalisedPath.c_str();
-
-                auto ft = Formatter();
-                ft.Add<const char*>(normalisedPathC);
-
                 auto pathPos = windowPos + ScreenCoordsXY{ 4, widget.top + 4 };
-                drawTextEllipsised(rt, pathPos, pathWidth, STR_STRING, ft);
+                drawTextEllipsised(rt, pathPos, pathWidth, normalisedPath);
             }
 
             const auto drawButtonCaption =
@@ -797,8 +792,7 @@ namespace OpenRCT2::Ui::Windows
             if (action == LoadSaveAction::save)
             {
                 auto& widget = widgets[WIDX_FILENAME_TEXTBOX];
-                drawText(
-                    rt, windowPos + ScreenCoordsXY{ 5, widget.top + 2 }, STR_FILENAME_LABEL, {}, { Drawing::Colour::grey });
+                drawText(rt, windowPos + ScreenCoordsXY{ 5, widget.top + 2 }, STR_FILENAME_LABEL, { Drawing::Colour::grey });
             }
         }
 

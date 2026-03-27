@@ -345,7 +345,7 @@ namespace OpenRCT2::Ui::Windows
                     auto screenPos = windowPos
                         + ScreenCoordsXY{ widgets[WIDX_SCENARIOLIST].right + 4, widgets[WIDX_TABCONTENT].top + 5 };
                     drawTextEllipsised(
-                        rt, screenPos + ScreenCoordsXY{ previewPaneWidth / 2, 0 }, previewPaneWidth, STR_SCENARIO_LOCKED, {},
+                        rt, screenPos + ScreenCoordsXY{ previewPaneWidth / 2, 0 }, previewPaneWidth, STR_SCENARIO_LOCKED,
                         { TextAlignment::centre });
 
                     drawTextWrapped(rt, screenPos + ScreenCoordsXY{ 0, 15 }, previewPaneWidth, STR_SCENARIO_LOCKED_DESC);
@@ -365,10 +365,7 @@ namespace OpenRCT2::Ui::Windows
             if (Config::Get().general.debuggingTools)
             {
                 const auto shortPath = shortenPath(scenario->Path, width - 6 - kTabWidth, FontStyle::medium);
-
-                auto ft = Formatter();
-                ft.Add<utf8*>(shortPath.c_str());
-                drawText(rt, windowPos + ScreenCoordsXY{ kTabWidth + 3, height - 3 - 11 }, STR_STRING, ft, { colours[1] });
+                drawText(rt, windowPos + ScreenCoordsXY{ kTabWidth + 3, height - 3 - 11 }, shortPath, { colours[1] });
             }
 
             // Scenario name
@@ -648,7 +645,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Draw string
             int32_t centreX = (left + right) / 2;
-            drawText(rt, { centreX, y }, stringId, {}, { baseColour, TextAlignment::centre });
+            drawText(rt, { centreX, y }, stringId, { baseColour, TextAlignment::centre });
 
             // Get string dimensions
             utf8 buffer[512];

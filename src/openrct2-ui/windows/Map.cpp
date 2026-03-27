@@ -705,7 +705,7 @@ namespace OpenRCT2::Ui::Windows
             else if (!isToolActive(*this, WIDX_SET_LAND_RIGHTS))
             {
                 drawText(
-                    rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_MAP_SIZE_SPINNER_Y].top + 1 }, STR_MAP_SIZE, {},
+                    rt, windowPos + ScreenCoordsXY{ 4, widgets[WIDX_MAP_SIZE_SPINNER_Y].top + 1 }, STR_MAP_SIZE,
                     { colours[1] });
             }
         }

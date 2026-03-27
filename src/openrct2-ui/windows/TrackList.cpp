@@ -482,10 +482,8 @@ namespace OpenRCT2::Ui::Windows
             if (Config::Get().general.debuggingTools)
             {
                 const auto shortPath = shortenPath(path, width, FontStyle::medium);
-                auto ft = Formatter();
-                ft.Add<utf8*>(shortPath.c_str());
                 drawText(
-                    rt, windowPos + ScreenCoordsXY{ 0, height - kDebugPathHeight - 3 }, STR_STRING, ft,
+                    rt, windowPos + ScreenCoordsXY{ 0, height - kDebugPathHeight - 3 }, shortPath,
                     { colours[1] }); // TODO Check dpi
             }
 
@@ -529,7 +527,7 @@ namespace OpenRCT2::Ui::Windows
                 && gLegacyScene != LegacyScene::trackDesignsManager)
             {
                 // Vehicle design not available
-                drawTextEllipsised(rt, screenPos, 368, STR_VEHICLE_DESIGN_UNAVAILABLE, {}, { TextAlignment::centre });
+                drawTextEllipsised(rt, screenPos, 368, STR_VEHICLE_DESIGN_UNAVAILABLE, { TextAlignment::centre });
                 screenPos.y -= kScrollableRowHeight;
             }
 
@@ -539,7 +537,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     // Scenery not available
                     drawTextEllipsised(
-                        rt, screenPos, 368, STR_DESIGN_INCLUDES_SCENERY_WHICH_IS_UNAVAILABLE, {}, { TextAlignment::centre });
+                        rt, screenPos, 368, STR_DESIGN_INCLUDES_SCENERY_WHICH_IS_UNAVAILABLE, { TextAlignment::centre });
                     screenPos.y -= kScrollableRowHeight;
                 }
             }

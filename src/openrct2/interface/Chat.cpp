@@ -192,11 +192,8 @@ void ChatDraw(RenderTarget& rt, ColourWithFlags chatBackgroundColor)
 
         screenCoords.y = _chatBottom - inputLineHeight - 5;
 
-        auto lineCh = lineBuffer.c_str();
-        auto ft = Formatter();
-        ft.Add<const char*>(lineCh);
         inputLineHeight = drawTextWrapped(
-            rt, screenCoords + ScreenCoordsXY{ 0, 3 }, _chatWidth - 10, STR_STRING, ft, { OpenRCT2::Drawing::kColourNull });
+            rt, screenCoords + ScreenCoordsXY{ 0, 3 }, _chatWidth - 10, lineBuffer, { OpenRCT2::Drawing::kColourNull });
         GfxSetDirtyBlocks({ screenCoords, { screenCoords + ScreenCoordsXY{ _chatWidth, inputLineHeight + 15 } } });
 
         // TODO: Show caret if the input text has multiple lines

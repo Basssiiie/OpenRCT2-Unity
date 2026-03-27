@@ -1141,7 +1141,7 @@ static uint64_t PageDisabledWidgets[] = {
                         screenCoords = windowPos
                             + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7,
                                               widgets[WIDX_SURFACE_SPINNER_HEIGHT].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
                         // Current base height
                         screenCoords.x = windowPos.x + widgets[WIDX_SURFACE_SPINNER_HEIGHT].left + 3;
@@ -1153,7 +1153,7 @@ static uint64_t PageDisabledWidgets[] = {
                         screenCoords = windowPos
                             + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7,
                                               widgets[WIDX_SURFACE_CHECK_CORNER_E].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_SURFACE_CORNERS, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_SURFACE_CORNERS, { colours[1] });
                         break;
                     }
                     case TileElementType::Path:
@@ -1209,7 +1209,7 @@ static uint64_t PageDisabledWidgets[] = {
                         else
                         {
                             drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS_NONE, {},
+                                rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS_NONE,
                                 { Drawing::Colour::white });
                         }
 
@@ -1217,7 +1217,7 @@ static uint64_t PageDisabledWidgets[] = {
                         // Raise / lower label
                         screenCoords = windowPos
                             + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_PATH_SPINNER_HEIGHT].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
                         // Current base height
                         screenCoords.x = windowPos.x + widgets[WIDX_PATH_SPINNER_HEIGHT].left + 3;
@@ -1228,7 +1228,7 @@ static uint64_t PageDisabledWidgets[] = {
                         // Path connections
                         screenCoords = windowPos
                             + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_PATH_CHECK_EDGE_W].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_PATH_CONNECTED_EDGES, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_PATH_CONNECTED_EDGES, { colours[1] });
                         break;
                     }
 
@@ -1299,7 +1299,7 @@ static uint64_t PageDisabledWidgets[] = {
                         // Properties
                         // Raise / lower label
                         screenCoords.y = windowPos.y + widgets[WIDX_TRACK_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
                         // Current base height
                         screenCoords.x = windowPos.x + widgets[WIDX_TRACK_SPINNER_HEIGHT].left + 3;
@@ -1345,7 +1345,7 @@ static uint64_t PageDisabledWidgets[] = {
                         // Properties
                         // Raise / Lower
                         screenCoords.y = windowPos.y + widgets[WIDX_SCENERY_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
                         // Current base height
                         screenCoords.x = windowPos.x + widgets[WIDX_SCENERY_SPINNER_HEIGHT].left + 3;
@@ -1357,11 +1357,11 @@ static uint64_t PageDisabledWidgets[] = {
                         screenCoords = windowPos
                             + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7,
                                               widgets[WIDX_SCENERY_CHECK_QUARTER_E].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_SCENERY_QUADRANT_LABEL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_SCENERY_QUADRANT_LABEL, { colours[1] });
 
                         // Collision
                         screenCoords.y = windowPos.y + widgets[WIDX_SCENERY_CHECK_COLLISION_E].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_COLLISSION, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_COLLISSION, { colours[1] });
                         break;
                     }
 
@@ -1432,7 +1432,7 @@ static uint64_t PageDisabledWidgets[] = {
                         // Properties
                         // Raise / Lower
                         screenCoords.y = windowPos.y + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
                         // Current base height
                         screenCoords.x = windowPos.x + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].left + 3;
@@ -1463,14 +1463,14 @@ static uint64_t PageDisabledWidgets[] = {
                         else
                         {
                             drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRY_BANNER_NONE, {},
+                                rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRY_BANNER_NONE,
                                 { colours[1] });
                         }
 
                         // Properties
                         // Raise / lower label
                         screenCoords.y = windowPos.y + widgets[WIDX_WALL_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
                         // Current base height
                         screenCoords.x = windowPos.x + widgets[WIDX_WALL_SPINNER_HEIGHT].left + 3;
@@ -1481,11 +1481,11 @@ static uint64_t PageDisabledWidgets[] = {
                         // Slope label
                         screenCoords = windowPos
                             + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_WALL_DROPDOWN_SLOPE].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_SLOPE, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_SLOPE, { colours[1] });
 
                         // Animation frame label
                         screenCoords.y = windowPos.y + widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_ANIMATION_FRAME, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_ANIMATION_FRAME, { colours[1] });
 
                         // Current animation frame
                         auto colour = colours[1];
@@ -1535,14 +1535,14 @@ static uint64_t PageDisabledWidgets[] = {
                         else
                         {
                             drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRY_BANNER_NONE, {},
+                                rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRY_BANNER_NONE,
                                 { colours[1] });
                         }
 
                         // Properties
                         // Raise / lower label
                         screenCoords.y = windowPos.y + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
                         // Current base height
                         screenCoords.x = windowPos.x + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].left + 3;
@@ -1567,7 +1567,7 @@ static uint64_t PageDisabledWidgets[] = {
                         // Properties
                         // Raise / lower label
                         screenCoords.y = windowPos.y + widgets[WIDX_BANNER_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
                         // Current base height
                         screenCoords.x = windowPos.x + widgets[WIDX_BANNER_SPINNER_HEIGHT].left + 3;
@@ -1578,7 +1578,7 @@ static uint64_t PageDisabledWidgets[] = {
                         // Blocked paths
                         screenCoords.y += 28;
                         screenCoords.x = windowPos.x + widgets[WIDX_GROUPBOX_DETAILS].left + 7;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BANNER_BLOCKED_PATHS, {}, { colours[1] });
+                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BANNER_BLOCKED_PATHS, { colours[1] });
                         break;
                     }
 

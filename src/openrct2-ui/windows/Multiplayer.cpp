@@ -197,18 +197,14 @@ namespace OpenRCT2::Ui::Windows
 
                 const auto& name = Network::GetServerName();
                 {
-                    auto ft = Formatter();
-                    ft.Add<const char*>(name.c_str());
-                    screenCoords.y += drawTextWrapped(clippedRT, screenCoords, newWidth, STR_STRING, ft, { colours[1] });
+                    screenCoords.y += drawTextWrapped(clippedRT, screenCoords, newWidth, name, { colours[1] });
                     screenCoords.y += kListRowHeight / 2;
                 }
 
                 const auto& description = Network::GetServerDescription();
                 if (!description.empty())
                 {
-                    auto ft = Formatter();
-                    ft.Add<const char*>(description.c_str());
-                    screenCoords.y += drawTextWrapped(clippedRT, screenCoords, newWidth, STR_STRING, ft, { colours[1] });
+                    screenCoords.y += drawTextWrapped(clippedRT, screenCoords, newWidth, description, { colours[1] });
                     screenCoords.y += kListRowHeight / 2;
                 }
 
@@ -369,7 +365,7 @@ namespace OpenRCT2::Ui::Windows
             auto screenPos = windowPos
                 + ScreenCoordsXY{ widgets[WIDX_CONTENT_PANEL].left + 4, widgets[WIDX_CONTENT_PANEL].top + 4 };
 
-            drawText(rt, screenPos, STR_DEFAULT_GROUP, {}, { colours[2] });
+            drawText(rt, screenPos, STR_DEFAULT_GROUP, { colours[2] });
 
             screenPos.y += 20;
 
@@ -383,10 +379,8 @@ namespace OpenRCT2::Ui::Windows
             {
                 _buffer.assign("{WINDOW_COLOUR_2}");
                 _buffer += Network::GetGroupName(group);
-                auto ft = Formatter();
-                ft.Add<const char*>(_buffer.c_str());
                 drawTextEllipsised(
-                    rt, windowPos + ScreenCoordsXY{ widget->midX() - 5, widget->top }, widget->width() - 9, STR_STRING, ft,
+                    rt, windowPos + ScreenCoordsXY{ widget->midX() - 5, widget->top }, widget->width() - 9, _buffer,
                     { TextAlignment::centre });
             }
         }

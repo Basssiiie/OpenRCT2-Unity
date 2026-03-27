@@ -1425,7 +1425,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     auto colour = ColourWithFlags{ Drawing::Colour::darkOrange }.withFlag(ColourFlag::withOutline, true);
                     drawText(
-                        rt, screenPos + ScreenCoordsXY{ 26, 2 }, STR_OVERLAY_CLEARANCE_CHECKS_DISABLED, {},
+                        rt, screenPos + ScreenCoordsXY{ 26, 2 }, STR_OVERLAY_CLEARANCE_CHECKS_DISABLED,
                         { colour, TextAlignment::right });
                 }
             }

@@ -551,12 +551,12 @@ namespace OpenRCT2::Ui::Windows
                 {
                     // ... source game ...
                     const auto sourceStringId = ObjectManagerGetSourceGameString(entry.Entry.GetSourceGame());
-                    drawText(rt, { kSourceColLeft - 3, screenCoords.y }, sourceStringId, {}, { Drawing::Colour::darkGreen });
+                    drawText(rt, { kSourceColLeft - 3, screenCoords.y }, sourceStringId, { Drawing::Colour::darkGreen });
                 }
 
                 // ... and type
                 const auto type = GetStringFromObjectType(entry.GetType());
-                drawText(rt, { kTypeColLeft - 3, screenCoords.y }, type, {}, { Drawing::Colour::darkGreen });
+                drawText(rt, { kTypeColLeft - 3, screenCoords.y }, type, { Drawing::Colour::darkGreen });
             }
         }
 

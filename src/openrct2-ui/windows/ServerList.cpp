@@ -312,7 +312,7 @@ namespace OpenRCT2::Ui::Windows
             drawWidgets(rt);
 
             drawText(
-                rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PLAYER_NAME_INPUT].top }, STR_PLAYER_NAME, {},
+                rt, windowPos + ScreenCoordsXY{ 6, widgets[WIDX_PLAYER_NAME_INPUT].top }, STR_PLAYER_NAME,
                 { Drawing::Colour::white });
 
             // Draw version number
@@ -386,10 +386,8 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 // Finally, draw the server information.
-                auto ft = Formatter();
-                ft.Add<const char*>(serverInfoToShow);
                 drawTextEllipsised(
-                    rt, screenCoords + ScreenCoordsXY{ 0, 3 }, spaceAvailableForInfo, STR_STRING, ft, { colour });
+                    rt, screenCoords + ScreenCoordsXY{ 0, 3 }, spaceAvailableForInfo, serverInfoToShow, { colour });
 
                 int32_t right = listWidgetWidth - 7 - kScrollBarWidth;
 

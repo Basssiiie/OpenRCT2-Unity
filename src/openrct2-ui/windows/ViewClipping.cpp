@@ -295,7 +295,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Clip height value
             auto screenCoords = this->windowPos + ScreenCoordsXY{ 8, this->widgets[WIDX_CLIP_HEIGHT_VALUE].top };
-            drawText(rt, screenCoords, STR_VIEW_CLIPPING_HEIGHT_VALUE, {}, { this->colours[0] });
+            drawText(rt, screenCoords, STR_VIEW_CLIPPING_HEIGHT_VALUE, { this->colours[0] });
 
             screenCoords = this->windowPos
                 + ScreenCoordsXY{ this->widgets[WIDX_CLIP_HEIGHT_VALUE].left + 1, this->widgets[WIDX_CLIP_HEIGHT_VALUE].top };

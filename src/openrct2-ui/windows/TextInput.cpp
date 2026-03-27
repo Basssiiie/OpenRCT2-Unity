@@ -207,9 +207,7 @@ namespace OpenRCT2::Ui::Windows
 
             if (_descriptionStringId == kStringIdNone)
             {
-                auto ft = Formatter();
-                ft.Add<const char*>(_description.c_str());
-                drawTextWrapped(rt, screenCoords, kWindowSize.width, STR_STRING, ft, { colours[1], TextAlignment::centre });
+                drawTextWrapped(rt, screenCoords, kWindowSize.width, _description, { colours[1], TextAlignment::centre });
             }
             else
             {

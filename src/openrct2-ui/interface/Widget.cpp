@@ -27,6 +27,7 @@
 #include <openrct2/interface/ColourWithFlags.h>
 #include <openrct2/localisation/Formatter.h>
 #include <openrct2/localisation/Formatting.h>
+#include <openrct2/localisation/Language.h>
 #include <openrct2/localisation/StringIds.h>
 
 using namespace OpenRCT2;
@@ -485,34 +486,20 @@ namespace OpenRCT2::Ui
         auto textRight = l;
 
         // Text
-        auto stringId = widget.text;
-        auto rawFt = Formatter();
-        if (widget.flags.has(WidgetFlag::textIsString))
-        {
-            if (widget.string != nullptr && widget.string[0] != '\0')
-            {
-                stringId = STR_STRING;
-                rawFt.Add<utf8*>(widget.string);
-            }
-            else
-            {
-                stringId = kStringIdNone;
-            }
-        }
+        u8string groupCaption{};
+        if (widget.flags.has(WidgetFlag::textIsString) && widget.string != nullptr)
+            groupCaption = widget.string;
+        else
+            groupCaption = LanguageGetString(widget.text);
 
-        if (stringId != kStringIdNone)
+        if (!groupCaption.empty())
         {
             auto colour = w.colours[widget.colour].withFlag(ColourFlag::translucent, false);
             if (widgetIsDisabled(w, widgetIndex))
                 colour.flags.set(ColourFlag::inset, true);
 
-            utf8 buffer[512] = { 0 };
-            FormatStringLegacy(buffer, sizeof(buffer), stringId, rawFt.Data());
-
-            auto ft = Formatter();
-            ft.Add<utf8*>(buffer);
-            drawText(rt, { l, t }, STR_STRING, ft, { colour });
-            textRight = l + getStringWidth(buffer, FontStyle::medium) + 1;
+            drawText(rt, { l, t }, groupCaption, { colour });
+            textRight = l + getStringWidth(groupCaption, FontStyle::medium) + 1;
         }
 
         // Border

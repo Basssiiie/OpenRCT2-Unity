@@ -4200,7 +4200,7 @@ namespace OpenRCT2::Ui::Windows
                 {
                     if (stringId == STR_CALLING_MECHANIC || stringId == STR_NO_MECHANICS_ARE_HIRED_MESSAGE)
                     {
-                        drawTextWrapped(rt, screenCoords, 280, stringId, {}, { TextAlignment::left });
+                        drawTextWrapped(rt, screenCoords, 280, stringId, { TextAlignment::left });
                     }
                     else
                     {
@@ -5388,7 +5388,7 @@ namespace OpenRCT2::Ui::Windows
 
             // 'Tracks' caption
             auto trackLabelPos = windowPos + ScreenCoordsXY{ widgets[WIDX_MUSIC_DATA].left, widgets[WIDX_MUSIC_DATA].top - 13 };
-            drawTextWrapped(rt, trackLabelPos, width, STR_MUSIC_OBJECT_TRACK_HEADER, {}, { TextAlignment::left });
+            drawTextWrapped(rt, trackLabelPos, width, STR_MUSIC_OBJECT_TRACK_HEADER, { TextAlignment::left });
 
             // Do we have a preview image to draw?
             auto musicObj = ride->getMusicObject();
@@ -5759,8 +5759,7 @@ namespace OpenRCT2::Ui::Windows
                 Widget* widget = &widgets[WIDX_PAGE_BACKGROUND];
 
                 ScreenCoordsXY widgetCoords(windowPos.x + widget->midX(), windowPos.y + widget->top + 40);
-                drawTextWrapped(
-                    rt, widgetCoords, width - 8, STR_CLICK_ITEMS_OF_SCENERY_TO_SELECT, {}, { TextAlignment::centre });
+                drawTextWrapped(rt, widgetCoords, width - 8, STR_CLICK_ITEMS_OF_SCENERY_TO_SELECT, { TextAlignment::centre });
 
                 widgetCoords.x = windowPos.x + 4;
                 widgetCoords.y = windowPos.y + widgets[WIDX_SELECT_NEARBY_SCENERY].bottom + 17;

@@ -436,11 +436,9 @@ namespace OpenRCT2::Ui::Windows
                 thread_local std::string _buffer;
                 _buffer.assign("{WINDOW_COLOUR_2}");
                 _buffer += Network::GetGroupName(groupindex);
-                auto ft = Formatter();
-                ft.Add<const char*>(_buffer.c_str());
 
                 drawTextEllipsised(
-                    rt, windowPos + ScreenCoordsXY{ widget->midX() - 5, widget->top }, widget->width() - 9, STR_STRING, ft,
+                    rt, windowPos + ScreenCoordsXY{ widget->midX() - 5, widget->top }, widget->width() - 9, _buffer,
                     { TextAlignment::centre });
             }
 
