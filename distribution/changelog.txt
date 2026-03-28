@@ -1,4 +1,4 @@
-0.4.33 (in development)
+0.5.0 (in development)
 ------------------------------------------------------------------------
 - Feature: [#26178] Port of the Spinning Cars from RollerCoaster Tycoon 1.
 - Improved: [#25314] Add unbanked and banked quarter helices to the Alpine, Corkscrew, Giga, Hybrid, Looping, Mine Ride, Mini, Multi-Dimension, Single Rail, Stand Up and Twister tracks.
