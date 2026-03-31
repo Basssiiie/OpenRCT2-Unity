@@ -1092,10 +1092,11 @@ namespace OpenRCT2::Scripting
         {
             WidgetData data = GetWidgetData(thisVal);
             auto w = GetWindow(data._class, data._number);
-            if (IsCustomWindow(w))
+            auto wPtr = GetWidget(w, data._widgetIndex);
+            if (IsCustomWindow(w) && wPtr)
             {
                 Ui::Windows::WindowStartTextbox(
-                    *w, data._widgetIndex, GetWidget(thisVal)->string, Ui::Windows::GetWidgetMaxLength(w, data._widgetIndex));
+                    *w, data._widgetIndex, wPtr->string, Ui::Windows::GetWidgetMaxLength(w, data._widgetIndex));
             }
             return JS_UNDEFINED;
         }
