@@ -1956,7 +1956,7 @@ namespace OpenRCT2::Network
             JS_SetPropertyStr(ctx, obj, "player", JS_NewInt32(ctx, playerId));
 
             // Call the subscriptions
-            hookEngine.Call(HookType::networkJoin, obj, false);
+            hookEngine.Call(HookType::networkLeave, obj, false);
         }
     #endif
     }

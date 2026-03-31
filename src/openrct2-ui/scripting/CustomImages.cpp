@@ -212,7 +212,7 @@ namespace OpenRCT2::Scripting
             JS_GetLength(ctx, data, &arrSz);
             if (arrSz > 0)
             {
-                result.resize(arrSz);
+                result.reserve(arrSz);
                 JSIterateArray(ctx, data, [&result](JSContext* ctx2, JSValue val) { result.push_back(JSToInt(ctx2, val)); });
             }
         }

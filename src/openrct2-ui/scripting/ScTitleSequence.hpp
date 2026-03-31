@@ -244,6 +244,7 @@ namespace OpenRCT2::Scripting
                     if (index)
                     {
                         TitleSequenceRenamePark(*seq, *index, valueStr.c_str());
+                        data->_fileName = valueStr;
                         TitleSequenceSave(*seq);
                     }
                 }

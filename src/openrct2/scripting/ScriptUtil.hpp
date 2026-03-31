@@ -588,27 +588,6 @@ namespace OpenRCT2::Scripting
             JS_ThrowTypeError(ctx, "Expected object");                                                                         \
             return JS_EXCEPTION;                                                                                               \
         }
-
-    #define JS_UNPACK_COORDSXY(var, ctx, val)                                                                                  \
-        CoordsXY var;                                                                                                          \
-        if (!JS_IsObject(var))                                                                                                 \
-        {                                                                                                                      \
-            JS_ThrowTypeError(ctx, "Expected CoordsXY");                                                                       \
-            return JS_EXCEPTION;                                                                                               \
-        }                                                                                                                      \
-        {                                                                                                                      \
-            auto x = JSToOptionalInt(ctx, position, "x");                                                                      \
-            auto y = JSToOptionalInt(ctx, position, "y");                                                                      \
-            if (x.has_value() && y.has_value())                                                                                \
-            {                                                                                                                  \
-                var = CoordsXY(x.value(), y.value());                                                                          \
-            }                                                                                                                  \
-            else                                                                                                               \
-            {                                                                                                                  \
-                JS_ThrowTypeError(ctx, "Expected CoordsXY");                                                                   \
-                return JS_EXCEPTION;                                                                                           \
-            }                                                                                                                  \
-        }
 } // namespace OpenRCT2::Scripting
 
 #endif

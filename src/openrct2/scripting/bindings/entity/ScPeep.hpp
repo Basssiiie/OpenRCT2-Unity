@@ -186,7 +186,7 @@ namespace OpenRCT2::Scripting
             auto peep = GetPeep(thisVal);
             if (peep != nullptr)
             {
-                value = std::clamp(static_cast<uint8_t>(value), kPeepMinEnergy, kPeepMaxEnergy);
+                value = static_cast<uint8_t>(std::clamp<uint32_t>(value, kPeepMinEnergy, kPeepMaxEnergy));
                 peep->Energy = value;
                 peep->Invalidate();
             }
@@ -205,7 +205,7 @@ namespace OpenRCT2::Scripting
             auto peep = GetPeep(thisVal);
             if (peep != nullptr)
             {
-                auto target = std::clamp(static_cast<uint8_t>(value), kPeepMinEnergy, kPeepMaxEnergyTarget);
+                auto target = static_cast<uint8_t>(std::clamp<uint32_t>(value, kPeepMinEnergy, kPeepMaxEnergyTarget));
                 peep->EnergyTarget = target;
             }
             return JS_UNDEFINED;

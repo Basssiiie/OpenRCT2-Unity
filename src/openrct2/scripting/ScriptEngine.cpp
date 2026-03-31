@@ -1828,7 +1828,7 @@ std::pair<std::unique_ptr<GameActions::GameAction>, bool> ScriptEngine::CreateGa
     if (json.empty())
     {
         JSValue emptyObj = JS_NewObject(ctx);
-        JSValue jsonVal = JS_JSONStringify(ctx, args, JS_UNDEFINED, JS_UNDEFINED);
+        JSValue jsonVal = JS_JSONStringify(ctx, emptyObj, JS_UNDEFINED, JS_UNDEFINED);
         json = JSToStdString(ctx, jsonVal);
         JS_FreeValue(ctx, emptyObj);
         JS_FreeValue(ctx, jsonVal);

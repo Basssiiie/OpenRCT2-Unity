@@ -549,7 +549,7 @@ namespace OpenRCT2::Scripting
                     // Set all peep slots between last valid peep and current to NULL (if there were any null peeps).
                     for (size_t j = len; j < i; j++)
                     {
-                        JS_SetPropertyInt64(ctx, result, i, JS_NULL);
+                        JS_SetPropertyInt64(ctx, result, j, JS_NULL);
                     }
 
                     JS_SetPropertyInt64(ctx, result, i, JS_NewUint32(ctx, peep.ToUnderlying()));
