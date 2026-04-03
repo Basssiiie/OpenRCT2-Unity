@@ -2830,7 +2830,8 @@ namespace OpenRCT2::Network
             auto loadOrQuitAction = GameActions::LoadOrQuitAction(
                 GameActions::LoadOrQuitModes::OpenSavePrompt, PromptMode::saveBeforeQuit);
 
-            loadOrQuitAction.Execute(getGameState());
+            auto& gameState = getGameState();
+            loadOrQuitAction.Execute(gameState, gameState.park);
         }
     }
 

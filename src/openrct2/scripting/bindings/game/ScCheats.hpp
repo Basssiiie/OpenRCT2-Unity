@@ -404,8 +404,13 @@ namespace OpenRCT2::Scripting
             JS_UNPACK_INT32(valueInt, ctx, value);
             JS_THROW_IF_GAME_STATE_NOT_MUTABLE();
             int32_t adjusted = std::max(-1, std::min(valueInt, 999));
-            getGameState().cheats.forcedParkRating = adjusted;
-            Park::SetForcedRating(adjusted);
+
+            auto& gameState = getGameState();
+            auto& park = gameState.park;
+
+            gameState.cheats.forcedParkRating = adjusted;
+
+            Park::SetForcedRating(park, adjusted);
 
             return JS_UNDEFINED;
         }

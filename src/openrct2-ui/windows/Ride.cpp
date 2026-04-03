@@ -6573,7 +6573,10 @@ namespace OpenRCT2::Ui::Windows
 
             auto rideEntry = ride->getRideEntry();
             const auto& rtd = ride->getRideTypeDescriptor();
-            return Park::RidePricesUnlocked() || rtd.specialType == RtdSpecialType::toilet
+
+            auto& park = getGameState().park;
+
+            return Park::RidePricesUnlocked(park) || rtd.specialType == RtdSpecialType::toilet
                 || (rideEntry != nullptr && rideEntry->shop_item[0] != ShopItem::none);
         }
 
@@ -6734,9 +6737,11 @@ namespace OpenRCT2::Ui::Windows
             widgets[WIDX_PRIMARY_PRICE_LABEL].tooltip = kStringIdNone;
             widgets[WIDX_PRIMARY_PRICE].tooltip = kStringIdNone;
 
+            auto& park = getGameState().park;
+
             // If ride prices are locked, do not allow setting the price, unless we're dealing with a shop or toilet.
             const auto& rtd = ride->getRideTypeDescriptor();
-            if (!Park::RidePricesUnlocked() && rideEntry->shop_item[0] == ShopItem::none
+            if (!Park::RidePricesUnlocked(park) && rideEntry->shop_item[0] == ShopItem::none
                 && rtd.specialType != RtdSpecialType::toilet)
             {
                 disabledWidgets |= (1uLL << WIDX_PRIMARY_PRICE);
