@@ -278,10 +278,6 @@ namespace OpenRCT2::Ui::Windows
         return anchorPoint + ScreenCoordsXY{ 14 * horizontalMultiplier, 7 * verticalMultiplier };
     }
 
-    // Macros for easily obtaining the top and bottom of a widget inside a properties group box
-    #define GBBT(GROUPTOP, row)     ((GROUPTOP) + 14 + row * (kPropertyButtonSize.height + kVerticalGroupboxPadding))
-    #define GBBB(GROUPTOP, row)     (GBBT((GROUPTOP), row) + kPropertyButtonSize.height)
-
     static constexpr auto kMainTileInspectorWidgets = makeWidgets(
         makeWindowShim(kWindowTitle, kWindowSize),
         makeWidget({3, 57}, {kWindowSize.width - 6, kWindowSize.height - kBottomPadding - 58}, WidgetType::scroll, WindowColour::secondary, SCROLL_VERTICAL), /* Element list */
@@ -2174,12 +2170,14 @@ namespace OpenRCT2::Ui::Windows
             {
                 widgets[WIDX_GROUPBOX_DETAILS].type = WidgetType::groupbox;
                 widgets[WIDX_GROUPBOX_PROPERTIES].type = WidgetType::groupbox;
+
                 auto pageIndex = EnumValue(tileInspectorPage) - 1;
-                widgets[WIDX_GROUPBOX_DETAILS].text = kPageGroupBoxSettings[pageIndex].string_id;
-                widgets[WIDX_GROUPBOX_DETAILS].top = height - kPageGroupBoxSettings[pageIndex].details_top_offset;
-                widgets[WIDX_GROUPBOX_DETAILS].bottom = height - kPageGroupBoxSettings[pageIndex].details_bottom_offset;
-                widgets[WIDX_GROUPBOX_PROPERTIES].top = height - kPageGroupBoxSettings[pageIndex].properties_top_offset;
-                widgets[WIDX_GROUPBOX_PROPERTIES].bottom = height - kPageGroupBoxSettings[pageIndex].properties_bottom_offset;
+                auto& settings = kPageGroupBoxSettings[pageIndex];
+                widgets[WIDX_GROUPBOX_DETAILS].text = settings.string_id;
+                widgets[WIDX_GROUPBOX_DETAILS].top = height - settings.details_top_offset;
+                widgets[WIDX_GROUPBOX_DETAILS].bottom = height - settings.details_bottom_offset;
+                widgets[WIDX_GROUPBOX_PROPERTIES].top = height - settings.properties_top_offset;
+                widgets[WIDX_GROUPBOX_PROPERTIES].bottom = height - settings.properties_bottom_offset;
                 widgets[WIDX_LIST].bottom = widgets[WIDX_GROUPBOX_DETAILS].top - kGroupboxPadding;
             }
 
@@ -2189,31 +2187,29 @@ namespace OpenRCT2::Ui::Windows
 
             // Using a switch, because I don't think giving each page their own callbacks is
             // needed here, as only the mouseup and invalidate functions are different.
-            const int32_t propertiesAnchor = widgets[WIDX_GROUPBOX_PROPERTIES].top;
+            const auto propertiesAnchor = ScreenCoordsXY{ widgets[WIDX_GROUPBOX_PROPERTIES].left + 6,
+                                                          widgets[WIDX_GROUPBOX_PROPERTIES].top + 17 };
 
             switch (tileElement->GetType())
             {
                 case TileElementType::Surface:
-                    widgets[WIDX_SURFACE_SPINNER_HEIGHT].top = GBBT(propertiesAnchor, 0) + 3;
-                    widgets[WIDX_SURFACE_SPINNER_HEIGHT].bottom = GBBB(propertiesAnchor, 0) - 3;
-                    widgets[WIDX_SURFACE_SPINNER_HEIGHT_INCREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_SURFACE_SPINNER_HEIGHT_INCREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_SURFACE_SPINNER_HEIGHT_DECREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_SURFACE_SPINNER_HEIGHT_DECREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_SURFACE_BUTTON_REMOVE_FENCES].top = GBBT(propertiesAnchor, 1);
-                    widgets[WIDX_SURFACE_BUTTON_REMOVE_FENCES].bottom = GBBB(propertiesAnchor, 1);
-                    widgets[WIDX_SURFACE_BUTTON_RESTORE_FENCES].top = GBBT(propertiesAnchor, 1);
-                    widgets[WIDX_SURFACE_BUTTON_RESTORE_FENCES].bottom = GBBB(propertiesAnchor, 1);
-                    widgets[WIDX_SURFACE_CHECK_CORNER_N].top = GBBT(propertiesAnchor, 2) + 7 * 0;
-                    widgets[WIDX_SURFACE_CHECK_CORNER_N].bottom = widgets[WIDX_SURFACE_CHECK_CORNER_N].top + 13;
-                    widgets[WIDX_SURFACE_CHECK_CORNER_E].top = GBBT(propertiesAnchor, 2) + 7 * 1;
-                    widgets[WIDX_SURFACE_CHECK_CORNER_E].bottom = widgets[WIDX_SURFACE_CHECK_CORNER_E].top + 13;
-                    widgets[WIDX_SURFACE_CHECK_CORNER_S].top = GBBT(propertiesAnchor, 2) + 7 * 2;
-                    widgets[WIDX_SURFACE_CHECK_CORNER_S].bottom = widgets[WIDX_SURFACE_CHECK_CORNER_S].top + 13;
-                    widgets[WIDX_SURFACE_CHECK_CORNER_W].top = GBBT(propertiesAnchor, 2) + 7 * 1;
-                    widgets[WIDX_SURFACE_CHECK_CORNER_W].bottom = widgets[WIDX_SURFACE_CHECK_CORNER_W].top + 13;
-                    widgets[WIDX_SURFACE_CHECK_DIAGONAL].top = GBBT(propertiesAnchor, 3) + 7 * 1;
-                    widgets[WIDX_SURFACE_CHECK_DIAGONAL].bottom = widgets[WIDX_SURFACE_CHECK_DIAGONAL].top + 13;
+                    widgets[WIDX_SURFACE_SPINNER_HEIGHT].moveTo(PropertyRowCol(propertiesAnchor, 0, 1));
+                    widgets[WIDX_SURFACE_SPINNER_HEIGHT_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 1 });
+                    widgets[WIDX_SURFACE_SPINNER_HEIGHT_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 1 });
+                    widgets[WIDX_SURFACE_BUTTON_REMOVE_FENCES].moveTo(PropertyRowCol(propertiesAnchor, 1, 0));
+                    widgets[WIDX_SURFACE_BUTTON_RESTORE_FENCES].moveTo(PropertyRowCol(propertiesAnchor, 1, 1));
+                    widgets[WIDX_SURFACE_CHECK_CORNER_N].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 3, 1), 1, 0));
+                    widgets[WIDX_SURFACE_CHECK_CORNER_E].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 3, 1), 2, 1));
+                    widgets[WIDX_SURFACE_CHECK_CORNER_S].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 3, 1), 1, 2));
+                    widgets[WIDX_SURFACE_CHECK_CORNER_W].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 3, 1), 0, 1));
+                    widgets[WIDX_SURFACE_CHECK_DIAGONAL].moveTo(PropertyRowCol(propertiesAnchor, 4, 0));
+
                     setCheckboxValue(
                         WIDX_SURFACE_CHECK_CORNER_N,
                         tileElement->AsSurface()->GetSlope() & (1 << ((2 - GetCurrentRotation()) & 3)));
@@ -2231,34 +2227,23 @@ namespace OpenRCT2::Ui::Windows
                     break;
 
                 case TileElementType::Path:
-                    widgets[WIDX_PATH_SPINNER_HEIGHT].top = GBBT(propertiesAnchor, 0) + 3;
-                    widgets[WIDX_PATH_SPINNER_HEIGHT].bottom = GBBB(propertiesAnchor, 0) - 3;
-                    widgets[WIDX_PATH_SPINNER_HEIGHT_INCREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_PATH_SPINNER_HEIGHT_INCREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_PATH_SPINNER_HEIGHT_DECREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_PATH_SPINNER_HEIGHT_DECREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_PATH_CHECK_BROKEN].top = GBBT(propertiesAnchor, 1);
-                    widgets[WIDX_PATH_CHECK_BROKEN].bottom = GBBB(propertiesAnchor, 1);
-                    widgets[WIDX_PATH_CHECK_SLOPED].top = GBBT(propertiesAnchor, 2);
-                    widgets[WIDX_PATH_CHECK_SLOPED].bottom = GBBB(propertiesAnchor, 2);
-                    widgets[WIDX_PATH_CHECK_JUNCTION_RAILINGS].top = GBBT(propertiesAnchor, 3);
-                    widgets[WIDX_PATH_CHECK_JUNCTION_RAILINGS].bottom = GBBB(propertiesAnchor, 3);
-                    widgets[WIDX_PATH_CHECK_EDGE_N].top = GBBT(propertiesAnchor, 4) + 7 * 0;
-                    widgets[WIDX_PATH_CHECK_EDGE_N].bottom = widgets[WIDX_PATH_CHECK_EDGE_N].top + 13;
-                    widgets[WIDX_PATH_CHECK_EDGE_NE].top = GBBT(propertiesAnchor, 4) + 7 * 1;
-                    widgets[WIDX_PATH_CHECK_EDGE_NE].bottom = widgets[WIDX_PATH_CHECK_EDGE_NE].top + 13;
-                    widgets[WIDX_PATH_CHECK_EDGE_E].top = GBBT(propertiesAnchor, 4) + 7 * 2;
-                    widgets[WIDX_PATH_CHECK_EDGE_E].bottom = widgets[WIDX_PATH_CHECK_EDGE_E].top + 13;
-                    widgets[WIDX_PATH_CHECK_EDGE_SE].top = GBBT(propertiesAnchor, 4) + 7 * 3;
-                    widgets[WIDX_PATH_CHECK_EDGE_SE].bottom = widgets[WIDX_PATH_CHECK_EDGE_SE].top + 13;
-                    widgets[WIDX_PATH_CHECK_EDGE_S].top = GBBT(propertiesAnchor, 4) + 7 * 4;
-                    widgets[WIDX_PATH_CHECK_EDGE_S].bottom = widgets[WIDX_PATH_CHECK_EDGE_S].top + 13;
-                    widgets[WIDX_PATH_CHECK_EDGE_SW].top = GBBT(propertiesAnchor, 4) + 7 * 3;
-                    widgets[WIDX_PATH_CHECK_EDGE_SW].bottom = widgets[WIDX_PATH_CHECK_EDGE_SW].top + 13;
-                    widgets[WIDX_PATH_CHECK_EDGE_W].top = GBBT(propertiesAnchor, 4) + 7 * 2;
-                    widgets[WIDX_PATH_CHECK_EDGE_W].bottom = widgets[WIDX_PATH_CHECK_EDGE_W].top + 13;
-                    widgets[WIDX_PATH_CHECK_EDGE_NW].top = GBBT(propertiesAnchor, 4) + 7 * 1;
-                    widgets[WIDX_PATH_CHECK_EDGE_NW].bottom = widgets[WIDX_PATH_CHECK_EDGE_NW].top + 13;
+                    widgets[WIDX_PATH_SPINNER_HEIGHT].moveTo(PropertyRowCol(propertiesAnchor, 0, 1));
+                    widgets[WIDX_PATH_SPINNER_HEIGHT_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 0 });
+                    widgets[WIDX_PATH_SPINNER_HEIGHT_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 0 });
+                    widgets[WIDX_PATH_CHECK_BROKEN].moveTo(PropertyRowCol(propertiesAnchor, 1, 0));
+                    widgets[WIDX_PATH_CHECK_SLOPED].moveTo(PropertyRowCol(propertiesAnchor, 2, 0));
+                    widgets[WIDX_PATH_CHECK_JUNCTION_RAILINGS].moveTo(PropertyRowCol(propertiesAnchor, 3, 0));
+                    widgets[WIDX_PATH_CHECK_EDGE_NE].moveTo(CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 4, 1), 3, 1));
+                    widgets[WIDX_PATH_CHECK_EDGE_E].moveTo(CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 4, 1), 4, 2));
+                    widgets[WIDX_PATH_CHECK_EDGE_SE].moveTo(CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 4, 1), 3, 3));
+                    widgets[WIDX_PATH_CHECK_EDGE_S].moveTo(CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 4, 1), 2, 4));
+                    widgets[WIDX_PATH_CHECK_EDGE_SW].moveTo(CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 4, 1), 1, 3));
+                    widgets[WIDX_PATH_CHECK_EDGE_W].moveTo(CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 4, 1), 0, 2));
+                    widgets[WIDX_PATH_CHECK_EDGE_NW].moveTo(CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 4, 1), 1, 1));
+                    widgets[WIDX_PATH_CHECK_EDGE_N].moveTo(CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 4, 1), 2, 0));
+
                     setCheckboxValue(WIDX_PATH_CHECK_SLOPED, tileElement->AsPath()->IsSloped());
                     setCheckboxValue(WIDX_PATH_CHECK_JUNCTION_RAILINGS, tileElement->AsPath()->HasJunctionRailings());
                     setCheckboxValue(WIDX_PATH_CHECK_BROKEN, tileElement->AsPath()->IsBroken());
@@ -2281,20 +2266,16 @@ namespace OpenRCT2::Ui::Windows
                     break;
 
                 case TileElementType::Track:
-                    widgets[WIDX_TRACK_CHECK_APPLY_TO_ALL].top = GBBT(propertiesAnchor, 0);
-                    widgets[WIDX_TRACK_CHECK_APPLY_TO_ALL].bottom = GBBB(propertiesAnchor, 0);
-                    widgets[WIDX_TRACK_SPINNER_HEIGHT].top = GBBT(propertiesAnchor, 1) + 3;
-                    widgets[WIDX_TRACK_SPINNER_HEIGHT].bottom = GBBB(propertiesAnchor, 1) - 3;
-                    widgets[WIDX_TRACK_SPINNER_HEIGHT_INCREASE].top = GBBT(propertiesAnchor, 1) + 4;
-                    widgets[WIDX_TRACK_SPINNER_HEIGHT_INCREASE].bottom = GBBB(propertiesAnchor, 1) - 4;
-                    widgets[WIDX_TRACK_SPINNER_HEIGHT_DECREASE].top = GBBT(propertiesAnchor, 1) + 4;
-                    widgets[WIDX_TRACK_SPINNER_HEIGHT_DECREASE].bottom = GBBB(propertiesAnchor, 1) - 4;
-                    widgets[WIDX_TRACK_CHECK_CHAIN_LIFT].top = GBBT(propertiesAnchor, 2);
-                    widgets[WIDX_TRACK_CHECK_CHAIN_LIFT].bottom = GBBB(propertiesAnchor, 2);
-                    widgets[WIDX_TRACK_CHECK_BRAKE_CLOSED].top = GBBT(propertiesAnchor, 3);
-                    widgets[WIDX_TRACK_CHECK_BRAKE_CLOSED].bottom = GBBB(propertiesAnchor, 3);
-                    widgets[WIDX_TRACK_CHECK_IS_INDESTRUCTIBLE].top = GBBT(propertiesAnchor, 4);
-                    widgets[WIDX_TRACK_CHECK_IS_INDESTRUCTIBLE].bottom = GBBB(propertiesAnchor, 4);
+                    widgets[WIDX_TRACK_CHECK_APPLY_TO_ALL].moveTo(PropertyRowCol(propertiesAnchor, 0, 0));
+                    widgets[WIDX_TRACK_SPINNER_HEIGHT].moveTo(PropertyRowCol(propertiesAnchor, 1, 1));
+                    widgets[WIDX_TRACK_SPINNER_HEIGHT_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 1, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 0 });
+                    widgets[WIDX_TRACK_SPINNER_HEIGHT_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 1, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 0 });
+                    widgets[WIDX_TRACK_CHECK_CHAIN_LIFT].moveTo(PropertyRowCol(propertiesAnchor, 2, 0));
+                    widgets[WIDX_TRACK_CHECK_BRAKE_CLOSED].moveTo(PropertyRowCol(propertiesAnchor, 3, 0));
+                    widgets[WIDX_TRACK_CHECK_IS_INDESTRUCTIBLE].moveTo(PropertyRowCol(propertiesAnchor, 4, 0));
+
                     setCheckboxValue(WIDX_TRACK_CHECK_APPLY_TO_ALL, _applyToAll);
                     setCheckboxValue(WIDX_TRACK_CHECK_CHAIN_LIFT, tileElement->AsTrack()->HasChain());
                     setCheckboxValue(WIDX_TRACK_CHECK_BRAKE_CLOSED, tileElement->AsTrack()->IsBrakeClosed());
@@ -2307,22 +2288,22 @@ namespace OpenRCT2::Ui::Windows
                 case TileElementType::SmallScenery:
                 {
                     // Raise / Lower
-                    widgets[WIDX_SCENERY_SPINNER_HEIGHT].top = GBBT(propertiesAnchor, 0) + 3;
-                    widgets[WIDX_SCENERY_SPINNER_HEIGHT].bottom = GBBB(propertiesAnchor, 0) - 3;
-                    widgets[WIDX_SCENERY_SPINNER_HEIGHT_INCREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_SCENERY_SPINNER_HEIGHT_INCREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_SCENERY_SPINNER_HEIGHT_DECREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_SCENERY_SPINNER_HEIGHT_DECREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
+                    widgets[WIDX_SCENERY_SPINNER_HEIGHT].moveTo(PropertyRowCol(propertiesAnchor, 0, 1));
+                    widgets[WIDX_SCENERY_SPINNER_HEIGHT_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 0 });
+                    widgets[WIDX_SCENERY_SPINNER_HEIGHT_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 0 });
 
                     // Quadrant checkboxes
-                    widgets[WIDX_SCENERY_CHECK_QUARTER_N].top = GBBT(propertiesAnchor, 1) - 5 + 7 * 0;
-                    widgets[WIDX_SCENERY_CHECK_QUARTER_N].bottom = widgets[WIDX_SCENERY_CHECK_QUARTER_N].top + 13;
-                    widgets[WIDX_SCENERY_CHECK_QUARTER_E].top = GBBT(propertiesAnchor, 1) - 5 + 7 * 1;
-                    widgets[WIDX_SCENERY_CHECK_QUARTER_E].bottom = widgets[WIDX_SCENERY_CHECK_QUARTER_E].top + 13;
-                    widgets[WIDX_SCENERY_CHECK_QUARTER_S].top = GBBT(propertiesAnchor, 1) - 5 + 7 * 2;
-                    widgets[WIDX_SCENERY_CHECK_QUARTER_S].bottom = widgets[WIDX_SCENERY_CHECK_QUARTER_S].top + 13;
-                    widgets[WIDX_SCENERY_CHECK_QUARTER_W].top = GBBT(propertiesAnchor, 1) - 5 + 7 * 1;
-                    widgets[WIDX_SCENERY_CHECK_QUARTER_W].bottom = widgets[WIDX_SCENERY_CHECK_QUARTER_W].top + 13;
+                    widgets[WIDX_SCENERY_CHECK_QUARTER_N].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 1, 0));
+                    widgets[WIDX_SCENERY_CHECK_QUARTER_E].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 2, 1));
+                    widgets[WIDX_SCENERY_CHECK_QUARTER_S].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 1, 2));
+                    widgets[WIDX_SCENERY_CHECK_QUARTER_W].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 0, 1));
+
                     // This gets the relative rotation, by subtracting the camera's rotation, and wrapping it between 0-3
                     // inclusive
                     bool N = tileElement->AsSmallScenery()->GetSceneryQuadrant() == ((0 - GetCurrentRotation()) & 3);
@@ -2335,14 +2316,15 @@ namespace OpenRCT2::Ui::Windows
                     setCheckboxValue(WIDX_SCENERY_CHECK_QUARTER_W, W);
 
                     // Collision checkboxes
-                    widgets[WIDX_SCENERY_CHECK_COLLISION_N].top = GBBT(propertiesAnchor, 2) + 5 + 7 * 0;
-                    widgets[WIDX_SCENERY_CHECK_COLLISION_N].bottom = widgets[WIDX_SCENERY_CHECK_COLLISION_N].top + 13;
-                    widgets[WIDX_SCENERY_CHECK_COLLISION_E].top = GBBT(propertiesAnchor, 2) + 5 + 7 * 1;
-                    widgets[WIDX_SCENERY_CHECK_COLLISION_E].bottom = widgets[WIDX_SCENERY_CHECK_COLLISION_E].top + 13;
-                    widgets[WIDX_SCENERY_CHECK_COLLISION_S].top = GBBT(propertiesAnchor, 2) + 5 + 7 * 2;
-                    widgets[WIDX_SCENERY_CHECK_COLLISION_S].bottom = widgets[WIDX_SCENERY_CHECK_COLLISION_S].top + 13;
-                    widgets[WIDX_SCENERY_CHECK_COLLISION_W].top = GBBT(propertiesAnchor, 2) + 5 + 7 * 1;
-                    widgets[WIDX_SCENERY_CHECK_COLLISION_W].bottom = widgets[WIDX_SCENERY_CHECK_COLLISION_W].top + 13;
+                    widgets[WIDX_SCENERY_CHECK_COLLISION_N].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 1, 0));
+                    widgets[WIDX_SCENERY_CHECK_COLLISION_E].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 2, 1));
+                    widgets[WIDX_SCENERY_CHECK_COLLISION_S].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 1, 2));
+                    widgets[WIDX_SCENERY_CHECK_COLLISION_W].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 0, 1));
+
                     auto occupiedQuadrants = tileElement->GetOccupiedQuadrants();
                     N = (occupiedQuadrants & (1 << ((2 - GetCurrentRotation()) & 3))) != 0;
                     E = (occupiedQuadrants & (1 << ((3 - GetCurrentRotation()) & 3))) != 0;
@@ -2356,14 +2338,13 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 case TileElementType::Entrance:
-                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].top = GBBT(propertiesAnchor, 0) + 3;
-                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].bottom = GBBB(propertiesAnchor, 0) - 3;
-                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT_INCREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT_INCREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT_DECREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT_DECREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_ENTRANCE_BUTTON_MAKE_USABLE].top = GBBT(propertiesAnchor, 1);
-                    widgets[WIDX_ENTRANCE_BUTTON_MAKE_USABLE].bottom = GBBB(propertiesAnchor, 1);
+                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].moveTo(PropertyRowCol(propertiesAnchor, 0, 1));
+                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 1 });
+                    widgets[WIDX_ENTRANCE_SPINNER_HEIGHT_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 1 });
+                    widgets[WIDX_ENTRANCE_BUTTON_MAKE_USABLE].moveTo(PropertyRowCol(propertiesAnchor, 1, 0));
+
                     setWidgetDisabled(
                         WIDX_ENTRANCE_BUTTON_MAKE_USABLE,
                         tileElement->AsEntrance()->GetEntranceType() == ENTRANCE_TYPE_PARK_ENTRANCE);
@@ -2380,25 +2361,21 @@ namespace OpenRCT2::Ui::Windows
                         hasAnimation = wallEntry->flags & WALL_SCENERY_IS_DOOR;
                     }
 
-                    widgets[WIDX_WALL_SPINNER_HEIGHT].top = GBBT(propertiesAnchor, 0) + 3;
-                    widgets[WIDX_WALL_SPINNER_HEIGHT].bottom = GBBB(propertiesAnchor, 0) - 3;
-                    widgets[WIDX_WALL_SPINNER_HEIGHT_INCREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_WALL_SPINNER_HEIGHT_INCREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_WALL_SPINNER_HEIGHT_DECREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_WALL_SPINNER_HEIGHT_DECREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_WALL_DROPDOWN_SLOPE].top = GBBT(propertiesAnchor, 1) + 3;
-                    widgets[WIDX_WALL_DROPDOWN_SLOPE].bottom = GBBB(propertiesAnchor, 1) - 3;
+                    widgets[WIDX_WALL_SPINNER_HEIGHT].moveTo(PropertyRowCol(propertiesAnchor, 0, 1));
+                    widgets[WIDX_WALL_SPINNER_HEIGHT_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 1 });
+                    widgets[WIDX_WALL_SPINNER_HEIGHT_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 1 });
+                    widgets[WIDX_WALL_DROPDOWN_SLOPE].moveTo(PropertyRowCol(propertiesAnchor, 1, 1));
+                    widgets[WIDX_WALL_DROPDOWN_SLOPE_BUTTON].moveTo(
+                        PropertyRowCol(propertiesAnchor + ScreenCoordsXY{ kPropertyButtonSize.width - 12, 0 }, 1, 1));
                     widgets[WIDX_WALL_DROPDOWN_SLOPE].text = kWallSlopeStringIds[tileElement->AsWall()->GetSlope()];
-                    widgets[WIDX_WALL_DROPDOWN_SLOPE_BUTTON].top = GBBT(propertiesAnchor, 1) + 4;
-                    widgets[WIDX_WALL_DROPDOWN_SLOPE_BUTTON].bottom = GBBB(propertiesAnchor, 1) - 4;
-                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].top = GBBT(propertiesAnchor, 2) + 3;
-                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].bottom = GBBB(propertiesAnchor, 2) - 3;
-                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME_INCREASE].top = GBBT(propertiesAnchor, 2) + 4;
-                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME_INCREASE].bottom = GBBB(propertiesAnchor, 2) - 4;
-                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME_DECREASE].top = GBBT(propertiesAnchor, 2) + 4;
-                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME_DECREASE].bottom = GBBB(propertiesAnchor, 2) - 4;
-                    widgets[WIDX_WALL_ANIMATION_IS_BACKWARDS].top = GBBT(propertiesAnchor, 3);
-                    widgets[WIDX_WALL_ANIMATION_IS_BACKWARDS].bottom = GBBB(propertiesAnchor, 3);
+                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].moveTo(PropertyRowCol(propertiesAnchor, 2, 1));
+                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 2, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 1 });
+                    widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 2, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 1 });
+                    widgets[WIDX_WALL_ANIMATION_IS_BACKWARDS].moveTo(PropertyRowCol(propertiesAnchor, 3, 0));
 
                     // Wall slope dropdown
                     setWidgetDisabled(WIDX_WALL_DROPDOWN_SLOPE, !canBeSloped);
@@ -2416,29 +2393,28 @@ namespace OpenRCT2::Ui::Windows
                 }
 
                 case TileElementType::LargeScenery:
-                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].top = GBBT(propertiesAnchor, 0) + 3;
-                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].bottom = GBBB(propertiesAnchor, 0) - 3;
-                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT_INCREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT_INCREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT_DECREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT_DECREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
+                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].moveTo(PropertyRowCol(propertiesAnchor, 0, 1));
+                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 1 });
+                    widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 1 });
                     break;
 
                 case TileElementType::Banner:
-                    widgets[WIDX_BANNER_SPINNER_HEIGHT].top = GBBT(propertiesAnchor, 0) + 3;
-                    widgets[WIDX_BANNER_SPINNER_HEIGHT].bottom = GBBB(propertiesAnchor, 0) - 3;
-                    widgets[WIDX_BANNER_SPINNER_HEIGHT_INCREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_BANNER_SPINNER_HEIGHT_INCREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_BANNER_SPINNER_HEIGHT_DECREASE].top = GBBT(propertiesAnchor, 0) + 4;
-                    widgets[WIDX_BANNER_SPINNER_HEIGHT_DECREASE].bottom = GBBB(propertiesAnchor, 0) - 4;
-                    widgets[WIDX_BANNER_CHECK_BLOCK_NE].top = GBBT(propertiesAnchor, 1);
-                    widgets[WIDX_BANNER_CHECK_BLOCK_NE].bottom = GBBB(propertiesAnchor, 1);
-                    widgets[WIDX_BANNER_CHECK_BLOCK_SE].top = GBBT(propertiesAnchor, 2);
-                    widgets[WIDX_BANNER_CHECK_BLOCK_SE].bottom = GBBB(propertiesAnchor, 2);
-                    widgets[WIDX_BANNER_CHECK_BLOCK_SW].top = GBBT(propertiesAnchor, 2);
-                    widgets[WIDX_BANNER_CHECK_BLOCK_SW].bottom = GBBB(propertiesAnchor, 2);
-                    widgets[WIDX_BANNER_CHECK_BLOCK_NW].top = GBBT(propertiesAnchor, 1);
-                    widgets[WIDX_BANNER_CHECK_BLOCK_NW].bottom = GBBB(propertiesAnchor, 1);
+                    widgets[WIDX_BANNER_SPINNER_HEIGHT].moveTo(PropertyRowCol(propertiesAnchor, 0, 1));
+                    widgets[WIDX_BANNER_SPINNER_HEIGHT_INCREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 13, 1 });
+                    widgets[WIDX_BANNER_SPINNER_HEIGHT_DECREASE].moveTo(
+                        PropertyRowCol(propertiesAnchor, 0, 1) + ScreenCoordsXY{ kPropertyButtonSize.width - 26, 1 });
+                    widgets[WIDX_BANNER_CHECK_BLOCK_NE].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 3, 1));
+                    widgets[WIDX_BANNER_CHECK_BLOCK_SE].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 3, 3));
+                    widgets[WIDX_BANNER_CHECK_BLOCK_SW].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 1, 3));
+                    widgets[WIDX_BANNER_CHECK_BLOCK_NW].moveTo(
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 1, 1));
+
                     setCheckboxValue(
                         WIDX_BANNER_CHECK_BLOCK_NE,
                         (tileElement->AsBanner()->GetAllowedEdges() & (1 << ((0 - GetCurrentRotation()) & 3))));
