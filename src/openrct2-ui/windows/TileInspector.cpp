@@ -1253,15 +1253,12 @@ namespace OpenRCT2::Ui::Windows
                                                                        : static_cast<StringId>(STR_UNKNOWN_OBJECT_TYPE);
                 auto ft = Formatter();
                 ft.Add<StringId>(additionNameId);
-                drawText(
-                    rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS, ft,
-                    { Drawing::Colour::white });
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS, ft, { colours[1] });
             }
             else
             {
                 drawText(
-                    rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS_NONE,
-                    { Drawing::Colour::white });
+                    rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS_NONE, { colours[1] });
             }
 
             // Properties
