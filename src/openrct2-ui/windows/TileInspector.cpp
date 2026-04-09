@@ -1090,495 +1090,56 @@ static uint64_t PageDisabledWidgets[] = {
                 {
                     case TileElementType::Surface:
                     {
-                        // Details
-                        // Terrain texture name
-                        StringId terrainNameId = kStringIdEmpty;
-                        auto surfaceStyle = tileElement->AsSurface()->GetSurfaceObject();
-                        if (surfaceStyle != nullptr)
-                            terrainNameId = surfaceStyle->NameStringId;
-                        auto ft = Formatter();
-                        ft.Add<StringId>(terrainNameId);
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_SURFACE_TERAIN, ft, { colours[1] });
-
-                        // Edge texture name
-                        StringId terrainEdgeNameId = kStringIdEmpty;
-                        auto edgeStyle = tileElement->AsSurface()->GetEdgeObject();
-                        if (edgeStyle != nullptr)
-                            terrainEdgeNameId = edgeStyle->NameStringId;
-                        ft = Formatter();
-                        ft.Add<StringId>(terrainEdgeNameId);
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_SURFACE_EDGE, ft, { colours[1] });
-
-                        // Land ownership
-                        StringId landOwnership;
-                        if (tileElement->AsSurface()->GetOwnership() & OWNERSHIP_OWNED)
-                            landOwnership = STR_LAND_OWNED;
-                        else if (tileElement->AsSurface()->GetOwnership() & OWNERSHIP_AVAILABLE)
-                            landOwnership = STR_LAND_SALE;
-                        else if (tileElement->AsSurface()->GetOwnership() & OWNERSHIP_CONSTRUCTION_RIGHTS_OWNED)
-                            landOwnership = STR_CONSTRUCTION_RIGHTS_OWNED;
-                        else if (tileElement->AsSurface()->GetOwnership() & OWNERSHIP_CONSTRUCTION_RIGHTS_AVAILABLE)
-                            landOwnership = STR_CONSTRUCTION_RIGHTS_SALE;
-                        else
-                            landOwnership = STR_TILE_INSPECTOR_LAND_NOT_OWNED_AND_NOT_AVAILABLE;
-
-                        ft = Formatter();
-                        ft.Add<StringId>(landOwnership);
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_SURFACE_OWNERSHIP, ft,
-                            { colours[1] });
-
-                        // Water level
-                        ft = Formatter();
-                        ft.Add<uint32_t>(tileElement->AsSurface()->GetWaterHeight());
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 33 }, STR_TILE_INSPECTOR_SURFACE_WATER_LEVEL, ft,
-                            { colours[1] });
-
-                        // Properties
-                        // Raise / lower label
-                        screenCoords = windowPos
-                            + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7,
-                                              widgets[WIDX_SURFACE_SPINNER_HEIGHT].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
-
-                        // Current base height
-                        screenCoords.x = windowPos.x + widgets[WIDX_SURFACE_SPINNER_HEIGHT].left + 3;
-                        ft = Formatter();
-                        ft.Add<int32_t>(tileElement->BaseHeight);
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
-
-                        // Raised corners
-                        screenCoords = windowPos
-                            + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7,
-                                              widgets[WIDX_SURFACE_CHECK_CORNER_E].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_SURFACE_CORNERS, { colours[1] });
+                        auto* surfaceEl = tileElement->AsSurface();
+                        onDrawSurface(rt, screenCoords, *surfaceEl);
                         break;
                     }
                     case TileElementType::Path:
                     {
-                        // Details
-                        auto pathEl = tileElement->AsPath();
-                        auto footpathObj = pathEl->GetLegacyPathEntry();
-                        if (footpathObj == nullptr)
-                        {
-                            // Surface name
-                            auto surfaceObj = pathEl->GetSurfaceEntry();
-                            if (surfaceObj != nullptr)
-                            {
-                                auto ft = Formatter();
-                                ft.Add<StringId>(surfaceObj->NameStringId);
-                                drawText(
-                                    rt, screenCoords, STR_TILE_INSPECTOR_FOOTPATH_SURFACE_NAME, ft, { Drawing::Colour::white });
-                            }
-
-                            // Railings name
-                            auto railingsObj = pathEl->GetRailingsEntry();
-                            if (railingsObj != nullptr)
-                            {
-                                auto ft = Formatter();
-                                ft.Add<StringId>(railingsObj->NameStringId);
-                                drawText(
-                                    rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_FOOTPATH_RAILINGS_NAME, ft,
-                                    { Drawing::Colour::white });
-                            }
-                        }
-                        else
-                        {
-                            // Legacy path name
-                            auto footpathEntry = reinterpret_cast<const FootpathEntry*>(footpathObj->GetLegacyData());
-                            auto ft = Formatter();
-                            ft.Add<StringId>(footpathEntry->string_idx);
-                            drawText(rt, screenCoords, STR_TILE_INSPECTOR_PATH_NAME, ft, { Drawing::Colour::white });
-                        }
-
-                        // Path addition
-                        if (tileElement->AsPath()->HasAddition())
-                        {
-                            const auto pathAdditionEntry = tileElement->AsPath()->GetAdditionEntry();
-                            StringId additionNameId = pathAdditionEntry != nullptr
-                                ? pathAdditionEntry->name
-                                : static_cast<StringId>(STR_UNKNOWN_OBJECT_TYPE);
-                            auto ft = Formatter();
-                            ft.Add<StringId>(additionNameId);
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS, ft,
-                                { Drawing::Colour::white });
-                        }
-                        else
-                        {
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS_NONE,
-                                { Drawing::Colour::white });
-                        }
-
-                        // Properties
-                        // Raise / lower label
-                        screenCoords = windowPos
-                            + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_PATH_SPINNER_HEIGHT].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
-
-                        // Current base height
-                        screenCoords.x = windowPos.x + widgets[WIDX_PATH_SPINNER_HEIGHT].left + 3;
-                        auto ft = Formatter();
-                        ft.Add<int32_t>(tileElement->BaseHeight);
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
-
-                        // Path connections
-                        screenCoords = windowPos
-                            + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_PATH_CHECK_EDGE_W].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_PATH_CONNECTED_EDGES, { colours[1] });
+                        auto* pathEl = tileElement->AsPath();
+                        onDrawPath(rt, screenCoords, *pathEl);
                         break;
                     }
 
                     case TileElementType::Track:
                     {
-                        auto trackElement = tileElement->AsTrack();
-                        RideId id = trackElement->GetRideIndex();
-                        auto rideTile = GetRide(id);
-
-                        // Ride ID
-                        auto ft = Formatter();
-                        ft.Add<int16_t>(id);
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_TRACK_RIDE_ID, ft, { colours[1] });
-
-                        // Ride name
-                        if (rideTile != nullptr)
-                        {
-                            ft = Formatter();
-                            rideTile->formatNameTo(ft);
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_TRACK_RIDE_NAME, ft,
-                                { colours[1] });
-                        }
-
-                        // Ride type. Individual pieces may be of a different ride type from the ride it belongs to.
-                        const auto& rtd = GetRideTypeDescriptor(trackElement->GetRideType());
-                        ft = Formatter();
-                        ft.Add<StringId>(rtd.Naming.Name);
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_TRACK_RIDE_TYPE, ft, { colours[1] });
-
-                        // Track
-                        ft = Formatter();
-                        ft.Add<uint16_t>(trackElement->GetTrackType());
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 33 }, STR_TILE_INSPECTOR_TRACK_PIECE_ID, ft, { colours[1] });
-
-                        ft = Formatter();
-                        ft.Add<uint16_t>(trackElement->GetSequenceIndex());
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 44 }, STR_TILE_INSPECTOR_TRACK_SEQUENCE, ft, { colours[1] });
-                        if (trackElement->IsStation())
-                        {
-                            auto stationIndex = trackElement->GetStationIndex();
-                            ft = Formatter();
-                            ft.Add<StringId>(STR_COMMA16);
-                            ft.Add<int16_t>(stationIndex.ToUnderlying());
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 55 }, STR_TILE_INSPECTOR_STATION_INDEX, ft,
-                                { colours[1] });
-                        }
-                        else
-                        {
-                            const char* stationNone = "-";
-                            ft = Formatter();
-                            ft.Add<StringId>(STR_STRING);
-                            ft.Add<char*>(stationNone);
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 55 }, STR_TILE_INSPECTOR_STATION_INDEX, ft,
-                                { colours[1] });
-                        }
-
-                        ft = Formatter();
-                        ft.Add<StringId>(ColourSchemeNames[trackElement->GetColourScheme()]);
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 66 }, STR_TILE_INSPECTOR_COLOUR_SCHEME, ft, { colours[1] });
-
-                        // Properties
-                        // Raise / lower label
-                        screenCoords.y = windowPos.y + widgets[WIDX_TRACK_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
-
-                        // Current base height
-                        screenCoords.x = windowPos.x + widgets[WIDX_TRACK_SPINNER_HEIGHT].left + 3;
-                        ft = Formatter();
-                        ft.Add<int32_t>(tileElement->BaseHeight);
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+                        auto* trackEl = tileElement->AsTrack();
+                        onDrawTrack(rt, screenCoords, *trackEl);
                         break;
                     }
 
                     case TileElementType::SmallScenery:
                     {
-                        // Details
-                        // Age
-                        auto ft = Formatter();
-                        ft.Add<int16_t>(tileElement->AsSmallScenery()->GetAge());
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_SCENERY_AGE, ft, { colours[1] });
-
-                        // Quadrant value
-                        const auto* sceneryEntry = tileElement->AsSmallScenery()->GetEntry();
-                        if (sceneryEntry != nullptr && !sceneryEntry->flags.has(SmallSceneryFlag::occupiesFullTile))
-                        {
-                            int16_t quadrant = tileElement->AsSmallScenery()->GetSceneryQuadrant();
-                            static constexpr StringId _quadrantStringIdx[] = {
-                                STR_TILE_INSPECTOR_SCENERY_QUADRANT_SW,
-                                STR_TILE_INSPECTOR_SCENERY_QUADRANT_NW,
-                                STR_TILE_INSPECTOR_SCENERY_QUADRANT_NE,
-                                STR_TILE_INSPECTOR_SCENERY_QUADRANT_SE,
-                            };
-                            ft = Formatter();
-                            ft.Add<StringId>(_quadrantStringIdx[quadrant]);
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_SCENERY_QUADRANT, ft,
-                                { colours[1] });
-                        }
-
-                        // Scenery ID
-                        ft = Formatter();
-                        ft.Add<ObjectEntryIndex>(tileElement->AsSmallScenery()->GetEntryIndex());
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_SCENERY_ENTRY_IDX, ft,
-                            { colours[1] });
-
-                        // Properties
-                        // Raise / Lower
-                        screenCoords.y = windowPos.y + widgets[WIDX_SCENERY_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
-
-                        // Current base height
-                        screenCoords.x = windowPos.x + widgets[WIDX_SCENERY_SPINNER_HEIGHT].left + 3;
-                        ft = Formatter();
-                        ft.Add<int32_t>(tileElement->BaseHeight);
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
-
-                        // Quarter tile
-                        screenCoords = windowPos
-                            + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7,
-                                              widgets[WIDX_SCENERY_CHECK_QUARTER_E].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_SCENERY_QUADRANT_LABEL, { colours[1] });
-
-                        // Collision
-                        screenCoords.y = windowPos.y + widgets[WIDX_SCENERY_CHECK_COLLISION_E].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_COLLISSION, { colours[1] });
+                        auto* smallSceneryEl = tileElement->AsSmallScenery();
+                        onDrawSmallScenery(rt, screenCoords, *smallSceneryEl);
                         break;
                     }
 
                     case TileElementType::Entrance:
                     {
-                        // Details
-                        // Entrance type
-                        auto ft = Formatter();
-                        ft.Add<StringId>(EntranceTypeStringIds[tileElement->AsEntrance()->GetEntranceType()]);
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_ENTRANCE_TYPE, ft, { colours[1] });
-
-                        if (tileElement->AsEntrance()->GetEntranceType() == ENTRANCE_TYPE_PARK_ENTRANCE)
-                        {
-                            // TODO: Make this work with Left/Right park entrance parts
-                            ft = Formatter();
-                            ft.Add<StringId>(ParkEntranceGetIndex({ _toolMap, tileElement->GetBaseZ() }));
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRANCE_ENTRANCE_ID, ft,
-                                { colours[1] });
-                        }
-                        else
-                        {
-                            ft = Formatter();
-                            ft.Add<int16_t>(tileElement->AsEntrance()->GetStationIndex().ToUnderlying());
-                            if (tileElement->AsEntrance()->GetEntranceType() == ENTRANCE_TYPE_RIDE_ENTRANCE)
-                            {
-                                // Ride entrance ID
-                                drawText(
-                                    rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRANCE_ENTRANCE_ID, ft,
-                                    { colours[1] });
-                            }
-                            else
-                            {
-                                // Ride exit ID
-                                drawText(
-                                    rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRANCE_EXIT_ID, ft,
-                                    { colours[1] });
-                            }
-                        }
-
-                        if (tileElement->AsEntrance()->GetEntranceType() == ENTRANCE_TYPE_PARK_ENTRANCE)
-                        {
-                            // Entrance part
-                            ft = Formatter();
-                            ft.Add<StringId>(ParkEntrancePartStringIds[tileElement->AsEntrance()->GetSequenceIndex()]);
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRANCE_PART, ft,
-                                { colours[1] });
-                        }
-                        else
-                        {
-                            // Ride ID
-                            ft = Formatter();
-                            ft.Add<RideId>(tileElement->AsEntrance()->GetRideIndex());
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRANCE_RIDE_ID, ft,
-                                { colours[1] });
-                            // Station index
-                            auto stationIndex = tileElement->AsEntrance()->GetStationIndex();
-                            ft = Formatter();
-                            ft.Add<StringId>(STR_COMMA16);
-                            ft.Add<int16_t>(stationIndex.ToUnderlying());
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 33 }, STR_TILE_INSPECTOR_STATION_INDEX, ft,
-                                { colours[1] });
-                        }
-
-                        // Properties
-                        // Raise / Lower
-                        screenCoords.y = windowPos.y + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
-
-                        // Current base height
-                        screenCoords.x = windowPos.x + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].left + 3;
-                        ft = Formatter();
-                        ft.Add<int32_t>(tileElement->BaseHeight);
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+                        auto* entranceEl = tileElement->AsEntrance();
+                        onDrawEntrance(rt, screenCoords, *entranceEl);
                         break;
                     }
 
                     case TileElementType::Wall:
                     {
-                        // Details
-                        // Type
-                        auto ft = Formatter();
-                        ft.Add<ObjectEntryIndex>(tileElement->AsWall()->GetEntryIndex());
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_TYPE, ft, { colours[1] });
-
-                        // Banner info
-                        auto banner = tileElement->AsWall()->GetBanner();
-                        if (banner != nullptr)
-                        {
-                            ft = Formatter();
-                            banner->formatTextTo(ft);
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, ft,
-                                { colours[1] });
-                        }
-                        else
-                        {
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRY_BANNER_NONE,
-                                { colours[1] });
-                        }
-
-                        // Properties
-                        // Raise / lower label
-                        screenCoords.y = windowPos.y + widgets[WIDX_WALL_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
-
-                        // Current base height
-                        screenCoords.x = windowPos.x + widgets[WIDX_WALL_SPINNER_HEIGHT].left + 3;
-                        ft = Formatter();
-                        ft.Add<int32_t>(tileElement->BaseHeight);
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
-
-                        // Slope label
-                        screenCoords = windowPos
-                            + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_WALL_DROPDOWN_SLOPE].top };
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_SLOPE, { colours[1] });
-
-                        // Animation frame label
-                        screenCoords.y = windowPos.y + widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_ANIMATION_FRAME, { colours[1] });
-
-                        // Current animation frame
-                        auto colour = colours[1];
-                        if (isWidgetDisabled(WIDX_WALL_SPINNER_ANIMATION_FRAME))
-                        {
-                            colour = colours[0].withFlag(ColourFlag::inset, true);
-                        }
-                        screenCoords.x = windowPos.x + widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].left + 3;
-                        ft = Formatter();
-                        ft.Add<int32_t>(tileElement->AsWall()->GetAnimationFrame());
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colour });
+                        auto* wallEl = tileElement->AsWall();
+                        onDrawWall(rt, screenCoords, *wallEl);
                         break;
                     }
 
                     case TileElementType::LargeScenery:
                     {
-                        // Details
-                        // Type
-                        auto sceneryElement = tileElement->AsLargeScenery();
-                        ObjectEntryIndex largeSceneryType = sceneryElement->GetEntryIndex();
-                        auto ft = Formatter();
-                        ft.Add<ObjectEntryIndex>(largeSceneryType);
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_LARGE_SCENERY_TYPE, ft, { colours[1] });
-
-                        // Part ID
-                        ft = Formatter();
-                        ft.Add<int16_t>(sceneryElement->GetSequenceIndex());
-                        drawText(
-                            rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_LARGE_SCENERY_PIECE_ID, ft,
-                            { colours[1] });
-
-                        // Banner info
-                        auto* largeSceneryEntry = OpenRCT2::ObjectEntryManager::GetObjectEntry<LargeSceneryEntry>(
-                            largeSceneryType);
-                        if (largeSceneryEntry != nullptr && largeSceneryEntry->scrolling_mode != kScrollingModeNone)
-                        {
-                            auto banner = sceneryElement->GetBanner();
-                            if (banner != nullptr)
-                            {
-                                ft = Formatter();
-                                banner->formatTextTo(ft);
-                                drawText(
-                                    rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, ft,
-                                    { colours[1] });
-                            }
-                        }
-                        else
-                        {
-                            drawText(
-                                rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRY_BANNER_NONE,
-                                { colours[1] });
-                        }
-
-                        // Properties
-                        // Raise / lower label
-                        screenCoords.y = windowPos.y + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
-
-                        // Current base height
-                        screenCoords.x = windowPos.x + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].left + 3;
-                        ft = Formatter();
-                        ft.Add<int32_t>(tileElement->BaseHeight);
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+                        auto* largeSceneryEl = tileElement->AsLargeScenery();
+                        onDrawLargeScenery(rt, screenCoords, *largeSceneryEl);
                         break;
                     }
 
                     case TileElementType::Banner:
                     {
-                        // Details
-                        // Banner info
-                        auto banner = tileElement->AsBanner()->GetBanner();
-                        if (banner != nullptr)
-                        {
-                            Formatter ft;
-                            banner->formatTextTo(ft);
-                            drawText(rt, screenCoords, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, ft, { colours[1] });
-                        }
-
-                        // Properties
-                        // Raise / lower label
-                        screenCoords.y = windowPos.y + widgets[WIDX_BANNER_SPINNER_HEIGHT].top;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
-
-                        // Current base height
-                        screenCoords.x = windowPos.x + widgets[WIDX_BANNER_SPINNER_HEIGHT].left + 3;
-                        auto ft = Formatter();
-                        ft.Add<int32_t>(tileElement->BaseHeight);
-                        drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
-
-                        // Blocked paths
-                        screenCoords.y += 28;
-                        screenCoords.x = windowPos.x + widgets[WIDX_GROUPBOX_DETAILS].left + 7;
-                        drawText(rt, screenCoords, STR_TILE_INSPECTOR_BANNER_BLOCKED_PATHS, { colours[1] });
+                        auto* bannerEl = tileElement->AsBanner();
+                        onDrawBanner(rt, screenCoords, *bannerEl);
                         break;
                     }
 
@@ -1586,6 +1147,448 @@ static uint64_t PageDisabledWidgets[] = {
                         break;
                 }
             }
+        }
+
+        void onDrawSurface(RenderTarget& rt, ScreenCoordsXY screenCoords, const SurfaceElement& surfaceEl)
+        {
+            // Details
+            // Terrain texture name
+            StringId terrainNameId = kStringIdEmpty;
+            auto surfaceStyle = surfaceEl.GetSurfaceObject();
+            if (surfaceStyle != nullptr)
+                terrainNameId = surfaceStyle->NameStringId;
+            auto ft = Formatter();
+            ft.Add<StringId>(terrainNameId);
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_SURFACE_TERAIN, ft, { colours[1] });
+
+            // Edge texture name
+            StringId terrainEdgeNameId = kStringIdEmpty;
+            auto edgeStyle = surfaceEl.GetEdgeObject();
+            if (edgeStyle != nullptr)
+                terrainEdgeNameId = edgeStyle->NameStringId;
+            ft = Formatter();
+            ft.Add<StringId>(terrainEdgeNameId);
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_SURFACE_EDGE, ft, { colours[1] });
+
+            // Land ownership
+            StringId landOwnership;
+            if (surfaceEl.GetOwnership() & OWNERSHIP_OWNED)
+                landOwnership = STR_LAND_OWNED;
+            else if (surfaceEl.GetOwnership() & OWNERSHIP_AVAILABLE)
+                landOwnership = STR_LAND_SALE;
+            else if (surfaceEl.GetOwnership() & OWNERSHIP_CONSTRUCTION_RIGHTS_OWNED)
+                landOwnership = STR_CONSTRUCTION_RIGHTS_OWNED;
+            else if (surfaceEl.GetOwnership() & OWNERSHIP_CONSTRUCTION_RIGHTS_AVAILABLE)
+                landOwnership = STR_CONSTRUCTION_RIGHTS_SALE;
+            else
+                landOwnership = STR_TILE_INSPECTOR_LAND_NOT_OWNED_AND_NOT_AVAILABLE;
+
+            ft = Formatter();
+            ft.Add<StringId>(landOwnership);
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_SURFACE_OWNERSHIP, ft, { colours[1] });
+
+            // Water level
+            ft = Formatter();
+            ft.Add<uint32_t>(surfaceEl.GetWaterHeight());
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 33 }, STR_TILE_INSPECTOR_SURFACE_WATER_LEVEL, ft, { colours[1] });
+
+            // Properties
+            // Raise / lower label
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_SURFACE_SPINNER_HEIGHT].top };
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
+
+            // Current base height
+            screenCoords.x = windowPos.x + widgets[WIDX_SURFACE_SPINNER_HEIGHT].left + 3;
+            ft = Formatter();
+            ft.Add<int32_t>(surfaceEl.BaseHeight);
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+
+            // Raised corners
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_SURFACE_CHECK_CORNER_E].top };
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_SURFACE_CORNERS, { colours[1] });
+        }
+
+        void onDrawPath(RenderTarget& rt, ScreenCoordsXY screenCoords, const PathElement& pathEl)
+        {
+            // Details
+            auto footpathObj = pathEl.GetLegacyPathEntry();
+            if (footpathObj == nullptr)
+            {
+                // Surface name
+                auto surfaceObj = pathEl.GetSurfaceEntry();
+                if (surfaceObj != nullptr)
+                {
+                    auto ft = Formatter();
+                    ft.Add<StringId>(surfaceObj->NameStringId);
+                    drawText(rt, screenCoords, STR_TILE_INSPECTOR_FOOTPATH_SURFACE_NAME, ft, { Drawing::Colour::white });
+                }
+
+                // Railings name
+                auto railingsObj = pathEl.GetRailingsEntry();
+                if (railingsObj != nullptr)
+                {
+                    auto ft = Formatter();
+                    ft.Add<StringId>(railingsObj->NameStringId);
+                    drawText(
+                        rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_FOOTPATH_RAILINGS_NAME, ft,
+                        { Drawing::Colour::white });
+                }
+            }
+            else
+            {
+                // Legacy path name
+                auto footpathEntry = reinterpret_cast<const FootpathEntry*>(footpathObj->GetLegacyData());
+                auto ft = Formatter();
+                ft.Add<StringId>(footpathEntry->string_idx);
+                drawText(rt, screenCoords, STR_TILE_INSPECTOR_PATH_NAME, ft, { Drawing::Colour::white });
+            }
+
+            // Path addition
+            if (pathEl.HasAddition())
+            {
+                const auto pathAdditionEntry = pathEl.GetAdditionEntry();
+                StringId additionNameId = pathAdditionEntry != nullptr ? pathAdditionEntry->name
+                                                                       : static_cast<StringId>(STR_UNKNOWN_OBJECT_TYPE);
+                auto ft = Formatter();
+                ft.Add<StringId>(additionNameId);
+                drawText(
+                    rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS, ft,
+                    { Drawing::Colour::white });
+            }
+            else
+            {
+                drawText(
+                    rt, screenCoords + ScreenCoordsXY{ 0, 2 * 11 }, STR_TILE_INSPECTOR_PATH_ADDITIONS_NONE,
+                    { Drawing::Colour::white });
+            }
+
+            // Properties
+            // Raise / lower label
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_PATH_SPINNER_HEIGHT].top };
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
+
+            // Current base height
+            screenCoords.x = windowPos.x + widgets[WIDX_PATH_SPINNER_HEIGHT].left + 3;
+            auto ft = Formatter();
+            ft.Add<int32_t>(pathEl.BaseHeight);
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+
+            // Path connections
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_PATH_CHECK_EDGE_W].top };
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_PATH_CONNECTED_EDGES, { colours[1] });
+        }
+
+        void onDrawTrack(RenderTarget& rt, ScreenCoordsXY screenCoords, const TrackElement& trackEl)
+        {
+            RideId id = trackEl.GetRideIndex();
+            auto rideTile = GetRide(id);
+
+            // Ride ID
+            auto ft = Formatter();
+            ft.Add<int16_t>(id);
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_TRACK_RIDE_ID, ft, { colours[1] });
+
+            // Ride name
+            if (rideTile != nullptr)
+            {
+                ft = Formatter();
+                rideTile->formatNameTo(ft);
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_TRACK_RIDE_NAME, ft, { colours[1] });
+            }
+
+            // Ride type. Individual pieces may be of a different ride type from the ride it belongs to.
+            const auto& rtd = GetRideTypeDescriptor(trackEl.GetRideType());
+            ft = Formatter();
+            ft.Add<StringId>(rtd.Naming.Name);
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_TRACK_RIDE_TYPE, ft, { colours[1] });
+
+            // Track
+            ft = Formatter();
+            ft.Add<uint16_t>(trackEl.GetTrackType());
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 33 }, STR_TILE_INSPECTOR_TRACK_PIECE_ID, ft, { colours[1] });
+
+            ft = Formatter();
+            ft.Add<uint16_t>(trackEl.GetSequenceIndex());
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 44 }, STR_TILE_INSPECTOR_TRACK_SEQUENCE, ft, { colours[1] });
+            if (trackEl.IsStation())
+            {
+                auto stationIndex = trackEl.GetStationIndex();
+                ft = Formatter();
+                ft.Add<StringId>(STR_COMMA16);
+                ft.Add<int16_t>(stationIndex.ToUnderlying());
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 55 }, STR_TILE_INSPECTOR_STATION_INDEX, ft, { colours[1] });
+            }
+            else
+            {
+                const char* stationNone = "-";
+                ft = Formatter();
+                ft.Add<StringId>(STR_STRING);
+                ft.Add<char*>(stationNone);
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 55 }, STR_TILE_INSPECTOR_STATION_INDEX, ft, { colours[1] });
+            }
+
+            ft = Formatter();
+            ft.Add<StringId>(ColourSchemeNames[trackEl.GetColourScheme()]);
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 66 }, STR_TILE_INSPECTOR_COLOUR_SCHEME, ft, { colours[1] });
+
+            // Properties
+            // Raise / lower label
+            screenCoords.y = windowPos.y + widgets[WIDX_TRACK_SPINNER_HEIGHT].top;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
+
+            // Current base height
+            screenCoords.x = windowPos.x + widgets[WIDX_TRACK_SPINNER_HEIGHT].left + 3;
+            ft = Formatter();
+            ft.Add<int32_t>(trackEl.BaseHeight);
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+        }
+
+        void onDrawSmallScenery(RenderTarget& rt, ScreenCoordsXY screenCoords, const SmallSceneryElement& smallSceneryEl)
+        {
+            // Details
+            // Age
+            auto ft = Formatter();
+            ft.Add<int16_t>(smallSceneryEl.GetAge());
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_SCENERY_AGE, ft, { colours[1] });
+
+            // Quadrant value
+            const auto* sceneryEntry = smallSceneryEl.GetEntry();
+            if (sceneryEntry != nullptr && !sceneryEntry->flags.has(SmallSceneryFlag::occupiesFullTile))
+            {
+                int16_t quadrant = smallSceneryEl.GetSceneryQuadrant();
+                static constexpr StringId _quadrantStringIdx[] = {
+                    STR_TILE_INSPECTOR_SCENERY_QUADRANT_SW,
+                    STR_TILE_INSPECTOR_SCENERY_QUADRANT_NW,
+                    STR_TILE_INSPECTOR_SCENERY_QUADRANT_NE,
+                    STR_TILE_INSPECTOR_SCENERY_QUADRANT_SE,
+                };
+                ft = Formatter();
+                ft.Add<StringId>(_quadrantStringIdx[quadrant]);
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_SCENERY_QUADRANT, ft, { colours[1] });
+            }
+
+            // Scenery ID
+            ft = Formatter();
+            ft.Add<ObjectEntryIndex>(smallSceneryEl.GetEntryIndex());
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_SCENERY_ENTRY_IDX, ft, { colours[1] });
+
+            // Properties
+            // Raise / Lower
+            screenCoords.y = windowPos.y + widgets[WIDX_SCENERY_SPINNER_HEIGHT].top;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
+
+            // Current base height
+            screenCoords.x = windowPos.x + widgets[WIDX_SCENERY_SPINNER_HEIGHT].left + 3;
+            ft = Formatter();
+            ft.Add<int32_t>(smallSceneryEl.BaseHeight);
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+
+            // Quarter tile
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_SCENERY_CHECK_QUARTER_E].top };
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_SCENERY_QUADRANT_LABEL, { colours[1] });
+
+            // Collision
+            screenCoords.y = windowPos.y + widgets[WIDX_SCENERY_CHECK_COLLISION_E].top;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_COLLISSION, { colours[1] });
+        }
+
+        void onDrawEntrance(RenderTarget& rt, ScreenCoordsXY screenCoords, const EntranceElement& entranceEl)
+        {
+            // Details
+            // Entrance type
+            auto ft = Formatter();
+            ft.Add<StringId>(EntranceTypeStringIds[entranceEl.GetEntranceType()]);
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_ENTRANCE_TYPE, ft, { colours[1] });
+
+            if (entranceEl.GetEntranceType() == ENTRANCE_TYPE_PARK_ENTRANCE)
+            {
+                // TODO: Make this work with Left/Right park entrance parts
+                ft = Formatter();
+                ft.Add<StringId>(ParkEntranceGetIndex({ _toolMap, entranceEl.GetBaseZ() }));
+                drawText(
+                    rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRANCE_ENTRANCE_ID, ft, { colours[1] });
+            }
+            else
+            {
+                ft = Formatter();
+                ft.Add<int16_t>(entranceEl.GetStationIndex().ToUnderlying());
+                if (entranceEl.GetEntranceType() == ENTRANCE_TYPE_RIDE_ENTRANCE)
+                {
+                    // Ride entrance ID
+                    drawText(
+                        rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRANCE_ENTRANCE_ID, ft,
+                        { colours[1] });
+                }
+                else
+                {
+                    // Ride exit ID
+                    drawText(
+                        rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRANCE_EXIT_ID, ft, { colours[1] });
+                }
+            }
+
+            if (entranceEl.GetEntranceType() == ENTRANCE_TYPE_PARK_ENTRANCE)
+            {
+                // Entrance part
+                ft = Formatter();
+                ft.Add<StringId>(ParkEntrancePartStringIds[entranceEl.GetSequenceIndex()]);
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRANCE_PART, ft, { colours[1] });
+            }
+            else
+            {
+                // Ride ID
+                ft = Formatter();
+                ft.Add<RideId>(entranceEl.GetRideIndex());
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRANCE_RIDE_ID, ft, { colours[1] });
+                // Station index
+                auto stationIndex = entranceEl.GetStationIndex();
+                ft = Formatter();
+                ft.Add<StringId>(STR_COMMA16);
+                ft.Add<int16_t>(stationIndex.ToUnderlying());
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 33 }, STR_TILE_INSPECTOR_STATION_INDEX, ft, { colours[1] });
+            }
+
+            // Properties
+            // Raise / Lower
+            screenCoords.y = windowPos.y + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].top;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
+
+            // Current base height
+            screenCoords.x = windowPos.x + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].left + 3;
+            ft = Formatter();
+            ft.Add<int32_t>(entranceEl.BaseHeight);
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+        }
+
+        void onDrawWall(RenderTarget& rt, ScreenCoordsXY screenCoords, const WallElement& wallEl)
+        {
+            // Details
+            // Type
+            auto ft = Formatter();
+            ft.Add<ObjectEntryIndex>(wallEl.GetEntryIndex());
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_TYPE, ft, { colours[1] });
+
+            // Banner info
+            auto banner = wallEl.GetBanner();
+            if (banner != nullptr)
+            {
+                ft = Formatter();
+                banner->formatTextTo(ft);
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, ft, { colours[1] });
+            }
+            else
+            {
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRY_BANNER_NONE, { colours[1] });
+            }
+
+            // Properties
+            // Raise / lower label
+            screenCoords.y = windowPos.y + widgets[WIDX_WALL_SPINNER_HEIGHT].top;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
+
+            // Current base height
+            screenCoords.x = windowPos.x + widgets[WIDX_WALL_SPINNER_HEIGHT].left + 3;
+            ft = Formatter();
+            ft.Add<int32_t>(wallEl.BaseHeight);
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+
+            // Slope label
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_WALL_DROPDOWN_SLOPE].top };
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_SLOPE, { colours[1] });
+
+            // Animation frame label
+            screenCoords.y = windowPos.y + widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].top;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_WALL_ANIMATION_FRAME, { colours[1] });
+
+            // Current animation frame
+            auto colour = colours[1];
+            if (isWidgetDisabled(WIDX_WALL_SPINNER_ANIMATION_FRAME))
+            {
+                colour = colours[0].withFlag(ColourFlag::inset, true);
+            }
+            screenCoords.x = windowPos.x + widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].left + 3;
+            ft = Formatter();
+            ft.Add<int32_t>(wallEl.GetAnimationFrame());
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colour });
+        }
+
+        void onDrawLargeScenery(RenderTarget& rt, ScreenCoordsXY screenCoords, const LargeSceneryElement& largeSceneryEl)
+        {
+            // Details
+            // Type
+            ObjectEntryIndex largeSceneryType = largeSceneryEl.GetEntryIndex();
+            auto ft = Formatter();
+            ft.Add<ObjectEntryIndex>(largeSceneryType);
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_LARGE_SCENERY_TYPE, ft, { colours[1] });
+
+            // Part ID
+            ft = Formatter();
+            ft.Add<int16_t>(largeSceneryEl.GetSequenceIndex());
+            drawText(rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_LARGE_SCENERY_PIECE_ID, ft, { colours[1] });
+
+            // Banner info
+            auto* largeSceneryEntry = OpenRCT2::ObjectEntryManager::GetObjectEntry<LargeSceneryEntry>(largeSceneryType);
+            if (largeSceneryEntry != nullptr && largeSceneryEntry->scrolling_mode != kScrollingModeNone)
+            {
+                auto banner = largeSceneryEl.GetBanner();
+                if (banner != nullptr)
+                {
+                    ft = Formatter();
+                    banner->formatTextTo(ft);
+                    drawText(
+                        rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, ft, { colours[1] });
+                }
+            }
+            else
+            {
+                drawText(rt, screenCoords + ScreenCoordsXY{ 0, 22 }, STR_TILE_INSPECTOR_ENTRY_BANNER_NONE, { colours[1] });
+            }
+
+            // Properties
+            // Raise / lower label
+            screenCoords.y = windowPos.y + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].top;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
+
+            // Current base height
+            screenCoords.x = windowPos.x + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].left + 3;
+            ft = Formatter();
+            ft.Add<int32_t>(largeSceneryEl.BaseHeight);
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+        }
+
+        void onDrawBanner(RenderTarget& rt, ScreenCoordsXY screenCoords, const BannerElement& bannerEl)
+        {
+            // Details
+            // Banner info
+            auto* banner = bannerEl.GetBanner();
+            if (banner != nullptr)
+            {
+                Formatter ft;
+                banner->formatTextTo(ft);
+                drawText(rt, screenCoords, STR_TILE_INSPECTOR_ENTRY_BANNER_TEXT, ft, { colours[1] });
+            }
+
+            // Properties
+            // Raise / lower label
+            screenCoords.y = windowPos.y + widgets[WIDX_BANNER_SPINNER_HEIGHT].top;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
+
+            // Current base height
+            screenCoords.x = windowPos.x + widgets[WIDX_BANNER_SPINNER_HEIGHT].left + 3;
+            auto ft = Formatter();
+            ft.Add<int32_t>(bannerEl.BaseHeight);
+            drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
+
+            // Blocked paths
+            screenCoords.y += 28;
+            screenCoords.x = windowPos.x + widgets[WIDX_GROUPBOX_DETAILS].left + 7;
+            drawText(rt, screenCoords, STR_TILE_INSPECTOR_BANNER_BLOCKED_PATHS, { colours[1] });
         }
 
         void onScrollDraw(int32_t scrollIndex, RenderTarget& rt) override
