@@ -439,7 +439,7 @@ namespace OpenRCT2::Ui::Windows
     };
     // clang-format on
 
-    struct TileInspectorGroupboxSettings
+    struct GroupboxSettings
     {
         // Offsets from the bottom of the window
         int16_t details_top_offset, details_bottom_offset;
@@ -448,10 +448,9 @@ namespace OpenRCT2::Ui::Windows
         StringId string_id;
     };
 
-    static constexpr TileInspectorGroupboxSettings MakeGroupboxSettings(
-        int16_t detailsHeight, int16_t propertiesHeight, StringId stringId)
+    static constexpr GroupboxSettings MakeGroupboxSettings(int16_t detailsHeight, int16_t propertiesHeight, StringId stringId)
     {
-        TileInspectorGroupboxSettings settings{};
+        GroupboxSettings settings{};
         decltype(settings.properties_bottom_offset) offsetSum = 0;
         settings.properties_bottom_offset = (offsetSum += kBottomPadding);
         settings.properties_top_offset = (offsetSum += propertiesHeight);
@@ -461,7 +460,7 @@ namespace OpenRCT2::Ui::Windows
         return settings;
     }
 
-    static constexpr TileInspectorGroupboxSettings kPageGroupBoxSettings[] = {
+    static constexpr GroupboxSettings kPageGroupBoxSettings[] = {
         MakeGroupboxSettings(kSurfaceDetailsHeight, kSurfacePropertiesHeight, STR_TILE_INSPECTOR_GROUPBOX_SURFACE_INFO),
         MakeGroupboxSettings(kPathDetailsHeight, kPathPropertiesHeight, STR_TILE_INSPECTOR_GROUPBOX_PATH_INFO),
         MakeGroupboxSettings(kTrackDetailsHeight, kTrackPropertiesHeight, STR_TILE_INSPECTOR_GROUPBOX_TRACK_INFO),
