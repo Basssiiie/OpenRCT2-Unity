@@ -1051,7 +1051,7 @@ namespace OpenRCT2::Ui::Windows
             ScreenCoordsXY screenCoords(windowPos.x, windowPos.y);
 
             // Draw coordinates
-            auto yOffset = widgets[WIDX_SPINNER_X_LABEL].top;
+            auto yOffset = widgets[WIDX_SPINNER_X_LABEL].textTop();
             if (_tileSelected)
             {
                 auto tileCoords = TileCoordsXY{ _toolMap };
@@ -1196,7 +1196,9 @@ namespace OpenRCT2::Ui::Windows
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
-            screenCoords.x = windowPos.x + widgets[WIDX_SURFACE_SPINNER_HEIGHT].left + 3;
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_SURFACE_SPINNER_HEIGHT].left + 3,
+                                  widgets[WIDX_SURFACE_SPINNER_HEIGHT].textTop() };
             ft = Formatter();
             ft.Add<int32_t>(surfaceEl.BaseHeight);
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
@@ -1265,7 +1267,8 @@ namespace OpenRCT2::Ui::Windows
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
-            screenCoords.x = windowPos.x + widgets[WIDX_PATH_SPINNER_HEIGHT].left + 3;
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_PATH_SPINNER_HEIGHT].left + 3, widgets[WIDX_PATH_SPINNER_HEIGHT].textTop() };
             auto ft = Formatter();
             ft.Add<int32_t>(pathEl.BaseHeight);
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
@@ -1335,7 +1338,8 @@ namespace OpenRCT2::Ui::Windows
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
-            screenCoords.x = windowPos.x + widgets[WIDX_TRACK_SPINNER_HEIGHT].left + 3;
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_TRACK_SPINNER_HEIGHT].left + 3, widgets[WIDX_TRACK_SPINNER_HEIGHT].textTop() };
             ft = Formatter();
             ft.Add<int32_t>(trackEl.BaseHeight);
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
@@ -1376,7 +1380,9 @@ namespace OpenRCT2::Ui::Windows
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
-            screenCoords.x = windowPos.x + widgets[WIDX_SCENERY_SPINNER_HEIGHT].left + 3;
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_SCENERY_SPINNER_HEIGHT].left + 3,
+                                  widgets[WIDX_SCENERY_SPINNER_HEIGHT].textTop() };
             ft = Formatter();
             ft.Add<int32_t>(smallSceneryEl.BaseHeight);
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
@@ -1453,7 +1459,9 @@ namespace OpenRCT2::Ui::Windows
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
-            screenCoords.x = windowPos.x + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].left + 3;
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].left + 3,
+                                  widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].textTop() };
             ft = Formatter();
             ft.Add<int32_t>(entranceEl.BaseHeight);
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
@@ -1486,7 +1494,8 @@ namespace OpenRCT2::Ui::Windows
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
-            screenCoords.x = windowPos.x + widgets[WIDX_WALL_SPINNER_HEIGHT].left + 3;
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_WALL_SPINNER_HEIGHT].left + 3, widgets[WIDX_WALL_SPINNER_HEIGHT].textTop() };
             ft = Formatter();
             ft.Add<int32_t>(wallEl.BaseHeight);
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
@@ -1506,7 +1515,9 @@ namespace OpenRCT2::Ui::Windows
             {
                 colour = colours[0].withFlag(ColourFlag::inset, true);
             }
-            screenCoords.x = windowPos.x + widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].left + 3;
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].left + 3,
+                                  widgets[WIDX_WALL_SPINNER_ANIMATION_FRAME].textTop() };
             ft = Formatter();
             ft.Add<int32_t>(wallEl.GetAnimationFrame());
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colour });
@@ -1551,6 +1562,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Current base height
             screenCoords.x = windowPos.x + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].left + 3;
+
             ft = Formatter();
             ft.Add<int32_t>(largeSceneryEl.BaseHeight);
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
@@ -1574,7 +1586,8 @@ namespace OpenRCT2::Ui::Windows
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
-            screenCoords.x = windowPos.x + widgets[WIDX_BANNER_SPINNER_HEIGHT].left + 3;
+            screenCoords = windowPos
+                + ScreenCoordsXY{ widgets[WIDX_BANNER_SPINNER_HEIGHT].left + 3, widgets[WIDX_BANNER_SPINNER_HEIGHT].textTop() };
             auto ft = Formatter();
             ft.Add<int32_t>(bannerEl.BaseHeight);
             drawText(rt, screenCoords, STR_FORMAT_INTEGER, ft, { colours[1] });
