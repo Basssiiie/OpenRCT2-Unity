@@ -1192,7 +1192,7 @@ namespace OpenRCT2::Ui::Windows
             // Properties
             // Raise / lower label
             screenCoords = windowPos
-                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_SURFACE_SPINNER_HEIGHT].top };
+                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_SURFACE_SPINNER_HEIGHT].top + 1 };
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
@@ -1263,7 +1263,7 @@ namespace OpenRCT2::Ui::Windows
             // Properties
             // Raise / lower label
             screenCoords = windowPos
-                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_PATH_SPINNER_HEIGHT].top };
+                + ScreenCoordsXY{ widgets[WIDX_GROUPBOX_DETAILS].left + 7, widgets[WIDX_PATH_SPINNER_HEIGHT].top + 1 };
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
@@ -1334,7 +1334,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Properties
             // Raise / lower label
-            screenCoords.y = windowPos.y + widgets[WIDX_TRACK_SPINNER_HEIGHT].top;
+            screenCoords.y = windowPos.y + widgets[WIDX_TRACK_SPINNER_HEIGHT].top + 1;
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
@@ -1376,7 +1376,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Properties
             // Raise / Lower
-            screenCoords.y = windowPos.y + widgets[WIDX_SCENERY_SPINNER_HEIGHT].top;
+            screenCoords.y = windowPos.y + widgets[WIDX_SCENERY_SPINNER_HEIGHT].top + 1;
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
@@ -1455,7 +1455,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Properties
             // Raise / Lower
-            screenCoords.y = windowPos.y + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].top;
+            screenCoords.y = windowPos.y + widgets[WIDX_ENTRANCE_SPINNER_HEIGHT].top + 1;
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
@@ -1490,7 +1490,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Properties
             // Raise / lower label
-            screenCoords.y = windowPos.y + widgets[WIDX_WALL_SPINNER_HEIGHT].top;
+            screenCoords.y = windowPos.y + widgets[WIDX_WALL_SPINNER_HEIGHT].top + 1;
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
@@ -1557,7 +1557,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Properties
             // Raise / lower label
-            screenCoords.y = windowPos.y + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].top;
+            screenCoords.y = windowPos.y + widgets[WIDX_LARGE_SCENERY_SPINNER_HEIGHT].top + 1;
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
@@ -1582,7 +1582,7 @@ namespace OpenRCT2::Ui::Windows
 
             // Properties
             // Raise / lower label
-            screenCoords.y = windowPos.y + widgets[WIDX_BANNER_SPINNER_HEIGHT].top;
+            screenCoords.y = windowPos.y + widgets[WIDX_BANNER_SPINNER_HEIGHT].top + 1;
             drawText(rt, screenCoords, STR_TILE_INSPECTOR_BASE_HEIGHT_FULL, { colours[1] });
 
             // Current base height
