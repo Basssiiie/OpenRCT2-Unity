@@ -314,7 +314,7 @@ namespace OpenRCT2::Ui::Windows
 
     constexpr int32_t kNumSurfaceProperties = 4;
     constexpr int32_t kNumSurfaceDetails = 4;
-    constexpr int32_t kSurfacePropertiesHeight = 16 + kNumSurfaceProperties * 21;
+    constexpr int32_t kSurfacePropertiesHeight = 20 + kNumSurfaceProperties * 21;
     constexpr int32_t kSurfaceDetailsHeight = 20 + kNumSurfaceDetails * 11;
     static constexpr auto kSurfaceWidgets = makeWidgets(
         kMainTileInspectorWidgets,
@@ -330,7 +330,7 @@ namespace OpenRCT2::Ui::Windows
 
     constexpr int32_t kNumPathProperties = 6;
     constexpr int32_t kNumPathDetails = 3;
-    constexpr int32_t kPathPropertiesHeight = 16 + kNumPathProperties * 21;
+    constexpr int32_t kPathPropertiesHeight = 20 + kNumPathProperties * 21;
     constexpr int32_t kPathDetailsHeight = 20 + kNumPathDetails * 11;
     static constexpr auto kPathWidgets = makeWidgets(
         kMainTileInspectorWidgets,
@@ -350,7 +350,7 @@ namespace OpenRCT2::Ui::Windows
 
     constexpr int32_t kNumTrackProperties = 5;
     constexpr int32_t kNumTrackDetails = 7;
-    constexpr int32_t kTrackPropertiesHeight = 16 + kNumTrackProperties * 21;
+    constexpr int32_t kTrackPropertiesHeight = 20 + kNumTrackProperties * 21;
     constexpr int32_t kTrackDetailsHeight = 20 + kNumTrackDetails * 11;
     static constexpr auto kTrackWidgets = makeWidgets(
         kMainTileInspectorWidgets,
@@ -363,7 +363,7 @@ namespace OpenRCT2::Ui::Windows
 
     constexpr int32_t kNumSceneryProperties = 4; // The checkbox groups both count for 2 rows
     constexpr int32_t kNumSceneryDetails = 3;
-    constexpr int32_t kSceneryPropertiesHeight = 16 + kNumSceneryProperties * 21;
+    constexpr int32_t kSceneryPropertiesHeight = 20 + kNumSceneryProperties * 21;
     constexpr int32_t kSceneryDetailsHeight = 20 + kNumSceneryDetails * 11;
     static constexpr auto kSceneryWidgets = makeWidgets(
         kMainTileInspectorWidgets,
@@ -380,7 +380,7 @@ namespace OpenRCT2::Ui::Windows
 
     constexpr int32_t kNumEntranceProperties = 2;
     constexpr int32_t kNumEntranceDetails = 4;
-    constexpr int32_t kEntrancePropertiesHeight = 16 + kNumEntranceProperties * 21;
+    constexpr int32_t kEntrancePropertiesHeight = 20 + kNumEntranceProperties * 21;
     constexpr int32_t kEntranceDetailsHeight = 20 + kNumEntranceDetails * 11;
     static constexpr auto kEntranceWidgets = makeWidgets(
         kMainTileInspectorWidgets,
@@ -390,7 +390,7 @@ namespace OpenRCT2::Ui::Windows
 
     constexpr int32_t kNumWallProperties = 4;
     constexpr int32_t kNumWallDetails = 2;
-    constexpr int32_t kWallPropertiesHeight = 16 + kNumWallProperties * 21;
+    constexpr int32_t kWallPropertiesHeight = 20 + kNumWallProperties * 21;
     constexpr int32_t kWallDetailsHeight = 20 + kNumWallDetails * 11;
     static constexpr auto kWallWidgets = makeWidgets(
         kMainTileInspectorWidgets,
@@ -403,7 +403,7 @@ namespace OpenRCT2::Ui::Windows
 
     constexpr int32_t kNumLargeSceneryProperties = 1;
     constexpr int32_t kNumLargeSceneryDetails = 3;
-    constexpr int32_t kLargeSceneryPropertiesHeight = 16 + kNumLargeSceneryProperties * 21;
+    constexpr int32_t kLargeSceneryPropertiesHeight = 20 + kNumLargeSceneryProperties * 21;
     constexpr int32_t kLargeSceneryDetailsHeight = 20 + kNumLargeSceneryDetails * 11;
     static constexpr auto kLargeSceneryWidgets = makeWidgets(
         kMainTileInspectorWidgets,
@@ -412,7 +412,7 @@ namespace OpenRCT2::Ui::Windows
 
     constexpr int32_t kNumBannerProperties = 3;
     constexpr int32_t kNumBannerDetails = 1;
-    constexpr int32_t kBannerPropertiesHeight = 16 + kNumBannerProperties * 21;
+    constexpr int32_t kBannerPropertiesHeight = 20 + kNumBannerProperties * 21;
     constexpr int32_t kBannerDetailsHeight = 20 + kNumBannerDetails * 11;
     static constexpr auto kBannerWidgets = makeWidgets(
         kMainTileInspectorWidgets,
