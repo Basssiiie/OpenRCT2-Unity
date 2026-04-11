@@ -1409,7 +1409,7 @@ namespace OpenRCT2::Ui::Windows
             {
                 // TODO: Make this work with Left/Right park entrance parts
                 ft = Formatter();
-                ft.Add<StringId>(ParkEntranceGetIndex({ _toolMap, entranceEl.GetBaseZ() }));
+                ft.Add<uint16_t>(ParkEntranceGetIndex({ _toolMap, entranceEl.GetBaseZ() }));
                 drawText(
                     rt, screenCoords + ScreenCoordsXY{ 0, 11 }, STR_TILE_INSPECTOR_ENTRANCE_ENTRANCE_ID, ft, { colours[1] });
             }
