@@ -465,7 +465,7 @@ namespace OpenRCT2::Ui::Windows
         MakeGroupboxSettings(kEntranceDetailsHeight, kEntrancePropertiesHeight, STR_TILE_INSPECTOR_GROUPBOX_ENTRANCE_INFO),
         MakeGroupboxSettings(kWallDetailsHeight, kWallPropertiesHeight, STR_TILE_INSPECTOR_GROUPBOX_WALL_INFO),
         MakeGroupboxSettings(
-            kLargeSceneryDetailsHeight, kLargeSceneryPropertiesHeight, STR_TILE_INSPECTOR_GROUPBOX_BANNER_INFO),
+            kLargeSceneryDetailsHeight, kLargeSceneryPropertiesHeight, STR_TILE_INSPECTOR_GROUPBOX_LARGE_SCENERY_INFO),
         MakeGroupboxSettings(kBannerDetailsHeight, kBannerPropertiesHeight, STR_TILE_INSPECTOR_GROUPBOX_BANNER_INFO),
     };
 
