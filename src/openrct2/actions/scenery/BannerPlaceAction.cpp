@@ -52,7 +52,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_loc) << DS_TAG(_bannerType) << DS_TAG(_primaryColour);
     }
 
-    Result BannerPlaceAction::Query(GameState_t& gameState) const
+    Result BannerPlaceAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.position.x = _loc.x + 16;
@@ -97,7 +97,7 @@ namespace OpenRCT2::GameActions
             return Result(Status::invalidParameters, STR_CANT_POSITION_THIS_HERE, STR_TOO_MANY_BANNERS_IN_GAME);
         }
 
-        auto* bannerEntry = ObjectManager::GetObjectEntry<BannerSceneryEntry>(_bannerType);
+        auto* bannerEntry = ObjectEntryManager::GetObjectEntry<BannerSceneryEntry>(_bannerType);
         if (bannerEntry == nullptr)
         {
             LOG_ERROR("Banner entry not found for bannerType %u", _bannerType);
@@ -109,7 +109,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result BannerPlaceAction::Execute(GameState_t& gameState) const
+    Result BannerPlaceAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.position.x = _loc.x + 16;
@@ -124,7 +124,7 @@ namespace OpenRCT2::GameActions
             return Result(Status::noFreeElements, STR_CANT_POSITION_THIS_HERE, STR_TILE_ELEMENT_LIMIT_REACHED);
         }
 
-        auto* bannerEntry = ObjectManager::GetObjectEntry<BannerSceneryEntry>(_bannerType);
+        auto* bannerEntry = ObjectEntryManager::GetObjectEntry<BannerSceneryEntry>(_bannerType);
         if (bannerEntry == nullptr)
         {
             LOG_ERROR("Banner entry not found for bannerType %u", _bannerType);

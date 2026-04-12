@@ -242,7 +242,6 @@ STR_0832    :Ansicht um 90° im Uhrzeigersinn drehen
 STR_0833    :Spiel pausieren
 STR_0834    :Speicher- und Spieloptionen
 STR_0839    :{UINT16} × {UINT16}
-STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} × {UINT16}
 STR_0847    :Über „OpenRCT2“
 STR_0850    :{WINDOW_COLOUR_2}Copyright © 2002 Chris Sawyer, alle Rechte vorbehalten
 STR_0851    :{WINDOW_COLOUR_2}Entworfen und programmiert von Chris Sawyer
@@ -253,16 +252,6 @@ STR_0855    :{WINDOW_COLOUR_2}Repräsentation von Jacqui Lyons bei Marjacq Ltd.
 STR_0856    :{WINDOW_COLOUR_2}Dank gilt:
 STR_0857    :{WINDOW_COLOUR_2}Peter James Adcock, Joe Booth und John Wardley
 STR_0865    :{STRINGID}
-STR_0866    :{POP16}{STRINGID}
-STR_0867    :{POP16}{POP16}{STRINGID}
-STR_0868    :{POP16}{POP16}{POP16}{STRINGID}
-STR_0869    :{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0870    :{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0871    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0872    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0873    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0874    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0875    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
 STR_0876    :{BLACK}▼
 STR_0877    :Zu niedrig!
 STR_0878    :Zu hoch!
@@ -281,7 +270,7 @@ STR_0892    :Screenshot auf Festplatte gespeichert als „{STRINGID}“
 STR_0893    :Screenshot fehlgeschlagen!
 STR_0894    :Landschaftsdatenbereich voll!
 STR_0895    :Es kann nicht teils über, teils unter dem Boden gebaut werden
-STR_0896    :{POP16}{POP16}{STRINGID} Konstruktion
+STR_0896    :{STRINGID} Konstruktion
 STR_0897    :Richtung
 STR_0898    :Linkskurve
 STR_0899    :Rechtskurve
@@ -406,8 +395,6 @@ STR_1018    :Änderungen können nicht durchgeführt werden …
 STR_1019    :Änderungen können nicht durchgeführt werden …
 STR_1020    :Änderungen können nicht durchgeführt werden …
 STR_1021    :{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_1022    :{POP16}{POP16}{POP16}{COMMA16} Wagen pro Zug
-STR_1023    :{POP16}{POP16}{POP16}{COMMA16} Wagen pro Zug
 STR_1024    :{COMMA16} Wagen pro Zug
 STR_1025    :{COMMA16} Wagen pro Zug
 STR_1026    :Stationsplattform ist zu lang!
@@ -516,9 +503,7 @@ STR_1128    :Mit Blockbremsen gestoppt
 STR_1129    :Alle Fahrzeuge gleichfarbig
 STR_1130    :Andere Farben pro {STRINGID}
 STR_1131    :Andere Farben pro Fahrzeug
-STR_1132    :Fahrzeug {POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
-STR_1133    :Fahrzeug {POP16}{COMMA16}
-STR_1134    :{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID} {COMMA16}
+STR_1133    :Fahrzeug {COMMA16}
 STR_1135    :{STRINGID} {COMMA16}
 STR_1136    :Hauptfarbe auswählen
 STR_1137    :Zusatzfarbe 1 auswählen
@@ -714,7 +699,6 @@ STR_1327    :Objekte um 90° drehen
 STR_1328    :Ebenes Land erforderlich
 STR_1329    :{WINDOW_COLOUR_2}Startgeschwindigkeit:
 STR_1330    :Höchstgeschwindigkeit beim{NEWLINE}Verlassen der Station
-STR_1331    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{VELOCITY}
 STR_1332    :{VELOCITY}
 STR_1333    :{STRINGID} - {STRINGID}{POP16}
 STR_1334    :{STRINGID} - {STRINGID} {COMMA16}
@@ -812,7 +796,6 @@ STR_1425    :Fußweg
 STR_1426    :Warteschlange
 STR_1427    :{WINDOW_COLOUR_2}Besucher: {BLACK}{COMMA32} pro Stunde
 STR_1428    :{WINDOW_COLOUR_2}Eintrittspreis:
-STR_1429    :{POP16}{POP16}{POP16}{CURRENCY2DP}
 STR_1430    :Kostenlos
 STR_1431    :Geht
 STR_1432    :Geht Richtung {STRINGID}
@@ -847,10 +830,10 @@ STR_1460    :U-förmige offene Strecke
 STR_1461    :O-förmige geschlossene Strecke
 STR_1462    :Zu steil für Lifthügel
 STR_1463    :Besucher
-STR_1464    :Spirale n. oben (klein)
-STR_1465    :Spirale n. oben (groß)
-STR_1466    :Spirale n. unten (klein)
-STR_1467    :Spirale n. unten (groß)
+STR_1464    :Halbspirale n. oben (klein)
+STR_1465    :Halbspirale n. oben (groß)
+STR_1466    :Halbspirale n. unten (klein)
+STR_1467    :Halbspirale n. unten (groß)
 STR_1468    :Personal
 STR_1469    :Fahrt muss mit Stationen anfangen und enden
 STR_1470    :Station nicht lang genug
@@ -1057,14 +1040,13 @@ STR_1671    :{WINDOW_COLOUR_2}Gesamtgewinn: {BLACK}{CURRENCY2DP}
 STR_1672    :Bremsen
 STR_1673    :Drehkontrolle umschalten
 STR_1674    :Bremsgeschwindigkeit
-STR_1675    :{POP16}{VELOCITY}
 STR_1676    :Geschwindigkeitsgrenze{NEWLINE}für Bremsen einstellen
 STR_1677    :{WINDOW_COLOUR_2}Popularität: {BLACK}Unbekannt
 STR_1678    :{WINDOW_COLOUR_2}Popularität: {BLACK}{COMMA16}%
-STR_1679    :Spirale n. oben (links)
-STR_1680    :Spirale n. oben (rechts)
-STR_1681    :Spirale n. unten (links)
-STR_1682    :Spirale n. unten (rechts)
+STR_1679    :Viertelspirale n. oben (links)
+STR_1680    :Viertelspirale n. oben (rechts)
+STR_1681    :Viertelspirale n. unten (links)
+STR_1682    :Viertelspirale n. unten (rechts)
 STR_1683    :Grundflächengröße 2 × 2
 STR_1684    :Grundflächengröße 4 × 4
 STR_1685    :Grundflächengröße 2 × 4
@@ -1117,18 +1099,15 @@ STR_1732    :Bauen
 STR_1733    :Modus
 STR_1734    :{WINDOW_COLOUR_2}Anzahl der Runden:
 STR_1735    :Rundenanzahl
-STR_1736    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1738    :Rundenanzahl kann nicht geändert werden …
 STR_1739    :Rennen gewonnen von Besucher {INT32}
 STR_1740    :Rennen wurde gewonnen von {STRINGID}
 STR_1741    :Noch nicht gebaut!
 STR_1742    :{WINDOW_COLOUR_2}Max. Besucherzahl:
 STR_1743    :Max. Anzahl von Personen zur selben Zeit auf dieser Bahn
-STR_1744    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1746    :Dies kann nicht geändert werden …
 STR_1747    :{WINDOW_COLOUR_2}Zeitlimit:
 STR_1748    :Zeitlimit für Fahrt
-STR_1749    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{DURATION}
 STR_1751    :Zeitlimit für Fahrt kann nicht geändert werden …
 STR_1752    :Liste einzelner Parkbesucher anzeigen
 STR_1753    :Gesamtliste von Parkbesuchern anzeigen
@@ -1149,7 +1128,6 @@ STR_1767    :Drehtunnel
 STR_1768    :Schwunganzahl kann nicht geändert werden …
 STR_1769    :{WINDOW_COLOUR_2}Schwunganzahl:
 STR_1770    :Anzahl kompletter Schwünge
-STR_1771    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1773    :Nur ein Fahrtfoto-Bereich pro Bahn erlaubt
 STR_1774    :Nur ein Kabellifthügel pro Bahn erlaubt
 STR_1777    :Attraktionsmusik
@@ -1161,7 +1139,6 @@ STR_1794    :Repariert {STRINGID}
 STR_1795    :Beantwortet einen Funkspruch
 STR_1796    :Ist ausgefallen und erfordert Reparatur
 STR_1798    :Whirlpool
-STR_1799    :{POP16}{POP16}{POP16}{POP16}{POP16}{CURRENCY2DP}
 STR_1800    :Sicherheitsabschaltung
 STR_1801    :Sicherheitsbügel öffnen nicht
 STR_1802    :Sicherheitsbügel schließen nicht
@@ -1233,7 +1210,6 @@ STR_1867    :{BLACK}{COMMA32} {STRINGID}
 STR_1868    :Anzahl der Drehungen kann nicht geändert werden …
 STR_1869    :{WINDOW_COLOUR_2}Anzahl der Drehungen:
 STR_1870    :Anzahl kompletter Drehungen
-STR_1871    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1873    :{WINDOW_COLOUR_2}Einkünfte: {BLACK}{CURRENCY2DP} pro Stunde
 STR_1874    :{WINDOW_COLOUR_2}Gewinn: {BLACK}{CURRENCY2DP} pro Stunde
 STR_1876    :{WINDOW_COLOUR_2}{INLINE_SPRITE}{251}{19}{00}{00}Attraktionen inspizieren
@@ -1275,7 +1251,6 @@ STR_1913    :{BLACK}+{CURRENCY2DP}
 STR_1914    :{BLACK}{CURRENCY2DP}
 STR_1915    :{RED}{CURRENCY2DP}
 STR_1916    :{WINDOW_COLOUR_2}Darlehen:
-STR_1917    :{POP16}{POP16}{POP16}{CURRENCY}
 STR_1918    :Es kann kein weiteres Darlehnen aufgenommen werden!
 STR_1919    :Nicht genügend Geld verfügbar!
 STR_1920    :Darlehen kann nicht zurückgezahlt werden!
@@ -1313,7 +1288,6 @@ STR_1953    :Marketing
 STR_1954    :Forschungsfinanzierung
 STR_1955    :{WINDOW_COLOUR_2}Rundenanzahl:
 STR_1956    :Rundenanzahl der Strecke pro Fahrt
-STR_1957    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1958    :{COMMA16}
 STR_1959    :Rundenanzahl kann nicht geändert werden …
 STR_1960    :{WINDOW_COLOUR_2}Ballonpreis:
@@ -2112,7 +2086,6 @@ STR_3092    :Sie dürfen die Station für diese Bahn nicht verschieben oder ver�
 STR_3093    :{WINDOW_COLOUR_2}Favorit: {BLACK}{STRINGID}
 STR_3094    :N/A
 STR_3095    :{WINDOW_COLOUR_2}Lifthügel-Kettengeschw.:
-STR_3096    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{VELOCITY}
 STR_3097    :Lifthügel-Kettengeschwindigkeit auswählen
 STR_3099    :Farbe auswählen
 STR_3100    :Zweite Farbe auswählen
@@ -2205,7 +2178,6 @@ STR_3208    :Streckenentwurf-Manager
 STR_3209    :Zurück zum vorherigen Schritt:
 STR_3210    :Weiter zum nächsten Schritt:
 STR_3211    :Kartengröße:
-STR_3212    :{POP16}{COMMA16}
 STR_3213    :Kartengröße kann nicht mehr verkleinert werden
 STR_3214    :Kartengröße kann nicht mehr vergrößert werden
 STR_3215    :Zu nahe am Rand der Karte
@@ -2991,12 +2963,11 @@ STR_5914    :Unbekannte Bahn
 STR_5915    :Spieler
 STR_5916    :{COMMA16} Spieler
 STR_5917    :{COMMA16} Spieler
-STR_5918    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_5919    :{COMMA16}
 STR_5920    :Wettereffekte darstellen
 STR_5921    :Wenn aktiviert, werden Regen{NEWLINE}und düstere Farben, während{NEWLINE}eines Sturms, dargestellt
-STR_5922    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}Max. {STRINGID}
-STR_5923    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}Max. {COMMA16} {STRINGID} pro Zug
+STR_5922    :Max. {STRINGID}
+STR_5923    :Max. {COMMA16} {STRINGID} pro Zug
 STR_5924    :Oberflächendetails
 STR_5925    :Wegdetails
 STR_5926    :Streckendetails
@@ -3331,7 +3302,7 @@ STR_6304    :Szeneriewähler öffnen
 STR_6305    :Multithreading
 STR_6306    :Experimentelle Option, um mehrere Threads für das Rendern zu verwenden, kann Instabilität verursachen
 STR_6307    :Farbschema: {BLACK}{STRINGID}
-STR_6308    :{TOPAZ}„{STRINGID}{OUTLINE}{TOPAZ}“{NEWLINE}{STRINGID}
+STR_6308    :{TOPAZ}„{STRINGID}{TOPAZ}“{NEWLINE}{STRINGID}
 STR_6309    :Neu verbinden
 STR_6310    :{WINDOW_COLOUR_2}Position: {BLACK}{INT32} {INT32} {INT32}
 STR_6311    :{WINDOW_COLOUR_2}Nächste: {BLACK}{INT32} {INT32} {INT32}
@@ -3381,7 +3352,6 @@ STR_6355    :Hohe Dichte
 STR_6356    :Erzeugt Enten, falls der Park Wasser enthält
 STR_6357    :Entfernt alle Enten aus der Karte
 STR_6358    :Seite {UINT16}
-STR_6359    :{POP16}{POP16}Seite {UINT16}
 STR_6361    :Lichter an Fahrgeschäften akt. (experimentell)
 STR_6362    :Falls aktiviert, werden Fahrzeuge für Streckenfahrgeschäfte in der Nacht leuchten.
 STR_6363    :Text in die Zwischenablage kopiert
@@ -3838,3 +3808,9 @@ STR_7014    :Mir gehört das Spiel auf Steam, habe es aber noch nicht installier
 STR_7015    :Bitte schließen Sie Steam, falls es läuft, dann klicken Sie auf „OK“.
 STR_7016    :OpenRCT2 hat versucht, einen Download in Steam auszulösen. Bitte öffen Sie Steam und lassen Sie es das Spiel herunterladen. Wenn Steam fertig ist, klicken Sie auf „OK“.
 STR_7017    :Verlassen
+STR_7023    :Unsichtbar machen
+STR_7024    :Macht das gesamte Fahrgeschäft unsichtbar
+STR_7025    :Sichtbar machen
+STR_7026    :Macht das gesamte Fahrgeschäft sichtbar
+STR_7028    :Viertelspirale n. oben
+STR_7029    :Viertelspirale n. unten

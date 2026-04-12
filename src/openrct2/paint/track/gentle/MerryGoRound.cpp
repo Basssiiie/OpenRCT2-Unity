@@ -12,7 +12,6 @@
 #include "../../../interface/Viewport.h"
 #include "../../../ride/Ride.h"
 #include "../../../ride/RideEntry.h"
-#include "../../../ride/Track.h"
 #include "../../../ride/TrackPaint.h"
 #include "../../../ride/Vehicle.h"
 #include "../../Paint.h"
@@ -72,7 +71,7 @@ static void PaintCarousel(
         session.CurrentlyDrawnEntity = vehicle;
 
         if (ride.flags.hasAny(RideFlag::breakdownPending, RideFlag::brokenDown)
-            && ride.breakdownReasonPending == BREAKDOWN_CONTROL_FAILURE && ride.breakdownSoundModifier >= 128)
+            && ride.breakdownReasonPending == Breakdown::controlFailure && ride.breakdownSoundModifier >= 128)
         {
             height += kMerryGoRoundBreakdownVibration[(vehicle->current_time >> 1) & 7];
         }

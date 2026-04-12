@@ -49,7 +49,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_loc) << DS_TAG(_tileIndex);
     }
 
-    Result LargeSceneryRemoveAction::Query(GameState_t& gameState) const
+    Result LargeSceneryRemoveAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
 
@@ -90,9 +90,9 @@ namespace OpenRCT2::GameActions
 
             if (gLegacyScene != LegacyScene::scenarioEditor && !gameState.cheats.sandboxMode)
             {
-                if (gameState.park.flags & PARK_FLAGS_FORBID_TREE_REMOVAL)
+                if (park.flags & PARK_FLAGS_FORBID_TREE_REMOVAL)
                 {
-                    if (sceneryEntry->HasFlag(LARGE_SCENERY_FLAG_IS_TREE))
+                    if (sceneryEntry->flags.has(LargeSceneryFlag::isTree))
                     {
                         res.error = Status::noClearance;
                         res.errorTitle = STR_CANT_REMOVE_THIS;
@@ -129,7 +129,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result LargeSceneryRemoveAction::Execute(GameState_t& gameState) const
+    Result LargeSceneryRemoveAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
 

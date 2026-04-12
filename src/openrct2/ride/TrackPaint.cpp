@@ -18,6 +18,7 @@
 #include "../drawing/LightFX.h"
 #include "../interface/Viewport.h"
 #include "../object/StationObject.h"
+#include "../paint/Boundbox.h"
 #include "../paint/Paint.SessionFlags.h"
 #include "../paint/Paint.h"
 #include "../paint/support/MetalSupports.h"
@@ -33,10 +34,11 @@
 #include "TrackData.h"
 #include "TrackDesign.h"
 #include "TrackStyle.h"
+#include "ted/TrackElementDescriptor.h"
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Drawing;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 /* rct2: 0x007667AC */
 static constexpr TileCoordsXY EntranceOffsetEdgeNE[] = {
@@ -1979,7 +1981,8 @@ void PaintTrack(PaintSession& session, Direction direction, int32_t height, cons
             session.InteractionType = ViewportInteractionItem::none;
             const auto& ted = GetTrackElementDescriptor(trackType);
             if ((trackType == TrackElemType::maze)
-                || (trackSequence < ted.numSequences && ted.sequences[trackSequence].flags.has(SequenceFlag::hasHeightMarker)))
+                || (trackSequence < ted.sequenceData.numSequences
+                    && ted.sequenceData.sequences[trackSequence].flags.has(SequenceFlag::hasHeightMarker)))
             {
                 uint16_t ax = ride->getRideTypeDescriptor().Heights.VehicleZOffset;
                 // 0x1689 represents 0 height there are -127 to 128 heights above and below it
@@ -2026,9 +2029,9 @@ void PaintTrack(PaintSession& session, Direction direction, int32_t height, cons
 
         const auto& rtd = GetRideTypeDescriptor(trackElement.GetRideType());
         bool isInverted = trackElement.IsInverted() && rtd.flags.has(RtdFlag::hasInvertedVariant);
-        const auto trackDrawerEntry = getTrackDrawerEntry(rtd, isInverted, TrackElementIsCovered(trackType));
+        const auto trackDrawerEntry = getTrackDrawerEntry(rtd, isInverted, trackTypeIsCovered(trackType));
 
-        trackType = UncoverTrackElement(trackType);
+        trackType = uncoverTrackType(trackType);
         TrackPaintFunction paintFunction = GetTrackPaintFunction(trackDrawerEntry.trackStyle, trackType);
         paintFunction(session, *ride, trackSequence, direction, height, trackElement, trackDrawerEntry.supportType);
     }

@@ -54,7 +54,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_loc) << DS_TAG(_quadrant) << DS_TAG(_sceneryType);
     }
 
-    Result SmallSceneryRemoveAction::Query(GameState_t& gameState) const
+    Result SmallSceneryRemoveAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         Result res = Result();
 
@@ -63,7 +63,7 @@ namespace OpenRCT2::GameActions
             return Result(Status::invalidParameters, STR_CANT_REMOVE_THIS, STR_OFF_EDGE_OF_MAP);
         }
 
-        auto* entry = ObjectManager::GetObjectEntry<SmallSceneryEntry>(_sceneryType);
+        auto* entry = ObjectEntryManager::GetObjectEntry<SmallSceneryEntry>(_sceneryType);
         if (entry == nullptr)
         {
             return Result(Status::invalidParameters, STR_CANT_REMOVE_THIS, STR_INVALID_SELECTION_OF_OBJECTS);
@@ -76,9 +76,9 @@ namespace OpenRCT2::GameActions
         if (gLegacyScene != LegacyScene::scenarioEditor && !GetFlags().has(CommandFlag::ghost) && !gameState.cheats.sandboxMode)
         {
             // Check if allowed to remove item
-            if (gameState.park.flags & PARK_FLAGS_FORBID_TREE_REMOVAL)
+            if (park.flags & PARK_FLAGS_FORBID_TREE_REMOVAL)
             {
-                if (entry->HasFlag(SMALL_SCENERY_FLAG_IS_TREE))
+                if (entry->flags.has(SmallSceneryFlag::isTree))
                 {
                     res.error = Status::noClearance;
                     res.errorTitle = STR_CANT_REMOVE_THIS;
@@ -106,11 +106,11 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result SmallSceneryRemoveAction::Execute(GameState_t& gameState) const
+    Result SmallSceneryRemoveAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         Result res = Result();
 
-        auto* entry = ObjectManager::GetObjectEntry<SmallSceneryEntry>(_sceneryType);
+        auto* entry = ObjectEntryManager::GetObjectEntry<SmallSceneryEntry>(_sceneryType);
         if (entry == nullptr)
         {
             LOG_ERROR("Invalid small scenery type %u", _sceneryType);

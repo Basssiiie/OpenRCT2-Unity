@@ -18,13 +18,16 @@
 #include "../world/tile_element/TrackElement.h"
 #include "Ride.h"
 #include "RideData.h"
-#include "Track.h"
+#include "TrackIteration.h"
 #include "Vehicle.h"
 #include "VehicleData.h"
 #include "VehicleGeometry.h"
+#include "ted/PitchAndRoll.h"
+#include "ted/TrackElemType.h"
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::RideVehicle;
+using namespace OpenRCT2::TrackMetadata;
 
 Vehicle* CableLiftSegmentCreate(
     Ride& ride, int32_t x, int32_t y, int32_t z, int32_t direction, uint16_t var_44, int32_t remaining_distance, bool head)
@@ -260,7 +263,7 @@ bool Vehicle::CableLiftUpdateTrackMotionForwards()
 
             auto input = CoordsXYE{ TrackLocation, trackElement };
 
-            if (!TrackBlockGetNext(&input, &output, &outputZ, &outputDirection))
+            if (!trackBlockGetNext(&input, &output, &outputZ, &outputDirection))
                 return false;
 
             if (TrackPitchAndRollEnd(trackType) != TrackPitchAndRollStart(output.element->AsTrack()->GetTrackType()))
@@ -311,7 +314,7 @@ bool Vehicle::CableLiftUpdateTrackMotionBackwards()
             auto input = CoordsXYE{ TrackLocation, trackElement };
             TrackBeginEnd output;
 
-            if (!TrackBlockGetPrevious(input, &output))
+            if (!trackBlockGetPrevious(input, &output))
                 return false;
 
             if (TrackPitchAndRollStart(trackType) != TrackPitchAndRollEnd(output.begin_element->AsTrack()->GetTrackType()))

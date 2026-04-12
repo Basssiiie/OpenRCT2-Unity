@@ -32,9 +32,9 @@
 #include "RideRatings.h"
 #include "RideStringIds.h"
 #include "ShopItem.h"
-#include "Track.h"
 #include "TrackStyle.h"
 #include "Vehicle.h"
+#include "ted/TrackGroup.h"
 
 enum class ResearchCategory : uint8_t;
 
@@ -273,10 +273,10 @@ struct UpkeepCostsDescriptor
     money64 CostPerStation;
 };
 
-using RideTrackGroups = OpenRCT2::BitSet<EnumValue(TrackGroup::count)>;
-using UpdateRideApproachVehicleWaypointsFunction = void (*)(Guest&, const CoordsXY&, int16_t&);
+using RideTrackGroups = OpenRCT2::BitSet<EnumValue(OpenRCT2::TrackGroup::count)>;
+using UpdateRideApproachVehicleWaypointsFunction = void (*)(OpenRCT2::Guest&, const CoordsXY&, int16_t&);
 using RideMusicUpdateFunction = void (*)(Ride&);
-using PeepUpdateRideLeaveEntranceFunc = void (*)(Guest&, Ride&, CoordsXYZD&);
+using PeepUpdateRideLeaveEntranceFunc = void (*)(OpenRCT2::Guest&, Ride&, CoordsXYZD&);
 using StartRideMusicFunction = void (*)(const OpenRCT2::RideAudio::ViewportRideMusicInstance&);
 using LightFXAddLightsMagicVehicleFunction = void (*)(const Vehicle* vehicle);
 using RideLocationFunction = CoordsXY (*)(const Vehicle& vehicle, const Ride& ride, const StationIndex& CurrentRideStation);
@@ -306,7 +306,7 @@ struct TrackDrawerEntry
     StringId tooltip = kStringIdNone;
 
     void GetAvailableTrackGroups(RideTrackGroups& res) const;
-    bool SupportsTrackGroup(TrackGroup trackGroup) const;
+    bool SupportsTrackGroup(OpenRCT2::TrackGroup trackGroup) const;
 };
 
 struct TrackDrawerDescriptor
@@ -509,7 +509,7 @@ struct RideTypeDescriptor
     RideLegacyBoosterSettings LegacyBoosterSettings{};
     RideNaming Naming{};
     RideNameConvention NameConvention{};
-    uint8_t AvailableBreakdowns{};
+    FlagHolder<uint8_t, Breakdown> availableBreakdowns{};
     /** rct2: 0x0097D218 */
     RideHeights Heights{};
     uint8_t MaxMass{};
@@ -545,10 +545,10 @@ struct RideTypeDescriptor
     RideMusicUpdateFunction MusicUpdateFunction = DefaultMusicUpdate;
     RideClassification Classification = RideClassification::ride;
 
-    PeepUpdateRideLeaveEntranceFunc UpdateLeaveEntrance = PeepUpdateRideLeaveEntranceDefault;
+    PeepUpdateRideLeaveEntranceFunc UpdateLeaveEntrance = OpenRCT2::PeepUpdateRideLeaveEntranceDefault;
     SpecialElementRatingAdjustmentFunc SpecialElementRatingAdjustment = SpecialTrackElementRatingsAjustment_Default;
 
-    RideLocationFunction GetGuestWaypointLocation = GetGuestWaypointLocationDefault;
+    RideLocationFunction GetGuestWaypointLocation = OpenRCT2::GetGuestWaypointLocationDefault;
 
     RideConstructionWindowContext ConstructionWindowContext = RideConstructionWindowContext::Default;
     RideUpdateFunction RideUpdate = nullptr;
@@ -557,11 +557,12 @@ struct RideTypeDescriptor
 
     MusicTrackOffsetLengthFunc MusicTrackOffsetLength = OpenRCT2::RideAudio::RideMusicGetTrackOffsetLength_Default;
 
-    UpdateRideApproachVehicleWaypointsFunction UpdateRideApproachVehicleWaypoints = UpdateRideApproachVehicleWaypointsDefault;
+    UpdateRideApproachVehicleWaypointsFunction UpdateRideApproachVehicleWaypoints = OpenRCT2::
+        UpdateRideApproachVehicleWaypointsDefault;
     RtdSpecialType specialType = RtdSpecialType::none;
 
     /** @deprecated */
-    bool SupportsTrackGroup(TrackGroup trackGroup) const;
+    bool SupportsTrackGroup(OpenRCT2::TrackGroup trackGroup) const;
     ResearchCategory GetResearchCategory() const;
     bool SupportsRideMode(RideMode rideMode) const;
     /**
@@ -646,7 +647,7 @@ constexpr RideTypeDescriptor kDummyRTD =
     .LegacyBoosterSettings = {},
     .Naming = { STR_UNKNOWN_RIDE, STR_RIDE_DESCRIPTION_UNKNOWN },
     .NameConvention = { RideComponentType::Train, RideComponentType::Track, RideComponentType::Station },
-    .AvailableBreakdowns = 0,
+    .availableBreakdowns = {},
     .Heights = { 12, 64, 0, 0, },
     .MaxMass = 255,
     .LiftData = { OpenRCT2::Audio::SoundId::null, 5, 5 },
@@ -678,7 +679,7 @@ constexpr RideTypeDescriptor kDummyRTD =
     .DesignCreateMode = TrackDesignCreateMode::Default,
     .MusicUpdateFunction = DefaultMusicUpdate,
     .Classification = RideClassification::ride,
-    .UpdateLeaveEntrance = PeepUpdateRideLeaveEntranceDefault,
+    .UpdateLeaveEntrance = OpenRCT2::PeepUpdateRideLeaveEntranceDefault,
 };
 // clang-format on
 
@@ -695,7 +696,7 @@ constexpr bool RideTypeIsValid(ride_type_t rideType)
     return rideType < std::size(kRideTypeDescriptors);
 }
 
-bool IsTrackEnabled(TrackGroup trackGroup);
+bool IsTrackEnabled(OpenRCT2::TrackGroup trackGroup);
 void UpdateEnabledRideGroups(TrackDrawerDescriptor trackDrawerDescriptor);
 void UpdateDisabledRideGroups(const RideTrackGroups& res);
 

@@ -22,6 +22,7 @@
 #include "../../world/Map.h"
 #include "../../world/MapAnimation.h"
 #include "../../world/Park.h"
+#include "../../world/QuarterTile.h"
 #include "../../world/tile_element/EntranceElement.h"
 #include "../../world/tile_element/SurfaceElement.h"
 
@@ -58,7 +59,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_pathTypeIsLegacy);
     }
 
-    Result ParkEntrancePlaceAction::Query(GameState_t& gameState) const
+    Result ParkEntrancePlaceAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         if (!isInEditorMode() && !gameState.cheats.sandboxMode)
         {
@@ -81,7 +82,7 @@ namespace OpenRCT2::GameActions
             return Result(Status::noFreeElements, STR_CANT_BUILD_THIS_HERE, STR_ERR_LANDSCAPE_DATA_AREA_FULL);
         }
 
-        if (gameState.park.entrances.size() >= Limits::kMaxParkEntrances)
+        if (park.entrances.size() >= Limits::kMaxParkEntrances)
         {
             return Result(Status::invalidParameters, STR_CANT_BUILD_THIS_HERE, STR_ERR_TOO_MANY_PARK_ENTRANCES);
         }
@@ -118,7 +119,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result ParkEntrancePlaceAction::Execute(GameState_t& gameState) const
+    Result ParkEntrancePlaceAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.expenditure = ExpenditureType::landPurchase;
@@ -126,7 +127,7 @@ namespace OpenRCT2::GameActions
 
         auto flags = GetFlags();
 
-        gameState.park.entrances.push_back(_loc);
+        park.entrances.push_back(_loc);
 
         auto zLow = _loc.z;
         auto zHigh = zLow + ParkEntranceHeight;

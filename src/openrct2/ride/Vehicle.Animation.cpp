@@ -20,15 +20,15 @@
 #include "Ride.h"
 #include "RideData.h"
 #include "RideEntry.h"
-#include "Track.h"
 #include "TrackData.h"
 #include "VehicleData.h"
+#include "ted/TrackElementDescriptor.h"
 
 #include <cassert>
 
 using namespace OpenRCT2;
 using namespace OpenRCT2::Audio;
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::TrackMetadata;
 
 constexpr int16_t kVehicleMaxSpinSpeed = 1536;
 constexpr int16_t kVehicleMinSpinSpeed = -kVehicleMaxSpinSpeed;
@@ -113,7 +113,7 @@ void Vehicle::UpdateSwinging()
  */
 void Vehicle::UpdateFerrisWheelRotating()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     auto curRide = GetRide();
@@ -205,7 +205,7 @@ void Vehicle::UpdateFerrisWheelRotating()
  */
 void Vehicle::UpdateSimulatorOperating()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     assert(current_time >= -1);
@@ -249,7 +249,7 @@ void UpdateRotatingEnterprise(Vehicle& vehicle)
  */
 void Vehicle::UpdateRotating()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     auto curRide = GetRide();
@@ -277,7 +277,7 @@ void Vehicle::UpdateRotating()
     }
 
     uint16_t time = current_time;
-    if (_vehicleBreakdown == BREAKDOWN_CONTROL_FAILURE)
+    if (_vehicleBreakdown == Breakdown::controlFailure)
     {
         time += (curRide->breakdownSoundModifier >> 6) + 1;
     }
@@ -296,7 +296,7 @@ void Vehicle::UpdateRotating()
 
     current_time = -1;
     NumRotations++;
-    if (_vehicleBreakdown != BREAKDOWN_CONTROL_FAILURE)
+    if (_vehicleBreakdown != Breakdown::controlFailure)
     {
         bool shouldStop = true;
         if (curRide->status != RideStatus::closed)
@@ -333,7 +333,7 @@ void Vehicle::UpdateRotating()
  */
 void Vehicle::UpdateSpaceRingsOperating()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     uint8_t spriteType = kSpaceRingsTimeToSpriteMap[current_time + 1];
@@ -359,7 +359,7 @@ void Vehicle::UpdateSpaceRingsOperating()
  */
 void Vehicle::UpdateHauntedHouseOperating()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     if (flatRideAnimationFrame != 0)
@@ -413,7 +413,7 @@ void Vehicle::UpdateHauntedHouseOperating()
  */
 void Vehicle::UpdateCrookedHouseOperating()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     // Originally used an array of size 1 at 0x009A0AC4 and passed the sub state into it.
@@ -433,7 +433,7 @@ void Vehicle::UpdateCrookedHouseOperating()
  */
 void Vehicle::UpdateTopSpinOperating()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     const TopSpinTimeToSpriteMap* sprite_map = kTopSpinTimeToSpriteMaps[sub_state];
@@ -465,7 +465,7 @@ void Vehicle::UpdateTopSpinOperating()
  */
 void Vehicle::UpdateShowingFilm()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     int32_t totalTime = kRideFilmLength[sub_state];
@@ -487,7 +487,7 @@ void Vehicle::UpdateShowingFilm()
  */
 void Vehicle::UpdateDoingCircusShow()
 {
-    if (_vehicleBreakdown == 0)
+    if (_vehicleBreakdown == Breakdown::safetyCutOut)
         return;
 
     int32_t currentTime = current_time + 1;
@@ -713,7 +713,7 @@ void Vehicle::UpdateSwingingCar()
                 break;
         }
 
-        if (TrackTypeIsStation(trackType) || TrackTypeIsBrakes(trackType) || TrackTypeIsBlockBrakes(trackType))
+        if (trackTypeIsStation(trackType) || trackTypeIsBrakes(trackType) || trackTypeIsBlockBrakes(trackType))
         {
             dx = 0;
             cx = 0;
@@ -777,7 +777,7 @@ void Vehicle::UpdateSpinningCar()
     const auto& ted = GetTrackElementDescriptor(trackType);
     switch (ted.spinFunction)
     {
-        case SpinFunction::RC:
+        case SpinFunction::rc:
             // On a rotation control track element
             spinningInertia += 6;
             spinSpeed = dword_F64E08 >> spinningInertia;
@@ -791,25 +791,25 @@ void Vehicle::UpdateSpinningCar()
                 spin_speed += spinSpeed;
             }
             break;
-        case SpinFunction::R5:
+        case SpinFunction::r5:
             // It looks like in the original there was going to be special code for whirlpool
             // this has been removed and just uses R5
             spinningInertia += 5;
             spin_speed -= dword_F64E08 >> spinningInertia;
             break;
-        case SpinFunction::L5:
+        case SpinFunction::l5:
             spinningInertia += 5;
             spin_speed += dword_F64E08 >> spinningInertia;
             break;
-        case SpinFunction::R7:
+        case SpinFunction::r7:
             spinningInertia += 7;
             spin_speed -= dword_F64E08 >> spinningInertia;
             break;
-        case SpinFunction::L7:
+        case SpinFunction::l7:
             spinningInertia += 7;
             spin_speed += dword_F64E08 >> spinningInertia;
             break;
-        case SpinFunction::RL:
+        case SpinFunction::rl:
             // Right Left Curve Track Piece
             if (track_progress < 48)
             {
@@ -819,15 +819,15 @@ void Vehicle::UpdateSpinningCar()
                 break;
             }
             [[fallthrough]];
-        case SpinFunction::L9:
+        case SpinFunction::l9:
             spinningInertia += 9;
             spin_speed += dword_F64E08 >> spinningInertia;
             break;
-        case SpinFunction::L8:
+        case SpinFunction::l8:
             spinningInertia += 8;
             spin_speed += dword_F64E08 >> spinningInertia;
             break;
-        case SpinFunction::SP:
+        case SpinFunction::sp:
             // On rapids spin after fully on them
             if (track_progress > 22)
             {
@@ -836,7 +836,7 @@ void Vehicle::UpdateSpinningCar()
                 spin_speed += dword_F64E08 >> spinningInertia;
             }
             break;
-        case SpinFunction::LR:
+        case SpinFunction::lr:
             // Left Right Curve Track Piece
             if (track_progress < 48)
             {
@@ -846,15 +846,15 @@ void Vehicle::UpdateSpinningCar()
                 break;
             }
             [[fallthrough]];
-        case SpinFunction::R9:
+        case SpinFunction::r9:
             spinningInertia += 9;
             spin_speed -= dword_F64E08 >> spinningInertia;
             break;
-        case SpinFunction::R8:
+        case SpinFunction::r8:
             spinningInertia += 8;
             spin_speed -= dword_F64E08 >> spinningInertia;
             break;
-        case SpinFunction::None:
+        case SpinFunction::none:
             break;
     }
 

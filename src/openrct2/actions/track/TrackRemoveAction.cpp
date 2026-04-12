@@ -15,7 +15,8 @@
 #include "../../ride/RideData.h"
 #include "../../ride/Track.h"
 #include "../../ride/TrackData.h"
-#include "../../ride/TrackDesign.h"
+#include "../../ride/ted/TrackElemType.h"
+#include "../../ride/ted/TrackElementDescriptor.h"
 #include "../../world/Footpath.h"
 #include "../../world/Map.h"
 #include "../../world/tile_element/SurfaceElement.h"
@@ -26,7 +27,7 @@
 
 namespace OpenRCT2::GameActions
 {
-    using namespace OpenRCT2::TrackMetaData;
+    using namespace OpenRCT2::TrackMetadata;
 
     TrackRemoveAction::TrackRemoveAction(TrackElemType trackType, int32_t sequence, const CoordsXYZD& origin)
         : _trackType(trackType)
@@ -67,7 +68,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_trackType) << DS_TAG(_sequence) << DS_TAG(_origin);
     }
 
-    Result TrackRemoveAction::Query(GameState_t& gameState) const
+    Result TrackRemoveAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.position.x = _origin.x + 16;
@@ -141,12 +142,12 @@ namespace OpenRCT2::GameActions
         }
         const auto& ted = GetTrackElementDescriptor(trackType);
         auto sequenceIndex = tileElement->AsTrack()->GetSequenceIndex();
-        if (sequenceIndex >= ted.numSequences)
+        if (sequenceIndex >= ted.sequenceData.numSequences)
         {
             LOG_ERROR("Track block %d not found for track type %d.", sequenceIndex, trackType);
             return Result(Status::invalidParameters, STR_RIDE_CONSTRUCTION_CANT_REMOVE_THIS, STR_ERR_TRACK_BLOCK_NOT_FOUND);
         }
-        const auto& currentTrackBlock = ted.sequences[sequenceIndex].clearance;
+        const auto& currentTrackBlock = ted.sequenceData.sequences[sequenceIndex].clearance;
 
         auto startLoc = _origin;
         startLoc.direction = tileElement->GetDirection();
@@ -162,9 +163,9 @@ namespace OpenRCT2::GameActions
 
         money64 supportCosts = 0;
 
-        for (uint8_t i = 0; i < ted.numSequences; i++)
+        for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
         {
-            const auto& trackBlock = ted.sequences[i].clearance;
+            const auto& trackBlock = ted.sequenceData.sequences[i].clearance;
             rotatedTrack = CoordsXYZ{ CoordsXY{ trackBlock.x, trackBlock.y }.Rotate(startLoc.direction), trackBlock.z };
             auto mapLoc = CoordsXYZ{ startLoc.x, startLoc.y, startLoc.z } + rotatedTrack;
 
@@ -211,7 +212,8 @@ namespace OpenRCT2::GameActions
                 return Result(Status::unknown, STR_RIDE_CONSTRUCTION_CANT_REMOVE_THIS, STR_ERR_TRACK_ELEMENT_NOT_FOUND);
             }
 
-            if (ted.sequences[0].flags.has(SequenceFlag::trackOrigin) && (tileElement->AsTrack()->GetSequenceIndex() == 0))
+            if (ted.sequenceData.sequences[0].flags.has(SequenceFlag::trackOrigin)
+                && (tileElement->AsTrack()->GetSequenceIndex() == 0))
             {
                 const auto removeElementResult = TrackRemoveStationElement({ mapLoc, _origin.direction }, rideIndex, {});
                 if (!removeElementResult.Successful)
@@ -250,7 +252,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result TrackRemoveAction::Execute(GameState_t& gameState) const
+    Result TrackRemoveAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.position.x = _origin.x + 16;
@@ -313,7 +315,7 @@ namespace OpenRCT2::GameActions
         }
         const auto& ted = GetTrackElementDescriptor(trackType);
         auto sequenceIndex = tileElement->AsTrack()->GetSequenceIndex();
-        if (sequenceIndex >= ted.numSequences)
+        if (sequenceIndex >= ted.sequenceData.numSequences)
         {
             LOG_ERROR("Track block %d not found for track type %d.", sequenceIndex, trackType);
             return Result(Status::invalidParameters, STR_RIDE_CONSTRUCTION_CANT_REMOVE_THIS, STR_ERR_TRACK_BLOCK_NOT_FOUND);
@@ -322,7 +324,7 @@ namespace OpenRCT2::GameActions
         auto startLoc = _origin;
         startLoc.direction = tileElement->GetDirection();
 
-        const auto& currentTrackBlock = ted.sequences[sequenceIndex].clearance;
+        const auto& currentTrackBlock = ted.sequenceData.sequences[sequenceIndex].clearance;
         auto rotatedTrackLoc = CoordsXYZ{ CoordsXY{ currentTrackBlock.x, currentTrackBlock.y }.Rotate(startLoc.direction),
                                           currentTrackBlock.z };
         startLoc.x -= rotatedTrackLoc.x;
@@ -334,9 +336,9 @@ namespace OpenRCT2::GameActions
 
         money64 supportCosts = 0;
 
-        for (uint8_t i = 0; i < ted.numSequences; i++)
+        for (uint8_t i = 0; i < ted.sequenceData.numSequences; i++)
         {
-            const auto& trackBlock = ted.sequences[i].clearance;
+            const auto& trackBlock = ted.sequenceData.sequences[i].clearance;
 
             rotatedTrackLoc = CoordsXYZ{ CoordsXY{ trackBlock.x, trackBlock.y }.Rotate(startLoc.direction), trackBlock.z };
             auto mapLoc = CoordsXYZ{ startLoc.x, startLoc.y, startLoc.z } + rotatedTrackLoc;
@@ -380,7 +382,8 @@ namespace OpenRCT2::GameActions
                 return Result(Status::unknown, STR_RIDE_CONSTRUCTION_CANT_REMOVE_THIS, STR_ERR_TRACK_ELEMENT_NOT_FOUND);
             }
 
-            if (ted.sequences[0].flags.has(SequenceFlag::trackOrigin) && (tileElement->AsTrack()->GetSequenceIndex() == 0))
+            if (ted.sequenceData.sequences[0].flags.has(SequenceFlag::trackOrigin)
+                && (tileElement->AsTrack()->GetSequenceIndex() == 0))
             {
                 const auto removeElementResult = TrackRemoveStationElement({ mapLoc, _origin.direction }, rideIndex, {});
                 if (!removeElementResult.Successful)
@@ -406,7 +409,7 @@ namespace OpenRCT2::GameActions
 
             // If the removed tile is a station modify station properties.
             // Don't do this if the ride is simulating and the tile is a ghost to prevent desyncs.
-            if (ted.sequences[0].flags.has(SequenceFlag::trackOrigin)
+            if (ted.sequenceData.sequences[0].flags.has(SequenceFlag::trackOrigin)
                 && (!GetFlags().has(CommandFlag::ghost) || (GetFlags().has(CommandFlag::trackDesign)))
                 && (tileElement->AsTrack()->GetSequenceIndex() == 0))
             {

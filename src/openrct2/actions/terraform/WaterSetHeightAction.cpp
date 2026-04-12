@@ -17,6 +17,7 @@
 #include "../../world/Footpath.h"
 #include "../../world/Map.h"
 #include "../../world/Park.h"
+#include "../../world/QuarterTile.h"
 #include "../../world/Wall.h"
 #include "../../world/tile_element/SurfaceElement.h"
 
@@ -46,14 +47,14 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_coords) << DS_TAG(_height);
     }
 
-    Result WaterSetHeightAction::Query(GameState_t& gameState) const
+    Result WaterSetHeightAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.expenditure = ExpenditureType::landscaping;
         res.position = { _coords, _height * kCoordsZStep };
 
         if (gLegacyScene != LegacyScene::scenarioEditor && !gameState.cheats.sandboxMode
-            && gameState.park.flags & PARK_FLAGS_FORBID_LANDSCAPE_CHANGES)
+            && park.flags & PARK_FLAGS_FORBID_LANDSCAPE_CHANGES)
         {
             return Result(Status::disallowed, kStringIdNone, STR_FORBIDDEN_BY_THE_LOCAL_AUTHORITY);
         }
@@ -111,7 +112,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result WaterSetHeightAction::Execute(GameState_t& gameState) const
+    Result WaterSetHeightAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.expenditure = ExpenditureType::landscaping;

@@ -15,8 +15,7 @@
 #include <optional>
 #include <string_view>
 
-struct OpenRCT2String;
-struct Peep;
+struct StringWithArgs;
 struct Ride;
 struct RideSelection;
 struct TrackDesign;
@@ -32,6 +31,7 @@ namespace OpenRCT2
 {
     class Formatter;
     struct ObjectEntryDescriptor;
+    struct Peep;
     struct TileElement;
 } // namespace OpenRCT2
 
@@ -138,7 +138,7 @@ namespace OpenRCT2::Ui::Windows
     // LoadSave
     WindowBase* LoadsaveOpen(
         LoadSaveAction action, LoadSaveType type, std::string_view defaultPath,
-        std::function<void(ModalResult result, std::string_view)> callback, TrackDesign* trackDesign);
+        std::function<void(ModalResult result, std::string_view)> callback, bool isJsCallback, TrackDesign* trackDesign);
     void WindowLoadSaveInputKey(WindowBase* w, uint32_t keycode);
 
     // Main
@@ -344,7 +344,7 @@ namespace OpenRCT2::Ui::Windows
 
     // Tooltip
     void WindowTooltipReset(const ScreenCoordsXY& screenCoords);
-    void WindowTooltipShow(const OpenRCT2String& message, ScreenCoordsXY screenCoords);
+    void WindowTooltipShow(const StringWithArgs& message, ScreenCoordsXY screenCoords);
     void WindowTooltipOpen(WindowBase* widgetWindow, WidgetIndex widgetIndex, const ScreenCoordsXY& screenCoords);
     void WindowTooltipClose();
 

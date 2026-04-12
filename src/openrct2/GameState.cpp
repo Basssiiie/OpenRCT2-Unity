@@ -61,14 +61,14 @@ namespace OpenRCT2
         gameState.currentTicks = 0;
 
         MapInit(mapSize);
-        Park::Initialise(gameState);
+        Park::Initialise(gameState.park, gameState);
         FinanceInit();
         BannerInit(gameState);
         RideInitAll();
         gameState.entities.ResetAllEntities();
         UpdateConsolidatedPatrolAreas();
         ResetDate();
-        ClimateReset();
+        Weather::reset();
         News::InitQueue(gameState);
 
         gInMapInitCode = false;
@@ -307,7 +307,7 @@ namespace OpenRCT2
         DateUpdate(gameState);
 
         ScenarioUpdate(gameState);
-        ClimateUpdate();
+        Weather::update();
         MapUpdateTiles();
 
         // Temporarily remove provisional paths to prevent peep from interacting with them
@@ -336,7 +336,7 @@ namespace OpenRCT2
         MapAnimations::InvalidateAndUpdateAll();
         VehicleSoundsUpdate();
         PeepUpdateCrowdNoise();
-        ClimateUpdateSound();
+        Weather::updateSound();
         EditorOpenWindowsForCurrentStep();
 
         // Update windows

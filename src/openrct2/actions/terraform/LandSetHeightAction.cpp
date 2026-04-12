@@ -21,6 +21,7 @@
 #include "../../world/Footpath.h"
 #include "../../world/Map.h"
 #include "../../world/Park.h"
+#include "../../world/QuarterTile.h"
 #include "../../world/Scenery.h"
 #include "../../world/TileElementsView.h"
 #include "../../world/Wall.h"
@@ -58,9 +59,9 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_coords) << DS_TAG(_height) << DS_TAG(_style);
     }
 
-    Result LandSetHeightAction::Query(GameState_t& gameState) const
+    Result LandSetHeightAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
-        if (gameState.park.flags & PARK_FLAGS_FORBID_LANDSCAPE_CHANGES)
+        if (park.flags & PARK_FLAGS_FORBID_LANDSCAPE_CHANGES)
         {
             return Result(Status::disallowed, STR_FORBIDDEN_BY_THE_LOCAL_AUTHORITY, kStringIdNone);
         }
@@ -82,7 +83,7 @@ namespace OpenRCT2::GameActions
         money64 sceneryRemovalCost = 0;
         if (!gameState.cheats.disableClearanceChecks)
         {
-            if (gameState.park.flags & PARK_FLAGS_FORBID_TREE_REMOVAL)
+            if (park.flags & PARK_FLAGS_FORBID_TREE_REMOVAL)
             {
                 // Check for obstructing large trees
                 TileElement* tileElement = CheckTreeObstructions();
@@ -154,7 +155,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result LandSetHeightAction::Execute(GameState_t& gameState) const
+    Result LandSetHeightAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         money64 cost = 0.00_GBP;
         auto surfaceHeight = TileElementHeight(_coords);
@@ -222,7 +223,7 @@ namespace OpenRCT2::GameActions
                 continue;
 
             auto* sceneryEntry = sceneryElement->GetEntry();
-            if (!sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_IS_TREE))
+            if (!sceneryEntry->flags.has(SmallSceneryFlag::isTree))
                 continue;
 
             return sceneryElement->as<TileElement>();

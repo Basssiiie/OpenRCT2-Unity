@@ -44,7 +44,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_loc);
     }
 
-    Result BannerRemoveAction::Query(GameState_t& gameState) const
+    Result BannerRemoveAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.expenditure = ExpenditureType::landscaping;
@@ -84,7 +84,7 @@ namespace OpenRCT2::GameActions
             return Result(Status::invalidParameters, STR_CANT_REMOVE_THIS, kStringIdNone);
         }
 
-        auto* bannerEntry = ObjectManager::GetObjectEntry<BannerSceneryEntry>(banner->type);
+        auto* bannerEntry = ObjectEntryManager::GetObjectEntry<BannerSceneryEntry>(banner->type);
         if (bannerEntry != nullptr)
         {
             res.cost = -((bannerEntry->price * 3) / 4);
@@ -93,7 +93,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result BannerRemoveAction::Execute(GameState_t& gameState) const
+    Result BannerRemoveAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.expenditure = ExpenditureType::landscaping;
@@ -124,7 +124,7 @@ namespace OpenRCT2::GameActions
             return Result(Status::invalidParameters, STR_CANT_REMOVE_THIS, kStringIdNone);
         }
 
-        auto* bannerEntry = ObjectManager::GetObjectEntry<BannerSceneryEntry>(banner->type);
+        auto* bannerEntry = ObjectEntryManager::GetObjectEntry<BannerSceneryEntry>(banner->type);
         if (bannerEntry != nullptr)
         {
             res.cost = -((bannerEntry->price * 3) / 4);

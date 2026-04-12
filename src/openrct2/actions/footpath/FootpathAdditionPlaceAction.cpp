@@ -51,7 +51,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_loc) << DS_TAG(_entryIndex);
     }
 
-    Result FootpathAdditionPlaceAction::Query(GameState_t& gameState) const
+    Result FootpathAdditionPlaceAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.expenditure = ExpenditureType::landscaping;
@@ -97,7 +97,7 @@ namespace OpenRCT2::GameActions
             return res;
         }
 
-        auto* pathAdditionEntry = ObjectManager::GetObjectEntry<PathAdditionEntry>(_entryIndex);
+        auto* pathAdditionEntry = ObjectEntryManager::GetObjectEntry<PathAdditionEntry>(_entryIndex);
         if (pathAdditionEntry == nullptr)
         {
             LOG_ERROR("Unknown footpath addition entry for entryIndex %d", _entryIndex);
@@ -140,7 +140,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result FootpathAdditionPlaceAction::Execute(GameState_t& gameState) const
+    Result FootpathAdditionPlaceAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.position = _loc;
@@ -162,7 +162,7 @@ namespace OpenRCT2::GameActions
             return res;
         }
 
-        auto* pathAdditionEntry = ObjectManager::GetObjectEntry<PathAdditionEntry>(_entryIndex);
+        auto* pathAdditionEntry = ObjectEntryManager::GetObjectEntry<PathAdditionEntry>(_entryIndex);
         if (pathAdditionEntry == nullptr)
         {
             LOG_ERROR("Unknown footpath addition entry for entryIndex %d", _entryIndex);

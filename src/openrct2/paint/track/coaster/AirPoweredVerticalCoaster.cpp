@@ -9,9 +9,7 @@
 
 #include "../../../SpriteIds.h"
 #include "../../../drawing/Drawing.h"
-#include "../../../interface/Viewport.h"
 #include "../../../ride/RideData.h"
-#include "../../../ride/TrackData.h"
 #include "../../../ride/TrackPaint.h"
 #include "../../../world/tile_element/TrackElement.h"
 #include "../../Paint.h"
@@ -28,9 +26,6 @@ static constexpr TunnelGroup kTunnelGroup = TunnelGroup::Square;
 
 enum
 {
-    SPR_REVERSE_FREEFALL_RC_FLAT_SW_NE = 22164,
-    SPR_REVERSE_FREEFALL_RC_FLAT_NW_SE = 22165,
-
     SPR_AIR_POWERED_VERTICAL_RC_FLAT_SW_NE = 22226,
     SPR_AIR_POWERED_VERTICAL_RC_FLAT_NW_SE = 22227,
     SPR_AIR_POWERED_VERTICAL_RC_STATION_SW_NE = 22228,

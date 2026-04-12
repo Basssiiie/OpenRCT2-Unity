@@ -17,6 +17,7 @@
 #include "../rct12/CSStringConverter.h"
 #include "../rct2/RCT2.h"
 #include "../ride/Ride.h"
+#include "../ride/ted/TrackElemType.h"
 #include "../scenario/Scenario.h"
 #include "../world/Footpath.h"
 #include "../world/Wall.h"
@@ -222,7 +223,7 @@ RideColourScheme RCT12TrackElement::GetColourScheme() const
 
 uint8_t RCT12TrackElement::GetStationIndex() const
 {
-    if (TrackTypeIsStation(TrackType) || TrackType == RCT12::TrackElemType::towerBase)
+    if (trackTypeIsStation(TrackType) || TrackType == RCT12::TrackElemType::towerBase)
     {
         return (Sequence & RCT12_TRACK_ELEMENT_SEQUENCE_STATION_INDEX_MASK) >> 4;
     }
@@ -246,7 +247,7 @@ bool RCT12TrackElement::IsInverted() const
 
 uint8_t RCT12TrackElement::GetBrakeBoosterSpeed() const
 {
-    if (TrackTypeHasSpeedSetting(TrackType))
+    if (trackTypeHasSpeedSetting(TrackType))
     {
         return (Sequence >> 4) << 1;
     }
@@ -255,7 +256,7 @@ uint8_t RCT12TrackElement::GetBrakeBoosterSpeed() const
 
 bool RCT12TrackElement::HasGreenLight() const
 {
-    if (TrackTypeIsStation(TrackType))
+    if (trackTypeIsStation(TrackType))
     {
         return (Sequence & kRCT12TrackElementSequenceGreenLight) != 0;
     }
@@ -903,12 +904,12 @@ namespace OpenRCT2::RCT12
         return len;
     }
 
-    bool TrackTypeHasSpeedSetting(TrackElemType trackType)
+    bool trackTypeHasSpeedSetting(TrackElemType trackType)
     {
         return trackType == TrackElemType::booster || trackType == TrackElemType::brakes;
     }
 
-    bool TrackTypeIsStation(TrackElemType trackType)
+    bool trackTypeIsStation(TrackElemType trackType)
     {
         switch (trackType)
         {

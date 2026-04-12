@@ -14,7 +14,6 @@
 #include "../../OpenRCT2.h"
 #include "../../management/Finance.h"
 #include "../../object/WallSceneryEntry.h"
-#include "../../ride/Track.h"
 #include "../../ride/TrackData.h"
 #include "../../world/Banner.h"
 #include "../../world/Map.h"
@@ -52,7 +51,7 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_loc) << DS_TAG(_primaryColour) << DS_TAG(_secondaryColour) << DS_TAG(_tertiaryColour);
     }
 
-    Result WallSetColourAction::Query(GameState_t& gameState) const
+    Result WallSetColourAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.errorTitle = STR_CANT_REPAINT_THIS;
@@ -116,7 +115,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result WallSetColourAction::Execute(GameState_t& gameState) const
+    Result WallSetColourAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.errorTitle = STR_CANT_REPAINT_THIS;

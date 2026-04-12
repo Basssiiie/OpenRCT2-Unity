@@ -50,16 +50,15 @@
 #include "../rct12/RCT12.h"
 #include "../ride/Ride.h"
 #include "../ride/RideManager.hpp"
-#include "../ride/Track.h"
 #include "../sawyer_coding/SawyerCoding.h"
 #include "../ui/WindowManager.h"
 #include "../util/Util.h"
 #include "../windows/Intent.h"
-#include "../world/Climate.h"
 #include "../world/Entrance.h"
 #include "../world/Map.h"
 #include "../world/Park.h"
 #include "../world/Scenery.h"
+#include "../world/Weather.h"
 #include "../world/tile_element/TileElement.h"
 #include "../world/tile_element/TrackElement.h"
 #include "ScenarioRepository.h"
@@ -227,7 +226,7 @@ static void ScenarioCheckEntranceFeeTooHigh()
     const auto& park = getGameState().park;
     const auto max_fee = AddClamp(park.totalRideValueForMoney, park.totalRideValueForMoney / 2);
 
-    if ((park.flags & PARK_FLAGS_PARK_OPEN) && Park::GetEntranceFee() > max_fee)
+    if ((park.flags & PARK_FLAGS_PARK_OPEN) && Park::GetEntranceFee(park) > max_fee)
     {
         if (!park.entrances.empty())
         {
@@ -322,7 +321,7 @@ static void ScenarioWeekUpdate()
     RideCheckAllReachable();
     RideUpdateFavouritedStat();
 
-    auto water_type = OpenRCT2::ObjectManager::GetObjectEntry<WaterObjectEntry>(0);
+    auto water_type = OpenRCT2::ObjectEntryManager::GetObjectEntry<WaterObjectEntry>(0);
 
     if (month <= MONTH_APRIL && water_type != nullptr && water_type->flags & WATER_FLAGS_ALLOW_DUCKS)
     {

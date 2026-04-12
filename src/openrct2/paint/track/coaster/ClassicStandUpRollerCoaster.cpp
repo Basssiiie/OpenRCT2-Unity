@@ -10,8 +10,8 @@
 #include "../../../SpriteIds.h"
 #include "../../../drawing/Drawing.h"
 #include "../../../ride/Ride.h"
-#include "../../../ride/Track.h"
 #include "../../../ride/TrackPaint.h"
+#include "../../../ride/ted/TrackElemType.h"
 #include "../../../world/tile_element/TrackElement.h"
 #include "../../tile_element/Segment.h"
 #include "../../track/Segment.h"
@@ -1524,6 +1524,10 @@ TrackPaintFunction GetTrackPaintFunctionClassicStandUpRC(TrackElemType trackType
         case TrackElemType::rightBankToRightQuarterTurn3TilesUp25:
         case TrackElemType::leftQuarterTurn3TilesDown25ToLeftBank:
         case TrackElemType::rightQuarterTurn3TilesDown25ToRightBank:
+        case TrackElemType::leftQuarterBankedHelixLargeUp:
+        case TrackElemType::rightQuarterBankedHelixLargeUp:
+        case TrackElemType::leftQuarterBankedHelixLargeDown:
+        case TrackElemType::rightQuarterBankedHelixLargeDown:
             return TrackPaintFunctionDummy;
 
         default:

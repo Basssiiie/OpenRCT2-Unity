@@ -12,6 +12,7 @@
 #include "../../Diagnostic.h"
 #include "../../management/Finance.h"
 #include "../../ride/RideConstruction.h"
+#include "../../ride/Track.h"
 #include "../../world/Map.h"
 #include "../../world/tile_element/TrackElement.h"
 
@@ -42,12 +43,12 @@ namespace OpenRCT2::GameActions
         stream << DS_TAG(_loc) << DS_TAG(_trackType) << DS_TAG(_brakeSpeed);
     }
 
-    Result TrackSetBrakeSpeedAction::Query(GameState_t& gameState) const
+    Result TrackSetBrakeSpeedAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         return QueryExecute(false);
     }
 
-    Result TrackSetBrakeSpeedAction::Execute(GameState_t& gameState) const
+    Result TrackSetBrakeSpeedAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         return QueryExecute(true);
     }

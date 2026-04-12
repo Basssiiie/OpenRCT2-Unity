@@ -18,9 +18,9 @@
 #include "../../object/SmallSceneryEntry.h"
 #include "../../object/WallSceneryEntry.h"
 #include "../../ride/RideData.h"
-#include "../../ride/Track.h"
 #include "../../ride/TrackData.h"
 #include "../../ride/TrackDesign.h"
+#include "../../ride/ted/TrackElementDescriptor.h"
 #include "../../world/Banner.h"
 #include "../../world/ConstructionClearance.h"
 #include "../../world/Map.h"
@@ -37,7 +37,7 @@
 
 namespace OpenRCT2::GameActions
 {
-    using namespace OpenRCT2::TrackMetaData;
+    using namespace OpenRCT2::TrackMetadata;
 
     WallPlaceAction::WallPlaceAction(
         ObjectEntryIndex wallType, const CoordsXYZ& loc, uint8_t edge, Drawing::Colour primaryColour,
@@ -74,7 +74,7 @@ namespace OpenRCT2::GameActions
                << DS_TAG(_tertiaryColour);
     }
 
-    Result WallPlaceAction::Query(GameState_t& gameState) const
+    Result WallPlaceAction::Query(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.errorTitle = STR_CANT_BUILD_THIS_HERE;
@@ -226,7 +226,7 @@ namespace OpenRCT2::GameActions
             }
         }
 
-        auto* wallEntry = ObjectManager::GetObjectEntry<WallSceneryEntry>(_wallType);
+        auto* wallEntry = ObjectEntryManager::GetObjectEntry<WallSceneryEntry>(_wallType);
 
         if (wallEntry == nullptr)
         {
@@ -276,7 +276,7 @@ namespace OpenRCT2::GameActions
         return res;
     }
 
-    Result WallPlaceAction::Execute(GameState_t& gameState) const
+    Result WallPlaceAction::Execute(GameState_t& gameState, Park::ParkData& park) const
     {
         auto res = Result();
         res.errorTitle = STR_CANT_BUILD_THIS_HERE;
@@ -313,7 +313,7 @@ namespace OpenRCT2::GameActions
         }
         auto targetLoc = CoordsXYZ(_loc, targetHeight);
 
-        auto* wallEntry = ObjectManager::GetObjectEntry<WallSceneryEntry>(_wallType);
+        auto* wallEntry = ObjectEntryManager::GetObjectEntry<WallSceneryEntry>(_wallType);
 
         if (wallEntry == nullptr)
         {
@@ -407,7 +407,7 @@ namespace OpenRCT2::GameActions
     {
         TrackElemType trackType = trackElement->GetTrackType();
 
-        using namespace OpenRCT2::TrackMetaData;
+        using namespace OpenRCT2::TrackMetadata;
         const auto& ted = GetTrackElementDescriptor(trackType);
         int32_t sequence = trackElement->GetSequenceIndex();
         int32_t direction = (_edge - trackElement->GetDirection()) & kTileElementDirectionMask;
@@ -441,7 +441,7 @@ namespace OpenRCT2::GameActions
         int32_t z;
         if (sequence == 0)
         {
-            if (ted.sequences[0].flags.has(SequenceFlag::disallowDoors))
+            if (ted.sequenceData.sequences[0].flags.has(SequenceFlag::disallowDoors))
             {
                 return false;
             }
@@ -454,7 +454,7 @@ namespace OpenRCT2::GameActions
                     if (direction == _edge)
                     {
                         z = ted.coordinates.zBegin;
-                        z = trackElement->BaseHeight + ((z - ted.sequences[sequence].clearance.z) * 8);
+                        z = trackElement->BaseHeight + ((z - ted.sequenceData.sequences[sequence].clearance.z) * 8);
                         if (z == z0)
                         {
                             return true;
@@ -464,7 +464,7 @@ namespace OpenRCT2::GameActions
             }
         }
 
-        bool isLastInSequence = (sequence + 1) == ted.numSequences;
+        bool isLastInSequence = (sequence + 1) == ted.sequenceData.numSequences;
         if (!isLastInSequence)
         {
             return false;
@@ -488,7 +488,7 @@ namespace OpenRCT2::GameActions
         }
 
         z = ted.coordinates.zEnd;
-        z = trackElement->BaseHeight + ((z - ted.sequences[sequence].clearance.z) * kCoordsZStep);
+        z = trackElement->BaseHeight + ((z - ted.sequenceData.sequences[sequence].clearance.z) * kCoordsZStep);
         return z == z0;
     }
 
@@ -568,7 +568,7 @@ namespace OpenRCT2::GameActions
                 case TileElementType::SmallScenery:
                 {
                     auto sceneryEntry = tileElement->AsSmallScenery()->GetEntry();
-                    if (sceneryEntry != nullptr && sceneryEntry->HasFlag(SMALL_SCENERY_FLAG_NO_WALLS))
+                    if (sceneryEntry != nullptr && sceneryEntry->flags.has(SmallSceneryFlag::prohibitWalls))
                     {
                         MapGetObstructionErrorText(tileElement, res);
                         return res;
@@ -596,7 +596,7 @@ namespace OpenRCT2::GameActions
         if (!GetRideTypeDescriptor(rideType).flags.has(RtdFlag::noWallsAroundTrack))
         {
             const auto& ted = GetTrackElementDescriptor(trackType);
-            if (ted.sequences[trackSequence].allowedWallEdges & (1 << direction))
+            if (ted.sequenceData.sequences[trackSequence].allowedWallEdges & (1 << direction))
             {
                 return true;
             }

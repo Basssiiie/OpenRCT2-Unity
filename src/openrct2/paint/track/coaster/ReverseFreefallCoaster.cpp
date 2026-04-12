@@ -9,9 +9,7 @@
 
 #include "../../../SpriteIds.h"
 #include "../../../drawing/Drawing.h"
-#include "../../../interface/Viewport.h"
 #include "../../../ride/RideData.h"
-#include "../../../ride/TrackData.h"
 #include "../../../ride/TrackPaint.h"
 #include "../../../world/tile_element/TrackElement.h"
 #include "../../Paint.h"
@@ -30,8 +28,6 @@ enum
 {
     SPR_REVERSE_FREEFALL_RC_STATION_SW_NE = 22162,
     SPR_REVERSE_FREEFALL_RC_STATION_NW_SE = 22163,
-    SPR_REVERSE_FREEFALL_RC_FLAT_SW_NE = 22164,
-    SPR_REVERSE_FREEFALL_RC_FLAT_NW_SE = 22165,
     SPR_REVERSE_FREEFALL_RC_VERTICAL_SW_NE = 22166,
     SPR_REVERSE_FREEFALL_RC_VERTICAL_NW_SE = 22167,
     SPR_REVERSE_FREEFALL_RC_VERTICAL_NE_SW = 22168,
