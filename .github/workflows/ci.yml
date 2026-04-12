@@ -195,9 +195,9 @@ jobs:
       matrix:
         include:
           - platform: win32
-            runs_on: windows-2025-vs2026
+            runs_on: windows-latest
           - platform: x64
-            runs_on: windows-2025-vs2026
+            runs_on: windows-latest
           # keep arm64 on vs2022 for now. VS2026 is a bit slower and we can maintain
           # compatibility with vs2022
           - platform: arm64
