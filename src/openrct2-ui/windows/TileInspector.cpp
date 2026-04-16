@@ -368,14 +368,14 @@ namespace OpenRCT2::Ui::Windows
     static constexpr auto kSceneryWidgets = makeWidgets(
         kMainTileInspectorWidgets,
         makeSpinnerWidgets(PropertyRowCol({ 12, 0 }, 0, 1), kPropertySpinnerSize, WidgetType::spinner, WindowColour::secondary), // WIDX_SCENERY_SPINNER_HEIGHT{,_INCREASE,_DECREASE}
-        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 1, 1), 1, 0), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_QUARTER_N
-        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 1, 1), 2, 1), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_QUARTER_E
-        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 1, 1), 1, 2), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_QUARTER_S
-        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 1, 1), 0, 1), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_QUARTER_W
-        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 2, 1), 1, 0), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_COLLISION_N
-        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 2, 1), 2, 1), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_COLLISION_E
-        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 2, 1), 1, 2), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_COLLISION_S
-        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 2, 1), 0, 1), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary)  // WIDX_SCENERY_CHECK_COLLISION_W
+        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 1, 1), 1, 0 + 0), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_QUARTER_N
+        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 1, 1), 2, 0 + 1), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_QUARTER_E
+        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 1, 1), 1, 0 + 2), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_QUARTER_S
+        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 1, 1), 0, 0 + 1), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_QUARTER_W
+        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 2, 1), 1, 1 + 0), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_COLLISION_N
+        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 2, 1), 2, 1 + 1), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_COLLISION_E
+        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 2, 1), 1, 1 + 2), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary), // WIDX_SCENERY_CHECK_COLLISION_S
+        makeWidget(CheckboxGroupOffset(PropertyRowCol({ 12, 0 }, 2, 1), 0, 1 + 1), { 12, 12 }, WidgetType::checkbox, WindowColour::secondary)  // WIDX_SCENERY_CHECK_COLLISION_W
     );
 
     constexpr int32_t kNumEntranceProperties = 2;
@@ -2310,13 +2310,13 @@ namespace OpenRCT2::Ui::Windows
 
                     // Quadrant checkboxes
                     widgets[WIDX_SCENERY_CHECK_QUARTER_N].moveTo(
-                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 1, 0));
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 1, 0 + 0));
                     widgets[WIDX_SCENERY_CHECK_QUARTER_E].moveTo(
-                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 2, 1));
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 2, 0 + 1));
                     widgets[WIDX_SCENERY_CHECK_QUARTER_S].moveTo(
-                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 1, 2));
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 1, 0 + 2));
                     widgets[WIDX_SCENERY_CHECK_QUARTER_W].moveTo(
-                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 0, 1));
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 1, 1), 0, 0 + 1));
 
                     // This gets the relative rotation, by subtracting the camera's rotation, and wrapping it between 0-3
                     // inclusive
@@ -2331,13 +2331,13 @@ namespace OpenRCT2::Ui::Windows
 
                     // Collision checkboxes
                     widgets[WIDX_SCENERY_CHECK_COLLISION_N].moveTo(
-                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 1, 0));
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 1, 1 + 0));
                     widgets[WIDX_SCENERY_CHECK_COLLISION_E].moveTo(
-                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 2, 1));
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 2, 1 + 1));
                     widgets[WIDX_SCENERY_CHECK_COLLISION_S].moveTo(
-                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 1, 2));
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 1, 1 + 2));
                     widgets[WIDX_SCENERY_CHECK_COLLISION_W].moveTo(
-                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 0, 1));
+                        CheckboxGroupOffset(PropertyRowCol(propertiesAnchor, 2, 1), 0, 1 + 1));
 
                     auto occupiedQuadrants = tileElement->GetOccupiedQuadrants();
                     N = (occupiedQuadrants & (1 << ((2 - GetCurrentRotation()) & 3))) != 0;
