@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,62 +9,71 @@
 
 #pragma once
 
+#include "../Identifiers.h"
 #include "../core/FixedPoint.hpp"
-#include "../core/Money.hpp"
 #include "../world/Location.hpp"
-#include "RideTypes.h"
 
-using ride_rating = fixed16_2dp;
-using track_type_t = uint16_t;
+#include <array>
 
-// Convenience function for writing ride ratings. The result is a 16 bit signed
-// integer. To create the ride rating 3.65 type RIDE_RATING(3,65)
-#define RIDE_RATING(whole, fraction) FIXED_2DP(whole, fraction)
-constexpr ride_rating kRideRatingUndefined = 0xFFFFu;
+struct Ride;
+
+namespace OpenRCT2
+{
+    enum class TrackElemType : uint16_t;
+    using RideRating_t = fixed16_2dp;
+    namespace RideRating
+    {
+        // Convenience function for writing ride ratings. The result is a 16 bit signed
+        // integer. To create the ride rating 3.65 type MakeRideRating(3, 65).
+        constexpr RideRating_t make(int16_t whole, uint8_t fraction)
+        {
+            return MakeFixed2dp<RideRating_t>(whole, fraction);
+        }
+
+        constexpr RideRating_t kUndefined = 0xFFFFu;
 
 #pragma pack(push, 1)
 
-// Used for return values, for functions that modify all three.
-struct RatingTuple
-{
-    ride_rating excitement{};
-    ride_rating intensity{};
-    ride_rating nausea{};
+        // Used for return values, for functions that modify all three.
+        struct Tuple
+        {
+            RideRating_t excitement{};
+            RideRating_t intensity{};
+            RideRating_t nausea{};
 
-    bool isNull() const;
-    void setNull();
-};
-static_assert(sizeof(RatingTuple) == 6);
+            bool isNull() const;
+            void setNull();
+
+            bool operator==(const Tuple& rhs) const = default;
+        };
+        static_assert(sizeof(Tuple) == 6);
 
 #pragma pack(pop)
 
-enum
-{
-    RIDE_RATING_STATION_FLAG_NO_ENTRANCE = 1 << 0
-};
+        struct UpdateState
+        {
+            CoordsXYZ Proximity;
+            CoordsXYZ ProximityStart;
+            RideId CurrentRide;
+            uint8_t State;
+            TrackElemType ProximityTrackType;
+            uint8_t ProximityBaseHeight;
+            uint16_t ProximityTotal;
+            uint16_t ProximityScores[26];
+            uint16_t AmountOfBrakes;
+            uint16_t amountOfBoosters;
+            uint16_t AmountOfReversers;
+            uint16_t StationFlags;
+        };
 
-struct RideRatingUpdateState
-{
-    CoordsXYZ Proximity;
-    CoordsXYZ ProximityStart;
-    RideId CurrentRide;
-    uint8_t State;
-    track_type_t ProximityTrackType;
-    uint8_t ProximityBaseHeight;
-    uint16_t ProximityTotal;
-    uint16_t ProximityScores[26];
-    uint16_t AmountOfBrakes;
-    uint16_t AmountOfReversers;
-    uint16_t StationFlags;
-};
+        static constexpr size_t kMaxUpdateStates = 4;
+        using UpdateStates = std::array<UpdateState, kMaxUpdateStates>;
 
-static constexpr size_t RideRatingMaxUpdateStates = 4;
-using RideRatingUpdateStates = std::array<RideRatingUpdateState, RideRatingMaxUpdateStates>;
-
-void RideRatingResetUpdateStates();
-
-void RideRatingsUpdateRide(const Ride& ride);
-void RideRatingsUpdateAll();
+        void ResetUpdateStates();
+        void UpdateRide(const Ride& ride);
+        void UpdateAll();
+    } // namespace RideRating
+} // namespace OpenRCT2
 
 // Special Track Element Adjustment functions for RTDs
 void SpecialTrackElementRatingsAjustment_Default(const Ride& ride, int32_t& excitement, int32_t& intensity, int32_t& nausea);

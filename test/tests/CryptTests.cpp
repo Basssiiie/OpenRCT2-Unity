@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -15,7 +15,6 @@
 #include <openrct2/core/File.h>
 #include <openrct2/core/Path.hpp>
 #include <openrct2/core/String.hpp>
-#include <openrct2/network/NetworkKey.h>
 #include <string>
 
 using namespace OpenRCT2;
@@ -23,7 +22,8 @@ using namespace OpenRCT2;
 class CryptTests : public testing::Test
 {
 public:
-    template<typename T> void AssertHash(std::string expected, T hash)
+    template<typename T>
+    void AssertHash(std::string expected, T hash)
     {
         auto actual = String::StringFromHex(hash);
         ASSERT_EQ(expected, actual);

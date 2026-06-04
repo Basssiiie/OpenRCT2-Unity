@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,11 +7,11 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
+#include "../../../GameState.h"
 #include "../../../entity/EntityRegistry.h"
 #include "../../../interface/Viewport.h"
 #include "../../../ride/Ride.h"
 #include "../../../ride/RideEntry.h"
-#include "../../../ride/Track.h"
 #include "../../../ride/TrackPaint.h"
 #include "../../../ride/Vehicle.h"
 #include "../../Boundbox.h"
@@ -38,19 +38,19 @@ static void PaintMotionSimulatorVehicle(
     PaintSession& session, const Ride& ride, int8_t offsetX, int8_t offsetY, uint8_t direction, int32_t height,
     ImageId stationColour)
 {
-    auto rideEntry = ride.GetRideEntry();
+    auto rideEntry = ride.getRideEntry();
     if (rideEntry == nullptr)
         return;
 
     CoordsXYZ offset(offsetX, offsetY, height + 2);
 
     Vehicle* vehicle = nullptr;
-    if (ride.lifecycle_flags & RIDE_LIFECYCLE_ON_TRACK)
+    if (ride.flags.has(RideFlag::onTrack))
     {
-        vehicle = GetEntity<Vehicle>(ride.vehicles[0]);
+        vehicle = getGameState().entities.GetEntity<Vehicle>(ride.vehicles[0]);
         if (vehicle != nullptr)
         {
-            session.InteractionType = ViewportInteractionItem::Entity;
+            session.InteractionType = ViewportInteractionItem::entity;
             session.CurrentlyDrawnEntity = vehicle;
         }
     }
@@ -64,11 +64,11 @@ static void PaintMotionSimulatorVehicle(
         }
         else
         {
-            imageIndex += vehicle->Pitch * 4;
+            imageIndex += vehicle->flatRideAnimationFrame * 4;
         }
     }
 
-    auto imageTemplate = ImageId(0, ride.vehicle_colours[0].Body, ride.vehicle_colours[0].Trim);
+    auto imageTemplate = ImageId(0, ride.vehicleColours[0].Body, ride.vehicleColours[0].Trim);
     if (stationColour != TrackStationColour)
     {
         imageTemplate = stationColour;
@@ -101,7 +101,7 @@ static void PaintMotionSimulatorVehicle(
     }
 
     session.CurrentlyDrawnEntity = nullptr;
-    session.InteractionType = ViewportInteractionItem::Ride;
+    session.InteractionType = ViewportInteractionItem::ride;
 }
 
 static void PaintMotionSimulator(
@@ -114,11 +114,11 @@ static void PaintMotionSimulator(
 
     auto stationColour = GetStationColourScheme(session, trackElement);
     WoodenASupportsPaintSetupRotated(
-        session, WoodenSupportType::Truss, WoodenSupportSubType::NeSw, direction, height, stationColour);
+        session, WoodenSupportType::truss, WoodenSupportSubType::neSw, direction, height, stationColour);
 
-    const StationObject* stationObject = ride.GetStationObject();
+    const StationObject* stationObject = ride.getStationObject();
 
-    TrackPaintUtilPaintFloor(session, edges, session.TrackColours, height, kFloorSpritesCork, stationObject);
+    TrackPaintUtilPaintFloor(session, edges, session.TrackColours, height, kFloorSpritesMulch, stationObject);
 
     TrackPaintUtilPaintFences(
         session, edges, session.MapPosition, trackElement, ride, session.SupportColours, height, kFenceSpritesRope,
@@ -145,12 +145,13 @@ static void PaintMotionSimulator(
  *
  *  rct2: 0x00763520
  */
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMotionsimulator(int32_t trackType)
+TrackPaintFunction GetTrackPaintFunctionMotionsimulator(TrackElemType trackType)
 {
     switch (trackType)
     {
-        case TrackElemType::FlatTrack2x2:
+        case TrackElemType::flatTrack2x2:
             return PaintMotionSimulator;
+        default:
+            return TrackPaintFunctionDummy;
     }
-    return nullptr;
 }

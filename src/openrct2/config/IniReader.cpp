@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -97,7 +97,7 @@ private:
     std::unordered_map<std::string, std::string, StringIHash, StringICmp> _values;
 
 public:
-    explicit IniReader(OpenRCT2::IStream* stream)
+    explicit IniReader(IStream* stream)
     {
         uint64_t length = stream->GetLength() - stream->GetPosition();
         _buffer.resize(length);
@@ -134,7 +134,7 @@ public:
         std::string value;
         if (TryGetString(name, &value))
         {
-            result = String::IEquals(value, "true");
+            result = String::iequals(value, "true");
         }
         return result;
     }
@@ -220,7 +220,7 @@ private:
             return;
         }
         utf8* file = reinterpret_cast<utf8*>(_buffer.data());
-        utf8* content = String::SkipBOM(file);
+        utf8* content = String::skipBOM(file);
         if (file != content)
         {
             size_t skipLength = content - file;
@@ -260,7 +260,7 @@ private:
         for (size_t i = 0; i < _lines.size(); i++)
         {
             std::string line = GetLine(i);
-            line = String::Trim(line);
+            line = String::trim(line);
             if (line.size() > 3 && line[0] == '[')
             {
                 size_t endIndex = line.find_first_of(']');
@@ -309,8 +309,8 @@ private:
         }
 
         // Get the key and value
-        std::string key = String::Trim(line.substr(0, equalsIndex));
-        std::string value = String::Trim(line.substr(equalsIndex + 1));
+        std::string key = String::trim(line.substr(0, equalsIndex));
+        std::string value = String::trim(line.substr(equalsIndex + 1));
 
         value = UnquoteValue(value);
         value = UnescapeValue(value);
@@ -428,7 +428,7 @@ public:
     }
 };
 
-std::unique_ptr<IIniReader> CreateIniReader(OpenRCT2::IStream* stream)
+std::unique_ptr<IIniReader> CreateIniReader(IStream* stream)
 {
     return std::make_unique<IniReader>(stream);
 }

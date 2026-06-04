@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,62 +9,63 @@
 
 #pragma once
 
-#include "../../../sprites.h"
+#include "../../../SpriteIds.h"
 #include "../../RideData.h"
 #include "../../ShopItem.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor RiverRapidsRTD =
 {
-    .Category = RIDE_CATEGORY_WATER,
-    .StartTrackPiece = OpenRCT2::TrackElemType::EndStation,
+    .Category = RideCategory::water,
+    .StartTrackPiece = TrackElemType::endStation,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = GetTrackPaintFunctionRiverRapids,
-        .supportType = WoodenSupportType::Truss,
+        .trackStyle = TrackStyle::riverRapids,
+        .supportType = WoodenSupportType::truss,
         .enabledTrackGroups = {TrackGroup::straight, TrackGroup::stationEnd, TrackGroup::slope, TrackGroup::curveVerySmall, TrackGroup::onridePhoto, TrackGroup::rapids, TrackGroup::waterfall, TrackGroup::whirlpool},
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = EnumsToFlags(RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourSupports,
+    .flags = RtdFlags(RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourSupports,
                      RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation,
                      RtdFlag::canSynchroniseWithAdjacentStations, RtdFlag::hasDataLogging, RtdFlag::hasDrops,
                      RtdFlag::hasLoadOptions, RtdFlag::noWallsAroundTrack, RtdFlag::guestsWillRideAgain,
                      RtdFlag::hasVehicleColours, RtdFlag::hasTrack, RtdFlag::supportsMultipleColourSchemes,
                      RtdFlag::allowMusic, RtdFlag::hasEntranceAndExit, RtdFlag::allowMoreVehiclesThanStationFits,
                      RtdFlag::hasAirTime, RtdFlag::showInTrackDesigner, RtdFlag::interestingToLookAt),
-    .RideModes = EnumsToFlags(RideMode::ContinuousCircuit),
-    .DefaultMode = RideMode::ContinuousCircuit,
+    .RideModes = EnumsToFlags(RideMode::continuousCircuit),
+    .DefaultMode = RideMode::continuousCircuit,
+    .OperatingSettings = { 5, 27 },
     .Naming = { STR_RIDE_NAME_RIVER_RAPIDS, STR_RIDE_DESCRIPTION_RIVER_RAPIDS },
     .NameConvention = { RideComponentType::Boat, RideComponentType::Track, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_RIVER_RAPIDS",
-    .AvailableBreakdowns = (1 << BREAKDOWN_SAFETY_CUT_OUT) | (1 << BREAKDOWN_CONTROL_FAILURE),
+    .availableBreakdowns = { Breakdown::safetyCutOut, Breakdown::brakesFailure },
     .Heights = { 9, 32, 14, 15, },
     .MaxMass = 255,
-    .LiftData = { OpenRCT2::Audio::SoundId::LiftFlume, 5, 5 },
+    .LiftData = { Audio::SoundId::liftFlume, 5, 5 },
     .RatingsMultipliers = { 72, 26, 6 },
     .UpkeepCosts = { 82, 20, 0, 10, 0, 10 },
     .BuildCosts = { 31.00_GBP, 3.00_GBP, 40, },
     .DefaultPrices = { 20, 20 },
-    .DefaultMusic = MUSIC_OBJECT_WATER,
-    .PhotoItem = ShopItem::Photo4,
+    .DefaultMusic = kMusicObjectWater,
+    .PhotoItem = ShopItem::photo4,
     .BonusValue = 70,
     .ColourPresets = TRACK_COLOUR_PRESETS(
-        { COLOUR_WHITE, COLOUR_BLACK, COLOUR_DARK_BROWN },
+        { Drawing::Colour::white, Drawing::Colour::black, Drawing::Colour::darkBrown },
     ),
     .ColourPreview = { SPR_RIDE_DESIGN_PREVIEW_RIVER_RAPIDS_TRACK, SPR_RIDE_DESIGN_PREVIEW_RIVER_RAPIDS_SUPPORTS },
     .ColourKey = RideColourKey::Ride,
     .Name = "river_rapids",
-    .RatingsData = 
+    .RatingsData =
     {
         RatingsCalculationType::Normal,
-        { RIDE_RATING(1, 20), RIDE_RATING(0, 70), RIDE_RATING(0, 50) },
+        { RideRating::make(1, 20), RideRating::make(0, 70), RideRating::make(0, 50) },
         16,
-        -1,
+        kDynamicRideShelterRating,
         false,
         {
             { RatingsModifierType::BonusLength,           2000,             6225, 0, 0 },
-            { RatingsModifierType::BonusSynchronisation,  0,                RIDE_RATING(0, 30), RIDE_RATING(0, 05), 0 },
+            { RatingsModifierType::BonusSynchronisation,  0,                RideRating::make(0, 30), RideRating::make(0, 05), 0 },
             { RatingsModifierType::BonusMaxSpeed,         0,                115130, 159411, 106274 },
             { RatingsModifierType::BonusDuration,         500,              13107, 0, 0 },
             { RatingsModifierType::BonusTurns,            0,                29721, 22598, 5718 },
@@ -78,10 +79,11 @@ constexpr RideTypeDescriptor RiverRapidsRTD =
     },
     .UpdateRotating = UpdateRotatingDefault,
     .LightFXAddLightsMagicVehicle = nullptr,
-    .StartRideMusic = OpenRCT2::RideAudio::DefaultStartRideMusicChannel,
+    .StartRideMusic = RideAudio::DefaultStartRideMusicChannel,
     .DesignCreateMode = TrackDesignCreateMode::Default,
     .MusicUpdateFunction = DefaultMusicUpdate,
-    .Classification = RideClassification::Ride,
+    .Classification = RideClassification::ride,
     .UpdateLeaveEntrance = PeepUpdateRideLeaveEntranceDefault,
 };
+} // namespace OpenRCT2
 // clang-format on

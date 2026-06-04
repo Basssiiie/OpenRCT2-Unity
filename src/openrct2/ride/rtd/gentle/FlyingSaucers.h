@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,49 +9,49 @@
 
 #pragma once
 
-#include "../../../sprites.h"
+#include "../../../SpriteIds.h"
 #include "../../RideData.h"
 #include "../../ShopItem.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor FlyingSaucersRTD =
 {
-    .Category = RIDE_CATEGORY_GENTLE,
-    .StartTrackPiece = OpenRCT2::TrackElemType::FlatTrack4x4,
+    .Category = RideCategory::gentle,
+    .StartTrackPiece = TrackElemType::flatTrack4x4,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = GetTrackPaintFunctionFlyingSaucers,
+        .trackStyle = TrackStyle::flyingSaucers,
         .enabledTrackGroups = {},
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = EnumsToFlags(RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourAdditional,
+    .flags = RtdFlags(RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourAdditional,
                      RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps, RtdFlag::noTestMode,
                      RtdFlag::noWallsAroundTrack, RtdFlag::isFlatRide, RtdFlag::hasVehicleColours,
                      RtdFlag::hasMusicByDefault, RtdFlag::allowMusic, RtdFlag::hasEntranceAndExit,
                      RtdFlag::singleSession, RtdFlag::interestingToLookAt),
-    .RideModes = EnumsToFlags(RideMode::Dodgems),
-    .DefaultMode = RideMode::Dodgems,
+    .RideModes = EnumsToFlags(RideMode::dodgems),
+    .DefaultMode = RideMode::dodgems,
     .OperatingSettings = { 20, 180 },
     .Naming = { STR_RIDE_NAME_FLYING_SAUCERS, STR_RIDE_DESCRIPTION_FLYING_SAUCERS },
     .NameConvention = { RideComponentType::Car, RideComponentType::Building, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_FLYING_SAUCERS",
-    .AvailableBreakdowns = (1 << BREAKDOWN_SAFETY_CUT_OUT),
+    .availableBreakdowns = { Breakdown::safetyCutOut },
     .Heights = { 9, 48, 2, 2, },
     .MaxMass = 255,
-    .LiftData = { OpenRCT2::Audio::SoundId::Null, 5, 5 },
+    .LiftData = { Audio::SoundId::null, 5, 5 },
     .RatingsMultipliers = { 50, 25, 0 },
     .UpkeepCosts = { 90, 1, 0, 5, 0, 0 },
     .BuildCosts = { 35.00_GBP, 2.00_GBP, 1, },
     .DefaultPrices = { 15, 0 },
-    .DefaultMusic = MUSIC_OBJECT_ROCK_1,
-    .PhotoItem = ShopItem::Photo,
+    .DefaultMusic = kMusicObjectRock1,
+    .PhotoItem = ShopItem::photo,
     .BonusValue = 35,
     .ColourPresets = TRACK_COLOUR_PRESETS(
-        { COLOUR_DARK_PURPLE, COLOUR_GREY, COLOUR_BLACK },
-        { COLOUR_BLACK, COLOUR_YELLOW, COLOUR_BLACK },
-        { COLOUR_YELLOW, COLOUR_SATURATED_RED, COLOUR_BLACK },
-        { COLOUR_ICY_BLUE, COLOUR_WHITE, COLOUR_BLACK },
+        { Drawing::Colour::darkPurple, Drawing::Colour::grey, Drawing::Colour::black },
+        { Drawing::Colour::black, Drawing::Colour::yellow, Drawing::Colour::black },
+        { Drawing::Colour::yellow, Drawing::Colour::saturatedRed, Drawing::Colour::black },
+        { Drawing::Colour::icyBlue, Drawing::Colour::white, Drawing::Colour::black },
     ),
     .ColourPreview = { SPR_RIDE_DESIGN_PREVIEW_FLYING_SAUCERS_TRACK, 0 },
     .ColourKey = RideColourKey::Ride,
@@ -59,16 +59,17 @@ constexpr RideTypeDescriptor FlyingSaucersRTD =
     .RatingsData = 
     {
         RatingsCalculationType::FlatRide,
-        { RIDE_RATING(2, 40), RIDE_RATING(0, 55), RIDE_RATING(0, 39) },
+        { RideRating::make(2, 40), RideRating::make(0, 55), RideRating::make(0, 39) },
         32,
         0,
         false,
         {
             // Special case, passing -2 to represent division by 2
             { RatingsModifierType::BonusOperationOption, 0, 1, -2, 0 }, 
-            { RatingsModifierType::BonusNumTrains,       4, RIDE_RATING(0, 80), 0, 0 },
+            { RatingsModifierType::BonusNumTrains,       4, RideRating::make(0, 80), 0, 0 },
             { RatingsModifierType::BonusScenery,         0, 5577, 0, 0 },
         },
     },
 };
+} // namespace OpenRCT2
 // clang-format on

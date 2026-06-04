@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,21 +9,33 @@
 
 #pragma once
 
-#include "../drawing/Drawing.h"
-#include "../interface/Colour.h"
+#include "../core/Money.hpp"
+#include "../drawing/FilterPaletteIds.h"
+#include "../drawing/ImageId.hpp"
+#include "../drawing/RenderTarget.h"
+#include "../localisation/StringIdType.h"
 #include "../world/Location.hpp"
-#include "../world/Map.h"
+#include "../world/MapLimits.h"
 #include "Boundbox.h"
 #include "tile_element/Paint.Tunnel.h"
 
 #include <mutex>
+#include <optional>
+#include <sfl/segmented_vector.hpp>
+#include <sfl/static_vector.hpp>
 #include <thread>
 
-struct EntityBase;
-struct TileElement;
-struct SurfaceElement;
-enum class RailingEntrySupportType : uint8_t;
 enum class ViewportInteractionItem : uint8_t;
+
+namespace OpenRCT2
+{
+    struct EntityBase;
+
+    struct TileElement;
+    struct SurfaceElement;
+
+    enum class RailingEntrySupportType : uint8_t;
+} // namespace OpenRCT2
 
 struct AttachedPaintStruct
 {
@@ -51,8 +63,8 @@ struct PaintStruct
     AttachedPaintStruct* Attached;
     PaintStruct* Children;
     PaintStruct* NextQuadrantEntry;
-    TileElement* Element;
-    EntityBase* Entity;
+    OpenRCT2::TileElement* Element;
+    OpenRCT2::EntityBase* Entity;
     ImageId image_id;
     ScreenCoordsXY ScreenPos;
     CoordsXY MapPos;
@@ -121,56 +133,6 @@ struct SupportHeight
 // the quadrant index is based on the x and y components combined.
 static constexpr int32_t MaxPaintQuadrants = kMaximumMapSizeTechnical * 2;
 
-/**
- * A pool of PaintEntry instances that can be rented out.
- * The internal implementation uses an unrolled linked list so that each
- * paint session can quickly allocate a new paint entry until it requires
- * another node / block of paint entries. Only the node allocation needs to
- * be thread safe.
- */
-class PaintEntryPool
-{
-    static constexpr size_t NodeSize = 512;
-
-public:
-    struct Node
-    {
-        Node* Next{};
-        size_t Count{};
-        PaintEntry PaintStructs[NodeSize]{};
-    };
-
-    struct Chain
-    {
-        PaintEntryPool* Pool{};
-        Node* Head{};
-        Node* Current{};
-
-        Chain() = default;
-        Chain(PaintEntryPool* pool);
-        Chain(Chain&& chain);
-        ~Chain();
-
-        Chain& operator=(Chain&& chain) noexcept;
-
-        PaintEntry* Allocate();
-        void Clear();
-        size_t GetCount() const;
-    };
-
-private:
-    std::vector<Node*> _available;
-    std::mutex _mutex;
-
-    Node* AllocateNode();
-
-public:
-    ~PaintEntryPool();
-
-    Chain Create();
-    void FreeNodes(Node* head);
-};
-
 struct PaintSessionCore
 {
     PaintStruct* PaintHead;
@@ -179,12 +141,12 @@ struct PaintSessionCore
     PaintStringStruct* PSStringHead;
     PaintStringStruct* LastPSString;
     AttachedPaintStruct* LastAttachedPS;
-    const SurfaceElement* Surface;
-    EntityBase* CurrentlyDrawnEntity;
-    TileElement* CurrentlyDrawnTileElement;
-    const TileElement* PathElementOnSameHeight;
-    const TileElement* TrackElementOnSameHeight;
-    const TileElement* SelectedElement;
+    const OpenRCT2::SurfaceElement* Surface;
+    OpenRCT2::EntityBase* CurrentlyDrawnEntity;
+    OpenRCT2::TileElement* CurrentlyDrawnTileElement;
+    const OpenRCT2::TileElement* PathElementOnSameHeight;
+    const OpenRCT2::TileElement* TrackElementOnSameHeight;
+    const OpenRCT2::TileElement* SelectedElement;
     PaintStruct* WoodenSupportsPrependTo;
     CoordsXY SpritePosition;
     CoordsXY MapPosition;
@@ -196,74 +158,80 @@ struct PaintSessionCore
     SupportHeight SupportSegments[9];
     SupportHeight Support;
     uint16_t WaterHeight;
-    TunnelEntry LeftTunnels[kTunnelMaxCount];
-    TunnelEntry RightTunnels[kTunnelMaxCount];
-    uint8_t LeftTunnelCount;
-    uint8_t RightTunnelCount;
+    sfl::static_vector<TunnelEntry, kTunnelMaxCount> LeftTunnels;
+    sfl::static_vector<TunnelEntry, kTunnelMaxCount> RightTunnels;
     uint8_t VerticalTunnelHeight;
     uint8_t CurrentRotation;
     uint8_t Flags;
     ViewportInteractionItem InteractionType;
 };
 
+struct PaintNodeStorage
+{
+    // 1024 is typically enough to cover the column, after its full it will use dynamicPaintEntries.
+    sfl::static_vector<PaintEntry, 1024> fixedPaintEntries;
+
+    // This has to be wrapped in optional as it allocates memory before it is used.
+    std::optional<sfl::segmented_vector<PaintEntry, 256>> dynamicPaintEntries;
+
+    PaintEntry* allocate()
+    {
+        if (!fixedPaintEntries.full())
+        {
+            return &fixedPaintEntries.emplace_back();
+        }
+
+        if (!dynamicPaintEntries.has_value())
+        {
+            dynamicPaintEntries.emplace();
+        }
+
+        return &dynamicPaintEntries->emplace_back();
+    }
+
+    void clear()
+    {
+        fixedPaintEntries.clear();
+        dynamicPaintEntries.reset();
+    }
+};
+
 struct PaintSession : public PaintSessionCore
 {
-    DrawPixelInfo DPI;
-    PaintEntryPool::Chain PaintEntryChain;
+    OpenRCT2::Drawing::RenderTarget rt;
+    PaintNodeStorage paintEntries;
 
     PaintStruct* AllocateNormalPaintEntry() noexcept
     {
-        auto* entry = PaintEntryChain.Allocate();
-        if (entry != nullptr)
-        {
-            LastPS = entry->AsBasic();
-            return LastPS;
-        }
-        return nullptr;
+        auto* entry = paintEntries.allocate();
+        LastPS = entry->AsBasic();
+        return LastPS;
     }
 
     AttachedPaintStruct* AllocateAttachedPaintEntry() noexcept
     {
-        auto* entry = PaintEntryChain.Allocate();
-        if (entry != nullptr)
-        {
-            LastAttachedPS = entry->AsAttached();
-            return LastAttachedPS;
-        }
-        return nullptr;
+        auto* entry = paintEntries.allocate();
+        LastAttachedPS = entry->AsAttached();
+        return LastAttachedPS;
     }
 
     PaintStringStruct* AllocateStringPaintEntry() noexcept
     {
-        auto* entry = PaintEntryChain.Allocate();
-        if (entry != nullptr)
-        {
-            auto* string = entry->AsString();
-            if (LastPSString == nullptr)
-            {
-                PSStringHead = string;
-            }
-            else
-            {
-                LastPSString->NextEntry = string;
-            }
-            LastPSString = string;
-            return LastPSString;
-        }
-        return nullptr;
-    }
-};
+        auto* entry = paintEntries.allocate();
 
-struct FootpathPaintInfo
-{
-    uint32_t SurfaceImageId{};
-    uint32_t BridgeImageId{};
-    uint32_t RailingsImageId{};
-    uint32_t SurfaceFlags{};
-    uint32_t RailingFlags{};
-    uint8_t ScrollingMode{};
-    RailingEntrySupportType SupportType{};
-    colour_t SupportColour = 255;
+        auto* string = entry->AsString();
+        if (LastPSString == nullptr)
+        {
+            PSStringHead = string;
+        }
+        else
+        {
+            LastPSString->NextEntry = string;
+        }
+
+        LastPSString = string;
+        return LastPSString;
+    }
 };
 
 extern PaintSession gPaintSession;
@@ -274,18 +242,19 @@ extern CoordsXY gClipSelectionA;
 extern CoordsXY gClipSelectionB;
 
 /** rct2: 0x00993CC4. The white ghost that indicates not-yet-built elements. */
-constexpr ImageId ConstructionMarker = ImageId(0).WithRemap(FilterPaletteID::PaletteGhost);
-constexpr ImageId HighlightMarker = ImageId(0).WithRemap(FilterPaletteID::PaletteGhost);
-constexpr ImageId TrackStationColour = ImageId(0, COLOUR_BLACK);
-constexpr ImageId ShopSupportColour = ImageId(0, COLOUR_DARK_BROWN);
+constexpr ImageId ConstructionMarker = ImageId(0).WithRemap(OpenRCT2::Drawing::FilterPaletteID::paletteGhost);
+constexpr ImageId HighlightMarker = ImageId(0).WithRemap(OpenRCT2::Drawing::FilterPaletteID::paletteGhost);
+constexpr ImageId TrackStationColour = ImageId(0, OpenRCT2::Drawing::Colour::black);
+constexpr ImageId ShopSupportColour = ImageId(0, OpenRCT2::Drawing::Colour::darkBrown);
 
 extern bool gShowDirtyVisuals;
 extern bool gPaintBoundingBoxes;
 extern bool gPaintBlockedTiles;
 extern bool gPaintWidePathsAsGhost;
+extern bool gPaintStableSort;
 
 PaintStruct* PaintAddImageAsParent(
-    PaintSession& session, const ImageId image_id, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
+    PaintSession& session, ImageId image_id, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
 /**
  *  rct2: 0x006861AC, 0x00686337, 0x006864D0, 0x0068666B, 0x0098196C
  *
@@ -299,23 +268,21 @@ PaintStruct* PaintAddImageAsParent(
  * @return (ebp) PaintStruct on success (CF == 0), nullptr on failure (CF == 1)
  */
 inline PaintStruct* PaintAddImageAsParent(
-    PaintSession& session, const ImageId image_id, const CoordsXYZ& offset, const CoordsXYZ& boundBoxSize)
+    PaintSession& session, ImageId image_id, const CoordsXYZ& offset, const CoordsXYZ& boundBoxSize)
 {
     return PaintAddImageAsParent(session, image_id, offset, { offset, boundBoxSize });
 }
 
 [[nodiscard]] PaintStruct* PaintAddImageAsOrphan(
-    PaintSession& session, const ImageId image_id, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
+    PaintSession& session, ImageId imageId, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
 PaintStruct* PaintAddImageAsChild(
-    PaintSession& session, const ImageId image_id, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
+    PaintSession& session, ImageId image_id, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
 
 PaintStruct* PaintAddImageAsChildRotated(
-    PaintSession& session, const uint8_t direction, const ImageId image_id, const CoordsXYZ& offset,
-    const BoundBoxXYZ& boundBox);
+    PaintSession& session, uint8_t direction, ImageId image_id, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
 
 PaintStruct* PaintAddImageAsParentRotated(
-    PaintSession& session, const uint8_t direction, const ImageId imageId, const CoordsXYZ& offset,
-    const BoundBoxXYZ& boundBox);
+    PaintSession& session, uint8_t direction, ImageId imageId, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
 
 inline PaintStruct* PaintAddImageAsParentRotated(
     PaintSession& session, const uint8_t direction, const ImageId imageId, const CoordsXYZ& offset,
@@ -324,15 +291,18 @@ inline PaintStruct* PaintAddImageAsParentRotated(
     return PaintAddImageAsParentRotated(session, direction, imageId, offset, { offset, boundBoxSize });
 }
 
-bool PaintAttachToPreviousAttach(PaintSession& session, const ImageId imageId, int32_t x, int32_t y);
-bool PaintAttachToPreviousPS(PaintSession& session, const ImageId image_id, int32_t x, int32_t y);
+PaintStruct* PaintAddImageAsParentHeight(
+    PaintSession& session, ImageId imageId, int32_t height, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox);
+
+bool PaintAttachToPreviousAttach(PaintSession& session, ImageId imageId, int32_t x, int32_t y);
+bool PaintAttachToPreviousPS(PaintSession& session, ImageId image_id, int32_t x, int32_t y);
 void PaintFloatingMoneyEffect(
     PaintSession& session, money64 amount, StringId string_id, int32_t y, int32_t z, int8_t y_offsets[], int32_t offset_x,
     uint32_t rotation);
 
-PaintSession* PaintSessionAlloc(DrawPixelInfo& dpi, uint32_t viewFlags, uint8_t rotation);
+PaintSession* PaintSessionAlloc(OpenRCT2::Drawing::RenderTarget& rt, uint32_t viewFlags, uint8_t rotation);
 void PaintSessionFree(PaintSession* session);
 void PaintSessionGenerate(PaintSession& session);
 void PaintSessionArrange(PaintSessionCore& session);
 void PaintDrawStructs(PaintSession& session);
-void PaintDrawMoneyStructs(DrawPixelInfo& dpi, PaintStringStruct* ps);
+void PaintDrawMoneyStructs(OpenRCT2::Drawing::RenderTarget& rt, PaintStringStruct* ps);

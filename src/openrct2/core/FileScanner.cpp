@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -8,41 +8,40 @@
  *****************************************************************************/
 
 #ifdef _WIN32
-#    include <windows.h>
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <windows.h>
+#elif defined(__unix__) || defined(__HAIKU__) || (defined(__APPLE__) && defined(__MACH__)) || defined(__ANDROID__)
+    #include <dirent.h>
+    #include <sys/stat.h>
+    #include <sys/types.h>
+    #include <unistd.h>
 #endif
 
-#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
-#    include <dirent.h>
-#    include <sys/stat.h>
-#    include <sys/types.h>
-#    include <unistd.h>
-#elif defined(_WIN32)
-// Windows needs this for widechar <-> utf8 conversion utils
-#    include "../localisation/Language.h"
-#endif
-
+#include "../platform/Platform.h"
 #include "FileScanner.h"
-#include "Memory.hpp"
 #include "Numerics.hpp"
 #include "Path.hpp"
 #include "String.hpp"
 
 #include <memory>
+#include <set>
 #include <stack>
 #include <string>
 #include <vector>
 
 using namespace OpenRCT2;
 
-enum class DIRECTORY_CHILD_TYPE
+enum class DirectoryChildType
 {
-    DC_DIRECTORY,
-    DC_FILE,
+    directory,
+    file,
 };
 
 struct DirectoryChild
 {
-    DIRECTORY_CHILD_TYPE Type;
+    DirectoryChildType Type;
     std::string Name;
 
     // Files only
@@ -127,7 +126,7 @@ public:
             else
             {
                 const DirectoryChild* child = &state->Listing[state->Index];
-                if (child->Type == DIRECTORY_CHILD_TYPE::DC_DIRECTORY)
+                if (child->Type == DirectoryChildType::directory)
                 {
                     if (_recurse)
                     {
@@ -213,7 +212,7 @@ public:
     void GetDirectoryChildren(std::vector<DirectoryChild>& children, const std::string& path) override
     {
         auto pattern = path + "\\*";
-        auto wPattern = String::ToWideChar(pattern.c_str());
+        auto wPattern = String::toWideChar(pattern.c_str());
 
         WIN32_FIND_DATAW findData;
         HANDLE hFile = FindFirstFileW(wPattern.c_str(), &findData);
@@ -235,14 +234,14 @@ private:
     {
         DirectoryChild result;
 
-        result.Name = String::ToUtf8(child->cFileName);
+        result.Name = String::toUtf8(child->cFileName);
         if (child->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
-            result.Type = DIRECTORY_CHILD_TYPE::DC_DIRECTORY;
+            result.Type = DirectoryChildType::directory;
         }
         else
         {
-            result.Type = DIRECTORY_CHILD_TYPE::DC_FILE;
+            result.Type = DirectoryChildType::file;
             result.Size = (static_cast<uint64_t>(child->nFileSizeHigh) << 32uLL) | static_cast<uint64_t>(child->nFileSizeLow);
             result.LastModified = (static_cast<uint64_t>(child->ftLastWriteTime.dwHighDateTime) << 32uLL)
                 | static_cast<uint64_t>(child->ftLastWriteTime.dwLowDateTime);
@@ -253,7 +252,64 @@ private:
 
 #endif // _WIN32
 
-#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#ifdef __ANDROID__
+
+class FileScannerAndroidAssets final : public FileScannerBase
+{
+public:
+    FileScannerAndroidAssets(u8string_view pattern, bool recurse)
+        : FileScannerBase(pattern, recurse)
+    {
+    }
+
+    void GetDirectoryChildren(std::vector<DirectoryChild>& children, const std::string& path) override
+    {
+        const auto& assetList = Platform::GetAssetList();
+        std::string prefix = path.substr(Platform::kAndroidAssetPathPrefix.length());
+        if (!prefix.empty() && prefix.back() != '/')
+        {
+            prefix += '/';
+        }
+
+        std::set<std::string> seen;
+
+        for (const auto& entry : assetList)
+        {
+            if (entry.Path.size() > prefix.size() && String::startsWith(entry.Path, prefix))
+            {
+                std::string_view relative = std::string_view(entry.Path).substr(prefix.size());
+                auto slashPos = relative.find('/');
+                if (slashPos != std::string_view::npos)
+                {
+                    std::string dirName = std::string(relative.substr(0, slashPos));
+                    if (seen.insert(dirName).second)
+                    {
+                        DirectoryChild child;
+                        child.Name = dirName;
+                        child.Type = DirectoryChildType::directory;
+                        children.push_back(child);
+                    }
+                }
+                else
+                {
+                    std::string fileName = std::string(relative);
+                    if (seen.insert(fileName).second)
+                    {
+                        DirectoryChild child;
+                        child.Name = fileName;
+                        child.Type = DirectoryChildType::file;
+                        child.Size = entry.Size;
+
+                        children.push_back(child);
+                    }
+                }
+            }
+        }
+    }
+};
+#endif // __ANDROID__
+
+#if defined(__unix__) || defined(__HAIKU__) || (defined(__APPLE__) && defined(__MACH__))
 
 class FileScannerUnix final : public FileScannerBase
 {
@@ -272,7 +328,7 @@ public:
             for (int32_t i = 0; i < count; i++)
             {
                 const struct dirent* node = namelist[i];
-                if (!String::Equals(node->d_name, ".") && !String::Equals(node->d_name, ".."))
+                if (!String::equals(node->d_name, ".") && !String::equals(node->d_name, ".."))
                 {
                     children.push_back(CreateChild(path.c_str(), node));
                 }
@@ -292,20 +348,24 @@ private:
     {
         DirectoryChild result;
         result.Name = std::string(node->d_name);
+    #ifdef __HAIKU__
+        struct stat stbuf;
+        stat(node->d_name, &stbuf);
+        if (S_ISDIR(stbuf.st_mode))
+    #else
         if (node->d_type == DT_DIR)
+    #endif
         {
-            result.Type = DIRECTORY_CHILD_TYPE::DC_DIRECTORY;
+            result.Type = DirectoryChildType::directory;
         }
         else
         {
-            result.Type = DIRECTORY_CHILD_TYPE::DC_FILE;
+            result.Type = DirectoryChildType::file;
 
             // Get the full path of the file
             auto path = Path::Combine(directory, node->d_name);
 
-            struct stat statInfo
-            {
-            };
+            struct stat statInfo{};
             int32_t statRes = stat(path.c_str(), &statInfo);
             if (statRes != -1)
             {
@@ -314,7 +374,7 @@ private:
 
                 if (S_ISDIR(statInfo.st_mode))
                 {
-                    result.Type = DIRECTORY_CHILD_TYPE::DC_DIRECTORY;
+                    result.Type = DirectoryChildType::directory;
                 }
             }
         }
@@ -322,20 +382,26 @@ private:
     }
 };
 
-#endif // defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#endif // defined(__unix__) || defined(__HAIKU__) || (defined(__APPLE__) && defined(__MACH__))
 
 std::unique_ptr<IFileScanner> Path::ScanDirectory(const std::string& pattern, bool recurse)
 {
+#ifdef __ANDROID__
+    if (String::startsWith(pattern, Platform::kAndroidAssetPathPrefix))
+    {
+        return std::make_unique<FileScannerAndroidAssets>(pattern, recurse);
+    }
+#endif
 #ifdef _WIN32
     return std::make_unique<FileScannerWindows>(pattern, recurse);
-#elif defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#elif defined(__unix__) || defined(__HAIKU__) || (defined(__APPLE__) && defined(__MACH__))
     return std::make_unique<FileScannerUnix>(pattern, recurse);
 #endif
 }
 
 void Path::QueryDirectory(QueryDirectoryResult* result, const std::string& pattern)
 {
-    auto scanner = Path::ScanDirectory(pattern, true);
+    auto scanner = ScanDirectory(pattern, true);
     while (scanner->Next())
     {
         const FileScanner::FileInfo& fileInfo = scanner->GetFileInfo();
@@ -361,7 +427,7 @@ std::vector<std::string> Path::GetDirectories(const std::string& path)
     std::vector<std::string> subDirectories;
     for (const auto& c : children)
     {
-        if (c.Type == DIRECTORY_CHILD_TYPE::DC_DIRECTORY)
+        if (c.Type == DirectoryChildType::directory)
         {
             subDirectories.push_back(c.Name);
         }

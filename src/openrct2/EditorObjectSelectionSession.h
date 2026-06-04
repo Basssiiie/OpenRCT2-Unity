@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,36 +9,48 @@
 
 #pragma once
 
-#include "object/Object.h"
-#include "util/Util.h"
+#include "core/EnumUtils.hpp"
+#include "core/FlagHolder.hpp"
+#include "core/StringTypes.h"
+#include "object/ObjectTypes.h"
 
+#include <optional>
 #include <vector>
 
-struct ResultWithMessage;
-
-enum EDITOR_INPUT_FLAGS
+namespace OpenRCT2
 {
-    INPUT_FLAG_EDITOR_OBJECT_SELECT = (1 << 0), // Set when you want to select an object, not set when you want to deselect it.
-    INPUT_FLAG_EDITOR_OBJECT_1 = (1 << 1),
-    INPUT_FLAG_EDITOR_OBJECT_SELECT_OBJECTS_IN_SCENERY_GROUP = (1 << 2),
-    INPUT_FLAG_EDITOR_OBJECT_ALWAYS_REQUIRED = (1 << 3)
+    struct ObjectEntryDescriptor;
+    struct ObjectRepositoryItem;
+} // namespace OpenRCT2
+
+struct ResultWithMessageString;
+
+enum class EditorInputFlag : uint8_t
+{
+    select, // Set when you want to select an object, not set when you want to deselect it.
+    unk1,
+    selectObjectsInSceneryGroup,
+    objectAlwaysRequired,
 };
+using EditorInputFlags = FlagHolder<uint8_t, EditorInputFlag>;
 
-extern std::optional<StringId> _gSceneryGroupPartialSelectError;
+extern u8string gSceneryGroupPartialSelectError;
 extern std::vector<uint8_t> _objectSelectionFlags;
-extern uint32_t _numSelectedObjectsForType[EnumValue(ObjectType::Count)];
+extern uint32_t _numSelectedObjectsForType[EnumValue(OpenRCT2::ObjectType::count)];
 
-bool EditorCheckObjectGroupAtLeastOneSelected(ObjectType checkObjectType);
+bool EditorCheckObjectGroupAtLeastOneSelected(OpenRCT2::ObjectType checkObjectType);
+bool EditorCheckObjectGroupAtLeastOneOfPeepTypeSelected(uint8_t peepType);
 bool EditorCheckObjectGroupAtLeastOneSurfaceSelected(bool queue);
-void EditorObjectFlagsFree();
+void EditorObjectFlagsClear();
 void UnloadUnselectedObjects();
 void Sub6AB211();
 void ResetSelectedObjectCountAndSize();
 void FinishObjectSelection();
-ResultWithMessage WindowEditorObjectSelectionSelectObject(
-    uint8_t isMasterObject, int32_t flags, const ObjectRepositoryItem* item);
-ResultWithMessage WindowEditorObjectSelectionSelectObject(
-    uint8_t isMasterObject, int32_t flags, const ObjectEntryDescriptor& entry);
+
+ResultWithMessageString WindowEditorObjectSelectionSelectObject(
+    uint8_t isMasterObject, EditorInputFlags flags, const OpenRCT2::ObjectRepositoryItem* item);
+ResultWithMessageString WindowEditorObjectSelectionSelectObject(
+    uint8_t isMasterObject, EditorInputFlags flags, const OpenRCT2::ObjectEntryDescriptor& descriptor);
 
 /**
  * Removes all unused objects from the object selection.

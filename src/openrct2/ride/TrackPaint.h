@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,11 +11,20 @@
 
 #include "../paint/Paint.h"
 #include "../paint/support/MetalSupports.h"
+#include "../paint/support/WoodenSupports.h"
 #include "../paint/tile_element/Paint.TileElement.h"
+#include "../paint/tile_element/Segment.h"
 #include "../paint/track/Support.h"
-#include "../world/Map.h"
+#include "../ride/TrackData.h"
+#include "../ride/ted/TrackElementDescriptor.h"
+#include "../world/tile_element/TrackElement.h"
 
-class StationObject;
+namespace OpenRCT2
+{
+    class StationObject;
+}
+
+struct Ride;
 
 constexpr uint8_t kTrackMap2x2[][4] = {
     { 0, 1, 2, 3 },
@@ -85,10 +94,10 @@ constexpr uint8_t kTrackMap1x4[][4] = {
 };
 
 constexpr MetalSupportPlace kDiagSupportPlacement[] = {
-    MetalSupportPlace::LeftCorner,
-    MetalSupportPlace::TopCorner,
-    MetalSupportPlace::RightCorner,
-    MetalSupportPlace::BottomCorner,
+    MetalSupportPlace::leftCorner,
+    MetalSupportPlace::topCorner,
+    MetalSupportPlace::rightCorner,
+    MetalSupportPlace::bottomCorner,
 };
 
 enum
@@ -103,17 +112,17 @@ enum
     SPR_FLOOR_PLANKS_E_SEGMENT = 3402,
     SPR_FLOOR_PLANKS_S_SEGMENT = 3403,
     SPR_FLOOR_PLANKS_W_SEGMENT = 3404,
-    SPR_FLOOR_METAL = 14567,
-    SPR_FENCE_METAL_NE = 14568,
-    SPR_FENCE_METAL_SE = 14569,
-    SPR_FENCE_METAL_SW = 14570,
-    SPR_FENCE_METAL_NW = 14571,
+    SPR_FLOOR_TILE_CHEQUERBOARD = 14567,
+    SPR_FENCE_PICKET_NE = 14568,
+    SPR_FENCE_PICKET_SE = 14569,
+    SPR_FENCE_PICKET_SW = 14570,
+    SPR_FENCE_PICKET_NW = 14571,
 
-    SPR_FLOOR_METAL_B = 14989,
-    SPR_FENCE_METAL_B_NE = 14990,
-    SPR_FENCE_METAL_B_SE = 14991,
-    SPR_FENCE_METAL_B_SW = 14992,
-    SPR_FENCE_METAL_B_NW = 14993,
+    SPR_FLOOR_TILE_DIAMOND = 14989,
+    SPR_FENCE_PICKET_DUPLICATE_NE = 14990,
+    SPR_FENCE_PICKET_DUPLICATE_SE = 14991,
+    SPR_FENCE_PICKET_DUPLICATE_SW = 14992,
+    SPR_FENCE_PICKET_DUPLICATE_NW = 14993,
 
     SPR_TRACK_SUBMARINE_RIDE_MINI_HELICOPTERS_FLAT_NE_SW = 16870,
     SPR_TRACK_SUBMARINE_RIDE_MINI_HELICOPTERS_FLAT_SE_NW = 16871,
@@ -146,10 +155,10 @@ enum
     SPR_TRACK_SUBMARINE_RIDE_MINI_HELICOPTERS_FLAT_QUARTER_TURN_1_TILE_NE_SE = 16898,
     SPR_TRACK_SUBMARINE_RIDE_MINI_HELICOPTERS_FLAT_QUARTER_TURN_1_TILE_SE_SW = 16899,
 
-    SPR_FLOOR_CORK_SE_SW = 22134,
-    SPR_FLOOR_CORK_SW = 22135,
-    SPR_FLOOR_CORK_SE = 22136,
-    SPR_FLOOR_CORK = 22137,
+    SPR_FLOOR_MULCH_SE_SW = 22134,
+    SPR_FLOOR_MULCH_SW = 22135,
+    SPR_FLOOR_MULCH_SE = 22136,
+    SPR_FLOOR_MULCH = 22137,
     SPR_FENCE_ROPE_NE = 22138,
     SPR_FENCE_ROPE_SE = 22139,
     SPR_FENCE_ROPE_SW = 22140,
@@ -216,13 +225,13 @@ enum
     SPR_STATION_INVERTED_BAR_A_NW_SE = 22423,
     SPR_STATION_INVERTED_BAR_B_SW_NE = 22424,
     SPR_STATION_INVERTED_BAR_B_NW_SE = 22425,
-    SPR_STATION_BASE_A_SW_NE = 22426,
-    SPR_STATION_BASE_A_NW_SE = 22427,
-    SPR_STATION_BASE_B_SW_NE = 22428,
-    SPR_STATION_BASE_B_NW_SE = 22429,
-    SPR_STATION_BASE_C_SW_NE = 22430,
-    SPR_STATION_BASE_C_NW_SE = 22431,
-    SPR_STATION_BASE_D = 22432, // Metal plate without borders, used for some stations and for the on-ride photo segment.
+    SPR_STATION_BASE_TALL_SW_NE = 22426,
+    SPR_STATION_BASE_TALL_NW_SE = 22427,
+    SPR_STATION_BASE_MEDIUM_SW_NE = 22428,
+    SPR_STATION_BASE_MEDIUM_NW_SE = 22429,
+    SPR_STATION_BASE_SHORT_SW_NE = 22430,
+    SPR_STATION_BASE_SHORT_NW_SE = 22431,
+    SPR_STATION_BASE_BORDERLESS = 22432, // Metal plate without borders, used for some stations and on-ride photo segments
 
     SPR_ON_RIDE_PHOTO_CAMERA_SMALL_N = 23485,
     SPR_ON_RIDE_PHOTO_CAMERA_SMALL_E = 23486,
@@ -295,23 +304,25 @@ enum
     MAZE_ENTRY_FLAG_15 = (1 << 15),
 };
 
-constexpr uint32_t kFloorSpritesCork[] = {
-    SPR_FLOOR_CORK_SE_SW,
-    SPR_FLOOR_CORK_SW,
-    SPR_FLOOR_CORK_SE,
-    SPR_FLOOR_CORK,
+constexpr uint32_t kFloorSpritesMulch[] = {
+    SPR_FLOOR_MULCH_SE_SW,
+    SPR_FLOOR_MULCH_SW,
+    SPR_FLOOR_MULCH_SE,
+    SPR_FLOOR_MULCH,
 };
-constexpr uint32_t kFloorSpritesMetal[] = {
-    SPR_FLOOR_METAL,
-    SPR_FLOOR_METAL,
-    SPR_FLOOR_METAL,
-    SPR_FLOOR_METAL,
+// Tiles forming a chequerboard pattern (not to be confused with the one for the Spiral Slide)
+constexpr uint32_t kFloorSpritesTileChequerboard[] = {
+    SPR_FLOOR_TILE_CHEQUERBOARD,
+    SPR_FLOOR_TILE_CHEQUERBOARD,
+    SPR_FLOOR_TILE_CHEQUERBOARD,
+    SPR_FLOOR_TILE_CHEQUERBOARD,
 };
-constexpr uint32_t kFloorSpritesMetalB[] = {
-    SPR_FLOOR_METAL_B,
-    SPR_FLOOR_METAL_B,
-    SPR_FLOOR_METAL_B,
-    SPR_FLOOR_METAL_B,
+// Tiles forming a diamond motif
+constexpr uint32_t kFloorSpritesTileDiamond[] = {
+    SPR_FLOOR_TILE_DIAMOND,
+    SPR_FLOOR_TILE_DIAMOND,
+    SPR_FLOOR_TILE_DIAMOND,
+    SPR_FLOOR_TILE_DIAMOND,
 };
 
 constexpr uint32_t kFenceSpritesRope[] = {
@@ -320,17 +331,19 @@ constexpr uint32_t kFenceSpritesRope[] = {
     SPR_FENCE_ROPE_SW,
     SPR_FENCE_ROPE_NW,
 };
-constexpr uint32_t kFenceSpritesMetal[] = {
-    SPR_FENCE_METAL_NE,
-    SPR_FENCE_METAL_SE,
-    SPR_FENCE_METAL_SW,
-    SPR_FENCE_METAL_NW,
+// Used only by the Launched Freefall
+constexpr uint32_t kFenceSpritesPicket[] = {
+    SPR_FENCE_PICKET_NE,
+    SPR_FENCE_PICKET_SE,
+    SPR_FENCE_PICKET_SW,
+    SPR_FENCE_PICKET_NW,
 };
-constexpr uint32_t kFenceSpritesMetalB[] = {
-    SPR_FENCE_METAL_B_NE,
-    SPR_FENCE_METAL_B_SE,
-    SPR_FENCE_METAL_B_SW,
-    SPR_FENCE_METAL_B_NW,
+// Duplicate of the picket fence sprites for the other tracked vertical rides, possibly a development leftover
+constexpr uint32_t kFenceSpritesPicketDuplicate[] = {
+    SPR_FENCE_PICKET_DUPLICATE_NE,
+    SPR_FENCE_PICKET_DUPLICATE_SE,
+    SPR_FENCE_PICKET_DUPLICATE_SW,
+    SPR_FENCE_PICKET_DUPLICATE_NW,
 };
 
 constexpr uint32_t kTrackSpritesSubmarineRideMiniHelicoptersQuarterTurn3Tiles[4][3] = {
@@ -400,41 +413,49 @@ constexpr bool kDiagSpriteMap[kNumOrthogonalDirections][4] = {
 
 extern const uint8_t mapLeftEighthTurnToOrthogonal[5];
 
-ImageId GetStationColourScheme(PaintSession& session, const TrackElement& trackElement);
-ImageId GetShopSupportColourScheme(PaintSession& session, const TrackElement& trackElement);
+ImageId GetStationColourScheme(PaintSession& session, const OpenRCT2::TrackElement& trackElement);
+ImageId GetShopSupportColourScheme(PaintSession& session, const OpenRCT2::TrackElement& trackElement);
 
 bool TrackPaintUtilHasFence(
-    enum edge_t edge, const CoordsXY& position, const TrackElement& trackElement, const Ride& ride, uint8_t rotation);
+    enum edge_t edge, const CoordsXY& position, const OpenRCT2::TrackElement& trackElement, const Ride& ride, uint8_t rotation);
 void TrackPaintUtilPaintFloor(
     PaintSession& session, uint8_t edges, ImageId colourFlags, uint16_t height, const uint32_t floorSprites[4],
-    const StationObject* stationStyle);
+    const OpenRCT2::StationObject* stationStyle);
 void TrackPaintUtilPaintFences(
-    PaintSession& session, uint8_t edges, const CoordsXY& position, const TrackElement& trackElement, const Ride& ride,
-    const ImageId colourFlags, uint16_t height, const uint32_t fenceSprites[4], uint8_t rotation);
+    PaintSession& session, uint8_t edges, const CoordsXY& position, const OpenRCT2::TrackElement& trackElement,
+    const Ride& ride, ImageId colourFlags, uint16_t height, const uint32_t fenceSprites[4], uint8_t rotation);
+
+enum class StationBaseType
+{
+    none,
+    a,
+    b,
+    c,
+};
+constexpr uint32_t kStationBaseTypeCount = 4;
+
 bool TrackPaintUtilDrawStationCovers(
-    PaintSession& session, enum edge_t edge, bool hasFence, const StationObject* stationObject, uint16_t height,
+    PaintSession& session, enum edge_t edge, bool hasFence, const OpenRCT2::StationObject* stationObject, uint16_t height,
     ImageId colour);
 bool TrackPaintUtilDrawStationCovers2(
-    PaintSession& session, enum edge_t edge, bool hasFence, const StationObject* stationObject, uint16_t height,
+    PaintSession& session, enum edge_t edge, bool hasFence, const OpenRCT2::StationObject* stationObject, uint16_t height,
     uint8_t stationVariant, ImageId colour);
-void TrackPaintUtilDrawNarrowStationPlatform(
+bool TrackPaintUtilDrawNarrowStationPlatform(
     PaintSession& session, const Ride& ride, Direction direction, int32_t height, int32_t zOffset,
-    const TrackElement& trackElement);
-void TrackPaintUtilDrawStation(
-    PaintSession& session, const Ride& ride, Direction direction, uint16_t height, const TrackElement& trackElement);
-void TrackPaintUtilDrawStation2(
-    PaintSession& session, const Ride& ride, Direction direction, uint16_t height, const TrackElement& trackElement,
-    int32_t fenceOffsetA, int32_t fenceOffsetB);
-void TrackPaintUtilDrawStation3(
-    PaintSession& session, const Ride& ride, Direction direction, uint16_t height, uint16_t coverHeight,
-    const TrackElement& trackElement);
-void TrackPaintUtilDrawStationInverted(
-    PaintSession& session, const Ride& ride, Direction direction, int32_t height, const TrackElement& trackElement,
+    const OpenRCT2::TrackElement& trackElement, StationBaseType baseType, int32_t baseOffsetZ);
+bool TrackPaintUtilDrawStation(
+    PaintSession& session, const Ride& ride, Direction direction, uint16_t height, const OpenRCT2::TrackElement& trackElement,
+    StationBaseType baseType, int32_t baseOffsetZ);
+bool TrackPaintUtilDrawStation2(
+    PaintSession& session, const Ride& ride, Direction direction, uint16_t height, const OpenRCT2::TrackElement& trackElement,
+    StationBaseType baseType, int32_t baseOffsetZ, int32_t fenceOffsetA, int32_t fenceOffsetB);
+bool TrackPaintUtilDrawStationInverted(
+    PaintSession& session, const Ride& ride, Direction direction, int32_t height, const OpenRCT2::TrackElement& trackElement,
     uint8_t stationVariant);
 bool TrackPaintUtilShouldPaintSupports(const CoordsXY& position);
 void TrackPaintUtilDrawPier(
-    PaintSession& session, const Ride& ride, const StationObject* stationObject, const CoordsXY& position, Direction direction,
-    int32_t height, const TrackElement& trackElement, uint8_t rotation);
+    PaintSession& session, const Ride& ride, const OpenRCT2::StationObject* stationObject, const CoordsXY& position,
+    Direction direction, int32_t height, const OpenRCT2::TrackElement& trackElement, uint8_t rotation);
 inline void TrackPaintUtilDrawStationTunnel(PaintSession& session, Direction direction, int32_t height)
 {
     PaintUtilPushTunnelRotated(session, direction, height, TunnelGroup::Square, TunnelSubType::Flat);
@@ -445,44 +466,45 @@ inline void TrackPaintUtilDrawStationTunnelTall(PaintSession& session, Direction
 }
 
 void TrackPaintUtilRightQuarterTurn5TilesPaint(
-    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][5], const CoordsXY offsets[4][5], const CoordsXY boundsLengths[4][5],
+    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
+    const uint32_t sprites[4][5], const CoordsXY offsets[4][5], const CoordsXY boundsLengths[4][5],
     const CoordsXYZ boundsOffsets[4][5]);
 void TrackPaintUtilRightQuarterTurn5TilesPaint2(
-    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, const ImageId colourFlags,
+    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
     const SpriteBb sprites[][5]);
 void TrackPaintUtilRightQuarterTurn5TilesPaint3(
-    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, const ImageId colourFlags,
+    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
     const SpriteBb sprites[][5]);
 
 void TrackPaintUtilRightQuarterTurn3TilesPaint(
-    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][3], const CoordsXY offsets[4][3], const CoordsXY boundsLengths[4][3],
+    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
+    const uint32_t sprites[4][3], const CoordsXY offsets[4][3], const CoordsXY boundsLengths[4][3],
     const CoordsXYZ boundsOffsets[4][3]);
 void TrackPaintUtilRightQuarterTurn3TilesPaint2(
-    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][3]);
+    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
+    const uint32_t sprites[4][3]);
 void TrackPaintUtilRightQuarterTurn3TilesPaint2WithHeightOffset(
-    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][3], int32_t heightOffset);
+    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
+    const uint32_t sprites[4][3], int32_t heightOffset);
 void TrackPaintUtilRightQuarterTurn3TilesPaint3(
-    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, const ImageId colourFlags,
+    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
     const SpriteBb sprites[4][3]);
 void TrackPaintUtilRightQuarterTurn3TilesPaint4(
-    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, const ImageId colourFlags,
+    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
     const SpriteBb sprites[4][3]);
 
 void TrackPaintUtilLeftQuarterTurn3TilesPaint(
-    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][3]);
+    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
+    const uint32_t sprites[4][3]);
 void TrackPaintUtilLeftQuarterTurn3TilesPaintWithHeightOffset(
-    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][3], int32_t heightOffset);
+    PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence, ImageId colourFlags,
+    const uint32_t sprites[4][3], int32_t heightOffset);
 void TrackPaintUtilLeftQuarterTurn1TilePaint(
-    PaintSession& session, int8_t thickness, int16_t height, int16_t boundBoxZOffset, Direction direction,
-    const ImageId colourFlags, const uint32_t* sprites);
+    PaintSession& session, int8_t thickness, int16_t height, int16_t boundBoxZOffset, Direction direction, ImageId colourFlags,
+    const uint32_t* sprites);
 void TrackPaintUtilSpinningTunnelPaint(PaintSession& session, int8_t thickness, int16_t height, Direction direction);
 
+void TrackPaintUtilOnridePhotoPlatformPaintBase(PaintSession& session, int32_t height);
 /**
  * Renders the black metal platform and the supports of the on-ride photo section.
  *
@@ -495,31 +517,31 @@ void TrackPaintUtilOnridePhotoPlatformPaint(
     PaintSession& session, Direction direction, int32_t height, MetalSupportType supportType);
 
 void TrackPaintUtilOnridePhotoSmallPaint(
-    PaintSession& session, Direction direction, int32_t height, const TrackElement& trackElement);
+    PaintSession& session, Direction direction, int32_t height, const OpenRCT2::TrackElement& trackElement);
 void TrackPaintUtilOnridePhotoPaint(
-    PaintSession& session, Direction direction, int32_t height, const TrackElement& trackElement);
+    PaintSession& session, Direction direction, int32_t height, const OpenRCT2::TrackElement& trackElement);
 void TrackPaintUtilOnridePhotoPaint2(
     PaintSession& session, Direction direction, int32_t height, int32_t trackHeightOffset, int32_t supportsAboveHeightOffset,
-    const TrackElement& trackElement);
+    const OpenRCT2::TrackElement& trackElement);
 void TrackPaintUtilOnridePhotoPaint2(
-    PaintSession& session, Direction direction, const TrackElement& trackElement, int32_t height,
+    PaintSession& session, Direction direction, const OpenRCT2::TrackElement& trackElement, int32_t height,
     int32_t supportsAboveHeightOffset = kGeneralSupportHeightOnRidePhoto, int32_t trackHeightOffset = 3);
 void TrackPaintUtilRightHelixUpSmallQuarterTilesPaint(
     PaintSession& session, const int8_t thickness[2], int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][3][2], const CoordsXY offsets[4][3][2],
+    ImageId colourFlags, const uint32_t sprites[4][3][2], const CoordsXY offsets[4][3][2],
     const CoordsXY boundsLengths[4][3][2], const CoordsXYZ boundsOffsets[4][3][2]);
 void TrackPaintUtilRightHelixUpLargeQuarterTilesPaint(
     PaintSession& session, const int8_t thickness[2], int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][5][2], const CoordsXY offsets[4][5][2],
+    ImageId colourFlags, const uint32_t sprites[4][5][2], const CoordsXY offsets[4][5][2],
     const CoordsXY boundsLengths[4][5][2], const CoordsXYZ boundsOffsets[4][5][2]);
 void TrackPaintUtilEighthToDiagTilesPaint(
     PaintSession& session, const int8_t thickness[4][4], int16_t height, Direction direction, uint8_t trackSequence,
-    const ImageId colourFlags, const uint32_t sprites[4][4], const CoordsXY offsets[4][4], const CoordsXY boundsLengths[4][4],
+    ImageId colourFlags, const uint32_t sprites[4][4], const CoordsXY offsets[4][4], const CoordsXY boundsLengths[4][4],
     const CoordsXYZ boundsOffsets[4][4]);
 void TrackPaintUtilDiagTilesPaint(
     PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence,
     const uint32_t sprites[4], const CoordsXY offsets[4], const CoordsXY boundsLengths[4], const CoordsXYZ boundsOffsets[4],
-    int8_t additionalBoundsHeight, const ImageId colourFlags);
+    int8_t additionalBoundsHeight, ImageId colourFlags);
 inline void TrackPaintUtilDiagTilesPaint(
     PaintSession& session, int8_t thickness, int16_t height, Direction direction, uint8_t trackSequence,
     const uint32_t sprites[4], const CoordsXY offsets[4], const CoordsXY boundsLengths[4],
@@ -545,95 +567,101 @@ void DrawSBendRightSupports(
     PaintSession& session, MetalSupportType supportType, uint8_t sequence, Direction direction, int32_t height,
     int32_t specialA, int32_t specialB);
 
-using TRACK_PAINT_FUNCTION = void (*)(
+using TrackPaintFunction = void (&)(
     PaintSession& session, const Ride& ride, uint8_t trackSequence, Direction direction, int32_t height,
-    const TrackElement& trackElement, SupportType supportType);
-using TRACK_PAINT_FUNCTION_GETTER = TRACK_PAINT_FUNCTION (*)(int32_t trackType);
+    const OpenRCT2::TrackElement& trackElement, SupportType supportType);
 
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionStandUpRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSuspendedSwingingRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionInvertedRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionJuniorRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMonorail(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMiniSuspendedRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMiniatureRailway(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionBoatHire(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionWoodenWildMouse(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSteeplechase(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionCarRide(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionLaunchedFreefall(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionBobsleighRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionObservationTower(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionLoopingRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionDinghySlide(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionDinghySlideCovered(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMineTrainRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionChairlift(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMaze(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSpiralSlide(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionGoKarts(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionLogFlume(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionRiverRapids(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionDodgems(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSwingingShip(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSwingingInverterShip(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionFerrisWheel(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMotionsimulator(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunction3dCinema(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionTopspin(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSpaceRings(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionReverseFreefallRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionLift(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionShop(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMerryGoRound(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionFacility(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionTwist(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionHauntedHouse(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionCircus(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionGhostTrain(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSideFrictionRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionWoodenRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionWildMouse(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMultiDimensionRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionFlyingRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionFlyingRCInverted(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionVirginiaReel(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSplashBoats(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMiniHelicopters(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionLayDownRCInverted(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSuspendedMonorail(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionReverserRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionHeartlineTwisterRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMiniGolf(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionLatticeTriangleTrack(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionRotoDrop(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionFlyingSaucers(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionCrookedHouse(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMonorailCycles(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionCompactInvertedRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionWaterRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionAirPoweredVerticalRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionInvertedHairpinRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMagicCarpet(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSubmarineRide(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionEnterprise(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionInvertedImpulseRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMiniRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionMineRide(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionLimLaunchedRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionTwisterRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionCorkscrewRC(int32_t trackType);
+void TrackPaintFunctionDummy(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const OpenRCT2::TrackElement& trackElement, SupportType supportType);
+
+TrackPaintFunction GetTrackPaintFunctionStandUpRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSuspendedSwingingRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionInvertedRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionJuniorRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMonorail(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMiniSuspendedRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMiniatureRailway(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionBoatHire(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionWoodenWildMouse(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSteeplechase(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionCarRide(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionLaunchedFreefall(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionBobsleighRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionObservationTower(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionLoopingRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionDinghySlide(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionDinghySlideCovered(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMineTrainRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionChairlift(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMaze(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSpiralSlide(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionGoKarts(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionLogFlume(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionRiverRapids(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionDodgems(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSwingingShip(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSwingingInverterShip(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionFerrisWheel(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMotionsimulator(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunction3dCinema(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionTopspin(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSpaceRings(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionReverseFreefallRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionLift(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionShop(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMerryGoRound(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionFacility(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionTwist(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionHauntedHouse(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionCircus(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionGhostTrain(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSideFrictionRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionWoodenRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionWildMouse(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMultiDimensionRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction getTrackPaintFunctionMultiDimensionRCInverted(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionFlyingRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionFlyingRCInverted(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionVirginiaReel(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSplashBoats(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMiniHelicopters(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionLayDownRCInverted(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSuspendedMonorail(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionReverserRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionHeartlineTwisterRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMiniGolf(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionLatticeTriangleTrack(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionLatticeTriangleTrackAlt(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionRotoDrop(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionFlyingSaucers(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionCrookedHouse(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMonorailCycles(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionCompactInvertedRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionWaterRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionAirPoweredVerticalRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionInvertedHairpinRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMagicCarpet(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionSubmarineRide(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionEnterprise(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionInvertedImpulseRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMiniRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionMineRide(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionLimLaunchedRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionTwisterRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionCorkscrewRC(OpenRCT2::TrackElemType trackType);
 namespace OpenRCT2::HybridRC
 {
-    TRACK_PAINT_FUNCTION GetTrackPaintFunction(int32_t trackType);
+    TrackPaintFunction GetTrackPaintFunction(TrackElemType trackType);
 }
 namespace OpenRCT2::SingleRailRC
 {
-    TRACK_PAINT_FUNCTION GetTrackPaintFunction(int32_t trackType);
+    TrackPaintFunction GetTrackPaintFunction(TrackElemType trackType);
 }
 namespace OpenRCT2::AlpineRC
 {
-    TRACK_PAINT_FUNCTION GetTrackPaintFunction(int32_t trackType);
+    TrackPaintFunction GetTrackPaintFunction(TrackElemType trackType);
 }
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionClassicWoodenRC(int32_t trackType);
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionClassicStandUpRC(int32_t trackType);
+TrackPaintFunction GetTrackPaintFunctionClassicWoodenRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionClassicStandUpRC(OpenRCT2::TrackElemType trackType);
+TrackPaintFunction GetTrackPaintFunctionClassicWoodenTwisterRC(OpenRCT2::TrackElemType trackType);

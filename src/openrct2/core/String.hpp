@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,118 +11,152 @@
 
 #include "StringTypes.h"
 
+#include <charconv>
 #include <cstdarg>
 #include <cstddef>
 #include <optional>
+#include <stdexcept>
 #include <string_view>
 #include <vector>
 
 namespace OpenRCT2::String
 {
-    constexpr const utf8* Empty = "";
+    struct Hash
+    {
+        using is_transparent = void;
 
-    std::string ToStd(const utf8* str);
-    std::string ToUtf8(std::wstring_view src);
-    std::wstring ToWideChar(std::string_view src);
+        size_t operator()(const char* txt) const
+        {
+            return std::hash<std::string_view>{}(txt);
+        }
+        size_t operator()(std::string_view txt) const
+        {
+            return std::hash<std::string_view>{}(txt);
+        }
+        size_t operator()(const std::string& txt) const
+        {
+            return std::hash<std::string>{}(txt);
+        }
+    };
+
+    std::string toStd(const utf8* str);
+    std::string toUtf8(std::wstring_view src);
+    std::wstring toWideChar(std::string_view src);
 
     /**
      * Creates a string_view from a char pointer with a length up to either the
      * first null terminator or a given maximum length, whatever is smallest.
      */
-    std::string_view ToStringView(const char* ch, size_t maxLen);
+    std::string_view toStringView(const char* ch, size_t maxLen);
 
-    bool IsNullOrEmpty(const utf8* str);
-    int32_t Compare(const std::string& a, const std::string& b, bool ignoreCase = false);
-    int32_t Compare(const utf8* a, const utf8* b, bool ignoreCase = false);
+    bool isNullOrEmpty(const utf8* str);
+    int32_t compare(const std::string& a, const std::string& b, bool ignoreCase = false);
+    int32_t compare(const utf8* a, const utf8* b, bool ignoreCase = false);
 
-    bool Equals(u8string_view a, u8string_view b);
-    bool Equals(const u8string& a, const u8string& b);
-    bool Equals(const utf8* a, const utf8* b, bool ignoreCase = false);
-    bool IEquals(u8string_view a, u8string_view b);
-    bool IEquals(const u8string& a, const u8string& b);
-    bool IEquals(const utf8* a, const utf8* b);
+    bool equals(u8string_view a, u8string_view b);
+    bool equals(const utf8* a, const utf8* b, bool ignoreCase = false);
+    bool iequals(u8string_view a, u8string_view b);
+    bool iequals(const utf8* a, const utf8* b);
 
-    bool StartsWith(std::string_view str, std::string_view match, bool ignoreCase = false);
-    bool EndsWith(std::string_view str, std::string_view match, bool ignoreCase = false);
-    bool Contains(std::string_view haystack, std::string_view needle, bool ignoreCase = false);
-    size_t IndexOf(const utf8* str, utf8 match, size_t startIndex = 0);
-    ptrdiff_t LastIndexOf(const utf8* str, utf8 match);
+    bool startsWith(std::string_view str, std::string_view match, bool ignoreCase = false);
+    bool endsWith(std::string_view str, std::string_view match, bool ignoreCase = false);
+    bool contains(std::string_view haystack, std::string_view needle, bool ignoreCase = false);
+    size_t indexOf(const utf8* str, utf8 match, size_t startIndex = 0);
+    ptrdiff_t lastIndexOf(const utf8* str, utf8 match);
 
     /**
      * Gets the length of the given string in codepoints.
      */
-    size_t LengthOf(const utf8* str);
+    size_t lengthOf(const utf8* str);
 
     /**
      * Gets the size of the given string in bytes excluding the null terminator.
      */
-    size_t SizeOf(const utf8* str);
+    size_t sizeOf(const utf8* str);
 
-    utf8* Set(utf8* buffer, size_t bufferSize, const utf8* src);
-    utf8* Set(utf8* buffer, size_t bufferSize, const utf8* src, size_t srcSize);
-    utf8* Append(utf8* buffer, size_t bufferSize, const utf8* src);
-    utf8* Format(utf8* buffer, size_t bufferSize, const utf8* format, ...);
-    u8string StdFormat(const utf8* format, ...);
-    u8string Format_VA(const utf8* format, va_list args);
-    utf8* AppendFormat(utf8* buffer, size_t bufferSize, const utf8* format, ...);
+    utf8* set(utf8* buffer, size_t bufferSize, const utf8* src);
+    utf8* set(utf8* buffer, size_t bufferSize, const utf8* src, size_t srcSize);
+    utf8* append(utf8* buffer, size_t bufferSize, const utf8* src);
+    utf8* format(utf8* buffer, size_t bufferSize, const utf8* format, ...);
+    u8string stdFormat(const utf8* format, ...);
+    u8string formatVA(const utf8* format, va_list args);
+    utf8* appendFormat(utf8* buffer, size_t bufferSize, const utf8* format, ...);
 
     /**
      * Splits the given string by a delimiter and returns the values as a new string array.
      * @returns the number of values.
      */
-    std::vector<std::string> Split(std::string_view s, std::string_view delimiter);
+    std::vector<std::string_view> split(std::string_view s, std::string_view delimiter);
 
-    utf8* SkipBOM(utf8* buffer);
-    const utf8* SkipBOM(const utf8* buffer);
+    utf8* skipBOM(utf8* buffer);
+    const utf8* skipBOM(const utf8* buffer);
 
-    size_t GetCodepointLength(codepoint_t codepoint);
-    codepoint_t GetNextCodepoint(utf8* ptr, utf8** nextPtr = nullptr);
-    codepoint_t GetNextCodepoint(const utf8* ptr, const utf8** nextPtr = nullptr);
-    utf8* WriteCodepoint(utf8* dst, codepoint_t codepoint);
-    void AppendCodepoint(std::string& str, codepoint_t codepoint);
+    size_t getCodepointLength(codepoint_t codepoint);
+    codepoint_t getNextCodepoint(utf8* ptr, utf8** nextPtr = nullptr);
+    codepoint_t getNextCodepoint(const utf8* ptr, const utf8** nextPtr = nullptr);
+    utf8* writeCodepoint(utf8* dst, codepoint_t codepoint);
+    void appendCodepoint(std::string& str, codepoint_t codepoint);
 
-    bool IsWhiteSpace(codepoint_t codepoint);
-    utf8* Trim(utf8* str);
-    const utf8* TrimStart(const utf8* str);
-    utf8* TrimStart(utf8* buffer, size_t bufferSize, const utf8* src);
-    std::string TrimStart(const std::string& s);
-    std::string Trim(const std::string& s);
+    bool isWhiteSpace(codepoint_t codepoint);
+    utf8* trim(utf8* str);
+    const utf8* trimStart(const utf8* str);
+    [[nodiscard]] std::string trimStart(const std::string& s);
+    [[nodiscard]] std::string trim(const std::string& s);
 
     /**
      * Converts a multi-byte string from one code page to UTF-8.
      */
-    std::string ConvertToUtf8(std::string_view src, int32_t srcCodePage);
+    std::string convertToUtf8(std::string_view src, int32_t srcCodePage);
 
     /**
      * Returns an uppercased version of a UTF-8 string.
      */
-    std::string ToUpper(std::string_view src);
+    std::string toUpper(std::string_view src);
 
-    template<typename T> std::optional<T> Parse(std::string_view input)
+    template<typename T>
+    inline std::optional<T> tryParse(std::string_view input)
     {
-        if (input.size() == 0)
-            return std::nullopt;
+        static_assert(!std::is_same_v<T, float> && !std::is_same_v<T, double>, "Float support is currently unsupported");
 
-        T result = 0;
-        for (size_t i = 0; i < input.size(); i++)
+        if (input.empty())
         {
-            auto chr = input[i];
-            if (chr >= '0' && chr <= '9')
-            {
-                auto digit = chr - '0';
-                auto last = result;
-                result = static_cast<T>((result * 10) + digit);
-                if (result <= last)
-                {
-                    // Overflow, number too large for type
-                    return std::nullopt;
-                }
-            }
-            else
-            {
-                // Bad character
-                return std::nullopt;
-            }
+            return std::nullopt;
+        }
+        T result;
+        auto [ptr, ec] = std::from_chars(input.data(), input.data() + input.size(), result);
+        if (ec == std::errc() && ptr == input.data() + input.size())
+        {
+            return result;
+        }
+        return std::nullopt;
+    }
+
+    template<typename T>
+    inline T parse(std::string_view input)
+    {
+        static_assert(!std::is_same_v<T, float> && !std::is_same_v<T, double>, "Float support is currently unsupported");
+
+        if (input.empty())
+        {
+            throw std::invalid_argument("Input is empty");
+        }
+        T result;
+        auto [ptr, ec] = std::from_chars(input.data(), input.data() + input.size(), result);
+        if (ec == std::errc::invalid_argument)
+        {
+            throw std::invalid_argument("Invalid argument in conversion");
+        }
+        if (ec == std::errc::result_out_of_range)
+        {
+            throw std::out_of_range("Result out of range");
+        }
+        if (ec != std::errc())
+        {
+            throw std::runtime_error("Conversion error");
+        }
+        if (ptr != input.data() + input.size())
+        {
+            throw std::invalid_argument("Trailing characters after number");
         }
         return result;
     }
@@ -130,7 +164,8 @@ namespace OpenRCT2::String
     /**
      * Returns string representation of a hexadecimal input, such as SHA256 hash
      */
-    template<typename T> std::string StringFromHex(T input)
+    template<typename T>
+    std::string StringFromHex(T input)
     {
         std::string result;
         result.reserve(input.size() * 2);
@@ -148,9 +183,9 @@ namespace OpenRCT2::String
     /**
      * Returns codepoint size or no value if not valid
      */
-    constexpr std::optional<int> UTF8GetCodePointSize(std::string_view v)
+    constexpr std::optional<int> utf8GetCodePointSize(std::string_view v)
     {
-        if (v.size() >= 1 && !(v[0] & 0x80))
+        if (!v.empty() && !(v[0] & 0x80))
         {
             return { 1 };
         }
@@ -173,14 +208,18 @@ namespace OpenRCT2::String
      * Truncates a string to at most `size` bytes,
      * making sure not to cut in the middle of a sequence.
      */
-    std::string_view UTF8Truncate(std::string_view v, size_t size);
+    std::string_view utf8Truncate(std::string_view v, size_t size);
 
     /**
      * Truncates a string to at most `size` codepoints,
      * making sure not to cut in the middle of a sequence.
      */
-    std::string_view UTF8TruncateCodePoints(std::string_view v, size_t size);
+    std::string_view utf8TruncateCodePoints(std::string_view v, size_t size);
 
     // Escapes special characters in a string to the percentage equivalent that can be used in URLs.
-    std::string URLEncode(std::string_view value);
+    std::string urlEncode(std::string_view value);
+
+    int32_t logicalCmp(char const* a, char const* b);
+    char* safeUtf8Copy(char* destination, const char* source, size_t num);
+    char* safeConcat(char* destination, const char* source, size_t size);
 } // namespace OpenRCT2::String

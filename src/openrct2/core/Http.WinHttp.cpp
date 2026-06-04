@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,25 +9,29 @@
 
 #if !defined(DISABLE_HTTP) && defined(_WIN32)
 
-#    include "Http.h"
+    #include "Http.h"
 
-#    include "../Version.h"
-#    include "../core/Console.hpp"
-#    include "String.hpp"
+    #include "../Version.h"
+    #include "../core/Console.hpp"
+    #include "String.hpp"
 
-#    include <cstdio>
-#    include <stdexcept>
-#    include <windows.h>
-#    include <winhttp.h>
+    #include <cstdio>
+    #include <stdexcept>
+
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <windows.h>
+    #include <winhttp.h>
 
 namespace OpenRCT2::Http
 {
-    static constexpr char OPENRCT2_USER_AGENT[] = "OpenRCT2/" OPENRCT2_VERSION;
+    static constexpr char kOpenRCT2UserAgent[] = "OpenRCT2/" kOpenRCT2Version;
 
     static void ThrowWin32Exception(const char* methodName)
     {
         auto errorCode = GetLastError();
-        auto msg = String::StdFormat("%s failed, error: %d.", methodName, errorCode);
+        auto msg = String::stdFormat("%s failed, error: %d.", methodName, errorCode);
         throw std::runtime_error(msg);
     }
 
@@ -75,10 +79,10 @@ namespace OpenRCT2::Http
         std::map<std::string, std::string> headers;
         std::wstring wKey, wValue;
 
-        constexpr int32_t STATE_EXPECT_KEY = 0;
-        constexpr int32_t STATE_EXPECT_WHITESPACE_VALUE = 1;
-        constexpr int32_t STATE_EXPECT_VALUE = 2;
-        int32_t state = STATE_EXPECT_KEY;
+        constexpr int32_t kStateExpectKey = 0;
+        constexpr int32_t kStateExpectWhitespaceValue = 1;
+        constexpr int32_t kStateExpectValue = 2;
+        int32_t state = kStateExpectKey;
         int32_t index = 0;
         for (auto c : buffer)
         {
@@ -86,33 +90,33 @@ namespace OpenRCT2::Http
             {
                 // Ignore first header as that is the HTTP version which
                 // we don't really count as a header.
-                if (index != 0 && wKey.size() != 0)
+                if (index != 0 && !wKey.empty())
                 {
-                    auto key = String::ToUtf8(wKey);
-                    auto value = String::ToUtf8(wValue);
+                    auto key = String::toUtf8(wKey);
+                    auto value = String::toUtf8(wValue);
                     headers[key] = std::move(value);
                 }
                 wKey.clear();
                 wValue.clear();
                 index++;
-                state = STATE_EXPECT_KEY;
+                state = kStateExpectKey;
                 continue;
             }
-            if (state == STATE_EXPECT_KEY && c == ':')
+            if (state == kStateExpectKey && c == ':')
             {
-                state = STATE_EXPECT_WHITESPACE_VALUE;
+                state = kStateExpectWhitespaceValue;
             }
             else if (state == 1 && c == ' ')
             {
-                state = STATE_EXPECT_VALUE;
+                state = kStateExpectValue;
             }
-            else if (state == STATE_EXPECT_KEY)
+            else if (state == kStateExpectKey)
             {
                 wKey.push_back(c);
             }
             else
             {
-                state = STATE_EXPECT_VALUE;
+                state = kStateExpectValue;
                 wValue.push_back(c);
             }
         }
@@ -162,11 +166,11 @@ namespace OpenRCT2::Http
             url.dwUrlPathLength = static_cast<DWORD>(-1);
             url.dwExtraInfoLength = static_cast<DWORD>(-1);
 
-            auto wUrl = String::ToWideChar(req.url);
+            auto wUrl = String::toWideChar(req.url);
             if (!WinHttpCrackUrl(wUrl.c_str(), 0, 0, &url))
                 throw std::invalid_argument("Unable to parse URI.");
 
-            auto userAgent = String::ToWideChar(OPENRCT2_USER_AGENT);
+            auto userAgent = String::toWideChar(kOpenRCT2UserAgent);
             hSession = WinHttpOpen(
                 userAgent.c_str(), WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
             if (hSession == nullptr)
@@ -192,7 +196,7 @@ namespace OpenRCT2::Http
 
             for (auto header : req.header)
             {
-                auto fullHeader = String::ToWideChar(header.first) + L": " + String::ToWideChar(header.second);
+                auto fullHeader = String::toWideChar(header.first) + L": " + String::toWideChar(header.second);
                 if (!WinHttpAddRequestHeaders(hRequest, fullHeader.c_str(), static_cast<ULONG>(-1L), WINHTTP_ADDREQ_FLAG_ADD))
                     ThrowWin32Exception("WinHttpAddRequestHeaders");
             }
@@ -226,13 +230,17 @@ namespace OpenRCT2::Http
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
-#    ifdef DEBUG
+    #ifdef DEBUG
             Console::Error::WriteLine("HTTP request failed: %s", e.what());
-#    endif
+    #endif
             WinHttpCloseHandle(hSession);
             WinHttpCloseHandle(hConnect);
             WinHttpCloseHandle(hRequest);
-            throw;
+
+            Response response;
+            response.status = Status::Error;
+            response.error = e.what();
+            return response;
         }
     }
 } // namespace OpenRCT2::Http

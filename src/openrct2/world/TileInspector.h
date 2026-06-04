@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,7 +9,14 @@
 
 #pragma once
 
-#include "Map.h"
+#include "Location.hpp"
+
+struct Banner;
+
+namespace OpenRCT2
+{
+    struct TileElement;
+}
 
 namespace OpenRCT2::GameActions
 {
@@ -35,7 +42,7 @@ namespace OpenRCT2::TileInspector
     GameActions::Result PathSetJunctionRailings(
         const CoordsXY& loc, int32_t elementIndex, bool hasJunctionRailings, bool isExecuting);
     GameActions::Result PathSetBroken(const CoordsXY& loc, int32_t elementIndex, bool broken, bool isExecuting);
-    GameActions::Result PathToggleEdge(const CoordsXY& loc, int32_t elementIndex, int32_t cornerIndex, bool isExecuting);
+    GameActions::Result PathToggleEdge(const CoordsXY& loc, int32_t elementIndex, int32_t edgeIndex, bool isExecuting);
     GameActions::Result EntranceMakeUsable(const CoordsXY& loc, int32_t elementIndex, bool isExecuting);
     GameActions::Result WallSetSlope(const CoordsXY& loc, int32_t elementIndex, int32_t slopeValue, bool isExecuting);
     GameActions::Result WallAnimationFrameOffset(

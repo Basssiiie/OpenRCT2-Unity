@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -15,9 +15,12 @@
 #include "../object/ObjectManager.h"
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
-#include "../ride/Track.h"
+#include "../ride/ted/TrackGroup.h"
 
 #include <cstdint>
+#include <cstring>
+
+using OpenRCT2::TrackGroup;
 
 namespace OpenRCT2::RCT2
 {
@@ -38,7 +41,7 @@ namespace OpenRCT2::RCT2
                     return RIDE_TYPE_MONSTER_TRUCKS;
                 return RIDE_TYPE_CAR_RIDE;
             case RIDE_TYPE_TWISTER_ROLLER_COASTER:
-                if (rideEntry.flags & RIDE_ENTRY_FLAG_NO_INVERSIONS)
+                if (rideEntry.flags.has(RideEntryFlag::noInversions))
                     return RIDE_TYPE_HYPER_TWISTER;
                 return RIDE_TYPE_TWISTER_ROLLER_COASTER;
             case RIDE_TYPE_STEEL_WILD_MOUSE:
@@ -87,49 +90,48 @@ namespace OpenRCT2::RCT2
         }
     }
 
-    uint8_t Ride::GetMinCarsPerTrain() const
+    uint8_t Ride::getMinCarsPerTrain() const
     {
-        return MinMaxCarsPerTrain >> 4;
+        return minMaxCarsPerTrain >> 4;
     }
 
-    uint8_t Ride::GetMaxCarsPerTrain() const
+    uint8_t Ride::getMaxCarsPerTrain() const
     {
-        return MinMaxCarsPerTrain & 0xF;
+        return minMaxCarsPerTrain & 0xF;
     }
 
-    void Ride::SetMinCarsPerTrain(uint8_t newValue)
+    TrackElemType RCT2TrackTypeToOpenRCT2(RCT12::TrackElemType origTrackType, ride_type_t rideType, bool isFlatRide)
     {
-        MinMaxCarsPerTrain &= ~0xF0;
-        MinMaxCarsPerTrain |= (newValue << 4);
+        auto originalClass = OriginalRideClass::regular;
+        if (rideType == RIDE_TYPE_STEEL_WILD_MOUSE || rideType == RIDE_TYPE_SPINNING_WILD_MOUSE)
+            originalClass = OriginalRideClass::wildMouse;
+        if (isFlatRide)
+            originalClass = OriginalRideClass::flatRide;
+
+        return RCT2TrackTypeToOpenRCT2(origTrackType, originalClass);
     }
 
-    void Ride::SetMaxCarsPerTrain(uint8_t newValue)
+    TrackElemType RCT2TrackTypeToOpenRCT2(RCT12::TrackElemType origTrackType, OriginalRideClass originalClass)
     {
-        MinMaxCarsPerTrain &= ~0x0F;
-        MinMaxCarsPerTrain |= newValue & 0x0F;
+        switch (originalClass)
+        {
+            case OriginalRideClass::flatRide:
+                return RCT12FlatTrackTypeToOpenRCT2(origTrackType);
+            case OriginalRideClass::wildMouse:
+                // Boosters share their ID with the Spinning Control track.
+                if (origTrackType == RCT12::TrackElemType::rotationControlToggleAlias)
+                    return TrackElemType::rotationControlToggle;
+                return static_cast<TrackElemType>(origTrackType);
+            case OriginalRideClass::regular:
+            default:
+                return static_cast<TrackElemType>(origTrackType);
+        }
     }
 
-    bool RCT2TrackTypeIsBooster(ride_type_t rideType, uint16_t trackType)
+    RCT12::TrackElemType OpenRCT2TrackTypeToRCT2(TrackElemType origTrackType)
     {
-        // Boosters share their ID with the Spinning Control track.
-        return rideType != RIDE_TYPE_SPINNING_WILD_MOUSE && rideType != RIDE_TYPE_STEEL_WILD_MOUSE
-            && trackType == TrackElemType::Booster;
-    }
-
-    track_type_t RCT2TrackTypeToOpenRCT2(RCT12TrackType origTrackType, ride_type_t rideType, bool convertFlat)
-    {
-        if (convertFlat && GetRideTypeDescriptor(rideType).HasFlag(RtdFlag::isFlatRide))
-            return RCT12FlatTrackTypeToOpenRCT2(origTrackType);
-        if (origTrackType == TrackElemType::RotationControlToggleAlias && !RCT2TrackTypeIsBooster(rideType, origTrackType))
-            return TrackElemType::RotationControlToggle;
-
-        return origTrackType;
-    }
-
-    RCT12TrackType OpenRCT2TrackTypeToRCT2(track_type_t origTrackType)
-    {
-        if (origTrackType == TrackElemType::RotationControlToggle)
-            return TrackElemType::RotationControlToggleAlias;
+        if (origTrackType == TrackElemType::rotationControlToggle)
+            return RCT12::TrackElemType::rotationControlToggleAlias;
 
         // This function is safe to run this way round.
         return OpenRCT2FlatTrackTypeToRCT12(origTrackType);
@@ -210,7 +212,7 @@ namespace OpenRCT2::RCT2
 
     const FootpathMapping* GetFootpathSurfaceId(const ObjectEntryDescriptor& desc, bool ideallyLoaded, bool isQueue)
     {
-        auto& objManager = OpenRCT2::GetContext()->GetObjectManager();
+        auto& objManager = GetContext()->GetObjectManager();
 
         auto name = desc.Entry.GetName();
         for (const auto& mapping : _footpathMappings)
@@ -235,7 +237,7 @@ namespace OpenRCT2::RCT2
         RCTObjectEntry result;
         std::memset(&result, 0, sizeof(result));
 
-        result.SetType(ObjectType::Paths);
+        result.SetType(ObjectType::paths);
 
         auto foundMapping = false;
         for (const auto& mapping : _footpathMappings)
@@ -264,8 +266,8 @@ namespace OpenRCT2::RCT2
         return {};
     }
 
-    colour_t TD6SceneryElement::getTertiaryWallColour() const
+    Drawing::Colour TD6SceneryElement::getTertiaryWallColour() const
     {
-        return (Flags & 0xFC) >> 2;
+        return static_cast<Drawing::Colour>((Flags & 0xFC) >> 2);
     }
 } // namespace OpenRCT2::RCT2

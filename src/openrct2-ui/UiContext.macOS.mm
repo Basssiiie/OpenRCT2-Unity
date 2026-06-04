@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,22 +9,16 @@
 
 #if defined(__APPLE__) && defined(__MACH__)
 
-#    include "UiContext.h"
+    #include "UiContext.h"
 
-#    include <openrct2/Diagnostic.h>
-#    include <openrct2/core/String.hpp>
-#    include <openrct2/ui/UiContext.h>
-
-// undefine `interface` and `abstract`, because it's causing conflicts with Objective-C's keywords
-#    undef interface
-#    undef abstract
-
-#    include <ApplicationServices/ApplicationServices.h>
-#    import <Cocoa/Cocoa.h>
-#    include <CoreFoundation/CFBundle.h>
-#    include <SDL.h>
-#    include <mach-o/dyld.h>
-#    include <string>
+    #include <ApplicationServices/ApplicationServices.h>
+    #include <Cocoa/Cocoa.h>
+    #include <CoreFoundation/CFBundle.h>
+    #include <SDL.h>
+    #include <mach-o/dyld.h>
+    #include <openrct2/Diagnostic.h>
+    #include <openrct2/ui/UiContext.h>
+    #include <string>
 
 namespace OpenRCT2::Ui
 {
@@ -66,13 +60,29 @@ namespace OpenRCT2::Ui
 
         bool HasMenuSupport() override
         {
-            return false;
+            return true;
         }
 
         int32_t ShowMenuDialog(
             const std::vector<std::string>& options, const std::string& title, const std::string& text) override
         {
-            return -1;
+            @autoreleasepool
+            {
+                NSAlert* alert = [[[NSAlert alloc] init] autorelease];
+                for (const std::string& option : options)
+                {
+                    [alert addButtonWithTitle:[NSString stringWithUTF8String:option.c_str()]];
+                }
+
+                alert.messageText = [NSString stringWithUTF8String:title.c_str()];
+                alert.informativeText = [NSString stringWithUTF8String:text.c_str()];
+                NSModalResponse response = [alert runModal];
+                if (response >= 1000)
+                {
+                    return static_cast<int32_t>(response - 1000);
+                }
+                return -1;
+            }
         }
 
         void OpenFolder(const std::string& path) override
@@ -167,7 +177,7 @@ namespace OpenRCT2::Ui
                 else
                 {
                     SDL_RaiseWindow(window);
-                    return "";
+                    return {};
                 }
             }
         }

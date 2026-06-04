@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -10,10 +10,8 @@
 #pragma once
 
 #include "../localisation/StringIdType.h"
-#include "../object/ObjectLimits.h"
 #include "../object/ObjectTypes.h"
 #include "../ride/RideTypes.h"
-#include "../util/Util.h"
 
 #include <optional>
 
@@ -29,8 +27,8 @@ namespace OpenRCT2::Research
 {
     enum class EntryType : uint8_t
     {
-        Scenery = 0,
-        Ride = 1,
+        scenery = 0,
+        ride = 1,
     };
 }
 
@@ -43,13 +41,13 @@ enum
 
 enum class ResearchCategory : uint8_t
 {
-    Transport = 0,
-    Gentle = 1,
-    Rollercoaster = 2,
-    Thrill = 3,
-    Water = 4,
-    Shop = 5,
-    SceneryGroup = 6,
+    transport = 0,
+    gentle = 1,
+    rollercoaster = 2,
+    thrill = 3,
+    water = 4,
+    shop = 5,
+    sceneryGroup = 6,
 };
 
 struct ResearchItem
@@ -59,7 +57,7 @@ struct ResearchItem
         uint32_t rawValue;
         struct
         {
-            ObjectEntryIndex entryIndex;
+            OpenRCT2::ObjectEntryIndex entryIndex;
             uint8_t baseRideType;
             OpenRCT2::Research::EntryType type; // 0: scenery entry, 1: ride entry
         };
@@ -83,8 +81,8 @@ struct ResearchItem
     {
     }
     ResearchItem(
-        OpenRCT2::Research::EntryType _type, ObjectEntryIndex _entryIndex, uint8_t _baseRideType, ResearchCategory _category,
-        uint8_t _flags)
+        OpenRCT2::Research::EntryType _type, OpenRCT2::ObjectEntryIndex _entryIndex, uint8_t _baseRideType,
+        ResearchCategory _category, uint8_t _flags)
         : entryIndex(_entryIndex)
         , baseRideType(_baseRideType)
         , type(_type)
@@ -129,17 +127,18 @@ void ResearchFinishItem(const ResearchItem& researchItem);
 void ResearchInsert(ResearchItem&& item, bool researched);
 void ResearchRemove(const ResearchItem& researchItem);
 
-bool ResearchInsertRideEntry(ride_type_t rideType, ObjectEntryIndex entryIndex, ResearchCategory category, bool researched);
-void ResearchInsertRideEntry(ObjectEntryIndex entryIndex, bool researched);
-bool ResearchInsertSceneryGroupEntry(ObjectEntryIndex entryIndex, bool researched);
+bool ResearchInsertRideEntry(
+    ride_type_t rideType, OpenRCT2::ObjectEntryIndex entryIndex, ResearchCategory category, bool researched);
+void ResearchInsertRideEntry(OpenRCT2::ObjectEntryIndex entryIndex, bool researched);
+bool ResearchInsertSceneryGroupEntry(OpenRCT2::ObjectEntryIndex entryIndex, bool researched);
 
-bool ResearchIsInvented(ObjectType objectType, ObjectEntryIndex index);
-void RideTypeSetInvented(uint32_t rideType);
-void RideEntrySetInvented(ObjectEntryIndex rideEntryIndex);
+bool ResearchIsInvented(OpenRCT2::ObjectType objectType, OpenRCT2::ObjectEntryIndex index);
+void RideTypeSetInvented(ride_type_t rideType);
+void RideEntrySetInvented(OpenRCT2::ObjectEntryIndex rideEntryIndex);
 void ScenerySetInvented(const ScenerySelection& sceneryItem);
 void ScenerySetNotInvented(const ScenerySelection& sceneryItem);
-bool RideTypeIsInvented(uint32_t rideType);
-bool RideEntryIsInvented(ObjectEntryIndex rideEntryIndex);
+bool RideTypeIsInvented(ride_type_t rideType);
+bool RideEntryIsInvented(OpenRCT2::ObjectEntryIndex rideEntryIndex);
 bool SceneryGroupIsInvented(int32_t sgIndex);
 void SceneryGroupSetInvented(int32_t sgIndex);
 bool SceneryIsInvented(const ScenerySelection& sceneryItem);

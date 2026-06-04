@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,61 +9,62 @@
 
 #pragma once
 
-#include "../../../sprites.h"
+#include "../../../SpriteIds.h"
 #include "../../RideData.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor AlpineCoasterRTD =
 {
-    .Category = RIDE_CATEGORY_ROLLERCOASTER,
-    .StartTrackPiece = OpenRCT2::TrackElemType::EndStation,
+    .Category = RideCategory::rollerCoaster,
+    .StartTrackPiece = TrackElemType::endStation,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = OpenRCT2::AlpineRC::GetTrackPaintFunction,
-        .supportType = MetalSupportType::Fork,
-        .enabledTrackGroups = { TrackGroup::flat, TrackGroup::straight, TrackGroup::stationEnd, TrackGroup::liftHill, TrackGroup::flatRollBanking, TrackGroup::slope, TrackGroup::flatToSteepSlope, TrackGroup::slopeCurve, TrackGroup::sBend, TrackGroup::curveSmall, TrackGroup::curve, TrackGroup::curveLarge, TrackGroup::helixDownBankedHalf},
-        .extraTrackGroups =  {TrackGroup::helixUpBankedHalf},
+        .trackStyle = TrackStyle::alpineCoaster,
+        .supportType = MetalSupportType::fork,
+        .enabledTrackGroups = { TrackGroup::flat, TrackGroup::straight, TrackGroup::stationEnd, TrackGroup::liftHill, TrackGroup::flatRollBanking, TrackGroup::slope, TrackGroup::flatToSteepSlope, TrackGroup::slopeCurve, TrackGroup::sBend, TrackGroup::curveSmall, TrackGroup::curve, TrackGroup::curveLarge, TrackGroup::helixDownBankedHalf, TrackGroup::diagSlope, TrackGroup::helixDownUnbankedQuarter, TrackGroup::helixDownBankedQuarter },
+        .extraTrackGroups =  { TrackGroup::helixUpBankedHalf, TrackGroup::helixUpUnbankedQuarter, TrackGroup::helixUpBankedQuarter },
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = EnumsToFlags(RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourSupports,
+    .flags = RtdFlags(RtdFlag::hasTrackColourMain, RtdFlag::hasTrackColourSupports,
                           RtdFlag::hasDataLogging, RtdFlag::hasDrops, RtdFlag::hasLoadOptions, RtdFlag::guestsWillRideAgain,
                           RtdFlag::hasVehicleColours, RtdFlag::checkForStalling, RtdFlag::hasTrack,
                           RtdFlag::allowMusic, RtdFlag::interestingToLookAt, RtdFlag::supportsMultipleColourSchemes,
                           RtdFlag::canSynchroniseWithAdjacentStations, RtdFlag::hasEntranceAndExit,
                           RtdFlag::noTestMode, RtdFlag::allowMoreVehiclesThanStationFits, RtdFlag::upInclineRequiresLift),
-    .RideModes = EnumsToFlags(RideMode::ContinuousCircuit),
-    .DefaultMode = RideMode::ContinuousCircuit,
+    .RideModes = EnumsToFlags(RideMode::continuousCircuit),
+    .DefaultMode = RideMode::continuousCircuit,
+    .OperatingSettings = { 5, 18 },
     .TrackSpeedSettings = { 10, 10 },
     .Naming = { STR_RIDE_NAME_ALPINE_COASTER, STR_RIDE_DESCRIPTION_ALPINE_COASTER },
     .NameConvention = { RideComponentType::Car, RideComponentType::Track, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_ALPINE_ROLLER_COASTER",
-    .AvailableBreakdowns = (1 << BREAKDOWN_SAFETY_CUT_OUT) | (1 << BREAKDOWN_VEHICLE_MALFUNCTION),
+    .availableBreakdowns = { Breakdown::safetyCutOut, Breakdown::vehicleMalfunction },
     .Heights = {18, 24, 3, 7},
     .MaxMass = 4,
-    .LiftData = { OpenRCT2::Audio::SoundId::Null, 4, 5 },
+    .LiftData = { Audio::SoundId::null, 4, 5 },
     .RatingsMultipliers = { 50, 30, 10 },
     .UpkeepCosts = { 35, 20, 80, 8, 3, 10 },
     .BuildCosts = { 22.50_GBP, 2.50_GBP, 50},
     .DefaultPrices = { 20, 20 },
-    .DefaultMusic = MUSIC_OBJECT_GENTLE,
-    .PhotoItem = ShopItem::Photo,
+    .DefaultMusic = kMusicObjectGentle,
+    .PhotoItem = ShopItem::photo,
     .BonusValue = 65,
     .ColourPresets = TRACK_COLOUR_PRESETS(
-        { COLOUR_GREY, COLOUR_GREY, COLOUR_BLACK },
+        { Drawing::Colour::grey, Drawing::Colour::grey, Drawing::Colour::black },
     ),
     .ColourPreview = { SPR_RIDE_DESIGN_PREVIEW_ALPINE_COASTER_TRACK, SPR_RIDE_DESIGN_PREVIEW_ALPINE_COASTER_SUPPORTS },
     .ColourKey = RideColourKey::Ride,
     .Name = "alpine_rc",
-    .RatingsData = 
+    .RatingsData =
     {
         RatingsCalculationType::Normal,
-        { RIDE_RATING(2, 30), RIDE_RATING(2, 10), RIDE_RATING(1, 4) },
+        { RideRating::make(2, 30), RideRating::make(2, 10), RideRating::make(1, 4) },
         7,
-        -1,
+        kDynamicRideShelterRating,
         false,
         {
             { RatingsModifierType::BonusLength,           6000,             873, 0, 0 },
-            { RatingsModifierType::BonusSynchronisation,  0,                RIDE_RATING(0, 75), RIDE_RATING(0, 5), 0 },
+            { RatingsModifierType::BonusSynchronisation,  0,                RideRating::make(0, 75), RideRating::make(0, 5), 0 },
             { RatingsModifierType::BonusTrainLength,      0,                187245, 0, 0 },
             { RatingsModifierType::BonusMaxSpeed,         0,                44281, 88562, 35424 },
             { RatingsModifierType::BonusAverageSpeed,     0,                291271, 436906, 0 },
@@ -78,4 +79,5 @@ constexpr RideTypeDescriptor AlpineCoasterRTD =
         },
     },
 };
+} // namespace OpenRCT2
 // clang-format on

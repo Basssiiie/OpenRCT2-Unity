@@ -5,12 +5,12 @@ STR_0000    :
 STR_0001    :{STRINGID} {COMMA16}
 STR_0002    :Spirális hullámvasút
 STR_0003    :Álló hullámvasút
-STR_0004    :Felfüggesztett lengő hullámvasút
+STR_0004    :Függesztett lengő hullámvasút
 STR_0005    :Fordított hullámvasút
 STR_0006    :Gyerek hullámvasút 
 STR_0007    :Kisvasút
 STR_0008    :Egysínű vasút
-STR_0009    :Mini felfüggesztett hullámvasút
+STR_0009    :Mini függesztett hullámvasút
 STR_0010    :Csónakkölcsönző
 STR_0011    :Fa vadegér
 STR_0012    :Akadályverseny
@@ -32,12 +32,9 @@ STR_0027    :Dodzsem
 STR_0028    :Hajóhinta
 STR_0029    :Fejreálló hajóhinta 
 STR_0030    :Ételes bódé
-STR_0031    :Ismeretlen bódé (1D)
 STR_0032    :Italos bódé
-STR_0033    :Ismeretlen bódé (1F)
 STR_0034    :Bolt
 STR_0035    :Körhinta
-STR_0036    :Ismeretlen bódé (22)
 STR_0037    :Információs bódé
 STR_0038    :WC
 STR_0039    :Óriáskerék
@@ -66,7 +63,7 @@ STR_0061    :Virginia Reel
 STR_0062    :Csobbanó csónakok
 STR_0063    :Mini helikopterek
 STR_0064    :Fekvő hullámvasút
-STR_0065    :Felfüggesztett egysínű vasút
+STR_0065    :Egysínű függővasút
 STR_0066    :Ismeretlen játék (40)
 STR_0067    :Irányváltó hullámvasút
 STR_0068    :Palástorsózó hullámvasút
@@ -83,30 +80,26 @@ STR_0078    :Fordított hajtű hullámvasút
 STR_0079    :Varázsszőnyeg
 STR_0080    :Tengeralattjáró-játék
 STR_0081    :Folyami tutajok
-STR_0082    :Ismeretlen játék (50)
 STR_0083    :Enterprise
-STR_0084    :Ismeretlen játék (52)
-STR_0085    :Ismeretlen játék (53)
-STR_0086    :Ismeretlen játék (54)
-STR_0087    :Ismeretlen játék (55)
 STR_0088    :Fordított impulzus hullámvasút
 STR_0089    :Mini hullámvasút
 STR_0090    :Bányavasút
-STR_0091    :Ismeretlen játék (59)
 STR_0092    :Aszinkronmotoros hullámvasút
 STR_0093    :Hibrid hullámvasút
 STR_0094    :Egysínű hullámvasút
 STR_0095    :Alpesi hullámvasút
 STR_0096    :Klasszikus fa hullámvasút
 STR_0097    :Klasszikus álló hullámvasút
+STR_0098    :LSM kilövéses hullámvasút
+STR_0099    :Klasszikus fa csavart hullámvasút
 STR_0512    :Egy kompakt hullámvasút spirális felvonószakasszal és sima, csavaros esésekkel.
 STR_0513    :Egy átforduló hullámvasút, amelyen az utasok álló helyzetben utaznak
-STR_0514    :A hullámvasút pályája alatt felfüggesztett vonatok oldalt kilengenek a kanyarokban
-STR_0515    :Egy acél hullámvasút, pálya alatt felfüggesztett vonatokkal, valamint számos összetett és csavarodó pályaelemmel
+STR_0514    :A hullámvasút pályája alatt függesztett vonatok oldalt kilengenek a kanyarokban
+STR_0515    :Egy acél hullámvasút, pálya alatt függesztett vonatokkal, valamint számos összetett és csavarodó pályaelemmel
 STR_0516    :Egy enyhe hullámvasút azok számára, akik még nem éreznek magukban elég bátorságot ahhoz, hogy felüljenek a nagyobb játékokra
 STR_0517    :Az utasok miniatűr vonatokon utaznak egy keskeny nyomtávú vasúti pályán
 STR_0518    :Az utasok elektromos vonatokon utaznak egy egysínű pályán
-STR_0519    :Az utasok az egysínű pálya alatt felfüggesztett kocsikban utaznak, amelyek kétoldalt szabadon kilengenek a kanyarokban
+STR_0519    :Az utasok az egysínű pálya alatt függesztett kocsikban utaznak, amelyek kétoldalt szabadon kilengenek a kanyarokban
 STR_0520    :Egy kikötőállomás, ahonnan a vendégek saját vízi járművel vezethetnek/evezhetnek ki a vízre
 STR_0521    :Egy gyors és csavaros hullámvasút, tele éles kanyarokkal és meredek esésekkel. Nagy intenzitással rendelkezik
 STR_0522    :Egy kisebb hullámvasút, amelyen az utasok a pálya felett ülnek, anélkül, hogy kocsik vennék körbe őket
@@ -136,7 +129,7 @@ STR_0548    :Egy illemhely
 STR_0549    :Nagy forgó kerék, nyitott székekkel
 STR_0550    :Az utasok filmet néznek a mozgásszimulátor kabinjában, miközben azt egy hidraulikus kar forgatja és mozgatja
 STR_0551    :3D-s filmeket vetítő mozi egy geodéziai gömb alakú épületben
-STR_0552    :A nagy forgó karokkal felfüggesztett kabinban az utasok előre-hátra forognak és bukfenceznek 
+STR_0552    :A nagy forgó karokkal függesztett kabinban az utasok előre-hátra forognak és bukfenceznek 
 STR_0553    :Koncentrikus forgó gyűrűk, amelyekben az utasok szabadon foroghatnak minden irányba
 STR_0554    :A kocsi aszinkronmotoros gyorsítással hagyja el az állomást egy hosszú vízszintes pálya mentén, hogy felmenjen egy teljesen függőleges emelkedőn, ahonnan szabadeséssel zuhan le, hogy visszatérjen az állomásra
 STR_0555    :Az utasok egy függőleges torony liftjében utazhatnak a szintek között
@@ -151,7 +144,7 @@ STR_0563    :Kényelmes, egyszerű biztonsági rudas vonatokban ülve élvezheti
 STR_0564    :Ez a fa pályán futó hullámvasút gyors, durva, hangos és „kontrollvesztett” utazási élményt nyújt, bőséges „légi idővel”
 STR_0565    :Egy egyszerű, kizárólag enyhe lejtőkre és fordulókra képes fa hullámvasút, amelyen a kocsikat csak az oldalirányú súrlódásos kerekek és a gravitáció tartják a pályán
 STR_0566    :A különálló hullámvasút kocsik egy szűk, éles kanyarokkal és rövid, meredek esésekkel tarkított, cikcakkos pályán száguldoznak
-STR_0567    :A pálya mindkét oldalán felfüggesztett ülésekben ülve az utasok bukfencezve forognak, miközben meredek eséseken és különböző fordítókon haladnak át
+STR_0567    :A pálya mindkét oldalán függesztett ülésekben ülve az utasok bukfencezve forognak, miközben meredek eséseken és különböző fordítókon haladnak át
 STR_0569    :A pálya alatti speciális rögzítőhámokban utazva az utasok megtapasztalhatják a repülés élményét, ahogy szelik a levegőt
 STR_0571    :Kör alakú autók forognak körbe-körbe, miközben a cikkcakkos fa pályán haladnak
 STR_0572    :A nagy kapacitású csónakok egy széles vízcsatornán haladnak, felfelé a lejtőkön futószalag hajtja őket, majd a meredek lejtőkön lefelé gyorsulva óriási csobbanással áztatják el az utasokat
@@ -166,14 +159,14 @@ STR_0581    :A gyűrű alakban elhelyezkedő székeket egy magas torony tetejér
 STR_0582    :A vendégek légpárnás járművekben utaznak, amelyeket szabadon irányítanak
 STR_0583    :Egy épület, amely ferde szobákat és kanyargó folyosókat tartalmaz, hogy összezavarja az áthaladó embereket
 STR_0584    :Speciális, az utasok pedálozásával hajtott biciklik közlekednek egy acél egysínű pályán
-STR_0585    :Az utasok a pálya alatt felfüggesztett üléspárokban ülnek, miközben kanyarognak és csavarodnak a szoros fordítókon
+STR_0585    :Az utasok a pálya alatt függesztett üléspárokban ülnek, miközben kanyarognak és csavarodnak a szoros fordítókon
 STR_0586    :A csónak alakú kocsik a hullámvasút pályáján haladnak, hogy lehetővé tegyék a csavaros kanyarokat és a meredek zuhanásokat, a szelíd folyószakaszok vizébe csobbanva
 STR_0587    :Egy izgalmas, léghajtású indítás után a vonat felfelé száguld egy függőleges pályán, át a tetején, majd függőlegesen lefelé a másik oldalon, hogy visszatérjen az állomásra
 STR_0588    :Különálló kocsik futnak a cikcakkos, hajtűkanyarokkal és éles esésekkel teli pálya alatt
 STR_0589    :Egy nagy, repülőszőnyeg-témájú kocsi, amely ciklikusan fel-le mozog a 4 kar végén
 STR_0590    :Az utasok egy alámerült tengeralattjáróban utaznak végig egy víz alatti pályán
 STR_0591    :A tutaj alakú csónakok szelíden kanyarognak a folyó pályája mentén
-STR_0593    :Forgó kerék felfüggesztett utaskabinokkal, amely először elkezd forogni, majd egy tartókar segítségével felfelé dől.
+STR_0593    :Forgó kerék függesztett utaskabinokkal, amely először elkezd forogni, majd egy tartókar segítségével felfelé dől.
 STR_0598    :A fordított hullámvasút vonatai az állomásból kifelé gyorsulva felfelé haladnak egy függőleges pályacsúcson, majd visszafordulnak az állomáson keresztül, hogy visszafelé haladjanak egy másik függőleges pályacsúcson.
 STR_0599    :Egy kompakt hullámvasút különálló kocsikkal és sima, csavaros esésekkel
 STR_0600    :Motoros bányavonatok futnak egy sima és csavaros pálya mentén
@@ -183,6 +176,8 @@ STR_0604    :Az utasok egymás mögött utaznak egy keskeny, egysínű pályán,
 STR_0605    :Az utasok egy kanyargós acélpályán szánkóznak lefelé, fékezéssel szabályozva a sebességüket
 STR_0606    :Egy régebbi stílusú, fából készült hullámvasút gyors és durva utazással, rengeteg légi idővel, némi oldalirányú G-vel, és úgy tervezve, hogy „kontrollvesztettség” élményét nyújtsa
 STR_0607    :Egy intenzív, régebbi stílusú acél átforduló hullámvasút, amelyen az utasok álló helyzetben utaznak
+STR_0608    :A hullámvasút szerelvényeit lineáris szinkronmotorok gyorsítják fel, miközben átszáguldanak a szűk kanyarokon és éles fordulókon
+STR_0609    :Régi stílusú fa hullámvasút, amely gyors és rázós utazást kínál csuklós szerelvényekkel, rengeteg súlytalanság-élménnyel és kanyargós pályaszakaszokkal  
 STR_0767    :Vendég {INT32}
 STR_0768    :Mindenes {INT32}
 STR_0769    :Gépész {INT32}
@@ -247,7 +242,6 @@ STR_0832    :Nézet elforgatása 90°-kal az óramutató járásával megegyező
 STR_0833    :A játék megállítása
 STR_0834    :Mentési és játékbeállítások
 STR_0839    :{UINT16} × {UINT16}
-STR_0840    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{UINT16} × {UINT16}
 STR_0847    :Az ’OpenRCT2’ névjegye
 STR_0850    :{WINDOW_COLOUR_2}Copyright © 2002 Chris Sawyer, minden jog fenntartva
 STR_0851    :{WINDOW_COLOUR_2}Tervezte és programozta: Chris Sawyer
@@ -258,16 +252,6 @@ STR_0855    :{WINDOW_COLOUR_2}Képviselet: Jacqui Lyons a Marjacq Ltd.-től
 STR_0856    :{WINDOW_COLOUR_2}Köszönet:
 STR_0857    :{WINDOW_COLOUR_2}Peter James Adcock, Joe Booth és John Wardley
 STR_0865    :{STRINGID}
-STR_0866    :{POP16}{STRINGID}
-STR_0867    :{POP16}{POP16}{STRINGID}
-STR_0868    :{POP16}{POP16}{POP16}{STRINGID}
-STR_0869    :{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0870    :{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0871    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0872    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0873    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0874    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_0875    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID}
 STR_0876    :{BLACK}▼
 STR_0877    :Túl alacsony !
 STR_0878    :Túl magas !
@@ -286,7 +270,7 @@ STR_0892    :A képernyő elmentve ’{STRINGID}’ néven
 STR_0893    :A képmentés sikertelen !
 STR_0894    :Táj-adatterület megtelt !
 STR_0895    :Nem lehet részben föld fölé, részben föld alá építeni!
-STR_0896    :{POP16}{POP16}{STRINGID} építése
+STR_0896    :{STRINGID} építése
 STR_0897    :Irány
 STR_0898    :Balkanyar
 STR_0899    :Jobbkanyar
@@ -314,8 +298,8 @@ STR_0920    :Vízszintes
 STR_0921    :Emelkedő
 STR_0922    :Meredek emelkedő
 STR_0923    :Függőleges emelkedés
-STR_0924    :Spirálpálya lefelé
-STR_0925    :Spirálpálya felfelé
+STR_0924    :Spirál lefelé
+STR_0925    :Spirál felfelé
 STR_0926    :Nem távolítható el…
 STR_0927    :Nem építhető itt…
 STR_0928    :Láncos felvonó, a kocsik emelkedőkön történő felhúzására
@@ -371,7 +355,7 @@ STR_0978    :Új enyhe játékok
 STR_0979    :Új hullámvasutak
 STR_0980    :Új izgalmas játékok
 STR_0981    :Új vízi játékok
-STR_0982    :Új boltok & bódék
+STR_0982    :Új boltok és bódék
 STR_0983    :Kutatás-fejlesztés
 STR_0984    :{WINDOW_COLOUR_2}▲{BLACK}  {CURRENCY2DP}
 STR_0985    :{WINDOW_COLOUR_2}▼{BLACK}  {CURRENCY2DP}
@@ -386,7 +370,7 @@ STR_0993    :Játék/épület lerombolása
 STR_0994    :Lerombolás
 STR_0995    :{WINDOW_COLOUR_1}Biztosan le akarod bontani ezt: {STRINGID}?
 STR_0996    :Teljes nézet
-STR_0997    :A látkép kiválasztása
+STR_0997    :A nézetablak kiválasztása
 STR_0998    :A játék nem tartalmazhat több állomást
 STR_0999    :Állomásra van szüksége
 STR_1000    :A pálya nem teljes körpálya 
@@ -411,8 +395,6 @@ STR_1018    :Nem változtatható meg…
 STR_1019    :Nem változtatható meg…
 STR_1020    :Nem változtatható meg…
 STR_1021    :{POP16}{POP16}{POP16}{POP16}{STRINGID}
-STR_1022    :{POP16}{POP16}{POP16}{COMMA16} kocsi vonatonként
-STR_1023    :{POP16}{POP16}{POP16}{COMMA16} kocsi vonatonként
 STR_1024    :{COMMA16} kocsi vonatonként
 STR_1025    :{COMMA16} kocsi vonatonként
 STR_1026    :Az állomás túl hosszú!
@@ -521,9 +503,7 @@ STR_1128    :Megállították a blokkoló fékek
 STR_1129    :Minden jármű azonos színű
 STR_1130    :Minden {STRINGID} más színű
 STR_1131    :Minden jármű más színű
-STR_1132    :Jármű {POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
-STR_1133    :Jármű {POP16}{COMMA16}
-STR_1134    :{POP16}{POP16}{POP16}{POP16}{POP16}{STRINGID} {COMMA16}
+STR_1133    :Jármű {COMMA16}
 STR_1135    :{STRINGID} {COMMA16}
 STR_1136    :A fő szín kiválasztása
 STR_1137    :Az 1. további szín kiválasztása
@@ -547,8 +527,8 @@ STR_1152    :Bármekkora terhelés
 STR_1153    :Magasságjelzők a játékpályákon
 STR_1154    :Magasságjelzők a talajon
 STR_1155    :Magasságjelzők az utakon
-STR_1156    :{MOVE_X}{10}{STRINGID}
-STR_1157    :✓{MOVE_X}{10}{STRINGID}
+STR_1156    :{MOVE_X}{10}{STRING}
+STR_1157    :✓{MOVE_X}{10}{STRING}
 STR_1158    :Nem távolítható el…
 STR_1159    :Díszletek, kertek és egyéb kiegészítők elhelyezése
 STR_1160    :Tavak és vizek létrehozása/módosítása
@@ -561,7 +541,6 @@ STR_1168    :Beállítások
 STR_1169    :(semmi)
 STR_1170    :{STRING}
 STR_1171    :{RED}Zárva
-STR_1172    :{YELLOW}{STRINGID}
 STR_1173    :Utak és várósorok építése
 STR_1174    :Egy hirdetőtábla útban van
 STR_1175    :Nem építhető lejtős úton
@@ -720,7 +699,6 @@ STR_1327    :Az objektumok forgatása 90°-kal
 STR_1328    :Vízszintes talaj szükséges
 STR_1329    :{WINDOW_COLOUR_2}Kilövési sebesség:
 STR_1330    :A legnagyobb sebesség az állomás elhagyásakor
-STR_1331    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{VELOCITY}
 STR_1332    :{VELOCITY}
 STR_1333    :{STRINGID} - {STRINGID}{POP16}
 STR_1334    :{STRINGID} - {STRINGID} {COMMA16}
@@ -781,7 +759,7 @@ STR_1388    :{OUTLINE}{GREEN}+ {CURRENCY}
 STR_1389    :{OUTLINE}{RED}- {CURRENCY}
 STR_1390    :{CURRENCY2DP}
 STR_1391    :{RED}{CURRENCY2DP}
-STR_1392    :A játék/épület látképe
+STR_1392    :A játék/épület nézetablaka
 STR_1393    :A jármű részletei és beállításai
 STR_1394    :Üzemmód-beállítások
 STR_1395    :Karbantartási beállítások
@@ -818,7 +796,6 @@ STR_1425    :Út
 STR_1426    :Várósor
 STR_1427    :{WINDOW_COLOUR_2}Óránkénti vendégek: {BLACK}{COMMA32} 
 STR_1428    :{WINDOW_COLOUR_2}Belépési díj:
-STR_1429    :{POP16}{POP16}{POP16}{CURRENCY2DP}
 STR_1430    :Ingyenes
 STR_1431    :Sétál
 STR_1432    :{STRINGID} felé tart
@@ -853,10 +830,10 @@ STR_1460    :’U’ alakú nyílt pálya
 STR_1461    :’O’ alakú zárt pálya
 STR_1462    :Túl meredek a felvonószakaszhoz
 STR_1463    :Vendégek
-STR_1464    :Spirálpálya felfelé (kicsi)
-STR_1465    :Spirálpálya felfelé (nagy)
-STR_1466    :Spirálpálya lefelé (kicsi)
-STR_1467    :Spirálpálya lefelé (nagy)
+STR_1464    :Fél spirál felfelé (kicsi)
+STR_1465    :Fél spirál felfelé (nagy)
+STR_1466    :Fél spirál lefelé (kicsi)
+STR_1467    :Fél spirál lefelé (nagy)
 STR_1468    :Személyzet
 STR_1469    :A játéknak állomással kell kezdődnie és végződnie
 STR_1470    :Az állomás nem elég hosszú
@@ -915,7 +892,7 @@ STR_1522    :„{STRINGID} esernyője igazán megéri az árát”
 STR_1523    :„{STRINGID} üdítője igazán megéri az árát”
 STR_1524    :„{STRINGID} hamburgere igazán megéri az árát”
 STR_1525    :„{STRINGID} sült krumplija igazán megéri az árát”
-STR_1526    :„{STRINGID} jégkrémje igazán megéri az árát”
+STR_1526    :„{STRINGID} fagylaltja igazán megéri az árát”
 STR_1527    :„{STRINGID} vattacukra igazán megéri az árát”
 STR_1528    :
 STR_1529    :
@@ -949,7 +926,7 @@ STR_1556    :„{STRINGID} esernyője túl sokba kerül számomra”
 STR_1557    :„{STRINGID} üdítője túl sokba kerül számomra”
 STR_1558    :„{STRINGID} hamburgere túl sokba kerül számomra”
 STR_1559    :„{STRINGID} sült krumplija túl sokba kerül számomra”
-STR_1560    :„{STRINGID} jégkrémje túl sokba kerül számomra”
+STR_1560    :„{STRINGID} fagylaltja túl sokba kerül számomra”
 STR_1561    :„{STRINGID} vattacukra túl sokba kerül számomra”
 STR_1562    :
 STR_1563    :
@@ -1042,8 +1019,8 @@ STR_1649    :„Mindjárt elfogy a pénzem!”
 STR_1650    :„Hű! Egy új játék épül!”
 STR_1653    :„…és itt vagyunk ezen: {STRINGID}!”
 STR_1654    :{WINDOW_COLOUR_2}Legutóbbi gondolatok:
-STR_1655    :Út építése a földön
-STR_1656    :Út építése hídon vagy alagútban
+STR_1655    :Út építése a talajon
+STR_1656    :Út építése hídként vagy alagútként
 STR_1657    :{WINDOW_COLOUR_2}Előnyben részesített játék-
 STR_1658    :{WINDOW_COLOUR_2}intenzitás: {BLACK}kevesebb mint {COMMA16}
 STR_1659    :{WINDOW_COLOUR_2}intenzitás: {BLACK}{COMMA16} és {COMMA16} között
@@ -1062,14 +1039,13 @@ STR_1671    :{WINDOW_COLOUR_2}Teljes nyereség: {BLACK}{CURRENCY2DP}
 STR_1672    :Fékek
 STR_1673    :Forgásvezérlő kapcsolószakasz
 STR_1674    :Fékezési sebesség 
-STR_1675    :{POP16}{VELOCITY}
 STR_1676    :Sebességlimit beállítása a fékek számára
 STR_1677    :{WINDOW_COLOUR_2}Népszerűség: {BLACK}ismeretlen
 STR_1678    :{WINDOW_COLOUR_2}Népszerűség: {BLACK}{COMMA16}%
-STR_1679    :Spirálpálya felfelé (balra)
-STR_1680    :Spirálpálya felfelé (jobbra)
-STR_1681    :Spirálpálya lefelé (balra)
-STR_1682    :Spirálpálya lefelé (jobbra)
+STR_1679    :Negyed spirál felfelé (balra)
+STR_1680    :Negyed spirál felfelé (jobbra)
+STR_1681    :Negyed spirál lefelé (balra)
+STR_1682    :Negyed spirál lefelé (jobbra)
 STR_1683    :Alapméret 2 × 2
 STR_1684    :Alapméret 4 × 4
 STR_1685    :Alapméret 2 × 4
@@ -1118,23 +1094,19 @@ STR_1727    :Az építési jogok nem eladóak!
 STR_1728    :Itt nem lehet építési jogokat vásárolni…
 STR_1729    :A terület nem a park tulajdona!
 STR_1730    :{RED}Zárva
-STR_1731    :{WHITE}{STRINGID} - - 
 STR_1732    :Építés
 STR_1733    :Mód
 STR_1734    :{WINDOW_COLOUR_2}Körök száma:
 STR_1735    :A pályán megtett körök száma
-STR_1736    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1738    :Nem változtatható meg a körök száma…
 STR_1739    :Vendég {INT32} nyerte a versenyt
 STR_1740    :{STRINGID} nyerte a versenyt
 STR_1741    :Még nincs megépítve !
 STR_1742    :{WINDOW_COLOUR_2}Max. ember a játékon:
 STR_1743    :Maximum ennyi ember lehet egyszerre a játékon
-STR_1744    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1746    :Nem változtathatod meg…
 STR_1747    :{WINDOW_COLOUR_2}Időkorlát:
 STR_1748    :A játék időkorlátja
-STR_1749    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{DURATION}
 STR_1751    :Nem változtatható meg a játék időkorlátja…
 STR_1752    :A park egyedi vendégeinek listázása
 STR_1753    :A park vendégeinek összegző listázása
@@ -1155,22 +1127,9 @@ STR_1767    :Forgó alagút
 STR_1768    :Nem változtatható meg a lengések száma…
 STR_1769    :{WINDOW_COLOUR_2}Lengések száma:
 STR_1770    :A teljes lengések száma
-STR_1771    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1773    :Csak egy élményfotó-szakasz engedélyezett játékonként
 STR_1774    :Csak egy kábeles felvonószakasz engedélyezett játékonként
 STR_1777    :Játékok zenéje
-STR_1778    :{STRINGID} - - 
-STR_1779    :{INLINE_SPRITE}{254}{19}{00}{00} Panda jelmez
-STR_1780    :{INLINE_SPRITE}{255}{19}{00}{00} Tigris jelmez
-STR_1781    :{INLINE_SPRITE}{00}{20}{00}{00} Elefánt jelmez
-STR_1782    :{INLINE_SPRITE}{01}{20}{00}{00} Római jelmez
-STR_1783    :{INLINE_SPRITE}{02}{20}{00}{00} Gorilla jelmez
-STR_1784    :{INLINE_SPRITE}{03}{20}{00}{00} Hóember jelmez
-STR_1785    :{INLINE_SPRITE}{04}{20}{00}{00} Lovag jelmez
-STR_1786    :{INLINE_SPRITE}{05}{20}{00}{00} Űrhajós jelmez
-STR_1787    :{INLINE_SPRITE}{06}{20}{00}{00} Bandita jelmez
-STR_1788    :{INLINE_SPRITE}{07}{20}{00}{00} Seriff jelmez
-STR_1789    :{INLINE_SPRITE}{08}{20}{00}{00} Kalóz jelmez
 STR_1790    :A választott típusú alkalmazottak által viselt egyenruha színének kiválasztása
 STR_1791    :{WINDOW_COLOUR_2}Egyenruha színe:
 STR_1792    :{STRINGID} segélykérésére válaszol
@@ -1179,7 +1138,6 @@ STR_1794    :Ezt javítja: {STRINGID}
 STR_1795    :Rádióhívásra válaszol
 STR_1796    :Meghibásodott és javításra van szüksége
 STR_1798    :Örvény
-STR_1799    :{POP16}{POP16}{POP16}{POP16}{POP16}{CURRENCY2DP}
 STR_1800    :Biztonsági megszakítás
 STR_1801    :Zárva ragadt utasrögzítők
 STR_1802    :Nyitva ragadt utasrögzítők
@@ -1251,10 +1209,8 @@ STR_1867    :{BLACK}{COMMA32} {STRINGID}
 STR_1868    :Nem változtatható meg a forgások száma…
 STR_1869    :{WINDOW_COLOUR_2}Forgások száma:
 STR_1870    :A teljes körforgások száma
-STR_1871    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1873    :{WINDOW_COLOUR_2}Bevétel: {BLACK}{CURRENCY2DP} óránként
 STR_1874    :{WINDOW_COLOUR_2}Nyereség: {BLACK}{CURRENCY2DP} óránként
-STR_1875    :{BLACK} {SPRITE}{BLACK} {STRINGID}
 STR_1876    :{WINDOW_COLOUR_2}{INLINE_SPRITE}{251}{19}{00}{00}Játékok ellenőrzése
 STR_1877    :{WINDOW_COLOUR_2}{INLINE_SPRITE}{252}{19}{00}{00}Játékok javítása
 STR_1878    :{WINDOW_COLOUR_2}Ellenőrzés:
@@ -1294,7 +1250,6 @@ STR_1913    :{BLACK}+{CURRENCY2DP}
 STR_1914    :{BLACK}{CURRENCY2DP}
 STR_1915    :{RED}{CURRENCY2DP}
 STR_1916    :{WINDOW_COLOUR_2}Kölcsön:
-STR_1917    :{POP16}{POP16}{POP16}{CURRENCY}
 STR_1918    :Nem vehetsz fel több pénzt!
 STR_1919    :Nincs elég pénz!
 STR_1920    :Nem tudod visszafizetni a kölcsönt!
@@ -1313,8 +1268,8 @@ STR_1934    :{STRINGID} elhagyta ezt: {STRINGID}
 STR_1935    :{STRINGID} elhagyta a parkot
 STR_1936    :{STRINGID} ezt vásárolta: {STRINGID}
 STR_1937    :Információk az üzenet tárgyáról
-STR_1938    :A vendég látképe
-STR_1939    :Az alkalmazott látképe
+STR_1938    :A vendég nézetablaka
+STR_1939    :Az alkalmazott nézetablaka
 STR_1940    :A vendég boldogsága, energiája, éhsége stb.
 STR_1941    :A vendég által használt játékok
 STR_1942    :A vendég pénzügyi információi
@@ -1332,7 +1287,6 @@ STR_1953    :Marketing
 STR_1954    :Kutatás finanszírozása
 STR_1955    :{WINDOW_COLOUR_2}Körök száma:
 STR_1956    :A pályakörök száma menetenként
-STR_1957    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_1958    :{COMMA16}
 STR_1959    :Nem változtatható meg a körök száma…
 STR_1960    :{WINDOW_COLOUR_2}Lufi ára:
@@ -1343,7 +1297,7 @@ STR_1964    :{WINDOW_COLOUR_2}Esernyő ára:
 STR_1965    :{WINDOW_COLOUR_2}Üdítőital ára:
 STR_1966    :{WINDOW_COLOUR_2}Hamburger ára:
 STR_1967    :{WINDOW_COLOUR_2}Sült krumpli ára:
-STR_1968    :{WINDOW_COLOUR_2}Jégkrém ára:
+STR_1968    :{WINDOW_COLOUR_2}Fagylalt ára:
 STR_1969    :{WINDOW_COLOUR_2}Vattacukor ára:
 STR_1970    :{WINDOW_COLOUR_2}
 STR_1971    :{WINDOW_COLOUR_2}
@@ -1371,7 +1325,7 @@ STR_1992    :Esernyő
 STR_1993    :Üdítőital
 STR_1994    :Hamburger
 STR_1995    :Sült krumpli
-STR_1996    :Jégkrém
+STR_1996    :Fagylalt
 STR_1997    :Vattacukor
 STR_1998    :Üres italos doboz
 STR_1999    :Szemét
@@ -1399,7 +1353,7 @@ STR_2020    :Esernyő
 STR_2021    :Üdítőital
 STR_2022    :Hamburger
 STR_2023    :Sült krumpli
-STR_2024    :Jégkrém
+STR_2024    :Fagylalt
 STR_2025    :Vattacukor
 STR_2026    :Üres italos doboz
 STR_2027    :Szemét
@@ -1427,7 +1381,7 @@ STR_2048    :egy esernyő
 STR_2049    :üdítőital
 STR_2050    :egy hamburger
 STR_2051    :sült krumpli
-STR_2052    :egy jégkrém
+STR_2052    :egy fagylalt
 STR_2053    :egy vattacukor
 STR_2054    :egy üres italos doboz
 STR_2055    :szemét
@@ -1455,7 +1409,7 @@ STR_2076    :„{STRINGID}” esernyő
 STR_2077    :Üdítőital
 STR_2078    :Hamburger
 STR_2079    :Sült krumpli
-STR_2080    :Jégkrém
+STR_2080    :Fagylalt
 STR_2081    :Vattacukor
 STR_2082    :Üres italos doboz
 STR_2083    :Szemét
@@ -1576,8 +1530,8 @@ STR_2212    :A park biztonsági őreinek listája
 STR_2213    :A park szórakoztatóinak listája
 STR_2214    :Szünet közben nem lehet építeni!
 STR_2215    :{STRINGID}{NEWLINE}({STRINGID})
-STR_2216    :{WINDOW_COLOUR_2}{COMMA16}°C
-STR_2217    :{WINDOW_COLOUR_2}{COMMA16}°F
+STR_2216    :{WINDOW_COLOUR_1}{COMMA16}°C
+STR_2217    :{WINDOW_COLOUR_1}{COMMA16}°F
 STR_2218    :{RED}{STRINGID} itt van: {STRINGID} és még nem érkezett vissza ide: {STRINGID}!{NEWLINE}Ellenőrizd, hogy nincs-e beragadva vagy elakadva
 STR_2219    :{RED}{STRINGID} balesete közben {COMMA16} ember meghalt
 STR_2220    :{WINDOW_COLOUR_2}Park értékelése: {BLACK}{COMMA16}
@@ -1804,7 +1758,7 @@ STR_2458    :Grafikon a pénz (kölcsön nélküli) alakulásáról
 STR_2459    :Grafikon a park értékének alakulásáról
 STR_2460    :Grafikon a heti nyereség alakulásáról
 STR_2461    :Marketingkampányok
-STR_2462    :A park bejáratának látképe
+STR_2462    :A park bejáratának nézetablaka
 STR_2463    :Grafikon a park értékelésének alakulásáról
 STR_2464    :Grafikon a vendégek számának alakulásáról
 STR_2465    :A park belépési díja és bevétele
@@ -1854,7 +1808,7 @@ STR_2510    :Magasságjelek az utakon be/ki
 STR_2511    :Talaj módosítása
 STR_2512    :Víz módosítása
 STR_2513    :Díszlet építése
-STR_2514    :Utak építése
+STR_2514    :Útépítés
 STR_2515    :Új játék építése
 STR_2516    :Pénzügyi információk
 STR_2517    :Kutatási információk
@@ -1931,9 +1885,6 @@ STR_2706    :Soha
 STR_2707    :Rendszer fájlkezelőjének használata
 STR_2708    :{WINDOW_COLOUR_1}Biztos, hogy felül akarod írni ezt: {STRINGID}?
 STR_2709    :Felülírás
-STR_2710    :Írd be a fájl nevét.
-STR_2718    :Fel
-STR_2719    :Új fájl
 STR_2720    :{UINT16} mp
 STR_2721    :{UINT16} mp
 STR_2722    :{UINT16} perc {UINT16} mp
@@ -1977,8 +1928,8 @@ STR_2775    :Telj. kép. (keret nélküli abl.)
 STR_2776    :Nyelv:
 STR_2777    :{MOVE_X}{10}{STRING}
 STR_2778    :»{MOVE_X}{10}{STRING}
-STR_2779    :Látkép {COMMA16}
-STR_2780    :Extra látkép
+STR_2779    :Nézetablak {COMMA16}
+STR_2780    :Extra nézetablak
 # End of new strings
 STR_2781    :{STRINGID}:
 STR_2782    :SHIFT + 
@@ -2133,7 +2084,6 @@ STR_3092    :Nem mozgathatod vagy módosíthatod a játék állomását!
 STR_3093    :{WINDOW_COLOUR_2}Kedvence: {BLACK}{STRINGID}
 STR_3094    :nincs adat
 STR_3095    :{WINDOW_COLOUR_2}Felvonó láncsebessége:
-STR_3096    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{VELOCITY}
 STR_3097    :A felvonószakasz láncsebességének kiválasztása
 STR_3099    :Szín kiválasztása
 STR_3100    :Második szín kiválasztása
@@ -2176,7 +2126,6 @@ STR_3136    :Figyelmeztetés: A terv alternatív járműtípussal lesz megépít
 STR_3137    :Közeli díszletek kiválasztása
 STR_3138    :Kiválasztás törlése
 STR_3139    :A kábeles felvonó nem tud üzemelni ebben a működési módban
-STR_3140    :A kábeles felvonószakasznak közvetlenül az állomás után kell kezdődnie
 STR_3141    :Nem lehetséges többkörös utazás kábeles felvonószakasszal
 STR_3142    :{WINDOW_COLOUR_2}Befogadóképesség: {BLACK}{STRINGID}
 STR_3143    :Emberek megjelenítése a térképen
@@ -2208,7 +2157,7 @@ STR_3188    :Úti hirdetőtáblák
 STR_3189    :Régi típusú utak
 STR_3190    :Úti extrák
 STR_3191    :Díszletcsoportok
-STR_3192    :Park bejárata
+STR_3192    :Park bejáratok
 STR_3193    :Víz
 STR_3195    :Találmányok listája
 STR_3196    :{WINDOW_COLOUR_2}Kutatási csoport: {BLACK}{STRINGID}
@@ -2227,7 +2176,6 @@ STR_3208    :Játéktervkezelő
 STR_3209    :Vissza az előző lépésre:
 STR_3210    :Tovább a következő lépésre:
 STR_3211    :Térkép mérete:
-STR_3212    :{POP16}{COMMA16}
 STR_3213    :Nem csökkenthető tovább a térkép mérete
 STR_3214    :Nem növelhető tovább a térkép mérete
 STR_3215    :Túl közel van a térkép széléhez
@@ -2247,22 +2195,20 @@ STR_3228    :Kezdő pozíciók megadása az emberek számára
 STR_3229    :Blokkolófékek nem használhatóak közvetlenül az állomás után
 STR_3230    :Blokkolófékek nem használhatóak közvetlenül egymás után
 STR_3231    :Blokkolófékek nem használhatóak közvetlenül ennek felvonószakasznak a csúcsa után
-STR_3232    :Beállítások - pénzügyi
-STR_3233    :Beállítások - vendégek
-STR_3234    :Beállítások - park
+STR_3232    :Pálya beállítások - Pénzügyi
+STR_3233    :Pálya beállítások - Vendégek
 STR_3235    :Pénzügyi beállítások
 STR_3236    :A vendégek beállításai
-STR_3237    :A park beállításai
-STR_3238    :Nem kell pénz
+STR_3238    :Pénz nélküli mód
 STR_3239    :Legyen ez a park egy „pénz nélküli” park, pénzügyi korlátozások nélkül
-STR_3240    :{WINDOW_COLOUR_2}Kezdőtőke:
-STR_3241    :{WINDOW_COLOUR_2}Kezdeti kölcsön:
-STR_3242    :{WINDOW_COLOUR_2}Maximális kölcsönösszeg:
-STR_3243    :{WINDOW_COLOUR_2}Éves kamatláb:
+STR_3240    :Kezdőtőke:
+STR_3241    :Kezdeti kölcsön:
+STR_3242    :Maximális kölcsönösszeg:
+STR_3243    :Éves kamatláb:
 STR_3244    :Marketingkampányok tiltása
 STR_3245    :A hirdetések, promóciós programok és egyéb marketingkampányok tiltása
-STR_3246    :{WINDOW_COLOUR_2}{CURRENCY}
-STR_3247    :{WINDOW_COLOUR_2}{COMMA16}%
+STR_3246    :{CURRENCY}
+STR_3247    :{COMMA16}%
 STR_3248    :A kezdőtőke nem növelhető tovább!
 STR_3249    :A kezdőtőke nem csökkenthető tovább!
 STR_3250    :A kezdeti kölcsön nem növelhető tovább!
@@ -2271,14 +2217,10 @@ STR_3252    :A maximum kölcsön összege nem növelhető tovább!
 STR_3253    :A maximum kölcsön összege nem csökkenthető tovább!
 STR_3254    :A kamatláb nem növelhető tovább!
 STR_3255    :A kamatláb nem csökkenthető tovább!
-STR_3256    :A vendégek a kevésbé intenzív játékokat részesítik előnyben
-STR_3257    :Válaszd ki, hogy a vendégek általában csak a kevésbé intenzív játékokat részesítsék előnyben
-STR_3258    :A vendégek az intenzívebb játékokat részesítik előnyben
-STR_3259    :Válaszd ki, hogy a vendégek általában csak a intenzívebb játékokat részesítsék előnyben
-STR_3260    :{WINDOW_COLOUR_2}Készpénz/vendég (átlagosan):
-STR_3261    :{WINDOW_COLOUR_2}Vendégek kezdeti boldogsága:
-STR_3262    :{WINDOW_COLOUR_2}Vendégek kezdeti éhsége:
-STR_3263    :{WINDOW_COLOUR_2}Vendégek kezdeti szomjúsága:
+STR_3260    :Készpénz/vendég (átlagosan):
+STR_3261    :Vendégek kezdeti boldogsága:
+STR_3262    :Vendégek kezdeti éhsége:
+STR_3263    :Vendégek kezdeti szomjúsága:
 STR_3264    :Nem növelhető jobban!
 STR_3265    :Nem csökkenthető jobban!
 STR_3266    :Válaszd ki a park belépőjének és játékainak fizetési módját
@@ -2292,23 +2234,15 @@ STR_3273    :A park értékelését nehezebb növelni és megtartani
 STR_3274    :A park értékelése jelentsen nagyobb kihívást
 STR_3275    :A vendégeket nehezebb bevonzani
 STR_3276    :Legyen nehezebb bevonzani a vendégeket a parkba
-STR_3277    :{WINDOW_COLOUR_2}Földvásárlás költsége:
-STR_3278    :{WINDOW_COLOUR_2}Építési jogok vásárlási költsége:
+STR_3277    :Földvásárlás költsége:
+STR_3278    :Építési jogok vásárlási költsége:
 STR_3279    :Ingyenes parkbelépő / Fizetős játékok
 STR_3280    :Fizetős parkbelépő / Ingyenes játékok
-STR_3281    :{WINDOW_COLOUR_2}Belépési díj:
-STR_3282    :A cél és a park nevének kiválasztása
+STR_3281    :Belépési díj:
 STR_3283    :A műemlékvédelem alá eső játékok kiválasztása
-STR_3284    :Cél kiválasztása
-STR_3285    :Védett játékok
+STR_3285    :Pálya beállítások - Védett játékok
 STR_3286    :A pálya céljának kiválasztása
 STR_3287    :{WINDOW_COLOUR_2}Cél:
-STR_3288    :Éghajlat kiválasztása
-STR_3289    :{WINDOW_COLOUR_2}Éghajlat:
-STR_3290    :Hűvös és nedves
-STR_3291    :Meleg
-STR_3292    :Forró és száraz
-STR_3293    :Hideg
 STR_3294    :Változtat…
 STR_3295    :A park nevének megváltoztatása
 STR_3296    :A pálya nevének megváltoztatása
@@ -2447,9 +2381,9 @@ STR_5162    :Nap/hónap/év
 STR_5163    :Hónap/nap/év
 STR_5177    :Képernyőmód:
 STR_5178    :Pénzügyi csalások
-STR_5179    :Vendég-csalások
-STR_5180    :Park-csalások
-STR_5181    :Játék-csalások
+STR_5179    :Vendégcsalások
+STR_5180    :Parkcsalások
+STR_5181    :Játékcsalások
 STR_5182    :{INT32}
 STR_5183    :Alapmagasság
 STR_5184    :Add meg az alapmagasságot {COMMA16} és {COMMA16} között
@@ -2459,7 +2393,7 @@ STR_5187    :Pénzügyek
 STR_5188    :Új kampány
 STR_5189    :Kutatás
 STR_5190    :Térkép
-STR_5191    :Látkép
+STR_5191    :Nézetablak
 STR_5192    :Friss hírek
 STR_5193    :Talaj
 STR_5194    :Víz
@@ -2535,7 +2469,7 @@ STR_5265    :A látható tartalomforrások kiválasztása
 STR_5266    :Képernyő
 STR_5267    :Kultúra és egységek
 STR_5268    :Hang
-STR_5269    :Irányítás és felhasználói felület
+STR_5269    :Irányítás
 STR_5270    :Egyéb
 STR_5272    :Kis díszletek
 STR_5273    :Nagy díszletek
@@ -2587,9 +2521,9 @@ STR_5340    :Teljes magasság
 STR_5343    :Alkalmazottak automatikus lerakása
 STR_5344    :Változási napló
 STR_5345    :Pénzügyi csalások
-STR_5346    :Vendég-csalások
-STR_5347    :Park-csalások
-STR_5348    :Játék-csalások
+STR_5346    :Vendégcsalások
+STR_5347    :Parkcsalások
+STR_5348    :Játékcsalások
 STR_5349    :Minden játék
 STR_5350    :Max.
 STR_5351    :Min.
@@ -2613,7 +2547,7 @@ STR_5368    :Ütközés törlése
 STR_5371    :Objektumok kiválasztása
 STR_5372    :Jobb egérgombos húzás invertálása
 STR_5373    :Név {STRINGID}
-STR_5374    :Dátum {STRINGID}
+STR_5374    :Módosítás dátuma {STRINGID}
 STR_5375    :▲
 STR_5376    :▼
 STR_5404    :A név már létezik
@@ -2676,7 +2610,7 @@ STR_5502    :Többjátékos mód
 STR_5503    :Add meg a gépnevet vagy IP-címet:
 STR_5504    :A többjátékos mód állapota
 STR_5505    :Nem lehet csatlakozni a szerverhez.
-STR_5506    :Vendégeket nem érdeklik az intenzitások
+STR_5506    :Vendégeket nem érdekli az intenzitás
 STR_5510    :Alapértelmezett hangeszköz
 STR_5511    :(ISMERETLEN)
 STR_5512    :Játék mentése másként
@@ -2720,7 +2654,6 @@ STR_5549    :Év/hónap/nap
 STR_5550    :{POP16}{POP16}{COMMA16}. év {PUSH16}{PUSH16}{MONTH} {PUSH16}{PUSH16}{STRINGID}
 STR_5551    :Év/nap/hónap
 STR_5552    :{POP16}{POP16}{COMMA16}. év {PUSH16}{PUSH16}{PUSH16}{STRINGID} {MONTH}
-STR_5553    :Játék megállítása, ha a Steam Átfedés nyitva van
 STR_5554    :A hegy-eszköz bekapcsolása
 STR_5555    :Más pályatípusok járműveinek mutatása
 STR_5556    :Játékos kirúgása
@@ -2732,7 +2665,7 @@ STR_5561    :A nyelv betöltése sikertelen
 STR_5562    :FIGYELMEZTETÉS!
 STR_5563    :Ez a funkció jelenleg instabil, legyél rendkívül elővigyázatos.
 STR_5566    :Jelszó:
-STR_5567    :Hirdetés
+STR_5567    :Kihirdetés
 STR_5568    :Jelszó szükséges
 STR_5569    :Ehhez a szerverhez jelszó szükséges
 STR_5570    :Szerver keresése
@@ -2791,9 +2724,6 @@ STR_5623    :Wacky Worlds
 STR_5624    :Time Twister
 STR_5625    :„Igazi” parkok
 STR_5626    :Egyéb parkok
-STR_5627    :Pályák csoportosítása:
-STR_5628    :Forrásjáték
-STR_5629    :Nehézségi szint
 STR_5630    :Fokozatos feloldás bekapcsolása
 STR_5631    :Eredeti DLC parkok
 STR_5632    :Építsd meg a saját…
@@ -2944,13 +2874,12 @@ STR_5814    :{WINDOW_COLOUR_1}„{STRING}”
 #tooltips
 STR_5815    :FPS-számláló megjelenítése a játékban
 STR_5816    :A játék méretezési tényezőjének beállítása.{NEWLINE}Főleg akkor hasznos, ha magasabb{NEWLINE} felbontásokban játszol
-STR_5819    :[Hardveres megjelenítés szükséges]{NEWLINE}A játék megállítása, ha a Steam{NEWLINE}Átfedés megnyílik
 STR_5820    :A játék minimalizálása, ha elveszti a fókuszt{NEWLINE}teljes képernyős módban
 STR_5822    :A nap és az éjszaka váltakozásának bekapcsolása.{NEWLINE}A teljes ciklus egy játékbeli hónapig tart
 STR_5823    :Nagybetűs megjelenítés a hirdetőtáblákon (RCT1-beli viselkedés)
 STR_5824    :A viharok alatti villámhatás{NEWLINE}kikapcsolása
 STR_5825    :Az egérmutató maradjon az ablakon belül
-STR_5826    :A látkép jobb egeres húzásának invertálása
+STR_5826    :A nézetbalak jobb egeres húzásának invertálása
 STR_5827    :A felhasználói felület színsémájának beállítása
 STR_5828    :A távolságok, sebesség stb. mértékegységeinek megváltoztatása
 STR_5829    :A használatban lévő pénznem formátum megváltoztatása. Tisztán vizuális, a pontos árfolyam nincs implementálva.
@@ -2983,7 +2912,7 @@ STR_5858    :CPU helyett a GPU használata megjelenítéshez. Nagyobb kompatibil
 STR_5859    :A képkocka fázisolás bekapcsolása, hogy {NEWLINE}folyamatosabb legyen a játékmenet megjelenítése. Ha ki van kapcsolva,{NEWLINE}a játék 40 FPS-el fut.
 STR_5860    :Váltás az eredeti és a visszafejtett pályarajzok között
 STR_5861    :Kulcs hitelesítési hiba.
-STR_5862    :Ismeretlen játékosok blokkolása.
+STR_5862    :Ismeretlen játékosok blokkolása
 STR_5863    :Csak az ismert kulcsokkal rendelkező játékosok csatlakozhassanak.
 STR_5864    :Ehhez a szerverhez csak fehérlistás játékosok csatlakozhatnak.
 STR_5865    :Chat előzmények naplózása
@@ -3012,7 +2941,6 @@ STR_5887    :Előtag
 STR_5888    :Utótag
 STR_5889    :Egyedi pénznem szimbólum
 STR_5890    :Add meg a megjelenítendő pénznem szimbólumot
-STR_5891    :Alapértelmezett
 STR_5892    :Vissza az alapértelmezett mappába
 STR_5893    :Árfolyam
 STR_5894    :Írd be az árfolyamot
@@ -3038,12 +2966,11 @@ STR_5914    :Ismeretlen játék
 STR_5915    :Játékos
 STR_5916    :{COMMA16} játékos
 STR_5917    :{COMMA16} játékos
-STR_5918    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{COMMA16}
 STR_5919    :{COMMA16}
 STR_5920    :Időjárási hatások megjelenítése
 STR_5921    :Ha be van kapcsolva, viharok idején esős és komor színű lesz a játék.
-STR_5922    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}Max. {STRINGID}
-STR_5923    :{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}{POP16}Max. {COMMA16} {STRINGID} vonatonként
+STR_5922    :Max. {STRINGID}
+STR_5923    :Max. {COMMA16} {STRINGID} vonatonként
 STR_5924    :Felszín részletei
 STR_5925    :Út részletei
 STR_5926    :Pálya részleti
@@ -3225,7 +3152,7 @@ STR_6102    :A játékok értéke nem csökken az idő múlásával, így a vend
 STR_6103    :Ez a beállítás le van tiltva hálózati játék alatt.
 STR_6105    :Hiperhullámvasút
 STR_6107    :Monster Truck-ok
-STR_6109    :Hiper-csavaró
+STR_6109    :Hiper-csavart hullámvasút
 STR_6111    :Klasszikus mini hullámvasút
 STR_6113    :Magas, nem forduló hullámvasút nagy esésekkel, nagy sebességgel és kényelmes vonatokkal, csak biztonsági rudas rögzítéssel
 STR_6115    :Motoros óriás 4x4-es teherautók, amelyek meredek lejtőkön is felhajtanak
@@ -3278,7 +3205,6 @@ STR_6165    :Vertikális szinkron
 STR_6166    :A megjelenített képkockákat a kijelző frissítési gyakoriságához igazítja, így megakadályozza a kép szétcsúszását.
 STR_6167    :Haladó
 STR_6168    :Nyitójelenetek
-STR_6169    :Pályaválasztás
 STR_6170    :Felület finomhangolása
 STR_6171    :Keresés
 STR_6172    :Keresés
@@ -3379,7 +3305,7 @@ STR_6304    :Díszletválasztó megnyitása
 STR_6305    :Többszálúság
 STR_6306    :Kísérleti beállítás, mellyel bekapcsolható a több szálon történő megjelenítés, instabilitást okozhat.
 STR_6307    :Színséma: {BLACK}{STRINGID}
-STR_6308    :{TOPAZ}„{STRINGID}{OUTLINE}{TOPAZ}”{NEWLINE}{STRINGID}
+STR_6308    :{TOPAZ}„{STRINGID}{TOPAZ}”{NEWLINE}{STRINGID}
 STR_6309    :Újracsatlakozás
 STR_6310    :{WINDOW_COLOUR_2}Pozíció: {BLACK}{INT32} {INT32} {INT32}
 STR_6311    :{WINDOW_COLOUR_2}Következő: {BLACK}{INT32} {INT32} {INT32}
@@ -3429,7 +3355,6 @@ STR_6355    :Nagy sűrűség
 STR_6356    :Kacsákat rak le, ha van víz a parkban
 STR_6357    :Eltávolít minden kacsát a térképről
 STR_6358    :{UINT16}. oldal
-STR_6359    :{POP16}{POP16}{UINT16}. oldal
 STR_6361    :Fényhatások a játékokon (kísérleti)
 STR_6362    :Ha be van kapcsolva, a pályával rendelkező játékokon a járművek éjjel ki lesznek világítva.
 STR_6363    :A szöveg a vágólapra másolva
@@ -3609,7 +3534,7 @@ STR_6537    :Normál utak lehetnek várósorok
 STR_6538    :Megjeleníti a normál utakat a várósorok legördülő menüjében az Utak ablakon belül.
 STR_6539    :Fék zárva
 STR_6540    :{WINDOW_COLOUR_2}Külön köszönet a következő vállalatoknak, hogy engedélyezték hasonlóságuk használatát:
-STR_6541    :{WINDOW_COLOUR_2}Rocky Mountain Construction Group, Josef Wiegand GmbH & Co. KG
+STR_6541    :{WINDOW_COLOUR_2}Rocky Mountain Construction Group, Josef Wiegand GmbH & Co. KG, Intamin Amusement Rides Int. Corp. Est.
 STR_6542    :Közreműködők
 STR_6543    :Közreműködők…
 STR_6544    :A kölcsön nem lehet negatív!
@@ -3731,13 +3656,13 @@ STR_6659    :Vendégeket nem érdeklik az árak
 STR_6660    :A vendégek hagyják figyelmen kívül a játékok és bódék árait
 STR_6661    :Véletlenszerűek
 STR_6662    :Véletlenszerű színek minden vonat vagy jármű számára
-STR_6663    :Dátum csalások
-STR_6664    :Dátum csalások megjelenítése
-STR_6665    :Természet/időjárás csalások
-STR_6666    :Természet/időjárás csalások megjelenítése
+STR_6663    :Dátumcsalások
+STR_6664    :Dátumcsalások
+STR_6665    :Természet-/időjárás-csalások
+STR_6666    :Természet-/időjárás-csalások
 STR_6667    :Fauna
 STR_6668    :Személyzeti csalások
-STR_6669    :Személyzeti csalások megjelenítése
+STR_6669    :Személyzeti csalások
 STR_6670    :Vendégek viselkedése
 STR_6671    :Alkalmazottak „igazi” nevének mutatása
 STR_6672    :Váltás az alkalmazottak „igazi” nevének és az alkalmazottak számának mutatása között
@@ -3745,7 +3670,7 @@ STR_6673    :Átlátszó
 STR_6674    :{COMMA16}. év {MONTH}
 STR_6675    :Vendég nevek
 STR_6676    :Legalább egy vendégneves objektumot ki kell választani
-STR_6677    :Partok létrehozása vízfelületek körül
+STR_6677    :Part létrehozása a vízfelületek körül
 STR_6678    :Magasságtérkép forrása:
 STR_6679    :Síkság
 STR_6680    :Szimplex zaj
@@ -3778,850 +3703,117 @@ STR_6706    :{WINDOW_COLOUR_2}Jelenlegi képfájl: {BLACK}{STRING}
 STR_6707    :(nincs kiválasztva)
 STR_6708    :Simítási erősség
 STR_6709    :Add meg a simítási erősséget {COMMA16} és {COMMA16} között
-
-#############
-# Scenarios #
-################
-# RCT Original #
-################
-<Forest Frontiers>
-STR_SCNR    :Elkerített Erdő
-STR_PARK    :Elkerített Erdő
-STR_DTLS    :Építs egy virágzó vidámparkot az erdő mélyén lévő nagy tisztáson
-
-<Dynamite Dunes>
-STR_SCNR    :Dinamit Dűnék
-STR_PARK    :Dinamit Dűnék
-STR_DTLS    :Ez a sivatag közepén épült vidámpark csak egy hullámvasúttal rendelkezik, de van helye a terjeszkedésre
-
-<Leafy Lake>
-STR_SCNR    :Leveles-tó
-STR_PARK    :Leveles-tó
-STR_DTLS    :A nulláról kezdve építs egy vidámparkot a nagy tó körül
-
-<Diamond Heights>
-STR_SCNR    :Gyémánt-fennsík
-STR_PARK    :Gyémánt-fennsík
-STR_DTLS    :Gyémánt-fennsík már egy sikeres vidámpark, remek játékokkal - fejleszd, hogy megduplázd az értékét
-
-<Evergreen Gardens>
-STR_SCNR    :Örökzöld Kert
-STR_PARK    :Örökzöld Kert
-STR_DTLS    :Alakítsd át a csodaszép Örökzöld Kertet egy virágzó vidámparkká
-
-<Bumbly Beach>
-STR_SCNR    :Suta Strand
-STR_PARK    :Suta Strand
-STR_DTLS    :Virágoztasd fel Suta Strand apró vidámparkját
-
-<Trinity Islands>
-STR_SCNR    :Hármas-sziget
-STR_PARK    :Hármas-sziget
-STR_DTLS    :Egy frissen nyílt park, amelyet több sziget alkot
-
-<Katie's Dreamland>
-STR_SCNR    :Katie Álomvilága
-STR_PARK    :Katie Álomvilága
-STR_DTLS    :Egy kis méretű vidámpark, pár játékkal és hellyel a terjeszkedéshez - A célod, hogy megduplázd a park értékét
-
-<Pokey Park>
-STR_SCNR    :Parányi Park
-STR_PARK    :Parányi Park
-STR_DTLS    :Egy kis méretű, zsúfolt vidámpark, amelynek jelentős terjeszkedésre van szüksége
-
-<White Water Park>
-STR_SCNR    :Vadvízi Park
-STR_PARK    :Vadvízi Park
-STR_DTLS    :Ez a park néhány igazán kiváló vízi játékkal rendelkezik, de terjeszkedésre van szüksége
-
-<Millennium Mines>
-STR_SCNR    :Ezeréves Bányák
-STR_PARK    :Ezeréves Bányák
-STR_DTLS    :Alakíts át egy nagy, elhagyatott bányát turistalátványosságból vidámparkká
-
-<Karts & Coasters>
-STR_SCNR    :Gokartok & Hullámvasutak
-STR_PARK    :Gokartok & Hullámvasutak
-STR_DTLS    :Egy nagy park, elrejtve az erdőben, amelyben csak gokart pályák és fa hullámvasutak vannak
-
-<Mel's World>
-STR_SCNR    :Mel Világa
-STR_PARK    :Mel Világa
-STR_DTLS    :Ez a vidámpark már rendelkezik pár jól tervezett, modern játékkal, de bőven van helye terjeszkedésre
-
-<Mystic Mountain>
-STR_SCNR    :Misztikus-hegy
-STR_PARK    :Misztikus-hegy
-STR_DTLS    :A nulláról kezdve építs egy vidámparkot Misztikus-hegy dombos erdeiben
-
-<Pacific Pyramids>
-STR_SCNR    :Pihenő Piramisok
-STR_PARK    :Pihenő Piramisok
-STR_DTLS    :Alakítsd át a turistalátványosságként szolgáló egyiptomi romokat egy virágzó vidámparkká
-
-<Crumbly Woods>
-STR_SCNR    :Recsegő Rengeteg
-STR_PARK    :Recsegő Rengeteg
-STR_DTLS    :Egy nagy park jól tervezett, de meglehetősen öreg játékokkal - Cseréld le az öreg játékokat, vagy építs újakat, hogy népszerűbb legyen a park
-
-<Paradise Pier>
-STR_SCNR    :Paradicsom Móló
-STR_PARK    :Paradicsom Móló
-STR_DTLS    :Alakítsd át ennek az álmos kisvárosnak a mólóját virágzó attrakcióvá
-
-<Lightning Peaks>
-STR_SCNR    :Villámcsúcsok
-STR_PARK    :Villámcsúcsok
-STR_DTLS    :Villámcsúcsok gyönyörű hegyei népszerűek a természetjárók és a turisták körében - Használd ki a rendelkezésre álló területet, hogy új, izgalmakat kereső vendégkört vonzzon magához
-
-<Ivory Towers>
-STR_SCNR    :Elefántcsont-tornyok
-STR_PARK    :Elefántcsont-tornyok
-STR_DTLS    :Egy jól működő park, amely néhány problémával küzd
-
-<Rainbow Valley>
-STR_SCNR    :Szivárványvölgy
-STR_PARK    :Szivárványvölgy
-STR_DTLS    :Szivárványvölgy helyi önkormányzata nem engedélyez semmilyen tájátalakítást vagy a nagy fák eltávolítását, de a területet egy hatalmas vidámparkká kell fejlesztened
-
-<Thunder Rock>
-STR_SCNR    :Mennydörgő-szikla
-STR_PARK    :Mennydörgő-szikla
-STR_DTLS    :A Mennydörgő-szikla a sivatag közepén áll és igazi turistamágnes - Használd a rendelkezésre álló területet játékok építésére, hogy még több embert vonzon
-
-<Mega Park>
-STR_SCNR    :Mega Park
-STR_PARK    :Mega Park
-STR_DTLS    :Csak a móka kedvéért!
-
-## Added Attractions
-<Whispering Cliffs>
-STR_SCNR    :Suttogó-sziklák
-STR_PARK    :Suttogó-sziklák
-STR_DTLS    :Fejleszd a tengerparti sziklákat virágzó vidámparkká
-
-<Three Monkeys Park>
-STR_SCNR    :Három Majom Park
-STR_PARK    :Három Majom Park
-STR_DTLS    :A nagy, fejlődő park központi eleme egy óriási, hárompályás versenyző/párbajozó acél hullámvasút
-
-<Canary Mines>
-STR_SCNR    :Kanári Bányák
-STR_PARK    :Kanári Bányák
-STR_DTLS    :Ebben az elhagyatott bányában minden megvan ahhoz, hogy vonzó turisztikai látványosság legyen a kisvonatával és a függőleges esésű hullámvasútpárjával
-
-<Barony Bridge>
-STR_SCNR    :Hűbéri Híd
-STR_PARK    :Hűbéri Híd
-STR_DTLS    :Egy öreg, feleslegessé vált híd, amelyet neked kell vidámparkká fejleszteni
-
-<Funtopia>
-STR_SCNR    :Mókaland
-STR_PARK    :Mókaland
-STR_DTLS    :A parknak az autópálya mindkét oldalán van területe és már több játékot is üzemeltet
-
-<Haunted Harbour>
-STR_SCNR    :Kísértetjárta Kikötő
-STR_PARK    :Kísértetjárta Kikötő
-STR_DTLS    :A helyi önkormányzat beleegyezett, hogy a közeli földterületet olcsón eladja ennek a kis tengerparti parknak, azzal a feltétellel, hogy bizonyos játékai műemlékvédelem alá kerülnek
-
-<Fun Fortress>
-STR_SCNR    :Vidám Vár
-STR_PARK    :Vidám Vár
-STR_DTLS    :Ez a vár csak arra vár, hogy vidámparkká alakítsd
-
-<Future World>
-STR_SCNR    :Jövőbeli Világ
-STR_PARK    :Jövőbeli Világ
-STR_DTLS    :E futurisztikus park földönkívüli táján bőven van hely az új játékok számára
-
-<Gentle Glen>
-STR_SCNR    :Szende-szurdok
-STR_PARK    :Szende-szurdok
-STR_DTLS    :A helyi lakosság az enyhe és nyugtató játékokat kedveli, úgyhogy a te feladatod a park ízlésüknek megfelelő bővítése
-
-<Jolly Jungle>
-STR_SCNR    :Derűs Dzsungel
-STR_PARK    :Derűs Dzsungel
-STR_DTLS    :Ez a dzsungel mélyén elterülő nagy földterület épp megfelelő egy vidámpark számára
-
-<Hydro Hills>
-STR_SCNR    :Hidro-hegyek
-STR_PARK    :Hidro-hegyek
-STR_DTLS    :Egy lépcsőzetes tórendszer adja ennek az új parknak az alapját
-
-<Sprightly Park>
-STR_SCNR    :Pezsgő Park
-STR_PARK    :Pezsgő Park
-STR_DTLS    :Ez az idős park számos történelmi játékkal rendelkezik, de súlyosan el van adósodva
-
-<Magic Quarters>
-STR_SCNR    :Mágikus Negyedek
-STR_PARK    :Mágikus Negyedek
-STR_DTLS    :Egy nagy területet megtisztítottak és részben tematizáltak, így készen áll arra, hogy parkosított vidámparkká alakítsd
-
-<Fruit Farm>
-STR_SCNR    :Gyümölcsfarm
-STR_PARK    :Gyümölcsfarm
-STR_DTLS    :Egy jól menő gyümölcsfarm vasutat épített a bevételeinek növelésére, a te feladatod, hogy teljes egészében vidámparkká fejleszd
-
-<Butterfly Dam>
-STR_SCNR    :Pillangó-gát
-STR_PARK    :Pillangó-gát
-STR_DTLS    :Egy gát körüli területen kell vidámparkot kialakítanod
-
-<Coaster Canyon>
-STR_SCNR    :Hullámvasút-kanyon
-STR_PARK    :Hullámvasút-kanyon
-STR_DTLS    :Alakíts ki egy vidámparkot a rendelkezésedre álló hatalmas kanyonban
-
-<Thunderstorm Park>
-STR_SCNR    :Viharpark
-STR_PARK    :Viharpark
-STR_DTLS    :Annyira csapadékos ez a terület, hogy egy hatalmas piramis építésére volt szükség ahhoz, hogy néhány játék fedett helyre épülhessen
-
-<Harmonic Hills>
-STR_SCNR    :Harmonikus-hegyek
-STR_PARK    :Harmonikus-hegyek
-STR_DTLS    :A helyi önkormányzat nem engedélyezi számodra, hogy fák magassága felett építkezz ebben a parkban
-
-<Roman Village>
-STR_SCNR    :Római Falu
-STR_PARK    :Római Falu
-STR_DTLS    :Fejleszd ezt a római témájú parkot játékok és hullámvasutak építésével
-
-<Swamp Cove>
-STR_SCNR    :Mocsár-öböl
-STR_PARK    :Mocsár-öböl
-STR_DTLS    :A kis szigetcsoportra épült parkban már van egy nagy, központi elemként funkcionáló hullámvasútpár
-
-<Adrenaline Heights>
-STR_SCNR    :Adrenalin-csúcsok
-STR_PARK    :Adrenalin-csúcsok
-STR_DTLS    :Építs egy parkot, amellyel bevonzhatod a helyi élmény- és izgalomkereső embereket
-
-<Utopia Park>
-STR_SCNR    :Utópia Park
-STR_PARK    :Utópia Park
-STR_DTLS    :A sivatag közepén elterülő oázis kivételes lehetőséget kínál vidámpark építésére
-
-<Rotting Heights>
-STR_SCNR    :Rohadó Magaslatok
-STR_PARK    :Rohadó Magaslatok
-STR_DTLS    :Képes vagy feltámasztani ezt a valaha szebb napokat látott, ám mára gazzal benőtt és düledező vidámparkot?
-
-<Fiasco Forest>
-STR_SCNR    :Elbaltázott Erdő
-STR_PARK    :Elbaltázott Erdő
-STR_DTLS    :Meglehetősen korlátozottak az anyagi és időbeli lehetőségeid arra, hogy rendbe rakd ezt a rosszul tervezett és veszélyes játékokkal teli parkot
-
-<Pickle Park>
-STR_SCNR    :Pác Park
-STR_PARK    :Pác Park
-STR_DTLS    :A helyi önkormányzat nem engedélyez semmiféle reklámot vagy promóciót, úgyhogy a parknak kizárólag a jó hírnevére alapozva kell sikereket elérnie
-
-<Giggle Downs>
-STR_SCNR    :Kacaj-dombság
-STR_PARK    :Kacaj-dombság
-STR_DTLS    :Egy négysávos akadályverseny-játék a központi eleme ennek a terjeszkedő parknak
-
-<Mineral Park>
-STR_SCNR    :Ásvány Park
-STR_PARK    :Ásvány Park
-STR_DTLS    :Változtasd ezt az elhagyatott kőbányát az izgalomkereső turisták számára vonzó hellyé
-
-<Coaster Crazy>
-STR_SCNR    :Hullámvasút-őrület
-STR_PARK    :Hullámvasút-őrület
-STR_DTLS    :Szűkösek a pénzügyi forrásaid, de végtelen sok időd van arra, hogy egy hatalmas vidámparkot alakíts ki ezen a hegyoldali területen
-
-<Urban Park>
-STR_SCNR    :Városi Park
-STR_PARK    :Városi Park
-STR_DTLS    :Egy apró park egyezséget kötött a közeli várossal, amelynek értelmében magán a városon keresztül terjeszkedhet
-
-<Geoffrey Gardens>
-STR_SCNR    :Geoffrey Kert
-STR_PARK    :Geoffrey Kert
-STR_DTLS    :Egy nagy kertnek arra van szüksége, hogy sikeres vidámpark legyen belőle
-
-
-## Loopy Landscapes
-<Iceberg Islands>
-STR_SCNR    :Jéghegy-szigetek
-STR_PARK    :Jéghegy-szigetek
-STR_DTLS    :Egy csoportnyi jéghegy hideg helyszínt biztosít ennek az ambiciózus vidámparknak
-
-<Volcania>
-STR_SCNR    :Vulkánia
-STR_PARK    :Vulkánia
-STR_DTLS    :Egy szunnyadó vulkán adja ennek a hullámvasút-építő kihívásnak a helyszínét
-
-<Arid Heights>
-STR_SCNR    :Száraz Magaslatok
-STR_PARK    :Száraz Magaslatok
-STR_DTLS    :Az a kihívásod, hogy gondoskodj a park fejlesztéséről, miközben biztosítod a vendégek jókedvét, pénzügyi korlátok nélkül
-
-<Razor Rocks>
-STR_SCNR    :Penge Sziklák
-STR_PARK    :Penge Sziklák
-STR_DTLS    :Az a feladatod, hogy egy masszív, hullámvasutakkal teli parkot alakíts ki a Penge Sziklák között
-
-<Crater Lake>
-STR_SCNR    :Kráter-tó
-STR_PARK    :Kráter-tó
-STR_DTLS    :Egy ősi kráterben elterülő hatalmas tó a park a helyszíne
-
-<Vertigo Views>
-STR_SCNR    :Szédítő Kilátások
-STR_PARK    :Szédítő Kilátások
-STR_DTLS    :Ebben a nagy parkban már van egy kiváló hiperhullámvasút, de sokkal nyereségesebbé kell tenned
-
-<Paradise Pier 2>
-STR_SCNR    :Paradicsom Móló 2
-STR_PARK    :Paradicsom Móló 2
-STR_DTLS    :Paradicsom Móló kiterjesztette a tenger feletti sétány-hálózatát és a feladatod az, hogy a park bővítésével biztosítsd az extra hely kihasználtságát
-
-<Dragon's Cove>
-STR_SCNR    :Sárkány-öböl
-STR_PARK    :Sárkány-öböl
-STR_DTLS    :Ez a tengerparti öböl a helyszíne ennek a hullámvasút-építő kihívásnak
-
-<Good Knight Park>
-STR_SCNR    :Jó Lovag Park
-STR_PARK    :Jó Lovag Park
-STR_DTLS    :Egy kastély két hullámvasúttal, amit egy nagyobb vidámparkká kell fejlesztened
-
-<Wacky Warren>
-STR_SCNR    :Nyüzsgő Nyúlkert
-STR_PARK    :Nyüzsgő Nyúlkert
-STR_DTLS    :Egy park, ahol az utak és hullámvasutak nagy része föld alatt van
-
-<Grand Glacier>
-STR_SCNR    :Nagy Gleccser
-STR_PARK    :Nagy Gleccser
-STR_DTLS    :Fejleszd vidámparkká ezt a gleccserekkel teli völgyet
-
-<Crazy Craters>
-STR_SCNR    :Őrült Kráterek
-STR_PARK    :Őrült Kráterek
-STR_DTLS    :Egy messzi világban, ahol nincs szükség pénzre, szórakoztató központot kell építened, hogy biztosítsd az emberek boldogságát
-
-<Dusty Desert>
-STR_SCNR    :Sivár Sivatag
-STR_PARK    :Sivár Sivatag
-STR_DTLS    :Öt hullámvasutat kell befejezni ebben a sivatagi parkban
-
-<Woodworm Park>
-STR_SCNR    :Fakukac Park
-STR_PARK    :Fakukac Park
-STR_DTLS    :Ez a történelmi park csak régi stílusú játékokat építhet
-
-<Icarus Park>
-STR_SCNR    :Ikarusz Park
-STR_PARK    :Ikarusz Park
-STR_DTLS    :Fejleszd ezt a földönkívüli parkot, hogy maximalizáld a nyereségét
-
-<Sunny Swamps>
-STR_SCNR    :Napos Mocsarak
-STR_PARK    :Napos Mocsarak
-STR_DTLS    :Ennek a jól tematizált vidámparknak már számos játéka van, de bőven van helye a terjeszkedésre
-
-<Frightmare Hills>
-STR_SCNR    :Rémálom Dombok
-STR_PARK    :Rémálom Dombok
-STR_DTLS    :Egy rémisztő vidámpark, a közepén egy hatalmas hullámvasúttal
-
-<Thunder Rocks>
-STR_SCNR    :Mennydörgő-sziklák
-STR_PARK    :Mennydörgő-sziklák
-STR_DTLS    :Két nagy szikladarab emelkedik ki a homokból, amelyekre egy vidámpark alapjai épülnek
-
-<Octagon Park>
-STR_SCNR    :Oktogon Park
-STR_PARK    :Oktogon Park
-STR_DTLS    :Tíz hullámvasutat kell tervezned és építened ebben a nagy parkban
-
-<Pleasure Island>
-STR_SCNR    :Élménysziget
-STR_PARK    :Élménysziget
-STR_DTLS    :A hosszú, keskeny sziget kihívásokkal teli helyszín a megadott hullámvasutak építésére
-
-<Icicle Worlds>
-STR_SCNR    :Jégcsap Világok
-STR_PARK    :Jégcsap Világok
-STR_DTLS    :Alakítsd át a jeges tájat virágzó vidámparkká
-
-<Southern Sands>
-STR_SCNR    :Déli Homok
-STR_PARK    :Déli Homok
-STR_DTLS    :Egy sivatagi park néhány ügyesen megtervezett hullámvasúttal arra vár, hogy kibővítsd
-
-<Tiny Towers>
-STR_SCNR    :Törpe Tornyok
-STR_PARK    :Törpe Tornyok
-STR_DTLS    :Öt meglévő hullámvasutat kell befejezned ebben a kis parkban
-
-<Nevermore Park>
-STR_SCNR    :Sohamár Park
-STR_PARK    :Sohamár Park
-STR_DTLS    :Egy nagy park, újszerű közlekedési rendszerrel a szélén
-
-<Pacifica>
-STR_SCNR    :Pacifica
-STR_PARK    :Pacifica
-STR_DTLS    :Ez a nagy sziget csak a tiéd, hogy vidámparkká fejleszd
-
-<Urban Jungle>
-STR_SCNR    :Városi Dzsungel
-STR_PARK    :Városi Dzsungel
-STR_DTLS    :Ez a hatalmas elhagyatott felhőkarcoló egyedi lehetőség egy vidámpark-fejlesztő számára
-
-<Terror Town>
-STR_SCNR    :Terrorváros
-STR_PARK    :Terrorváros
-STR_DTLS    :Ez a városi terület csak a tiéd, hogy vidámparkká fejleszd
-
-<Megaworld Park>
-STR_SCNR    :Megavilág Park
-STR_PARK    :Megavilág Park
-STR_DTLS    :Egy óriási park, amely már így is tele van játékokkal, fejlesztésre szorul
-
-<Venus Ponds>
-STR_SCNR    :Vénusz Tavak
-STR_PARK    :Vénusz Tavak
-STR_DTLS    :Alakítsd át egy messzi bolygó földterületét vidámparkká
-
-<Micro Park>
-STR_SCNR    :Mikro Park
-STR_PARK    :Mikro Park
-STR_DTLS    :Próbáld meg létrehozni a világ legkisebb nyereséges parkját
-
-## Real Parks from RCT1
-# None of them had details
-<Alton Towers>
-STR_SCNR    :Alton Towers
-STR_PARK    :Alton Towers
-STR_DTLS    :
-
-<Heide-Park>
-STR_SCNR    :Heide Park
-STR_PARK    :Heide Park
-STR_DTLS    :
-
-<Blackpool Pleasure Beach>
-STR_SCNR    :Blackpool Pleasure Beach
-STR_PARK    :Blackpool Pleasure Beach
-STR_DTLS    :
-
-## Misc parks from RCT1
-# Had no details
-<Fort Anachronism>
-STR_SCNR    :Anakronizmus-erőd
-STR_PARK    :Anakronizmus-erőd
-STR_DTLS    :
-
-###############################################################################
-## RCT2 Scenarios
-###############################################################################
-<Alpine Adventures>
-STR_SCNR    :Alpesi Kalandok
-STR_PARK    :Alpesi Kalandok
-STR_DTLS    :Alakíts át egy kis hegyi síközpontot havas témájú vidámparkká
-
-<Amity Airfield>
-STR_SCNR    :Barátság Repülőtér
-STR_PARK    :Barátság Repülőtér
-STR_DTLS    :Építs egy repülés témájú vidámparkot ezen az elhagyatott repülőtéren
-
-<Botany Breakers>
-STR_SCNR    :Botanikus Hullámok
-STR_PARK    :Botanikus Hullámok
-STR_DTLS    :A kihívásod az, hogy építs egy igazán nyereséges parkot ezen a paradicsomi szigeten
-
-<Build your own Six Flags Belgium>
-STR_SCNR    :Építsd meg a saját Six Flags Belgiumodat
-STR_PARK    :Six Flags Belgium
-STR_DTLS    :Építsd meg a saját változatodat ebből európai Six Flags parkból
-
-<Build your own Six Flags Great Adventure>
-STR_SCNR    :Építsd meg a saját Six Flags Great Adventure-ödet
-STR_PARK    :Six Flags Great Adventure
-STR_DTLS    :Használd a tervezői képességeidet, hogy újraalkosd ezt a Six Flags parkot
-
-<Build your own Six Flags Holland>
-STR_SCNR    :Építsd meg a saját Six Flags Hollandodat
-STR_PARK    :Six Flags Holland
-STR_DTLS    :Építsd meg ezt az európai Six Flags parkot úgy, ahogyan szeretnéd
-
-<Build your own Six Flags Magic Mountain>
-STR_SCNR    :Építsd meg a saján Six Flags Magic Mountain-edet
-STR_PARK    :Six Flags Magic Mountain
-STR_DTLS    :Készítsd el a saját verziódat ebből a hatalmas Six Flags parkból
-
-<Build your own Six Flags over Texas>
-STR_SCNR    :Építsd meg a saját Six Flags over Texasodat
-STR_PARK    :Six Flags over Texas
-STR_DTLS    :A semmiből kiindulva építsd meg ebben a Six Flags parkban a játékokat
-
-<Build your own Six Flags Park>
-STR_SCNR    :Építsd meg a saját Six Flags parkodat
-STR_PARK    :Six Flags
-STR_DTLS    :Építs saját tervezésű Six Flags parkot - vagy más Six Flags parkokból építs játékokat, vagy tervezz és építs saját játékokat
-
-<Bumbly Bazaar>
-STR_SCNR    :Bumfordi Bazár
-STR_PARK    :Bumfordi Bazár
-STR_DTLS    :Egy kis piaci bazárral kezdve, a kihívásod a boltok és bódék nyereségének növelése azzal, hogy több vendéget vonzol be játékok és hullámvasutak építésével
-
-<Crazy Castle>
-STR_SCNR    :Őrült Kastély
-STR_PARK    :Őrült Kastély
-STR_DTLS    :Örököltél egy nagy kastélyt. Az a feladatod, hogy átalakítsd egy kis vidámparkká.
-
-<Dusty Greens>
-STR_SCNR    :Poros Golfpálya 
-STR_PARK    :Poros Golfpálya
-STR_DTLS    :A sivatagban, egy autópálya-csomópont közelében található Poros Golfpálya lehetőséget kínál egy kis golfüdülő virágzó vidámparkká fejlesztésére
-
-<Electric Fields>
-STR_SCNR    :Elektromos Mezők
-STR_PARK    :Elektromos Mezők
-STR_DTLS    :Örököltél egy kis farmot, és a kihívásod egy kis vidámpark építése a mezők és a farmépületek között
-
-<Extreme Heights>
-STR_SCNR    :Extrém Magaslatok
-STR_PARK    :Extrém Magaslatok
-STR_DTLS    :Pénzügyi korlátoktól mentesen, a kihívásod ennek a sivatagi parknak a bővítése úgy, hogy magához vonzza a maximális izgalmakat kereső embereket 
-
-<Factory Capers>
-STR_SCNR    :Gyári Móka
-STR_PARK    :Gyári Móka
-STR_DTLS    :Az elhagyatott gyárkomplexum lehetőség egy mechanikus témájú vidámpark építésére
-
-<Fungus Woods>
-STR_SCNR    :Gombaerdő
-STR_PARK    :Gombaerdő
-STR_DTLS    :Kizárólag régebbi stílusú, fából készült hullámvasutakra korlátozva, a kihívásod egy virágzó vidámpark építése Gombaerdőben
-
-<Ghost Town>
-STR_SCNR    :Szellemváros
-STR_PARK    :Szellemváros
-STR_DTLS    :Egy nagy vidámparklánc felbérelt, hogy építs nekik óriási hullámvasútparkot egy elhagyatott bányászváros köré
-
-<Gravity Gardens>
-STR_SCNR    :Gravitációs Kert
-STR_PARK    :Gravitációs Kert
-STR_DTLS    :A kihívásod az, hogy építs egy hullámvasútparkot a gyönyörű Gravitációs Kertben. Semmi más játékot, csak hullámvasutakat!
-
-<Infernal Views>
-STR_SCNR    :Pokoli Kilátások
-STR_PARK    :Pokoli Kilátások
-STR_DTLS    :A park bizonytalanul fészkel a magmafolyamokkal övezett lávasziklákon
-
-<Lucky Lake>
-STR_SCNR    :Szerencsés-tó
-STR_PARK    :Szerencsés-tó
-STR_DTLS    :Korlátlan pénzzel, de egy kihívást jelentő tavi helyszínen, ezt a parkot igazi próbatétel lesz bővíteni és igazgatni
-
-<Rainbow Summit>
-STR_SCNR    :Szivárvány Csúcs
-STR_PARK    :Szivárvány Csúcs
-STR_DTLS    :A domboldalon épült parkban tilos bármi magasat építeni. Sikerül bővítened a parkot és sikeressé tenni?
-
-<Six Flags Belgium>
-STR_SCNR    :Six Flags Belgium
-STR_PARK    :Six Flags Belgium
-STR_DTLS    :Próbáld ki magad ennek a Six Flags parknak az üzemeltetésében és fejlesztésében
-
-<Six Flags Great Adventure>
-STR_SCNR    :Six Flags Great Adventure
-STR_PARK    :Six Flags Great Adventure
-STR_DTLS    :Építsd meg a hiányzó Six Flags játékokat, vagy készíts saját terveket a park fejlesztésére! De ne feledkezz meg a végső célodról: több vendéget vonzani a parkba!
-
-<Six Flags Holland>
-STR_SCNR    :Six Flags Holland
-STR_PARK    :Six Flags Holland
-STR_DTLS    :Próbáld ki magad ennek a Six Flags parknak az üzemeltetésében és fejlesztésében
-
-<Six Flags Magic Mountain>
-STR_SCNR    :Six Flags Magic Mountain
-STR_PARK    :Six Flags Magic Mountain
-STR_DTLS    :Építsd meg a hiányzó Six Flags játékokat, vagy készíts saját terveket a park fejlesztésére! De ne feledkezz meg a végső célodról: több vendéget vonzani a parkba!
-
-<Six Flags over Texas>
-STR_SCNR    :Six Flags over Texas
-STR_PARK    :Six Flags over Texas
-STR_DTLS    :Építsd meg a hiányzó Six Flags játékokat, vagy készíts saját terveket a park fejlesztésére! De ne feledkezz meg a végső célodról: több vendéget vonzani a parkba!
-
-###############################################################################
-## Wacky Worlds Scenarios
-###############################################################################
-<Africa - African Diamond Mine>
-STR_SCNR    :Afrikai Bányák
-STR_PARK    :Afrikai Bányák
-STR_DTLS    :Egy elhagyatott gyémántbányát örököltél, és találtál egy értékes gyémántot. Úgy döntesz, hogy ezt a pénzt egy világhírű vidámpark építésébe fekteted.
-
-<Africa - Oasis>
-STR_SCNR    :Délibábos Őrület
-STR_PARK    :Délibábos Őrület
-STR_DTLS    :Felfedeztek egy sivatagi oázist, amely gyönyörű helyszínt biztosítana egy parknak. Az oázisba való eljutás biztosított.
-
-<Africa - Victoria Falls>
-STR_SCNR    :A Szakadék Szélén
-STR_PARK    :A Szakadék Szélén
-STR_DTLS    :Egy gát épült, amely bőséges és olcsó vízenergiát kínál a park működtetéséhez. Magas parkértéket kell elérned, hogy segítsen visszafizetni a gátra felvett kölcsönt.
-
-<Antarctic - Ecological Salvage>
-STR_SCNR    :Jeges Kalandok
-STR_PARK    :Jeges Kalandok
-STR_DTLS    :A környezetvédelmi ügynökség rád bízta, hogy egy ökológiára káros régi olajfinomítót alakíts át első osztályú turisztikai látványossággá. A föld olcsó, de a hitelkamatok magasak. Az öreg épületeket értékesítheted újrahasznosítási célokra.
-
-<Asia - Great Wall of China Tourism Enhancement>
-STR_SCNR    :Kínai Nagy Fal
-STR_PARK    :Kínai Nagy Fal
-STR_DTLS    :A hatóságok úgy döntöttek, hogy a Nagy Fal körüli turizmus élénkítésére egy vidámparkot építenek a szomszédos területen. A pénz nem számít!
-
-<Asia - Japanese Coastal Reclaim>
-STR_SCNR    :Okinawa Partjai
-STR_PARK    :Okinawa Partjai
-STR_DTLS    :Egy már meglévő park kifogyott a területből. Az egyetlen lehetőséged a tenger felé történő bővítés, ehhez pedig kölcsönt kell felvenned. Az épületekre vonatkozó magassági korlátozások a talapzatok és az esetleges földrengési kockázatok miatt vannak érvényben.
-
-<Asia - Maharaja Palace>
-STR_SCNR    :Maharadzsa Park
-STR_PARK    :Maharadzsa Park
-STR_DTLS    :A maharadzsa megbízott, hogy szórakoztasd a nagyszámú helyi lakosságot. Építs egy parkot, amelyet a maharadzsa palotája ihletett.
-
-<Australasia - Ayers Rock>
-STR_SCNR    :Ayers Kaland
-STR_PARK    :Ayers Kaland
-STR_DTLS    :Segítesz az aborigineknek egy parkot építeni egy kulturális tudatossági program részeként. Rengeteg vendéget kell szerezned, hogy megismertesd velük az aborigin nép egyedülálló örökségét.
-
-<Australasia - Fun at the Beach>
-STR_SCNR    :Tengerparti Grillparti
-STR_PARK    :Tengerparti Grillparti
-STR_DTLS    :Egy helyi vállalkozó tengeri élményparkja tönkrement. Már üzemeltetsz egy kis parkot, és megveszed a másik parkot az építővállalattól. Alakíts ki egy nagy, összekapcsolt parkot.
-
-<Europe - European Cultural Festival>
-STR_SCNR    :Európai Extravagancia
-STR_PARK    :Európai Extravagancia
-STR_DTLS    :Felkértek, hogy vegyél át egy európai kulturális látványosságot, és növelned kell a vendégszámot, hogy a jelenlegi európai parlamenti ciklus végéig visszafizethesd az EU-támogatást.
-
-<Europe - Renovation>
-STR_SCNR    :Hamvakból
-STR_PARK    :Hamvakból
-STR_DTLS    :Egy régi park leromlott állapotba került. Elnyersz egy európai uniós támogatást, hogy ez a lepusztult terület újra régi fényében tündökölhessen! Fel kell újítanod a parkot, és vissza kell fizetned a támogatást.
-
-<N. America - Extreme Hawaiian Island>
-STR_SCNR    :Veszett Waikiki
-STR_PARK    :Veszett Waikiki
-STR_DTLS    :Hawaii lakói már unják a szörfözést, és valami intenzívebbet keresnek. Erre tekintettel kell parkot építened, hogy a terület turisztikai vonzereje magasan maradjon.
-
-<North America - Grand Canyon>
-STR_SCNR    :Kanyon Kalamajkák
-STR_PARK    :Kanyon Kalamajkák
-STR_DTLS    :Egy parkot kell építened a természeti kincs mindkét oldalán, de korlátozott a rendelkezésre álló terület - lehetőséged van a szomszédos területek megvásárlására az őslakos amerikai indiánoktól. El kell érned a célt, hogy fenntartsd a helyi város lakosságát.
-
-<North America - Rollercoaster Heaven>
-STR_SCNR    :Hullámvasút Paradicsom
-STR_PARK    :Hullámvasút Paradicsom
-STR_DTLS    :Egy sikeres iparmágnás vagy, aki hosszú szabadságon van, és ezt az időt arra szeretné felhasználni, hogy a városi parkot hullámvasút paradicsommá alakítsa át. A pénz nem számít!
-
-<South America - Inca Lost City>
-STR_SCNR    :Elveszett Város Alapító
-STR_PARK    :Elveszett Város Alapító
-STR_DTLS    :A helyi turizmus további fellendítése érdekében egy olyan parkot kell létrehoznod, amely harmonizál a környezetével.
-
-<South America - Rain Forest Plateau>
-STR_SCNR    :Esőerdei Kaland
-STR_PARK    :Esőerdei Kaland
-STR_DTLS    :A tér korlátozott az értékes esőerdőben - mindent be kell zsúfolnod a meglévő tisztásra, hogy életképes alternatívát nyújthass a helyi faiparnak.
-
-<South America - Rio Carnival>
-STR_SCNR    :Cukorsüveg-part
-STR_PARK    :Cukorsüveg-part
-STR_DTLS    :Egy kis parkot üzemeltetsz Rio mellett, de a bank felmondta a hiteledet. Gyorsan növelned kell a jövedelemtermelő képességedet, hogy vissza tudd fizetni ezt a váratlan adósságot.
-
-###############################################################################
-## Time Twister Scenarios
-###############################################################################
-<Dark Age - Castle>
-STR_SCNR    :Sziklaoldali Vár
-STR_PARK    :Sziklaoldali Vár
-STR_DTLS    :A hagyományörző egyesület helyi tagjai komolyan veszik az emlékcsatákat. Rád bízták a feladatot, hogy építs egy sötét középkor témájú parkot a Sziklaoldali Vár területén.
-
-<Dark Age - Robin Hood>
-STR_SCNR    :Sherwoodi Erdő
-STR_PARK    :Sherwoodi Erdő
-STR_DTLS    :Hogy a gazdagoktól elvegyétek a vagyonukat és szétosszátok az elesettek között, te és a Vidám Fiúk úgy döntöttetek, hogy vidámparkot építetek Sherwood erdejében.
-
-<Future - First Encounters>
-STR_SCNR    :Földönkívüli Felhajtás
-STR_PARK    :Földönkívüli Felhajtás
-STR_DTLS    :Életet fedeztek egy távoli bolygón. Építs egy űrlény témájú parkot, hogy megtollasodhass a példátlan érdeklődésnek köszönhetően.
-
-<Future - Future World>
-STR_SCNR    :Gemini Város
-STR_PARK    :Gemini Város
-STR_DTLS    :Mutass egy újszerű, utópisztikus jövőképet - találj ki egy futurisztikus parktervet, amely magában foglalja a legmodernebb látványosságokat.
-
-<Mythological - Animatronic Film Set>
-STR_SCNR    :Animatronikus Mókák
-STR_PARK    :Animatronikus Mókák
-STR_DTLS    :Egy már létező vidámpark vezetését és fejlesztését kaptad feladatul, amely egy régi film díszleteire épült. Építs egy emlékművet az úttörő stop-motion animátoroknak, akik először keltettek életre mitikus lényeket a mozivásznon.
-
-<Mythological - Cradle of Civilisation>
-STR_SCNR    :Mitológiai Őrület
-STR_PARK    :Mitológiai Őrület
-STR_DTLS    :Egy különleges régészeti értékkel bíró sziget tulajdonosa vagy. Úgy döntöttél, hogy finanszírozod a megőrzését egy vidámpark létrehozásával, amely az terület gazdag mitológiai örökségére épül.
-
-<Prehistoric - After the Asteroid>
-STR_SCNR    :Kráter Káosz
-STR_PARK    :Kráter Káosz
-STR_DTLS    :Egy poros, régi meteoritkráter tulajdonosa vagy. Az igazi vállalkozói szellem jegyében úgy döntöttél, hogy egy aszteroida témájú parkot építesz, és a látszólag értéktelen területedet egy nagyobb vagyonná alakítod.
-
-<Prehistoric - Jurassic Safari>
-STR_SCNR    :Vasútszaurusz
-STR_PARK    :Vasútszaurusz
-STR_DTLS    :Azt a feladatot kaptad, hogy építs egy jura kori vidámparkot. Ahhoz, hogy a látogatók optimálisan közelíthessék meg az egzotikus növény- és állatkiállításokat, a völgy fölé és a völgybe vezető hullámvasutakat kell építened.
-
-<Prehistoric - Stone Age>
-STR_SCNR    :Sziklás Túrák
-STR_PARK    :Sziklás Túrák
-STR_DTLS    :Hogy megakadályozd az autópálya-építőket és megőrizd a titokzatos ősi kőköröket, egy kőkorszaki vidámparkot kell építened, és nyereséget termelned. A látogatók vonzása azonban kihívást jelenthet, mivel a terep kissé barátságtalan.
-
-<Roaring Twenties - Prison Island>
-STR_SCNR    :Alcatraz
-STR_PARK    :Alcatraz
-STR_DTLS    :A hírhedt börtönsziget - amelynek lakossága egykor szeszcsempészektől és zsarolóktól duzzadt - most eladó. Úgy döntöttél, hogy turisztikai látványossággá alakítod át, és a pénz nem számít.
-
-<Roaring Twenties - Schneider Cup>
-STR_SCNR    :Schneider-part
-STR_PARK    :Schneider-part
-STR_DTLS    :Néhány év múlva lesz nagyapád Schneider-kupa győzelmének 75. évfordulója. Azzal tisztelegsz a teljesítménye előtt, hogy egy vidámparkot építesz a híres vízi repülős versenyről mintázva.
-
-<Roaring Twenties - Skyscrapers>
-STR_SCNR    :Metropolisz
-STR_PARK    :Metropolisz
-STR_DTLS    :Egy üres telek tulajdonosa vagy a város alacsonyabb részéhez közel. Hogy a legtöbbet hozd ki városi ingatlanodból, építs egy felhőkarcoló témájú parkot, amelyet a húszas évek szárnyaló art deco építészete ihletett.
-
-<Rock 'n' Roll - Flower Power>
-STR_SCNR    :Woodstock
-STR_PARK    :Woodstock
-STR_DTLS    :Évente megrendezésre kerül egy nagyszabású zenei fesztivál a területeden. Építs egy menő vidámparkot, hogy szórakoztasd a szabad szellemű közönséget.
-
-<Rock 'n' Roll - Rock 'n' Roll>
-STR_SCNR    :Rock ‘n’ Roll Újjáéledés
-STR_PARK    :Rock ‘n’ Roll Újjáéledés
-STR_DTLS    :Ez az idős park egykor jobb napokat látott. Segíts a tulajdonosnak a retró rock 'n' roll stílusú átalakításban, hogy a hely sikeres szórakozóhellyé váljon.
-
-###############################################################################
-## Official Custom Content Scenarios
-###############################################################################
-<Panda World>
-STR_SCNR    :Panda Világ
-STR_PARK    :Panda Világ
-STR_DTLS    :Szerezz be további játékokat, hogy több ember látogasson el ebbe a panda-témájú parkba
-
-<Tycoon Park>
-STR_SCNR    :Tycoon Park
-STR_PARK    :Tycoon Park
-STR_DTLS    :
-
-###
-<UCES Halloween>
-STR_SCNR    :Temető-gerinc
-STR_PARK    :Temető-gerinc
-STR_DTLS    :Itt van halloween, UCES halloween, tök lámpás ami gyertyát rejt! Mentsd meg a bajba jutott temetőt, ügyelve a halottak békéjére! Képes vagy a szellemeket sírjukban tartani és frászt hozni a vendégeidre?{NEWLINE}Szerző: Squid
-
-###############################################################################
-## UCES: The Time Machine (2003)
-###############################################################################
-<Lighthouse of Alexandria by Katatude for UCES>
-STR_SCNR    :Alexandriai világítótorony
-STR_PARK    :Alexandriai világítótorony
-STR_DTLS    :Sándor építette a várost; a görögök, rómaiak, egyiptomiak rányomták bélyegüket. De a legnagyobb megtiszteltetés az ókori világ egy csodája - a világítótorony. Látogass el és hozz létre egy parkot!{NEWLINE}Szerző: Katatude
-
-<Cleveland's Luna Park>
-STR_SCNR    :Luna Park, Cleveland
-STR_PARK    :Luna Park
-STR_DTLS    :Amilyen a megnyitó napján volt - 1905. május 18-án.{NEWLINE}Szerző: Aetherwave
-
-<Mount Vesuvius 1700 A.D. by Katatude for UCES>
-STR_SCNR    :Vezúv
-STR_PARK    :Vezúv
-STR_DTLS    :Pompejit és Herculaneumot a Vezúv temette maga alá Kr.u. 79-ben. Látogass el az ásatásokra és építs egy parkot!{NEWLINE}Szerző: Katatude
-
-<The Sandbox by Katatude for UCES>
-STR_SCNR    :A Homokozó
-STR_PARK    :A Homokozó
-STR_DTLS    :Amit mindenki akar - egy homokozó! Szóval ragadjátok meg a kis vödrötöket és lapátotokat és építsetek egy parkot!{NEWLINE}Szerző: Katatude
-
-<Niagara Falls & Gorge by Katatude for UCES>
-STR_SCNR    :Niagara-vízesés és szurdok
-STR_PARK    :Niagara-vízesés
-STR_DTLS    :Amerikai-zuhatag, Menyasszonyi fátyol-zuhatag és a kanadai Patkó-zuhatag a Niagara határon, 1850.{NEWLINE}Szerző: Katatude
-
-<Rocky Mountain Miners>
-STR_SCNR    :Sziklás-hegyi bányászok
-STR_PARK    :Sziklás-hegyi bányászok
-STR_DTLS    :Egy sziklaomlás megrongálta a vasutadat. A munkásaid elmentek kutatni. Van arany a hullámvasutakban?{NEWLINE}Szerzők: Squid, Buckone, Fossil
-
-<The Time Machine by Katatude for UCES>
-STR_SCNR    :Az Időgép
-STR_PARK    :Az Időgép
-STR_DTLS    :Az időgép. Építsd meg, hogy mehess - amikor akarsz, ahová akarsz. Az örökkévalóság vár. Minden relatív.{NEWLINE}Szerző: Katatude
-
-<Tower of Babel>
-STR_SCNR    :Bábel tornya
-STR_PARK    :Bábel tornya
-STR_DTLS    :Hűű! Nézd csak, hova vitt minket az időgép! Hová tűnt mindenki?{NEWLINE}Szerző: Fossil
-
-<Transformation>
-STR_SCNR    :Transzformáció
-STR_PARK    :Transzformáció
-STR_DTLS    :Vártunk téged…{NEWLINE}Szerző: Fossil
-
-<Urbis Incognitus>
-STR_SCNR    :Urbis Incognitus
-STR_PARK    :Urbis Incognitus
-STR_DTLS    :A rómaiak belefáradtak az unalmas gladiátorharcokba. Adj nekik valami izgalmasabbat, változtass egy római várost minden idők legnagyobb vidámparkjává!{NEWLINE}Szerző: Kaffe
-
-###############################################################################
-## UCES: Katy’s Dreamworld (2003)
-###############################################################################
-
-<Beneath the Christmas Tree by Katatude for UCES>
-STR_SCNR    :A karácsonyfa alatt
-STR_PARK    :Téli Csodaország
-STR_DTLS    :Anyu építette ezt a jelenetet a fánk alá. Most azt akarja, hogy parkot csináljunk bele! Tudsz segíteni?{NEWLINE}Szerző: Katatude
-
-<Bigrock Blast>
-STR_SCNR    :Robbanás Bigrockban
-STR_PARK    :Robbanás Bigrockban
-STR_DTLS    :Miután robbanás történt a Bigrock Bányászati Vállalatnál, Bigrock lakosainak egy vidámparkot kell építeniük, hogy életben tartsák városukat.{NEWLINE}Szerzők: rbarclay & buckone
-
-<Camp Mockingbird for UCES by Katatude>
-STR_SCNR    :Feketerigó Tábor
-STR_PARK    :Feketerigó Tábor
-STR_DTLS    :Csak $500/hét ez a nyári tábor! Törd fel a malacperselyed, aztán szórakozz és építs egy parkot.{NEWLINE}Szerző: Katatude
-
-<Choo Choo Town>
-STR_SCNR    :Sihuhu Város
-STR_PARK    :Sihuhu Város
-STR_DTLS    :Anyu! Apu! Sihuhu városba akarok menni!{NEWLINE}Szerző: Fossil
-
-<Dragon Islands>
-STR_SCNR    :Sárkány-szigetek
-STR_PARK    :Sárkány-szigetek
-STR_DTLS    :Sárkány-szigetek? Nem biztos, hogy oda akarok menni…{NEWLINE}Szerző: Fossil
-
-<Kiddy Karnival II>
-STR_SCNR    :Kölyökkarnevál II
-STR_PARK    :Kölyökkarnevál
-STR_DTLS    :Hé, gyerekek! Érezzük jól magunkat!{NEWLINE}Szerzők: Piehead & Fossil
-
-<Sand Dune>
-STR_SCNR    :Homokdűne
-STR_PARK    :Homokdűne
-STR_DTLS    :Egy kis park tulajdonosaként vásároltál egy nagy darab földet a tengerparton, hogy bővíts és még több vendéget vonzz a gyönyörű homokdűnékhez, de vigyázz: nem bolygathatod az ökológiailag érzékeny homokdűnéket.{NEWLINE}Szerző: rbarclay
+STR_6710    :Stabil rendezés
+STR_6711    :Fájlnév:
+STR_6712    :Mentés
+STR_6713    :{COMMA32} {STRINGID}
+STR_6714    :Fájlnév
+STR_6715    :Módosítás dátuma
+STR_6716    :Fájlméret
+STR_6717    :Fájlméret {STRINGID}
+STR_6718    :Vendég animációk
+STR_6719    :Legalább egy vendég animációs objektumot kell kiválasztani
+STR_6720    :Legalább egy mindenes animációs objektumot kell kiválasztani
+STR_6721    :Legalább egy gépész animációs objektumot kell kiválasztani
+STR_6722    :Legalább egy biztonsági őr animációs objektumot kell kiválasztani
+STR_6723    :Legalább egy szórakoztató animációs objektumot kell kiválasztani
+STR_6724    :Pálya szövegek
+STR_6725    :X:
+STR_6726    :Y:
+STR_6727    :Merülőhurok (balra)
+STR_6728    :Merülőhurok (jobbra)
+STR_6729    :A kábeles felvonószakasznak közvetlenül az állomás vagy a blokkoló fék után kell kezdődnie
+STR_6730    :Emscripten-adatok exportálása
+STR_6731    :Emscripten-adatok importálása
+STR_6732    :Gomb megjelenítése az eszköztáron a nézet óramutató járásával ellentétes elforgatásához
+STR_6733    :Átlátszó
+STR_6734    :A vágási magasságon vagy afölött levő térképelemek átlátszóan jelennek meg
+STR_6735    :Ugrás a szülőmappára
+STR_6736    :Előnézet
+STR_6737    :Nincs előnézet
+STR_6738    :{WINDOW_COLOUR_2}Park értékelése: {BLACK}{UINT16}
+STR_6739    :{WINDOW_COLOUR_2}Dátum: {BLACK}{STRINGID}
+STR_6740    :{WINDOW_COLOUR_2}Pénz: {BLACK}{CURRENCY2DP}
+STR_6741    :{WINDOW_COLOUR_2}Játékok száma: {BLACK}{UINT16}
+STR_6742    :{WINDOW_COLOUR_2}Vendégek száma: {BLACK}{UINT16}
+STR_6743    :Éghajlat
+STR_6744    :{WINDOW_COLOUR_2}{UINT16}%
+STR_6745    :Vendégek intenzitási preferenciái:
+STR_6746    :Nincsenek preferenciák
+STR_6747    :Változó preferenciák (alapértelmezett)
+STR_6748    :Csak kevésbé intenzív játékok
+STR_6749    :Csak intenzívebb játékok
+STR_6750    :Válaszd ki, hogy az új vendégek milyen intenzitású játékokat preferáljanak
+STR_6751    :A várakozási útvonalak nem használhatók szintbeli kereszteződéseknél!
+STR_6752    :Pálya beállítások – Cél
+STR_6753    :Pálya beállítások – Pálya részletei
+STR_6754    :Pálya beállítások – Területkorlátozások
+STR_6755    :Cél beállításai
+STR_6756    :Pálya részleteinek beállításai
+STR_6757    :Területkorlátozási beállítások
+STR_6758    :Kölcsön beállításai
+STR_6759    :Üzleti modell
+STR_6760    :Bevételek:
+STR_6761    :Pálya részletei
+STR_6762    :Felhasználói felület
+STR_6763    :RollerCoaster Tycoon 1
+STR_6764    :Mentés és automatikus mentés
+STR_6765    :Haladó
+STR_6766    :Törlés
+STR_6767    :Ablak
+STR_6768    :Renderelés
+STR_6769    :Viselkedés
+STR_6770    :FPS-korlát:
+STR_6771    :Belső sebesség (alapért.)
+STR_6772    :Vertikális szinkron
+STR_6773    :Korlátlan
+STR_6774    :Ellenőrzés óta eltelt idő
+STR_6775    :{COMMA16} perc
+STR_6776    :{COMMA16} perc
+STR_6777    :több mint 4 óra
+STR_6778    :Pályák előnézete:
+STR_6779    :Válaszd ki, milyen típusú előnézeti képet szeretnél a pályaválasztó képernyőn.
+STR_6780    :Mini térképek
+STR_6781    :Képernyőképek
+STR_6782    :Park értesítések  
+STR_6783    :Játék értesítések  
+STR_6784    :Látogatói értesítések
+STR_6785    :Játékvezérlő
+STR_6786    :Holtzóna:
+STR_6787    :Analóg kar holtzónája (a minimális szükséges elmozdulás)
+STR_6788    :Érzékenység:
+STR_6789    :Analóg kar érzékenységi szorzó
+STR_6790    :Holtzóna: {COMMA32}%
+STR_6791    :Érzékenység: {COMMA32}%
+STR_6792    :Bejárati épületek
+STR_6793    :Vendégek és személyzet
+STR_6794    :Díszletek és témák
+STR_6795    :{MOVE_X}{10}{STRINGID}
+STR_6796    :•{MOVE_X}{10}{STRINGID}
+STR_6797    :Nincs előnézet
+STR_6798    :Képernyőkép
+STR_6799    :Mini térkép
+STR_7000    :vagy
+STR_7001    :Játéknév
+STR_7002    :{STRINGID} {STRINGID}
+STR_7003    :A(z) „{STRING}” hangfájl csonka. Minta {INT32} lenne az elvárt, de csak {INT32} érhető el. Fontold meg az RCT2 újratelepítését.
+STR_7004    :Újrarajzolás kényszerítése
+STR_7005    :Útterület építése húzással
+STR_7006    :Keret rajzolása a képgombok köré
+STR_7007    :Játéktípus
+STR_7008    :Ismeretlen játéktípus ({INT32})
+STR_7009    :Szkriptek fogadása…
+STR_7010    :Nem sikerült elindítani a visszajátszást, „{STRING}” fájl nem létezik vagy érvénytelen
+STR_7011    :Nem sikerült elindítani a visszajátszást
+STR_7012    :Lengyel złoty (PLN)
+STR_7013    :Útterületek építése húzással
+STR_7014    :Megvan a játék a Steamen, de még nincs telepítve.
+STR_7015    :Kérjük, zárd be a Steamet, ha fut, majd kattints az „OK” gombra.
+STR_7016    :Az OpenRCT2 megpróbálta elindítani a letöltést a Steamen. Nyisd meg a Steamet, és hagyd, hogy letöltse a játékot. Amikor elkészült, kattints az „OK” gombra.
+STR_7017    :Kilépés
+STR_7023    :Tedd láthatatlanná
+STR_7024    :Az egész játékot láthatatlanná teszi
+STR_7025    :Tedd láthatóvá
+STR_7026    :Az egész játékot láthatóvá teszi
+STR_7028    :Negyed spirál felfelé
+STR_7029    :Negyed spirál lefelé

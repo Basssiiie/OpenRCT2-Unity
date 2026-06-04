@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,40 +11,40 @@
 
 #include "../../RideData.h"
 #include "../../ShopItem.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor DrinkStallRTD =
 {
-    .Category = RIDE_CATEGORY_SHOP,
-    .StartTrackPiece = OpenRCT2::TrackElemType::FlatTrack1x1A,
+    .Category = RideCategory::shop,
+    .StartTrackPiece = TrackElemType::flatTrack1x1A,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = GetTrackPaintFunctionShop,
+        .trackStyle = TrackStyle::shop,
         .enabledTrackGroups = {},
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = EnumsToFlags(RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps, RtdFlag::noTestMode,
+    .flags = RtdFlags(RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps, RtdFlag::noTestMode,
                      RtdFlag::noVehicles, RtdFlag::isShopOrFacility, RtdFlag::noWallsAroundTrack,
                      RtdFlag::isFlatRide, RtdFlag::sellsDrinks, RtdFlag::listVehiclesSeparately,
                      RtdFlag::hasTrackColourMain),
-    .RideModes = EnumsToFlags(RideMode::ShopStall),
-    .DefaultMode = RideMode::ShopStall,
+    .RideModes = EnumsToFlags(RideMode::shopStall),
+    .DefaultMode = RideMode::shopStall,
     .Naming = { STR_RIDE_NAME_DRINK_STALL, STR_RIDE_DESCRIPTION_DRINK_STALL },
     .NameConvention = { RideComponentType::Car, RideComponentType::Building, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_DRINK_STALL",
-    .AvailableBreakdowns = 0,
-    .Heights = { 12, DefaultDrinksStallHeight, 0, 0, },
+    .availableBreakdowns = {},
+    .Heights = { 12, kDefaultDrinksStallHeight, 0, 0, },
     .MaxMass = 255,
-    .LiftData = { OpenRCT2::Audio::SoundId::Null, 5, 5 },
+    .LiftData = { Audio::SoundId::null, 5, 5 },
     .RatingsMultipliers = { 0, 0, 0 },
     .UpkeepCosts = { 50, 1, 0, 0, 0, 0 },
     .BuildCosts = { 250.00_GBP, 0.00_GBP, 1, },
     .DefaultPrices = { 0, 0 },
-    .DefaultMusic = MUSIC_OBJECT_GENTLE,
-    .PhotoItem = ShopItem::Photo,
+    .DefaultMusic = kMusicObjectGentle,
+    .PhotoItem = ShopItem::photo,
     .BonusValue = 15,
-    .ColourPresets = DEFAULT_STALL_COLOUR_PRESET,
+    .ColourPresets = kDefaultStallColourPreset,
     .ColourPreview = { 0, 0 },
     .ColourKey = RideColourKey::Drink,
     .Name = "drink_stall",
@@ -53,15 +53,16 @@ constexpr RideTypeDescriptor DrinkStallRTD =
         RatingsCalculationType::Stall,
         { 1, 1, 1 },
         1,
-        -1,
+        kDynamicRideShelterRating,
         false,
         { { RatingsModifierType::NoModifier, 0, 0, 0, 0 } }
     },
     .UpdateRotating = UpdateRotatingDefault,
     .LightFXAddLightsMagicVehicle = nullptr,
-    .StartRideMusic = OpenRCT2::RideAudio::DefaultStartRideMusicChannel,
+    .StartRideMusic = RideAudio::DefaultStartRideMusicChannel,
     .DesignCreateMode = TrackDesignCreateMode::Default,
     .MusicUpdateFunction = DefaultMusicUpdate,
-    .Classification = RideClassification::ShopOrStall,
+    .Classification = RideClassification::shopOrStall,
 };
+} // namespace OpenRCT2
 // clang-format on

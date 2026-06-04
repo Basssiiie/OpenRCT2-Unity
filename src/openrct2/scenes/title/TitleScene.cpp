@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -15,20 +15,20 @@
 #include "../../GameState.h"
 #include "../../Input.h"
 #include "../../OpenRCT2.h"
-#include "../../audio/audio.h"
+#include "../../audio/Audio.h"
 #include "../../config/Config.h"
 #include "../../core/Console.hpp"
+#include "../../drawing/Drawing.h"
 #include "../../drawing/Text.h"
 #include "../../interface/Screenshot.h"
-#include "../../interface/Viewport.h"
-#include "../../interface/Window.h"
+#include "../../network/Network.h"
 #include "../../network/NetworkBase.h"
-#include "../../network/network.h"
-#include "../../scenario/Scenario.h"
 #include "../../scenario/ScenarioRepository.h"
 #include "../../ui/UiContext.h"
+#include "../../ui/WindowManager.h"
 #include "../../util/Util.h"
 #include "../../windows/Intent.h"
+#include "../../world/Map.h"
 #include "TitleSequence.h"
 #include "TitleSequenceManager.h"
 #include "TitleSequencePlayer.h"
@@ -54,7 +54,7 @@ bool TitleScene::PreviewSequence(size_t value)
     _previewingSequence = TryLoadSequence(true);
     if (_previewingSequence)
     {
-        if (!(gScreenFlags & SCREEN_FLAGS_TITLE_DEMO))
+        if (gLegacyScene != LegacyScene::titleSequence)
         {
             gPreviewingTitleSequenceInGame = true;
         }
@@ -62,7 +62,7 @@ bool TitleScene::PreviewSequence(size_t value)
     else
     {
         _currentSequence = TitleGetConfigSequence();
-        if (gScreenFlags & SCREEN_FLAGS_TITLE_DEMO)
+        if (gLegacyScene == LegacyScene::titleSequence)
         {
             TryLoadSequence();
         }
@@ -99,16 +99,16 @@ void TitleScene::Load()
         PauseToggle();
     }
 
-    gScreenFlags = SCREEN_FLAGS_TITLE_DEMO;
+    gLegacyScene = LegacyScene::titleSequence;
     gScreenAge = 0;
     gCurrentLoadedPath.clear();
 
 #ifndef DISABLE_NETWORK
     GetContext().GetNetwork().Close();
 #endif
-    gameStateInitAll(GetGameState(), DEFAULT_MAP_SIZE);
-    ViewportInitAll();
-    ContextOpenWindow(WindowClass::MainWindow);
+    gameStateInitAll(getGameState(), kDefaultMapSize);
+    ContextResetSubsystems();
+    ContextOpenWindow(WindowClass::mainWindow);
 
     TitleInitialise();
 
@@ -128,7 +128,7 @@ void TitleScene::Load()
     if (gOpenRCT2ShowChangelog)
     {
         gOpenRCT2ShowChangelog = false;
-        ContextOpenWindow(WindowClass::Changelog);
+        ContextOpenWindow(WindowClass::changelog);
     }
 
     LOG_VERBOSE("TitleScene::Load() finished");
@@ -141,7 +141,7 @@ void TitleScene::Tick()
     ScreenshotCheck();
     TitleHandleKeyboardInput();
 
-    if (GameIsNotPaused())
+    if (!gOpenRCT2Headless && GameIsNotPaused())
     {
         TryLoadSequence();
         _sequencePlayer->Update();
@@ -159,7 +159,7 @@ void TitleScene::Tick()
         // update_weather_animation();
     }
 
-    InputSetFlag(INPUT_FLAG_VIEWPORT_SCROLLING, false);
+    gInputFlags.unset(InputFlag::viewportScrolling);
 
     ContextHandleInput();
 
@@ -180,11 +180,13 @@ void TitleScene::ChangePresetSequence(size_t preset)
     }
 
     const utf8* configId = TitleSequenceManager::GetConfigID(preset);
-    Config::Get().interface.CurrentTitleSequencePreset = configId;
+    Config::Get().interface.currentTitleSequencePreset = configId;
 
     if (!_previewingSequence)
         _currentSequence = preset;
-    WindowInvalidateAll();
+
+    auto* windowMgr = Ui::GetWindowManager();
+    windowMgr->InvalidateAll();
 }
 
 /**
@@ -193,21 +195,25 @@ void TitleScene::ChangePresetSequence(size_t preset)
  */
 void TitleScene::CreateWindows()
 {
-    ContextOpenWindow(WindowClass::TitleMenu);
-    ContextOpenWindow(WindowClass::TitleExit);
-    ContextOpenWindow(WindowClass::TitleOptions);
-    ContextOpenWindow(WindowClass::TitleLogo);
-    ContextOpenWindow(WindowClass::TitleVersion);
+    ContextOpenWindow(WindowClass::titleMenu);
+    ContextOpenWindow(WindowClass::titleExit);
+    ContextOpenWindow(WindowClass::titleOptions);
+    ContextOpenWindow(WindowClass::titleLogo);
+    ContextOpenWindow(WindowClass::titleVersion);
     WindowResizeGui(ContextGetWidth(), ContextGetHeight());
 }
 
 void TitleScene::TitleInitialise()
 {
+    if (gOpenRCT2Headless)
+    {
+        return;
+    }
     if (_sequencePlayer == nullptr)
     {
-        _sequencePlayer = GetContext().GetUiContext()->GetTitleSequencePlayer();
+        _sequencePlayer = GetContext().GetUiContext().GetTitleSequencePlayer();
     }
-    if (Config::Get().interface.RandomTitleSequence)
+    if (Config::Get().interface.randomTitleSequence)
     {
         const size_t total = TitleSequenceManager::GetCount();
         if (total > 0)
@@ -283,11 +289,11 @@ void TitleScene::TitleInitialise()
 
 bool TitleScene::TryLoadSequence(bool loadPreview)
 {
-    if (_loadedTitleSequenceId != _currentSequence || loadPreview)
+    if (!gOpenRCT2Headless && (_loadedTitleSequenceId != _currentSequence || loadPreview))
     {
         if (_sequencePlayer == nullptr)
         {
-            _sequencePlayer = GetContext().GetUiContext()->GetTitleSequencePlayer();
+            _sequencePlayer = GetContext().GetUiContext().GetTitleSequencePlayer();
         }
 
         size_t numSequences = TitleSequenceManager::GetCount();
@@ -303,7 +309,7 @@ bool TitleScene::TryLoadSequence(bool loadPreview)
                     {
                         // Forcefully change the preset to a preset that works.
                         const utf8* configId = TitleSequenceManager::GetConfigID(targetSequence);
-                        Config::Get().interface.CurrentTitleSequencePreset = configId;
+                        Config::Get().interface.currentTitleSequencePreset = configId;
                     }
                     _currentSequence = targetSequence;
                     GfxInvalidateScreen();
@@ -318,7 +324,7 @@ bool TitleScene::TryLoadSequence(bool loadPreview)
         _loadedTitleSequenceId = SIZE_MAX;
         if (!loadPreview)
         {
-            gameStateInitAll(GetGameState(), DEFAULT_MAP_SIZE);
+            gameStateInitAll(getGameState(), kDefaultMapSize);
             GameNotifyMapChanged();
         }
         return false;
@@ -328,7 +334,7 @@ bool TitleScene::TryLoadSequence(bool loadPreview)
 
 void TitleCreateWindows()
 {
-    auto* context = OpenRCT2::GetContext();
+    auto* context = GetContext();
     auto* titleScene = static_cast<TitleScene*>(context->GetTitleScene());
     if (titleScene != nullptr)
     {
@@ -338,7 +344,7 @@ void TitleCreateWindows()
 
 void* TitleGetSequencePlayer()
 {
-    auto* context = OpenRCT2::GetContext();
+    auto* context = GetContext();
     auto* titleScene = static_cast<TitleScene*>(context->GetTitleScene());
     if (titleScene != nullptr)
     {
@@ -349,7 +355,7 @@ void* TitleGetSequencePlayer()
 
 void TitleSequenceChangePreset(size_t preset)
 {
-    auto* context = OpenRCT2::GetContext();
+    auto* context = GetContext();
     auto* titleScene = static_cast<TitleScene*>(context->GetTitleScene());
     if (titleScene != nullptr)
     {
@@ -359,12 +365,12 @@ void TitleSequenceChangePreset(size_t preset)
 
 size_t TitleGetConfigSequence()
 {
-    return TitleSequenceManager::GetIndexForConfigID(Config::Get().interface.CurrentTitleSequencePreset.c_str());
+    return TitleSequenceManager::GetIndexForConfigID(Config::Get().interface.currentTitleSequencePreset.c_str());
 }
 
 size_t TitleGetCurrentSequence()
 {
-    auto* context = OpenRCT2::GetContext();
+    auto* context = GetContext();
     auto* titleScene = static_cast<TitleScene*>(context->GetTitleScene());
     if (titleScene != nullptr)
     {
@@ -375,7 +381,7 @@ size_t TitleGetCurrentSequence()
 
 bool TitlePreviewSequence(size_t value)
 {
-    auto* context = OpenRCT2::GetContext();
+    auto* context = GetContext();
     auto* titleScene = static_cast<TitleScene*>(context->GetTitleScene());
     if (titleScene != nullptr)
     {
@@ -386,7 +392,7 @@ bool TitlePreviewSequence(size_t value)
 
 void TitleStopPreviewingSequence()
 {
-    auto* context = OpenRCT2::GetContext();
+    auto* context = GetContext();
     auto* titleScene = static_cast<TitleScene*>(context->GetTitleScene());
     if (titleScene != nullptr)
     {
@@ -396,7 +402,7 @@ void TitleStopPreviewingSequence()
 
 bool TitleIsPreviewingSequence()
 {
-    auto* context = OpenRCT2::GetContext();
+    auto* context = GetContext();
     auto* titleScene = static_cast<TitleScene*>(context->GetTitleScene());
     if (titleScene != nullptr)
     {

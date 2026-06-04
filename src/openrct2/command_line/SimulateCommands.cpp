@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,62 +14,73 @@
 #include "../config/ConfigTypes.h"
 #include "../core/Console.hpp"
 #include "../entity/EntityRegistry.h"
-#include "../network/network.h"
+#include "../network/Network.h"
 #include "../platform/Platform.h"
 #include "CommandLine.hpp"
 
 #include <cstdlib>
 #include <memory>
 
-using namespace OpenRCT2;
-
-static exitcode_t HandleSimulate(CommandLineArgEnumerator* argEnumerator);
-
-const CommandLineCommand CommandLine::SimulateCommands[]{ // Main commands
-                                                          DefineCommand("", "<ticks>", nullptr, HandleSimulate),
-                                                          kCommandTableEnd
-};
-
-static exitcode_t HandleSimulate(CommandLineArgEnumerator* argEnumerator)
+namespace OpenRCT2
 {
-    const char** argv = const_cast<const char**>(argEnumerator->GetArguments()) + argEnumerator->GetIndex();
-    int32_t argc = argEnumerator->GetCount() - argEnumerator->GetIndex();
-
-    if (argc < 2)
+    // clang-format off
+    static constexpr CommandLineOptionDefinition kNoOptions[]
     {
-        Console::Error::WriteLine("Missing arguments <sv6-file> <ticks>.");
-        return EXITCODE_FAIL;
-    }
+        kOptionTableEnd
+    };
 
-    const char* inputPath = argv[0];
-    uint32_t ticks = atol(argv[1]);
+    static exitcode_t HandleSimulate(CommandLineArgEnumerator* argEnumerator);
 
-    gOpenRCT2Headless = true;
+    const CommandLineCommand CommandLine::kSimulateCommands[]{
+        // Main commands
+        DefineCommand("", "<park file> <ticks>", kNoOptions, HandleSimulate),
+        kCommandTableEnd
+    };
+    // clang-format on
 
-#ifndef DISABLE_NETWORK
-    gNetworkStart = NETWORK_MODE_SERVER;
-#endif
-
-    std::unique_ptr<IContext> context(CreateContext());
-    if (context->Initialise())
+    static exitcode_t HandleSimulate(CommandLineArgEnumerator* argEnumerator)
     {
-        if (!context->LoadParkFromFile(inputPath))
+        const utf8* inputPath;
+        if (!argEnumerator->TryPopString(&inputPath))
         {
+            Console::Error::WriteLine("Expected a save file path");
             return EXITCODE_FAIL;
         }
 
-        Console::WriteLine("Running %d ticks...", ticks);
-        for (uint32_t i = 0; i < ticks; i++)
+        int32_t ticks;
+        if (!argEnumerator->TryPopInteger(&ticks))
         {
-            gameStateUpdateLogic();
+            Console::Error::WriteLine("Expected a number of ticks to simulate");
+            return EXITCODE_FAIL;
         }
-        Console::WriteLine("Completed: %s", GetAllEntitiesChecksum().ToString().c_str());
-    }
-    else
-    {
-        Console::Error::WriteLine("Context initialization failed.");
-        return EXITCODE_FAIL;
-    }
 
-    return EXITCODE_OK;
-}
+        gOpenRCT2Headless = true;
+
+#ifndef DISABLE_NETWORK
+        gNetworkStart = Network::Mode::server;
+#endif
+
+        std::unique_ptr<IContext> context(CreateContext());
+        if (context->Initialise())
+        {
+            if (!context->LoadParkFromFile(inputPath))
+            {
+                return EXITCODE_FAIL;
+            }
+
+            Console::WriteLine("Running %d ticks...", ticks);
+            for (int32_t i = 0; i < ticks; i++)
+            {
+                gameStateUpdateLogic();
+            }
+            Console::WriteLine("Completed: %s", getGameState().entities.GetAllEntitiesChecksum().ToString().c_str());
+        }
+        else
+        {
+            Console::Error::WriteLine("Context initialization failed.");
+            return EXITCODE_FAIL;
+        }
+
+        return EXITCODE_OK;
+    }
+} // namespace OpenRCT2

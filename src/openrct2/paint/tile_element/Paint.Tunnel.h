@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -37,19 +37,19 @@ enum class TunnelType : uint8_t
     InvertedSquareFlatTo25Deg = 15,
 
     // Ghost train doors
-    Doors0 = 16,
-    Doors1 = 17,
-    Doors2 = 18,
-    Doors3 = 19,
-    Doors4 = 20,
-    Doors5 = 21,
-    Doors6 = 22,
-
-    Count,
-
-    Null = 255,
+    doorClosed = 16,
+    doorOpeningOutward = 17,
+    doorOpenOutward = 18,
+    doorOpeningInward = 19,
+    doorOpenInward = 20,
+    doorClosedFlatToDown25 = 21,
+    doorOpeningOutwardFlatToDown25 = 22,
+    doorOpenOutwardFlatToDown25 = 23,
+    doorOpeningInwardFlatToDown25 = 24,
+    doorOpenInwardFlatToDown25 = 25,
 };
 constexpr uint8_t kRegularTunnelTypeCount = 16;
+constexpr uint8_t kTunnelTypeCount = 26;
 
 enum class TunnelGroup : uint8_t
 {
@@ -73,6 +73,10 @@ struct TunnelEntry
 {
     uint8_t height;
     TunnelType type;
+
+    constexpr TunnelEntry(const uint8_t _height, const TunnelType _type)
+        : height(_height)
+        , type(_type) {};
 };
 
 TunnelType GetTunnelType(TunnelGroup tunnelGroup, TunnelSubType tunnelSubType);
@@ -114,10 +118,16 @@ void TrackPaintUtilRightQuarterTurn3Tiles25DegDownTunnel(
 void TrackPaintUtilLeftQuarterTurn3TilesTunnel(
     PaintSession& session, TunnelGroup group, TunnelSubType tunnelType, int16_t height, Direction direction,
     uint8_t trackSequence);
+
+void TrackPaintUtilRightQuarterTurn3TilesTunnel(
+    PaintSession& session, int16_t height, Direction direction, uint8_t trackSequence, TunnelType tunnelType);
 void TrackPaintUtilRightQuarterTurn3TilesTunnel(
     PaintSession& session, TunnelGroup group, TunnelSubType tunnelType, int16_t height, Direction direction,
     uint8_t trackSequence);
 
+void TrackPaintUtilLeftQuarterTurn1TileTunnel(
+    PaintSession& session, Direction direction, uint16_t baseHeight, int8_t startOffset, TunnelType startTunnel,
+    int8_t endOffset, TunnelType endTunnel);
 void TrackPaintUtilLeftQuarterTurn1TileTunnel(
     PaintSession& session, TunnelGroup group, Direction direction, uint16_t baseHeight, int8_t startOffset,
     TunnelSubType startTunnel, int8_t endOffset, TunnelSubType endTunnel);

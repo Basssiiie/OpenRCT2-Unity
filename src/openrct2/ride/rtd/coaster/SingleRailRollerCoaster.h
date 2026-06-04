@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,61 +9,62 @@
 
 #pragma once
 
-#include "../../../sprites.h"
+#include "../../../SpriteIds.h"
 #include "../../RideData.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor SingleRailRollerCoasterRTD =
 {
-    .Category = RIDE_CATEGORY_ROLLERCOASTER,
-    .StartTrackPiece = OpenRCT2::TrackElemType::EndStation,
+    .Category = RideCategory::rollerCoaster,
+    .StartTrackPiece = TrackElemType::endStation,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = OpenRCT2::SingleRailRC::GetTrackPaintFunction,
-        .supportType = MetalSupportType::Tubes,
-        .enabledTrackGroups = { TrackGroup::flat, TrackGroup::straight, TrackGroup::stationEnd, TrackGroup::liftHill, TrackGroup::liftHillSteep, TrackGroup::flatRollBanking, TrackGroup::slope, TrackGroup::flatToSteepSlope, TrackGroup::slopeSteepUp, TrackGroup::slopeSteepDown, TrackGroup::slopeCurve, TrackGroup::slopeCurveSteep, TrackGroup::sBend, TrackGroup::curveSmall, TrackGroup::curve, TrackGroup::curveLarge, TrackGroup::corkscrew, TrackGroup::helixDownBankedHalf, TrackGroup::helixUpBankedHalf, TrackGroup::brakes, TrackGroup::onridePhoto, TrackGroup::slopeVertical, TrackGroup::barrelRoll, TrackGroup::slopeCurveBanked, TrackGroup::blockBrakes, TrackGroup::slopeRollBanking, TrackGroup::curveVertical, TrackGroup::quarterLoop, TrackGroup::halfLoop, TrackGroup::halfLoopMedium, TrackGroup::corkscrewLarge, TrackGroup::zeroGRoll, TrackGroup::zeroGRollLarge, TrackGroup::slopeCurveLarge, TrackGroup::diagBrakes, TrackGroup::diagBlockBrakes, TrackGroup::inclinedBrakes },
-        .extraTrackGroups =  {TrackGroup::slopeSteepLong, TrackGroup::halfLoopLarge},
+        .trackStyle = TrackStyle::singleRailRollerCoaster,
+        .supportType = MetalSupportType::tubes,
+        .enabledTrackGroups = { TrackGroup::flat, TrackGroup::straight, TrackGroup::stationEnd, TrackGroup::liftHill, TrackGroup::liftHillSteep, TrackGroup::flatRollBanking, TrackGroup::slope, TrackGroup::flatToSteepSlope, TrackGroup::slopeSteepUp, TrackGroup::slopeSteepDown, TrackGroup::slopeCurve, TrackGroup::slopeCurveSteep, TrackGroup::sBend, TrackGroup::curveSmall, TrackGroup::curve, TrackGroup::curveLarge, TrackGroup::corkscrew, TrackGroup::helixDownBankedHalf, TrackGroup::helixUpBankedHalf, TrackGroup::brakes, TrackGroup::onridePhoto, TrackGroup::slopeVertical, TrackGroup::barrelRoll, TrackGroup::slopeCurveBanked, TrackGroup::blockBrakes, TrackGroup::slopeRollBanking, TrackGroup::curveVertical, TrackGroup::quarterLoop, TrackGroup::halfLoop, TrackGroup::halfLoopLarge, TrackGroup::halfLoopMedium, TrackGroup::corkscrewLarge, TrackGroup::zeroGRoll, TrackGroup::zeroGRollLarge, TrackGroup::slopeCurveLarge, TrackGroup::diagBrakes, TrackGroup::diagBlockBrakes, TrackGroup::inclinedBrakes, TrackGroup::diveLoop, TrackGroup::diagSlope, TrackGroup::diagSlopeSteepUp, TrackGroup::diagSlopeSteepDown, TrackGroup::helixUpUnbankedQuarter, TrackGroup::helixDownUnbankedQuarter, TrackGroup::helixUpBankedQuarter, TrackGroup::helixDownBankedQuarter },
+        .extraTrackGroups =  {TrackGroup::slopeSteepLong, TrackGroup::diagSlopeSteepLong},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = kRtdFlagsHasThreeColours | kRtdFlagsCommonCoaster | kRtdFlagsCommonCoasterNonAlt|
-                 EnumsToFlags(RtdFlag::hasTrackColourSupports, RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation,
+    .flags = kRtdFlagsHasThreeColours | kRtdFlagsCommonCoaster | kRtdFlagsCommonCoasterNonAlt|
+                 RtdFlags(RtdFlag::hasTrackColourSupports, RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation,
                               RtdFlag::checkGForces, RtdFlag::allowMultipleCircuits, RtdFlag::allowReversedTrains),
-    .RideModes = EnumsToFlags(RideMode::ContinuousCircuit, RideMode::ContinuousCircuitBlockSectioned),
-    .DefaultMode = RideMode::ContinuousCircuit,
+    .RideModes = EnumsToFlags(RideMode::continuousCircuit, RideMode::continuousCircuitBlockSectioned),
+    .DefaultMode = RideMode::continuousCircuit,
+    .OperatingSettings = { 7, 27 },
     .BoosterSettings = { 15, 52 },
     .LegacyBoosterSettings = { 15, 52 },
     .Naming = { STR_RIDE_NAME_SINGLE_RAIL_ROLLER_COASTER, STR_RIDE_DESCRIPTION_SINGLE_RAIL_ROLLER_COASTER },
     .NameConvention = { RideComponentType::Train, RideComponentType::Track, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_SINGLE_RAIL_ROLLER_COASTER",
-    .AvailableBreakdowns = (1 << BREAKDOWN_SAFETY_CUT_OUT) | (1 << BREAKDOWN_RESTRAINTS_STUCK_CLOSED) | (1 << BREAKDOWN_RESTRAINTS_STUCK_OPEN) | (1 << BREAKDOWN_VEHICLE_MALFUNCTION) | (1 << BREAKDOWN_BRAKES_FAILURE),
+    .availableBreakdowns = { Breakdown::safetyCutOut, Breakdown::restraintsStuckClosed, Breakdown::restraintsStuckOpen, Breakdown::vehicleMalfunction, Breakdown::brakesFailure },
     .Heights = { 28, 24, 5, 7},
     .MaxMass = 18,
-    .LiftData = { OpenRCT2::Audio::SoundId::LiftRMC, 5, 8 },
+    .LiftData = { Audio::SoundId::liftRMC, 5, 8 },
     .RatingsMultipliers = { 52, 36, 10 },
     .UpkeepCosts = { 40, 20, 80, 10, 3, 10 },
     .BuildCosts = { 37.50_GBP, 2.50_GBP, 50},
     .DefaultPrices = { 20, 20 },
-    .DefaultMusic = MUSIC_OBJECT_ROCK_1,
-    .PhotoItem = ShopItem::Photo,
+    .DefaultMusic = kMusicObjectRock1,
+    .PhotoItem = ShopItem::photo,
     .BonusValue = 80,
     .ColourPresets = TRACK_COLOUR_PRESETS(
-        { COLOUR_LIGHT_ORANGE, COLOUR_LIGHT_ORANGE, COLOUR_WHITE },
-        { COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_BLACK },
-        { COLOUR_LIGHT_BLUE, COLOUR_LIGHT_BLUE, COLOUR_DARK_GREEN }
+        { Drawing::Colour::lightOrange, Drawing::Colour::lightOrange, Drawing::Colour::white },
+        { Drawing::Colour::yellow, Drawing::Colour::yellow, Drawing::Colour::black },
+        { Drawing::Colour::lightBlue, Drawing::Colour::lightBlue, Drawing::Colour::darkGreen }
     ),
     .ColourPreview = { SPR_RIDE_DESIGN_PREVIEW_SINGLE_RAIL_ROLLER_COASTER_TRACK, SPR_RIDE_DESIGN_PREVIEW_SINGLE_RAIL_ROLLER_COASTER_SUPPORTS },
     .ColourKey = RideColourKey::Ride,
     .Name = "single_rail_rc",
-    .RatingsData = 
+    .RatingsData =
     {
         RatingsCalculationType::Normal,
-        { RIDE_RATING(3, 50), RIDE_RATING(0, 60), RIDE_RATING(0, 40) },
+        { RideRating::make(3, 50), RideRating::make(0, 60), RideRating::make(0, 40) },
         16,
-        -1,
+        kDynamicRideShelterRating,
         false,
         {
             { RatingsModifierType::BonusLength,           6000,             764, 0, 0 },
-            { RatingsModifierType::BonusSynchronisation,  0,                RIDE_RATING(0, 40), RIDE_RATING(0, 05), 0 },
+            { RatingsModifierType::BonusSynchronisation,  0,                RideRating::make(0, 40), RideRating::make(0, 05), 0 },
             { RatingsModifierType::BonusTrainLength,      0,                187245, 0, 0 },
             { RatingsModifierType::BonusMaxSpeed,         0,                44281, 88562, 35424 },
             { RatingsModifierType::BonusAverageSpeed,     0,                364088, 436906, 0 },
@@ -77,10 +78,11 @@ constexpr RideTypeDescriptor SingleRailRollerCoasterRTD =
             { RatingsModifierType::BonusScenery,          0,                6693, 0, 0 },
             { RatingsModifierType::RequirementDropHeight, 14,               2, 2, 2 },
             { RatingsModifierType::RequirementMaxSpeed,   0xA0000,          2, 2, 2 },
-            { RatingsModifierType::RequirementNegativeGs, FIXED_2DP(0, 40), 2, 2, 2 },
+            { RatingsModifierType::RequirementNegativeGs, MakeFixed16_2dp(0, 40), 2, 2, 2 },
             { RatingsModifierType::RequirementNumDrops,   2,                2, 2, 2 },
             { RatingsModifierType::PenaltyLateralGs,      0,                24576, 35746, 49648 },
         },
     },
 };
+} // namespace OpenRCT2
 // clang-format on

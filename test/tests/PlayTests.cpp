@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -16,19 +16,20 @@
 #include <openrct2/GameState.h>
 #include <openrct2/OpenRCT2.h>
 #include <openrct2/ParkImporter.h>
-#include <openrct2/actions/ParkSetEntranceFeeAction.h>
-#include <openrct2/actions/ParkSetParameterAction.h>
-#include <openrct2/actions/RideSetPriceAction.h>
-#include <openrct2/actions/RideSetStatusAction.h>
+#include <openrct2/actions/GameActionRunner.h>
+#include <openrct2/actions/park/ParkSetEntranceFeeAction.h>
+#include <openrct2/actions/park/ParkSetParameterAction.h>
+#include <openrct2/actions/ride/RideSetPriceAction.h>
+#include <openrct2/actions/ride/RideSetStatusAction.h>
+#include <openrct2/drawing/Drawing.h>
 #include <openrct2/entity/EntityRegistry.h>
 #include <openrct2/entity/EntityTweener.h>
 #include <openrct2/entity/Peep.h>
 #include <openrct2/object/ObjectManager.h>
-#include <openrct2/platform/Platform.h>
 #include <openrct2/ride/Ride.h>
+#include <openrct2/ride/RideManager.hpp>
 #include <openrct2/world/MapAnimation.h>
 #include <openrct2/world/Park.h>
-#include <openrct2/world/Scenery.h>
 #include <string>
 
 using namespace OpenRCT2;
@@ -50,16 +51,17 @@ static std::unique_ptr<IContext> localStartGame(const std::string& parkPath)
     auto loadResult = importer->LoadSavedGame(parkPath.c_str(), false);
     context->GetObjectManager().LoadObjects(loadResult.RequiredObjects);
 
+    MapAnimations::ClearAll();
     // TODO: Have a separate GameState and exchange once loaded.
-    auto& gameState = GetGameState();
+    auto& gameState = getGameState();
     importer->Import(gameState);
 
-    ResetEntitySpatialIndices();
+    gameState.entities.ResetEntitySpatialIndices();
 
     ResetAllSpriteQuadrantPlacements();
     LoadPalette();
     EntityTweener::Get().Reset();
-    MapAnimationAutoCreate();
+    MapAnimations::MarkAllTiles();
     FixInvalidVehicleSpriteSizes();
 
     gGameSpeed = 1;
@@ -67,7 +69,8 @@ static std::unique_ptr<IContext> localStartGame(const std::string& parkPath)
     return context;
 }
 
-template<class Fn> static bool updateUntil(int maxSteps, Fn&& fn)
+template<class Fn>
+static bool updateUntil(int maxSteps, Fn&& fn)
 {
     while (maxSteps-- && !fn())
     {
@@ -76,10 +79,11 @@ template<class Fn> static bool updateUntil(int maxSteps, Fn&& fn)
     return maxSteps > 0;
 }
 
-template<class GA, class... Args> static void execute(Args&&... args)
+template<class GA, class... Args>
+static void execute(Args&&... args)
 {
     GA ga(std::forward<Args>(args)...);
-    GameActions::Execute(&ga);
+    GameActions::Execute(&ga, getGameState());
 }
 
 TEST_F(PlayTests, SecondGuestInQueueShouldNotRideIfNoFunds)
@@ -95,33 +99,33 @@ TEST_F(PlayTests, SecondGuestInQueueShouldNotRideIfNoFunds)
     auto context = localStartGame(initStateFile);
     ASSERT_NE(context.get(), nullptr);
 
-    auto& gameState = GetGameState();
+    auto& gameState = getGameState();
 
     // Open park for free but charging for rides
-    execute<ParkSetParameterAction>(ParkParameter::Open);
-    execute<ParkSetEntranceFeeAction>(0);
-    gameState.Park.Flags |= PARK_FLAGS_UNLOCK_ALL_PRICES;
+    execute<GameActions::ParkSetParameterAction>(GameActions::ParkParameter::Open);
+    execute<GameActions::ParkSetEntranceFeeAction>(0);
+    gameState.park.flags |= PARK_FLAGS_UNLOCK_ALL_PRICES;
 
     // Find ferris wheel
-    auto rideManager = GetRideManager();
+    auto rideManager = RideManager(gameState);
     auto it = std::find_if(
         rideManager.begin(), rideManager.end(), [](auto& ride) { return ride.type == RIDE_TYPE_FERRIS_WHEEL; });
     ASSERT_NE(it, rideManager.end());
     Ride& ferrisWheel = *it;
 
     // Open it for free
-    execute<RideSetStatusAction>(ferrisWheel.id, RideStatus::Open);
-    execute<RideSetPriceAction>(ferrisWheel.id, 0, true);
+    execute<GameActions::RideSetStatusAction>(ferrisWheel.id, RideStatus::open);
+    execute<GameActions::RideSetPriceAction>(ferrisWheel.id, 0, true);
 
     // Ignore intensity to stimulate peeps to queue into ferris wheel
-    gameState.Cheats.IgnoreRideIntensity = true;
+    gameState.cheats.ignoreRideIntensity = true;
 
     // Insert a rich guest
     auto richGuest = Park::GenerateGuest();
     richGuest->CashInPocket = 3000;
 
     // Wait for rich guest to get in queue
-    bool matched = updateUntil(1000, [&]() { return richGuest->State == PeepState::Queuing; });
+    bool matched = updateUntil(1000, [&]() { return richGuest->State == PeepState::queuing; });
     ASSERT_TRUE(matched);
 
     // Insert poor guest
@@ -129,18 +133,18 @@ TEST_F(PlayTests, SecondGuestInQueueShouldNotRideIfNoFunds)
     poorGuest->CashInPocket = 5;
 
     // Wait for poor guest to get in queue
-    matched = updateUntil(1000, [&]() { return poorGuest->State == PeepState::Queuing; });
+    matched = updateUntil(1000, [&]() { return poorGuest->State == PeepState::queuing; });
     ASSERT_TRUE(matched);
 
     // Raise the price of the ride to a value poor guest can't pay
-    execute<RideSetPriceAction>(ferrisWheel.id, 10, true);
+    execute<GameActions::RideSetPriceAction>(ferrisWheel.id, 10, true);
 
     // Verify that the poor guest goes back to walking without riding
     // since it doesn't have enough money to pay for it
     bool enteredTheRide = false;
     matched = updateUntil(10000, [&]() {
-        enteredTheRide |= poorGuest->State == PeepState::OnRide;
-        return poorGuest->State == PeepState::Walking || enteredTheRide;
+        enteredTheRide |= poorGuest->State == PeepState::onRide;
+        return poorGuest->State == PeepState::walking || enteredTheRide;
     });
 
     ASSERT_TRUE(matched);
@@ -155,25 +159,25 @@ TEST_F(PlayTests, CarRideWithOneCarOnlyAcceptsTwoGuests)
     auto context = localStartGame(initStateFile);
     ASSERT_NE(context.get(), nullptr);
 
-    auto& gameState = GetGameState();
+    auto& gameState = getGameState();
 
     // Open park for free but charging for rides
-    execute<ParkSetParameterAction>(ParkParameter::Open);
-    execute<ParkSetEntranceFeeAction>(0);
-    gameState.Park.Flags |= PARK_FLAGS_UNLOCK_ALL_PRICES;
+    execute<GameActions::ParkSetParameterAction>(GameActions::ParkParameter::Open);
+    execute<GameActions::ParkSetEntranceFeeAction>(0);
+    gameState.park.flags |= PARK_FLAGS_UNLOCK_ALL_PRICES;
 
     // Find car ride
-    auto rideManager = GetRideManager();
+    auto rideManager = RideManager(gameState);
     auto it = std::find_if(rideManager.begin(), rideManager.end(), [](auto& ride) { return ride.type == RIDE_TYPE_CAR_RIDE; });
     ASSERT_NE(it, rideManager.end());
     Ride& carRide = *it;
 
     // Open it for free
-    execute<RideSetStatusAction>(carRide.id, RideStatus::Open);
-    execute<RideSetPriceAction>(carRide.id, 0, true);
+    execute<GameActions::RideSetStatusAction>(carRide.id, RideStatus::open);
+    execute<GameActions::RideSetPriceAction>(carRide.id, 0, true);
 
     // Ignore intensity to stimulate peeps to queue into the ride
-    gameState.Cheats.IgnoreRideIntensity = true;
+    gameState.cheats.ignoreRideIntensity = true;
 
     // Create some guests
     std::vector<Peep*> guests;
@@ -183,7 +187,7 @@ TEST_F(PlayTests, CarRideWithOneCarOnlyAcceptsTwoGuests)
     }
 
     // Wait until one of them is riding
-    auto guestIsOnRide = [](auto* g) { return g->State == PeepState::OnRide; };
+    auto guestIsOnRide = [](auto* g) { return g->State == PeepState::onRide; };
     bool matched = updateUntil(10000, [&]() { return std::any_of(guests.begin(), guests.end(), guestIsOnRide); });
     ASSERT_TRUE(matched);
 

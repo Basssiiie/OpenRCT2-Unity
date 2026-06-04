@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,6 +9,7 @@
 
 #include "Vehicle.MiniGolf.h"
 
+#include "../../GameState.h"
 #include "../../entity/EntityRegistry.h"
 #include "../../entity/Guest.h"
 #include "../../ride/Ride.h"
@@ -80,7 +81,7 @@ namespace OpenRCT2
         MiniGolfPeepAnimationFramesPutt,
     };
 
-    const size_t MiniGolfPeepAnimationLengths[] = {
+    const size_t kMiniGolfPeepAnimationLengths[] = {
         std::size(MiniGolfPeepAnimationFramesWalk),
         std::size(MiniGolfPeepAnimationFramesPlaceBallDownwards),
         std::size(MiniGolfPeepAnimationFramesSwingLeft),
@@ -104,7 +105,7 @@ namespace OpenRCT2
             return;
         }
 
-        if (session.DPI.zoom_level >= ZoomLevel{ 2 })
+        if (session.rt.zoom_level >= ZoomLevel{ 2 })
         {
             return;
         }
@@ -113,16 +114,16 @@ namespace OpenRCT2
         if (ride == nullptr)
             return;
 
-        auto rideEntry = ride->GetRideEntry();
+        auto rideEntry = ride->getRideEntry();
         if (rideEntry == nullptr)
             return;
 
-        auto* peep = GetEntity<Guest>(vehicle->peep[0]);
+        auto* peep = getGameState().entities.GetEntity<Guest>(vehicle->peep[0]);
         if (peep == nullptr)
             return;
 
         uint8_t frame = MiniGolfPeepAnimationFrames[EnumValue(vehicle->mini_golf_current_animation)][vehicle->animation_frame];
-        uint32_t ebx = (frame << 2) + OpenRCT2::Entity::Yaw::YawTo4(imageDirection);
+        uint32_t ebx = (frame << 2) + Entity::Yaw::YawTo4(imageDirection);
 
         ImageIndex index = rideEntry->Cars[0].base_image_id + 1 + ebx;
         auto image = ImageId(index, peep->TshirtColour, peep->TrousersColour);
@@ -140,7 +141,7 @@ namespace OpenRCT2
             return;
         }
 
-        if (session.DPI.zoom_level >= ZoomLevel{ 1 })
+        if (session.rt.zoom_level >= ZoomLevel{ 1 })
         {
             return;
         }
@@ -149,7 +150,7 @@ namespace OpenRCT2
         if (ride == nullptr)
             return;
 
-        auto rideEntry = ride->GetRideEntry();
+        auto rideEntry = ride->getRideEntry();
         if (rideEntry == nullptr)
             return;
 

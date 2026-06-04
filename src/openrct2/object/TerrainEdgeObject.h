@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,22 +9,29 @@
 
 #pragma once
 
+#include "../audio/Audio.h"
 #include "Object.h"
 
-class TerrainEdgeObject final : public Object
+namespace OpenRCT2
 {
-private:
-public:
-    StringId NameStringId{};
-    uint32_t IconImageId{};
-    uint32_t BaseImageId{};
-    bool HasDoors{};
+    class TerrainEdgeObject final : public Object
+    {
+    private:
+    public:
+        static constexpr ObjectType kObjectType = ObjectType::terrainEdge;
 
-    void ReadJson(IReadObjectContext* context, json_t& root) override;
-    void Load() override;
-    void Unload() override;
+        StringId NameStringId{};
+        uint32_t IconImageId{};
+        uint32_t BaseImageId{};
+        bool HasDoors{};
+        Audio::DoorSoundType doorSound{};
 
-    void DrawPreview(DrawPixelInfo& dpi, int32_t width, int32_t height) const override;
+        void ReadJson(IReadObjectContext* context, json_t& root) override;
+        void Load() override;
+        void Unload() override;
 
-    static TerrainEdgeObject* GetById(ObjectEntryIndex entryIndex);
-};
+        void DrawPreview(Drawing::RenderTarget& rt, int32_t width, int32_t height) const override;
+
+        static TerrainEdgeObject* GetById(ObjectEntryIndex entryIndex);
+    };
+} // namespace OpenRCT2

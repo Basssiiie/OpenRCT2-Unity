@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,9 +7,7 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#include "../../../interface/Viewport.h"
 #include "../../../ride/RideData.h"
-#include "../../../ride/Track.h"
 #include "../../../ride/TrackPaint.h"
 #include "../../../ride/Vehicle.h"
 #include "../../Paint.h"
@@ -28,7 +26,7 @@ static void SubmarineRidePaintTrackStation(
     PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
     const TrackElement& trackElement, SupportType supportType)
 {
-    const auto* stationObj = ride.GetStationObject();
+    const auto* stationObj = ride.getStationObject();
     int32_t heightLower = height - 16;
     ImageId imageId;
 
@@ -73,13 +71,13 @@ static void SubmarineRidePaintTrackFlat(
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
         MetalASupportsPaintSetupRotated(
-            session, supportType.metal, MetalSupportPlace::Centre, direction, -1, heightLower, session.SupportColours);
+            session, supportType.metal, MetalSupportPlace::centre, direction, -1, heightLower, session.SupportColours);
     }
 
     PaintUtilSetSegmentSupportHeight(
         session,
         PaintUtilRotateSegments(
-            EnumsToFlags(PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide), direction),
+            EnumsToFlags(PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::topRight), direction),
         0xFFFF, 0);
     PaintUtilSetGeneralSupportHeight(session, height + 16);
 }
@@ -98,13 +96,11 @@ static void SubmarineRidePaintTrackLeftQuarterTurn3Tiles(
     {
         case 0:
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, -1, height - 16, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, -1, height - 16, session.SupportColours);
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::topCorner),
+                    EnumsToFlags(PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::topRight, PaintSegment::top),
                     direction),
                 0xFFFF, 0);
             break;
@@ -112,21 +108,17 @@ static void SubmarineRidePaintTrackLeftQuarterTurn3Tiles(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::leftCorner),
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::left),
                     direction),
                 0xFFFF, 0);
             break;
         case 3:
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, -1, height - 16, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, -1, height - 16, session.SupportColours);
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide,
-                        PaintSegment::bottomCorner),
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::centre, PaintSegment::bottomRight, PaintSegment::bottom),
                     direction),
                 0xFFFF, 0);
             break;
@@ -162,9 +154,7 @@ static void SubmarineRidePaintTrackLeftQuarterTurn1Tile(
     PaintUtilSetSegmentSupportHeight(
         session,
         PaintUtilRotateSegments(
-            EnumsToFlags(
-                PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomLeftSide),
-            direction),
+            EnumsToFlags(PaintSegment::left, PaintSegment::topLeft, PaintSegment::centre, PaintSegment::bottomLeft), direction),
         0xFFFF, 0);
     PaintUtilSetGeneralSupportHeight(session, height + 16);
 }
@@ -180,28 +170,28 @@ static void SubmarineRidePaintTrackRightQuarterTurn1Tile(
 /**
  * rct2: 0x008995D4
  */
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionSubmarineRide(int32_t trackType)
+TrackPaintFunction GetTrackPaintFunctionSubmarineRide(TrackElemType trackType)
 {
     switch (trackType)
     {
-        case TrackElemType::BeginStation:
-        case TrackElemType::MiddleStation:
-        case TrackElemType::EndStation:
+        case TrackElemType::beginStation:
+        case TrackElemType::middleStation:
+        case TrackElemType::endStation:
             return SubmarineRidePaintTrackStation;
 
-        case TrackElemType::Flat:
+        case TrackElemType::flat:
             return SubmarineRidePaintTrackFlat;
 
-        case TrackElemType::LeftQuarterTurn3Tiles:
+        case TrackElemType::leftQuarterTurn3Tiles:
             return SubmarineRidePaintTrackLeftQuarterTurn3Tiles;
-        case TrackElemType::RightQuarterTurn3Tiles:
+        case TrackElemType::rightQuarterTurn3Tiles:
             return SubmarineRidePaintTrackRightQuarterTurn3Tiles;
 
-        case TrackElemType::LeftQuarterTurn1Tile:
+        case TrackElemType::leftQuarterTurn1Tile:
             return SubmarineRidePaintTrackLeftQuarterTurn1Tile;
-        case TrackElemType::RightQuarterTurn1Tile:
+        case TrackElemType::rightQuarterTurn1Tile:
             return SubmarineRidePaintTrackRightQuarterTurn1Tile;
+        default:
+            return TrackPaintFunctionDummy;
     }
-
-    return nullptr;
 }

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,13 +7,11 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
+#include "../../../SpriteIds.h"
 #include "../../../drawing/Drawing.h"
-#include "../../../interface/Viewport.h"
 #include "../../../ride/RideData.h"
-#include "../../../ride/TrackData.h"
 #include "../../../ride/TrackPaint.h"
-#include "../../../sprites.h"
-#include "../../../world/Map.h"
+#include "../../../world/tile_element/TrackElement.h"
 #include "../../Paint.h"
 #include "../../support/WoodenSupports.h"
 #include "../../support/WoodenSupports.hpp"
@@ -28,9 +26,6 @@ static constexpr TunnelGroup kTunnelGroup = TunnelGroup::Square;
 
 enum
 {
-    SPR_REVERSE_FREEFALL_RC_FLAT_SW_NE = 22164,
-    SPR_REVERSE_FREEFALL_RC_FLAT_NW_SE = 22165,
-
     SPR_AIR_POWERED_VERTICAL_RC_FLAT_SW_NE = 22226,
     SPR_AIR_POWERED_VERTICAL_RC_FLAT_NW_SE = 22227,
     SPR_AIR_POWERED_VERTICAL_RC_STATION_SW_NE = 22228,
@@ -187,7 +182,7 @@ static void AirPoweredVerticalRCTrackFlat(
     auto imageId = session.TrackColours.WithIndex(imageIds[direction]);
     PaintAddImageAsParentRotated(session, direction, imageId, { 0, 0, height }, { { 0, 6, height }, { 32, 20, 1 } });
 
-    DrawSupportForSequenceA<TrackElemType::Flat>(
+    DrawSupportForSequenceA<TrackElemType::flat>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -200,24 +195,20 @@ static void AirPoweredVerticalRCTrackStation(
     PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
     const TrackElement& trackElement, SupportType supportType)
 {
-    static constexpr uint32_t imageIds[4][2] = {
-        { SPR_AIR_POWERED_VERTICAL_RC_STATION_SW_NE, SPR_STATION_BASE_B_SW_NE },
-        { SPR_AIR_POWERED_VERTICAL_RC_STATION_NW_SE, SPR_STATION_BASE_B_NW_SE },
-        { SPR_AIR_POWERED_VERTICAL_RC_STATION_SW_NE, SPR_STATION_BASE_B_SW_NE },
-        { SPR_AIR_POWERED_VERTICAL_RC_STATION_NW_SE, SPR_STATION_BASE_B_NW_SE },
+    static constexpr ImageIndex imageIds[4] = {
+        SPR_AIR_POWERED_VERTICAL_RC_STATION_SW_NE,
+        SPR_AIR_POWERED_VERTICAL_RC_STATION_NW_SE,
+        SPR_AIR_POWERED_VERTICAL_RC_STATION_SW_NE,
+        SPR_AIR_POWERED_VERTICAL_RC_STATION_NW_SE,
     };
-
     PaintAddImageAsParentRotated(
-        session, direction, GetStationColourScheme(session, trackElement).WithIndex(imageIds[direction][1]),
-        { 0, 0, height - 2 }, { { 0, 2, height }, { 32, 28, 1 } });
-    PaintAddImageAsChildRotated(
-        session, direction, session.TrackColours.WithIndex(imageIds[direction][0]), { 0, 0, height },
-        { { 0, 6, height }, { 32, 20, 1 } });
+        session, direction, session.TrackColours.WithIndex(imageIds[direction]), { 0, 0, height },
+        { { 0, 6, height + 1 }, { 32, 20, 1 } });
 
-    DrawSupportForSequenceA<TrackElemType::EndStation>(
+    DrawSupportForSequenceA<TrackElemType::endStation>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
-    TrackPaintUtilDrawNarrowStationPlatform(session, ride, direction, height, 5, trackElement);
+    TrackPaintUtilDrawNarrowStationPlatform(session, ride, direction, height, 5, trackElement, StationBaseType::b, -2);
 
     TrackPaintUtilDrawStationTunnel(session, direction, height);
 
@@ -261,7 +252,7 @@ static void AirPoweredVerticalRCTrackRightQuarterTurn5(
     };
 
     TrackPaintUtilRightQuarterTurn5TilesPaint3(session, height, direction, trackSequence, session.TrackColours, imageIds);
-    DrawSupportForSequenceA<TrackElemType::RightQuarterTurn5Tiles>(
+    DrawSupportForSequenceA<TrackElemType::rightQuarterTurn5Tiles>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
     TrackPaintUtilRightQuarterTurn5TilesTunnel(session, kTunnelGroup, TunnelSubType::Flat, height, direction, trackSequence);
 
@@ -274,7 +265,7 @@ static void AirPoweredVerticalRCTrackRightQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::topCorner, PaintSegment::topLeftSide, PaintSegment::topRightSide), direction),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::topLeft, PaintSegment::topRight), direction),
                 0xFFFF, 0);
             break;
         case 2:
@@ -282,8 +273,8 @@ static void AirPoweredVerticalRCTrackRightQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide,
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::topRightSide),
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottomRight, PaintSegment::right,
+                        PaintSegment::bottom, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -292,9 +283,8 @@ static void AirPoweredVerticalRCTrackRightQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::topLeftSide, PaintSegment::topRightSide, PaintSegment::centre,
-                        PaintSegment::leftCorner, PaintSegment::rightCorner, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::top, PaintSegment::topLeft, PaintSegment::topRight, PaintSegment::centre,
+                        PaintSegment::left, PaintSegment::right, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -302,7 +292,7 @@ static void AirPoweredVerticalRCTrackRightQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::topCorner, PaintSegment::topLeftSide, PaintSegment::topRightSide), direction),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::topLeft, PaintSegment::topRight), direction),
                 0xFFFF, 0);
             break;
         case 5:
@@ -310,8 +300,8 @@ static void AirPoweredVerticalRCTrackRightQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomRightSide, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::topLeftSide),
+                        PaintSegment::bottomRight, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::left,
+                        PaintSegment::bottom, PaintSegment::topLeft),
                     direction),
                 0xFFFF, 0);
             break;
@@ -353,7 +343,7 @@ static void AirPoweredVerticalRCTrackFlatToLeftBank(
         PaintAddImageAsParentRotated(session, direction, imageId, { 0, 0, height }, { { 0, 27, height }, { 32, 1, 26 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::FlatToLeftBank>(
+    DrawSupportForSequenceA<TrackElemType::flatToLeftBank>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -383,7 +373,7 @@ static void AirPoweredVerticalRCTrackFlatToRightBank(
         PaintAddImageAsParentRotated(session, direction, imageId, { 0, 0, height }, { { 0, 27, height }, { 32, 1, 26 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::FlatToRightBank>(
+    DrawSupportForSequenceA<TrackElemType::flatToRightBank>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -457,7 +447,7 @@ static void AirPoweredVerticalRCTrackBankedRightQuarterTurn5(
         PaintAddImageAsParent(session, imageId, { 0, 0, height }, { { 27, 0, height }, { 1, 32, 26 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::BankedRightQuarterTurn5Tiles>(
+    DrawSupportForSequenceA<TrackElemType::bankedRightQuarterTurn5Tiles>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
     TrackPaintUtilRightQuarterTurn5TilesTunnel(session, kTunnelGroup, TunnelSubType::Flat, height, direction, trackSequence);
 
@@ -470,7 +460,7 @@ static void AirPoweredVerticalRCTrackBankedRightQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::topCorner, PaintSegment::topLeftSide, PaintSegment::topRightSide), direction),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::topLeft, PaintSegment::topRight), direction),
                 0xFFFF, 0);
             break;
         case 2:
@@ -478,8 +468,8 @@ static void AirPoweredVerticalRCTrackBankedRightQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide,
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::topRightSide),
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottomRight, PaintSegment::right,
+                        PaintSegment::bottom, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -488,9 +478,8 @@ static void AirPoweredVerticalRCTrackBankedRightQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::topLeftSide, PaintSegment::topRightSide, PaintSegment::centre,
-                        PaintSegment::leftCorner, PaintSegment::rightCorner, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::top, PaintSegment::topLeft, PaintSegment::topRight, PaintSegment::centre,
+                        PaintSegment::left, PaintSegment::right, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -498,7 +487,7 @@ static void AirPoweredVerticalRCTrackBankedRightQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::topCorner, PaintSegment::topLeftSide, PaintSegment::topRightSide), direction),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::topLeft, PaintSegment::topRight), direction),
                 0xFFFF, 0);
             break;
         case 5:
@@ -506,8 +495,8 @@ static void AirPoweredVerticalRCTrackBankedRightQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomRightSide, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::topLeftSide),
+                        PaintSegment::bottomRight, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::left,
+                        PaintSegment::bottom, PaintSegment::topLeft),
                     direction),
                 0xFFFF, 0);
             break;
@@ -550,7 +539,7 @@ static void AirPoweredVerticalRCTrackLeftBank(
         PaintAddImageAsParentRotated(session, direction, imageId, { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::LeftBank>(
+    DrawSupportForSequenceA<TrackElemType::leftBank>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -580,7 +569,7 @@ static void AirPoweredVerticalRCTrackBrakes(
     auto imageId = session.TrackColours.WithIndex(imageIds[direction]);
     PaintAddImageAsParentRotated(session, direction, imageId, { 0, 0, height }, { { 0, 6, height }, { 32, 20, 1 } });
 
-    DrawSupportForSequenceA<TrackElemType::Brakes>(
+    DrawSupportForSequenceA<TrackElemType::brakes>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -701,7 +690,7 @@ static void AirPoweredVerticalRCTrackVerticalSlopeUp(
             PaintAddImageAsChildRotated(
                 session, direction, trackImageId, { 0, 0, height }, { { 0, 6, height }, { 20, 32, bbHeight } });
 
-            DrawSupportForSequenceA<TrackElemType::ReverseFreefallSlope>(
+            DrawSupportForSequenceA<TrackElemType::reverseFreefallSlope>(
                 session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
             PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -727,7 +716,7 @@ static void AirPoweredVerticalRCTrackVerticalSlopeUp(
                     session, direction, trackImageId, { 0, 0, height }, { { 0, 6, height }, { 32, 20, bbHeight } });
             }
 
-            DrawSupportForSequenceA<TrackElemType::ReverseFreefallSlope>(
+            DrawSupportForSequenceA<TrackElemType::reverseFreefallSlope>(
                 session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
             if (trackSequence == 0)
@@ -753,11 +742,11 @@ static void AirPoweredVerticalRCTrackVerticalSlopeUp(
                     session, direction, supportsImageId, { 0, 0, height }, { { 0, 6, height }, { 32, 20, bbHeight } });
             }
 
-            DrawSupportForSequenceA<TrackElemType::ReverseFreefallSlope>(
+            DrawSupportForSequenceA<TrackElemType::reverseFreefallSlope>(
                 session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
             break;
         case 5:
-            if (DrawSupportForSequenceA<TrackElemType::ReverseFreefallSlope>(
+            if (DrawSupportForSequenceA<TrackElemType::reverseFreefallSlope>(
                     session, supportType.wooden, trackSequence, direction, height, session.SupportColours))
             {
                 ImageId floorImageId;
@@ -794,7 +783,7 @@ static void AirPoweredVerticalRCTrackVerticalSlopeUp(
                 PaintAddImageAsChildRotated(
                     session, direction, supportsImageId, { 0, 0, height }, { { 27, 6, height }, { 1, 20, 126 } });
             }
-            DrawSupportForSequenceA<TrackElemType::ReverseFreefallSlope>(
+            DrawSupportForSequenceA<TrackElemType::reverseFreefallSlope>(
                 session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
             PaintUtilSetVerticalTunnel(session, height + 240);
@@ -908,7 +897,6 @@ static void AirPoweredVerticalRCTrackVerticalTop(
                 PaintAddImageAsParentRotated(
                     session, direction, imageIdT, { 0, 0, height }, { { 33, 6, height }, { 2, 20, 1 } });
             }
-            PaintUtilSetVerticalTunnel(session, height + 80);
             break;
         case 2:
             imageIdT = session.TrackColours.WithIndex(imageIds[direction][3]);
@@ -922,7 +910,6 @@ static void AirPoweredVerticalRCTrackVerticalTop(
                 PaintAddImageAsParentRotated(
                     session, direction, imageIdT, { 0, 0, height }, { { 0, 6, height }, { 2, 20, 15 } });
             }
-            PaintUtilSetVerticalTunnel(session, height + 80);
             break;
         case 3:
             imageIdS = session.SupportColours.WithIndex(imageIds[direction][4]);
@@ -989,7 +976,7 @@ static void AirPoweredVerticalRCTrackBooster(
         PaintUtilPushTunnelLeft(session, height, kTunnelGroup, TunnelSubType::Flat);
     }
 
-    DrawSupportForSequenceA<TrackElemType::Booster>(
+    DrawSupportForSequenceA<TrackElemType::booster>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
     PaintUtilSetSegmentSupportHeight(session, kSegmentsAll, 0xFFFF, 0);
     PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -1009,58 +996,59 @@ static void AirPoweredVerticalRCTrackOnridePhoto(
     auto imageId = session.TrackColours.WithIndex(imageIds[direction]);
     PaintAddImageAsParentRotated(session, direction, imageId, { 0, 0, height }, { { 0, 6, height }, { 32, 20, 1 } });
 
-    DrawSupportForSequenceA<TrackElemType::OnRidePhoto>(
+    DrawSupportForSequenceA<TrackElemType::onRidePhoto>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     TrackPaintUtilOnridePhotoPaint2(session, direction, trackElement, height);
 }
 
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionAirPoweredVerticalRC(int32_t trackType)
+TrackPaintFunction GetTrackPaintFunctionAirPoweredVerticalRC(TrackElemType trackType)
 {
     switch (trackType)
     {
-        case TrackElemType::Flat:
+        case TrackElemType::flat:
             return AirPoweredVerticalRCTrackFlat;
-        case TrackElemType::EndStation:
-        case TrackElemType::BeginStation:
-        case TrackElemType::MiddleStation:
+        case TrackElemType::endStation:
+        case TrackElemType::beginStation:
+        case TrackElemType::middleStation:
             return AirPoweredVerticalRCTrackStation;
-        case TrackElemType::LeftQuarterTurn5Tiles:
+        case TrackElemType::leftQuarterTurn5Tiles:
             return AirPoweredVerticalRCTrackLeftQuarterTurn5;
-        case TrackElemType::RightQuarterTurn5Tiles:
+        case TrackElemType::rightQuarterTurn5Tiles:
             return AirPoweredVerticalRCTrackRightQuarterTurn5;
-        case TrackElemType::FlatToLeftBank:
+        case TrackElemType::flatToLeftBank:
             return AirPoweredVerticalRCTrackFlatToLeftBank;
-        case TrackElemType::FlatToRightBank:
+        case TrackElemType::flatToRightBank:
             return AirPoweredVerticalRCTrackFlatToRightBank;
-        case TrackElemType::LeftBankToFlat:
+        case TrackElemType::leftBankToFlat:
             return AirPoweredVerticalRCTrackLeftBankToFlat;
-        case TrackElemType::RightBankToFlat:
+        case TrackElemType::rightBankToFlat:
             return AirPoweredVerticalRCTrackRightBankToFlat;
-        case TrackElemType::BankedLeftQuarterTurn5Tiles:
+        case TrackElemType::bankedLeftQuarterTurn5Tiles:
             return AirPoweredVerticalRCTrackBankedLeftQuarterTurn5;
-        case TrackElemType::BankedRightQuarterTurn5Tiles:
+        case TrackElemType::bankedRightQuarterTurn5Tiles:
             return AirPoweredVerticalRCTrackBankedRightQuarterTurn5;
-        case TrackElemType::LeftBank:
+        case TrackElemType::leftBank:
             return AirPoweredVerticalRCTrackLeftBank;
-        case TrackElemType::RightBank:
+        case TrackElemType::rightBank:
             return AirPoweredVerticalRCTrackRightBank;
-        case TrackElemType::Brakes:
+        case TrackElemType::brakes:
             return AirPoweredVerticalRCTrackBrakes;
-        case TrackElemType::ReverseFreefallSlope:
+        case TrackElemType::reverseFreefallSlope:
             return AirPoweredVerticalRCTrackVerticalSlopeUp;
-        case TrackElemType::ReverseFreefallVertical:
+        case TrackElemType::reverseFreefallVertical:
             return AirPoweredVerticalRCTrackVerticalUp;
-        case TrackElemType::AirThrustTopCap:
+        case TrackElemType::airThrustTopCap:
             return AirPoweredVerticalRCTrackVerticalTop;
-        case TrackElemType::AirThrustVerticalDown:
+        case TrackElemType::airThrustVerticalDown:
             return AirPoweredVerticalRCTrackVerticalDown;
-        case TrackElemType::AirThrustVerticalDownToLevel:
+        case TrackElemType::airThrustVerticalDownToLevel:
             return AirPoweredVerticalRCTrackVerticalSlopeDown;
-        case TrackElemType::Booster:
+        case TrackElemType::booster:
             return AirPoweredVerticalRCTrackBooster;
-        case TrackElemType::OnRidePhoto:
+        case TrackElemType::onRidePhoto:
             return AirPoweredVerticalRCTrackOnridePhoto;
+        default:
+            return TrackPaintFunctionDummy;
     }
-    return nullptr;
 }

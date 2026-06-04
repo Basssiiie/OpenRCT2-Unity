@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -12,15 +12,19 @@
 #include "../Context.h"
 #include "../config/Config.h"
 #include "../core/Guard.hpp"
+#include "../core/Money.hpp"
+#include "../core/Numerics.hpp"
+#include "../drawing/Drawing.String.h"
 #include "../drawing/Drawing.h"
+#include "../drawing/Font.h"
 #include "../interface/Viewport.h"
 #include "../localisation/Currency.h"
 #include "../localisation/Formatting.h"
 #include "../localisation/LocalisationService.h"
+#include "../localisation/StringIdType.h"
 #include "../paint/Painter.h"
+#include "../platform/Memory.h"
 #include "../profiling/Profiling.h"
-#include "../util/Math.hpp"
-#include "../util/Prefetch.h"
 #include "Boundbox.h"
 #include "Paint.Entity.h"
 #include "tile_element/Paint.TileElement.h"
@@ -30,33 +34,35 @@
 #include <cassert>
 
 using namespace OpenRCT2;
+using namespace OpenRCT2::Drawing;
+using namespace OpenRCT2::Numerics;
 
 // Globals for paint clipping
 uint8_t gClipHeight = 128; // Default to middle value
 CoordsXY gClipSelectionA = { 0, 0 };
-CoordsXY gClipSelectionB = { MAXIMUM_TILE_START_XY, MAXIMUM_TILE_START_XY };
+CoordsXY gClipSelectionB = { kMaximumTileStartXY, kMaximumTileStartXY };
 
-static constexpr uint8_t BoundBoxDebugColours[] = {
-    0,   // NONE
-    102, // TERRAIN
-    114, // SPRITE
-    229, // RIDE
-    126, // WATER
-    138, // SCENERY
-    150, // FOOTPATH
-    162, // FOOTPATH_ITEM
-    174, // PARK
-    186, // WALL
-    198, // LARGE_SCENERY
-    210, // LABEL
-    222, // BANNER
+static constexpr PaletteIndex kBoundBoxDebugColours[] = {
+    PaletteIndex::transparent, // NONE
+    PaletteIndex::pi102,       // TERRAIN
+    PaletteIndex::pi114,       // SPRITE
+    PaletteIndex::pi229,       // RIDE
+    PaletteIndex::pi126,       // WATER
+    PaletteIndex::pi138,       // SCENERY
+    PaletteIndex::pi150,       // FOOTPATH
+    PaletteIndex::pi162,       // FOOTPATH_ITEM
+    PaletteIndex::pi174,       // PARK
+    PaletteIndex::pi186,       // WALL
+    PaletteIndex::pi198,       // LARGE_SCENERY
+    PaletteIndex::hotPink8,    // LABEL
+    PaletteIndex::pi222,       // BANNER
 };
 
 bool gShowDirtyVisuals;
 bool gPaintBoundingBoxes;
 bool gPaintBlockedTiles;
+bool gPaintStableSort;
 
-static void PaintAttachedPS(DrawPixelInfo& dpi, PaintStruct* ps, uint32_t viewFlags);
 static void PaintPSImageWithBoundingBoxes(PaintSession& session, PaintStruct* ps, ImageId imageId, int32_t x, int32_t y);
 static ImageId PaintPSColourifyImage(const PaintStruct* ps, ImageId imageId, uint32_t viewFlags);
 
@@ -101,38 +107,40 @@ static void PaintSessionAddPSToQuadrant(PaintSession& session, PaintStruct* ps)
     session.QuadrantFrontIndex = std::max(session.QuadrantFrontIndex, paintQuadrantIndex);
 }
 
-static constexpr bool ImageWithinDPI(const ScreenCoordsXY& imagePos, const G1Element& g1, const DrawPixelInfo& dpi)
+static constexpr bool imageWithinRT(const ScreenCoordsXY& imagePos, const G1Element& g1, const RenderTarget& rt)
 {
-    int32_t left = imagePos.x + g1.x_offset;
-    int32_t bottom = imagePos.y + g1.y_offset;
+    const int32_t left = imagePos.x + g1.xOffset;
+    const int32_t bottom = imagePos.y + g1.yOffset;
 
-    int32_t right = left + g1.width;
-    int32_t top = bottom + g1.height;
+    const int32_t right = left + g1.width;
+    const int32_t top = bottom + g1.height;
 
     // mber: It is possible to use only the bottom else block here if you change <= and >= to simply < and >.
     // However, since this is used to cull paint structs, I'd prefer to keep the condition strict and calculate
     // the culling differently for minifying and magnifying.
-    auto zoom = dpi.zoom_level;
+    const auto zoom = rt.zoom_level;
     if (zoom > ZoomLevel{ 0 })
     {
-        if (right <= dpi.WorldX())
+        const int32_t x = zoom.ApplyTo(rt.cullingX);
+        const int32_t y = zoom.ApplyTo(rt.cullingY);
+        if (right <= x)
             return false;
-        if (top <= dpi.WorldY())
+        if (top <= y)
             return false;
-        if (left >= dpi.WorldX() + dpi.WorldWidth())
+        if (left >= x + zoom.ApplyTo(rt.cullingWidth))
             return false;
-        if (bottom >= dpi.WorldY() + dpi.WorldHeight())
+        if (bottom >= y + zoom.ApplyTo(rt.cullingHeight))
             return false;
     }
     else
     {
-        if (zoom.ApplyInversedTo(right) <= dpi.x)
+        if (zoom.ApplyInversedTo(right) <= rt.cullingX)
             return false;
-        if (zoom.ApplyInversedTo(top) <= dpi.y)
+        if (zoom.ApplyInversedTo(top) <= rt.cullingY)
             return false;
-        if (zoom.ApplyInversedTo(left) >= dpi.x + dpi.width)
+        if (zoom.ApplyInversedTo(left) >= rt.cullingX + rt.cullingWidth)
             return false;
-        if (zoom.ApplyInversedTo(bottom) >= dpi.y + dpi.height)
+        if (zoom.ApplyInversedTo(bottom) >= rt.cullingY + rt.cullingHeight)
             return false;
     }
     return true;
@@ -182,7 +190,7 @@ static PaintStruct* CreateNormalPaintStruct(
 
     const auto imagePos = Translate3DTo2DWithZ(session.CurrentRotation, swappedRotCoord);
 
-    if (!ImageWithinDPI(imagePos, *g1, session.DPI))
+    if (!imageWithinRT(imagePos, *g1, session.rt))
     {
         return nullptr;
     }
@@ -215,10 +223,59 @@ static PaintStruct* CreateNormalPaintStruct(
     return ps;
 }
 
-template<uint8_t direction> void PaintSessionGenerateRotate(PaintSession& session)
+static PaintStruct* CreateNormalPaintStructHeight(
+    PaintSession& session, const ImageId imageId, const int32_t height, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox)
+{
+    auto* const g1 = GfxGetG1Element(imageId);
+    if (g1 == nullptr)
+    {
+        return nullptr;
+    }
+
+    const auto swappedRotation = DirectionFlipXAxis(session.CurrentRotation);
+    auto swappedRotCoord = CoordsXYZ{ offset.Rotate(swappedRotation), offset.z + height };
+    swappedRotCoord += session.SpritePosition;
+
+    const auto imagePos = Translate3DTo2DWithZ(session.CurrentRotation, swappedRotCoord);
+
+    if (!imageWithinRT(imagePos, *g1, session.rt))
+    {
+        return nullptr;
+    }
+
+    const auto rotBoundBoxOffset = CoordsXYZ{ boundBox.offset.Rotate(swappedRotation), boundBox.offset.z + height };
+    const auto rotBoundBoxSize = RotateBoundBoxSize(boundBox.length, session.CurrentRotation);
+
+    auto* ps = session.AllocateNormalPaintEntry();
+    if (ps == nullptr)
+    {
+        return nullptr;
+    }
+
+    ps->image_id = imageId;
+    ps->ScreenPos = imagePos;
+    ps->Bounds.x_end = rotBoundBoxSize.x + rotBoundBoxOffset.x + session.SpritePosition.x;
+    ps->Bounds.y_end = rotBoundBoxSize.y + rotBoundBoxOffset.y + session.SpritePosition.y;
+    ps->Bounds.z_end = rotBoundBoxSize.z + rotBoundBoxOffset.z;
+    ps->Bounds.x = rotBoundBoxOffset.x + session.SpritePosition.x;
+    ps->Bounds.y = rotBoundBoxOffset.y + session.SpritePosition.y;
+    ps->Bounds.z = rotBoundBoxOffset.z;
+    ps->Attached = nullptr;
+    ps->Children = nullptr;
+    ps->NextQuadrantEntry = nullptr;
+    ps->InteractionItem = session.InteractionType;
+    ps->MapPos = session.MapPosition;
+    ps->Element = session.CurrentlyDrawnTileElement;
+    ps->Entity = session.CurrentlyDrawnEntity;
+
+    return ps;
+}
+
+template<uint8_t direction>
+void PaintSessionGenerateRotate(PaintSession& session)
 {
     // Optimised modified version of ViewportPosToMapPos
-    ScreenCoordsXY screenCoord = { Floor2(session.DPI.WorldX(), 32), Floor2((session.DPI.WorldY() - 16), 32) };
+    ScreenCoordsXY screenCoord = { floor2(session.rt.WorldX(), 32), floor2((session.rt.WorldY() - 16), 32) };
     CoordsXY mapTile = { screenCoord.y - screenCoord.x / 2, screenCoord.y + screenCoord.x / 2 };
     mapTile = mapTile.Rotate(direction);
 
@@ -228,7 +285,7 @@ template<uint8_t direction> void PaintSessionGenerateRotate(PaintSession& sessio
     }
     mapTile = mapTile.ToTileStart();
 
-    uint16_t numVerticalTiles = (session.DPI.WorldHeight() + 2128) >> 5;
+    uint16_t numVerticalTiles = (session.rt.WorldHeight() + 2128) >> 5;
 
     // Adjacent tiles to also check due to overlapping of sprites
     constexpr CoordsXY adjacentTiles[] = {
@@ -399,13 +456,15 @@ static std::pair<PaintStruct*, PaintStruct*> PaintStructsGetNextPending(PaintStr
 
 // Re-orders all nodes after the specified child node and marks the child node as traversed. The resulting
 // order of the children is the depth based on rotation and dimensions of the bounding box.
-template<uint8_t TRotation> static void PaintStructsSortQuadrant(PaintStruct* parent, PaintStruct* child)
+template<uint8_t TRotation>
+static void PaintStructsSortQuadrantLegacy(PaintStruct* parent, PaintStruct* child)
 {
     // Mark visited.
     child->SortFlags &= ~PaintSortFlags::PendingVisit;
 
     // Compare all the children below the first child and move them up in the list if they intersect.
     const PaintStructBoundBox& initialBBox = child->Bounds;
+
     for (;;)
     {
         auto* ps = child;
@@ -439,7 +498,78 @@ template<uint8_t TRotation> static void PaintStructsSortQuadrant(PaintStruct* pa
     }
 }
 
+// Re-orders all nodes after the specified child node and marks the child node as traversed. The resulting
+// order of the children is the depth based on rotation and dimensions of the bounding box.
 template<uint8_t TRotation>
+static void PaintStructsSortQuadrantStable(PaintStruct* parent, PaintStruct* child)
+{
+    // Mark visited.
+    child->SortFlags &= ~PaintSortFlags::PendingVisit;
+
+    // Compare all the children below the first child and move them up in the list if they intersect.
+    const PaintStructBoundBox& initialBBox = child->Bounds;
+
+    // Create a temporary list to collect sorted nodes in stable order.
+    PaintStruct* sortedHead = nullptr;
+    PaintStruct* sortedTail = nullptr;
+
+    // Traverse the list and reorder based on intersection.
+    for (;;)
+    {
+        PaintStruct* next = child->NextQuadrantEntry;
+
+        if (next != nullptr)
+        {
+            PREFETCH(&next->Bounds);
+        }
+
+        // Stop if at the end of the list or outside the quadrant range.
+        if (next == nullptr || next->SortFlags & PaintSortFlags::OutsideQuadrant)
+        {
+            break;
+        }
+
+        // Ignore nodes that are not neighbors.
+        if (!(next->SortFlags & PaintSortFlags::Neighbour))
+        {
+            child = next;
+            continue;
+        }
+
+        // Detach the current node from the list if it intersects.
+        if (CheckBoundingBox<TRotation>(initialBBox, next->Bounds))
+        {
+            child->NextQuadrantEntry = next->NextQuadrantEntry;
+
+            if (sortedHead == nullptr)
+            {
+                sortedHead = next;
+                sortedTail = next;
+                next->NextQuadrantEntry = nullptr;
+            }
+            else
+            {
+                sortedTail->NextQuadrantEntry = next;
+                sortedTail = next;
+                next->NextQuadrantEntry = nullptr;
+            }
+        }
+        else
+        {
+            child = next;
+        }
+    }
+
+    // Merge the sorted list back into the main list after parent.
+    if (sortedHead != nullptr)
+    {
+        PaintStruct* originalNext = parent->NextQuadrantEntry;
+        parent->NextQuadrantEntry = sortedHead;
+        sortedTail->NextQuadrantEntry = originalNext;
+    }
+}
+
+template<bool TStableSort, uint8_t TRotation>
 static PaintStruct* PaintArrangeStructsHelperRotation(PaintStruct* psQuadrantEntry, uint16_t quadrantIndex, uint8_t flag)
 {
     // We keep track of the first node in the quadrant so the next call with a higher quadrant index
@@ -460,7 +590,15 @@ static PaintStruct* PaintArrangeStructsHelperRotation(PaintStruct* psQuadrantEnt
             break;
         }
 
-        PaintStructsSortQuadrant<TRotation>(parent, child);
+        if constexpr (TStableSort)
+        {
+            PaintStructsSortQuadrantStable<TRotation>(parent, child);
+        }
+        else
+        {
+            PaintStructsSortQuadrantLegacy<TRotation>(parent, child);
+        }
+
         ps = parent;
     }
 
@@ -492,7 +630,8 @@ static void PaintStructsLinkQuadrants(PaintSessionCore& session, PaintStruct& ps
     } while (++quadrantIndex <= session.QuadrantFrontIndex);
 }
 
-template<int TRotation> static void PaintSessionArrangeImpl(PaintSessionCore& session)
+template<bool TStableSort, int TRotation>
+static void PaintSessionArrangeImpl(PaintSessionCore& session)
 {
     uint32_t quadrantIndex = session.QuadrantBackIndex;
     if (quadrantIndex == UINT32_MAX)
@@ -506,12 +645,13 @@ template<int TRotation> static void PaintSessionArrangeImpl(PaintSessionCore& se
     PaintStruct psHead{};
     PaintStructsLinkQuadrants(session, psHead);
 
-    PaintStruct* psNextQuadrant = PaintArrangeStructsHelperRotation<TRotation>(
+    PaintStruct* psNextQuadrant = PaintArrangeStructsHelperRotation<TStableSort, TRotation>(
         &psHead, session.QuadrantBackIndex, PaintSortFlags::Neighbour);
 
     while (++quadrantIndex < session.QuadrantFrontIndex)
     {
-        psNextQuadrant = PaintArrangeStructsHelperRotation<TRotation>(psNextQuadrant, quadrantIndex, PaintSortFlags::None);
+        psNextQuadrant = PaintArrangeStructsHelperRotation<TStableSort, TRotation>(
+            psNextQuadrant, quadrantIndex, PaintSortFlags::None);
     }
 
     session.PaintHead = psHead.NextQuadrantEntry;
@@ -519,11 +659,18 @@ template<int TRotation> static void PaintSessionArrangeImpl(PaintSessionCore& se
 
 using PaintArrangeWithRotation = void (*)(PaintSessionCore& session);
 
-constexpr std::array _paintArrangeFuncs = {
-    PaintSessionArrangeImpl<0>,
-    PaintSessionArrangeImpl<1>,
-    PaintSessionArrangeImpl<2>,
-    PaintSessionArrangeImpl<3>,
+constexpr std::array _paintArrangeFuncsLegacy = {
+    PaintSessionArrangeImpl<false, 0>,
+    PaintSessionArrangeImpl<false, 1>,
+    PaintSessionArrangeImpl<false, 2>,
+    PaintSessionArrangeImpl<false, 3>,
+};
+
+constexpr std::array _paintArrangeFuncsStable = {
+    PaintSessionArrangeImpl<true, 0>,
+    PaintSessionArrangeImpl<true, 1>,
+    PaintSessionArrangeImpl<true, 2>,
+    PaintSessionArrangeImpl<true, 3>,
 };
 
 /**
@@ -533,26 +680,48 @@ constexpr std::array _paintArrangeFuncs = {
 void PaintSessionArrange(PaintSessionCore& session)
 {
     PROFILED_FUNCTION();
-    return _paintArrangeFuncs[session.CurrentRotation](session);
+    if (gPaintStableSort)
+    {
+        return _paintArrangeFuncsStable[session.CurrentRotation](session);
+    }
+    return _paintArrangeFuncsLegacy[session.CurrentRotation](session);
 }
 
-static void PaintDrawStruct(PaintSession& session, PaintStruct* ps)
+static inline void PaintAttachedPS(RenderTarget& rt, PaintStruct* ps, uint32_t viewFlags)
+{
+    AttachedPaintStruct* attached_ps = ps->Attached;
+    for (; attached_ps != nullptr; attached_ps = attached_ps->NextEntry)
+    {
+        const auto screenCoords = ps->ScreenPos + attached_ps->RelativePos;
+
+        auto imageId = PaintPSColourifyImage(ps, attached_ps->image_id, viewFlags);
+        if (attached_ps->IsMasked)
+        {
+            GfxDrawSpriteRawMasked(rt, screenCoords, imageId, attached_ps->ColourImageId);
+        }
+        else
+        {
+            GfxDrawSprite(rt, imageId, screenCoords);
+        }
+    }
+}
+
+static inline void PaintDrawStruct(PaintSession& session, PaintStruct* ps)
 {
     auto screenPos = ps->ScreenPos;
-    if (ps->InteractionItem == ViewportInteractionItem::Entity)
+    if (ps->InteractionItem == ViewportInteractionItem::entity)
     {
-        if (session.DPI.zoom_level >= ZoomLevel{ 1 })
+        if (session.rt.zoom_level >= ZoomLevel{ 1 })
         {
-            screenPos.x = Floor2(screenPos.x, 2);
-            screenPos.y = Floor2(screenPos.y, 2);
-            if (session.DPI.zoom_level >= ZoomLevel{ 2 })
+            screenPos.x = floor2(screenPos.x, 2);
+            screenPos.y = floor2(screenPos.y, 2);
+            if (session.rt.zoom_level >= ZoomLevel{ 2 })
             {
-                screenPos.x = Floor2(screenPos.x, 4);
-                screenPos.y = Floor2(screenPos.y, 4);
+                screenPos.x = floor2(screenPos.x, 4);
+                screenPos.y = floor2(screenPos.y, 4);
             }
         }
     }
-
     auto imageId = PaintPSColourifyImage(ps, ps->image_id, session.ViewFlags);
     if (gPaintBoundingBoxes)
     {
@@ -560,7 +729,7 @@ static void PaintDrawStruct(PaintSession& session, PaintStruct* ps)
     }
     else
     {
-        GfxDrawSprite(session.DPI, imageId, screenPos);
+        GfxDrawSprite(session.rt, imageId, screenPos);
     }
 
     if (ps->Children != nullptr)
@@ -569,7 +738,7 @@ static void PaintDrawStruct(PaintSession& session, PaintStruct* ps)
     }
     else
     {
-        PaintAttachedPS(session.DPI, ps, session.ViewFlags);
+        PaintAttachedPS(session.rt, ps, session.ViewFlags);
     }
 }
 
@@ -587,35 +756,11 @@ void PaintDrawStructs(PaintSession& session)
     }
 }
 
-/**
- *
- *  rct2: 0x00688596
- *  Part of 0x688485
- */
-static void PaintAttachedPS(DrawPixelInfo& dpi, PaintStruct* ps, uint32_t viewFlags)
-{
-    AttachedPaintStruct* attached_ps = ps->Attached;
-    for (; attached_ps != nullptr; attached_ps = attached_ps->NextEntry)
-    {
-        const auto screenCoords = ps->ScreenPos + attached_ps->RelativePos;
-
-        auto imageId = PaintPSColourifyImage(ps, attached_ps->image_id, viewFlags);
-        if (attached_ps->IsMasked)
-        {
-            GfxDrawSpriteRawMasked(dpi, screenCoords, imageId, attached_ps->ColourImageId);
-        }
-        else
-        {
-            GfxDrawSprite(dpi, imageId, screenCoords);
-        }
-    }
-}
-
 static void PaintPSImageWithBoundingBoxes(PaintSession& session, PaintStruct* ps, ImageId imageId, int32_t x, int32_t y)
 {
-    auto& dpi = session.DPI;
+    auto& rt = session.rt;
 
-    const uint8_t colour = BoundBoxDebugColours[EnumValue(ps->InteractionItem)];
+    const PaletteIndex colour = kBoundBoxDebugColours[EnumValue(ps->InteractionItem)];
     const uint8_t rotation = session.CurrentRotation;
 
     const CoordsXYZ frontTop = {
@@ -675,28 +820,28 @@ static void PaintPSImageWithBoundingBoxes(PaintSession& session, PaintStruct* ps
     const auto screenCoordBackBottom = Translate3DTo2DWithZ(rotation, backBottom);
 
     // bottom square
-    GfxDrawLine(dpi, { screenCoordFrontBottom, screenCoordLeftBottom }, colour);
-    GfxDrawLine(dpi, { screenCoordBackBottom, screenCoordLeftBottom }, colour);
-    GfxDrawLine(dpi, { screenCoordBackBottom, screenCoordRightBottom }, colour);
-    GfxDrawLine(dpi, { screenCoordFrontBottom, screenCoordRightBottom }, colour);
+    GfxDrawLine(rt, { screenCoordFrontBottom, screenCoordLeftBottom }, colour);
+    GfxDrawLine(rt, { screenCoordBackBottom, screenCoordLeftBottom }, colour);
+    GfxDrawLine(rt, { screenCoordBackBottom, screenCoordRightBottom }, colour);
+    GfxDrawLine(rt, { screenCoordFrontBottom, screenCoordRightBottom }, colour);
 
     // vertical back + sides
-    GfxDrawLine(dpi, { screenCoordBackTop, screenCoordBackBottom }, colour);
-    GfxDrawLine(dpi, { screenCoordLeftTop, screenCoordLeftBottom }, colour);
-    GfxDrawLine(dpi, { screenCoordRightTop, screenCoordRightBottom }, colour);
+    GfxDrawLine(rt, { screenCoordBackTop, screenCoordBackBottom }, colour);
+    GfxDrawLine(rt, { screenCoordLeftTop, screenCoordLeftBottom }, colour);
+    GfxDrawLine(rt, { screenCoordRightTop, screenCoordRightBottom }, colour);
 
     // top square back
-    GfxDrawLine(dpi, { screenCoordBackTop, screenCoordLeftTop }, colour);
-    GfxDrawLine(dpi, { screenCoordBackTop, screenCoordRightTop }, colour);
+    GfxDrawLine(rt, { screenCoordBackTop, screenCoordLeftTop }, colour);
+    GfxDrawLine(rt, { screenCoordBackTop, screenCoordRightTop }, colour);
 
-    GfxDrawSprite(dpi, imageId, { x, y });
+    GfxDrawSprite(rt, imageId, { x, y });
 
     // vertical front
-    GfxDrawLine(dpi, { screenCoordFrontTop, screenCoordFrontBottom }, colour);
+    GfxDrawLine(rt, { screenCoordFrontTop, screenCoordFrontBottom }, colour);
 
     // top square
-    GfxDrawLine(dpi, { screenCoordFrontTop, screenCoordLeftTop }, colour);
-    GfxDrawLine(dpi, { screenCoordFrontTop, screenCoordRightTop }, colour);
+    GfxDrawLine(rt, { screenCoordFrontTop, screenCoordLeftTop }, colour);
+    GfxDrawLine(rt, { screenCoordFrontTop, screenCoordRightTop }, colour);
 }
 
 static ImageId PaintPSColourifyImage(const PaintStruct* ps, ImageId imageId, uint32_t viewFlags)
@@ -704,18 +849,18 @@ static ImageId PaintPSColourifyImage(const PaintStruct* ps, ImageId imageId, uin
     auto visibility = GetPaintStructVisibility(ps, viewFlags);
     switch (visibility)
     {
-        case VisibilityKind::Partial:
-            return imageId.WithTransparency(FilterPaletteID::PaletteDarken1);
-        case VisibilityKind::Hidden:
+        case VisibilityKind::partial:
+            return imageId.WithTransparency(FilterPaletteID::paletteDarken1);
+        case VisibilityKind::hidden:
             return ImageId();
         default:
             return imageId;
     }
 }
 
-PaintSession* PaintSessionAlloc(DrawPixelInfo& dpi, uint32_t viewFlags, uint8_t rotation)
+PaintSession* PaintSessionAlloc(RenderTarget& rt, uint32_t viewFlags, uint8_t rotation)
 {
-    return GetContext()->GetPainter()->CreateSession(dpi, viewFlags, rotation);
+    return GetContext()->GetPainter()->CreateSession(rt, viewFlags, rotation);
 }
 
 void PaintSessionFree(PaintSession* session)
@@ -814,6 +959,23 @@ PaintStruct* PaintAddImageAsChild(
     }
 
     parentPS->Children = ps;
+
+    return ps;
+}
+
+PaintStruct* PaintAddImageAsParentHeight(
+    PaintSession& session, const ImageId imageId, const int32_t height, const CoordsXYZ& offset, const BoundBoxXYZ& boundBox)
+{
+    session.LastPS = nullptr;
+    session.LastAttachedPS = nullptr;
+
+    auto* const ps = CreateNormalPaintStructHeight(session, imageId, height, offset, boundBox);
+    if (ps == nullptr)
+    {
+        return nullptr;
+    }
+
+    PaintSessionAddPSToQuadrant(session, ps);
 
     return ps;
 }
@@ -923,7 +1085,7 @@ void PaintFloatingMoneyEffect(
  *
  *  rct2: 0x006860C3
  */
-void PaintDrawMoneyStructs(DrawPixelInfo& dpi, PaintStringStruct* ps)
+void PaintDrawMoneyStructs(RenderTarget& rt, PaintStringStruct* ps)
 {
     do
     {
@@ -932,145 +1094,14 @@ void PaintDrawMoneyStructs(DrawPixelInfo& dpi, PaintStringStruct* ps)
 
         // Use sprite font unless the currency contains characters unsupported by the sprite font
         auto forceSpriteFont = false;
-        const auto& currencyDesc = CurrencyDescriptors[EnumValue(Config::Get().general.CurrencyFormat)];
+        const auto& currencyDesc = CurrencyDescriptors[EnumValue(Config::Get().general.currencyFormat)];
         if (LocalisationService_UseTrueTypeFont() && FontSupportsStringSprite(currencyDesc.symbol_unicode))
         {
             forceSpriteFont = true;
         }
 
-        GfxDrawStringWithYOffsets(
-            dpi, buffer, { COLOUR_BLACK }, ps->ScreenPos, reinterpret_cast<int8_t*>(ps->y_offsets), forceSpriteFont,
-            FontStyle::Medium);
+        drawStringWithYOffsets(
+            rt, buffer, { Drawing::Colour::black }, ps->ScreenPos, reinterpret_cast<int8_t*>(ps->y_offsets), forceSpriteFont,
+            FontStyle::medium);
     } while ((ps = ps->NextEntry) != nullptr);
-}
-
-PaintEntryPool::Chain::Chain(PaintEntryPool* pool)
-    : Pool(pool)
-{
-}
-
-PaintEntryPool::Chain::Chain(Chain&& chain)
-{
-    *this = std::move(chain);
-}
-
-PaintEntryPool::Chain::~Chain()
-{
-    Clear();
-}
-
-PaintEntryPool::Chain& PaintEntryPool::Chain::operator=(Chain&& chain) noexcept
-{
-    Clear();
-    Pool = chain.Pool;
-    Head = chain.Head;
-    Current = chain.Current;
-    chain.Pool = nullptr;
-    chain.Head = nullptr;
-    chain.Current = nullptr;
-    return *this;
-}
-
-PaintEntry* PaintEntryPool::Chain::Allocate()
-{
-    if (Pool == nullptr)
-    {
-        return nullptr;
-    }
-
-    if (Current == nullptr)
-    {
-        assert(Head == nullptr);
-        Head = Pool->AllocateNode();
-        if (Head == nullptr)
-        {
-            // Unable to allocate any more nodes
-            return nullptr;
-        }
-        Current = Head;
-    }
-    else if (Current->Count >= NodeSize)
-    {
-        // We need another node
-        Current->Next = Pool->AllocateNode();
-        if (Current->Next == nullptr)
-        {
-            // Unable to allocate any more nodes
-            return nullptr;
-        }
-        Current = Current->Next;
-    }
-
-    assert(Current->Count < NodeSize);
-    return &Current->PaintStructs[Current->Count++];
-}
-
-void PaintEntryPool::Chain::Clear()
-{
-    if (Pool != nullptr)
-    {
-        Pool->FreeNodes(Head);
-        Head = nullptr;
-        Current = nullptr;
-    }
-    assert(Head == nullptr);
-    assert(Current == nullptr);
-}
-
-size_t PaintEntryPool::Chain::GetCount() const
-{
-    size_t count = 0;
-    auto current = Head;
-    while (current != nullptr)
-    {
-        count += current->Count;
-        current = current->Next;
-    }
-    return count;
-}
-
-PaintEntryPool::~PaintEntryPool()
-{
-    for (auto node : _available)
-    {
-        delete node;
-    }
-    _available.clear();
-}
-
-PaintEntryPool::Node* PaintEntryPool::AllocateNode()
-{
-    std::lock_guard<std::mutex> lock(_mutex);
-
-    PaintEntryPool::Node* result;
-    if (_available.size() > 0)
-    {
-        result = _available.back();
-        _available.pop_back();
-    }
-    else
-    {
-        result = new (std::nothrow) PaintEntryPool::Node();
-    }
-    return result;
-}
-
-PaintEntryPool::Chain PaintEntryPool::Create()
-{
-    return PaintEntryPool::Chain(this);
-}
-
-void PaintEntryPool::FreeNodes(PaintEntryPool::Node* head)
-{
-    std::lock_guard<std::mutex> lock(_mutex);
-
-    auto node = head;
-    while (node != nullptr)
-    {
-        auto next = node->Next;
-        node->Next = nullptr;
-        node->Count = 0;
-        _available.push_back(node);
-        node = next;
-    }
 }

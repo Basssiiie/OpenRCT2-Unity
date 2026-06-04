@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,11 +9,15 @@
 
 #pragma once
 
-#include "Track.h"
+#include "../core/EnumUtils.hpp"
+#include "../world/Location.hpp"
+#include "ted/TrackElemType.h"
 
+#include <cstddef>
 #include <cstdint>
 
-constexpr const size_t VehicleTrackSubpositionSizeDefault = OpenRCT2::TrackElemType::Count * kNumOrthogonalDirections;
+constexpr const size_t VehicleTrackSubpositionSizeDefault = EnumValue(OpenRCT2::TrackElemType::count)
+    * kNumOrthogonalDirections;
 
 struct VehicleInfo;
 

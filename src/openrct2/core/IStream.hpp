@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,8 +9,7 @@
 
 #pragma once
 
-#include "../object/Object.h"
-#include "Memory.hpp"
+#include "StringTypes.h"
 
 #include <istream>
 #include <memory>
@@ -20,9 +19,9 @@
 #include <vector>
 
 #ifdef __WARN_SUGGEST_FINAL_METHODS__
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wsuggest-final-methods"
-#    pragma GCC diagnostic ignored "-Wsuggest-final-types"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wsuggest-final-methods"
+    #pragma GCC diagnostic ignored "-Wsuggest-final-types"
 #endif
 
 namespace OpenRCT2
@@ -60,11 +59,34 @@ namespace OpenRCT2
 
         virtual uint64_t TryRead(void* buffer, uint64_t length) = 0;
 
-        virtual const void* GetData() const = 0;
+        virtual const void* GetData() const
+        {
+            return nullptr;
+        }
+
+        virtual void CopyFromStream(IStream& stream, uint64_t length);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Direct Read/Write methods, class can override them if they're memory-backed.
+        ///////////////////////////////////////////////////////////////////////////
+        virtual const void* ReadDirect(size_t length)
+        {
+            return nullptr;
+        }
+
+        virtual void* WriteDirectStart(size_t maxLength)
+        {
+            return nullptr;
+        }
+
+        virtual void WriteDirectCommit(size_t length)
+        {
+        }
 
         ///////////////////////////////////////////////////////////////////////////
         // Fast path methods, class can override them to use specialised copies.
         ///////////////////////////////////////////////////////////////////////////
+    private:
         virtual void Read1(void* buffer)
         {
             Read(buffer, 1);
@@ -110,111 +132,112 @@ namespace OpenRCT2
         ///////////////////////////////////////////////////////////////////////////
         // Helper methods
         ///////////////////////////////////////////////////////////////////////////
+    public:
         /**
-         * Reads the size of the given type from the stream directly into the given address.
+         * Reads the given type from the stream
          */
-        template<typename T> void Read(T* value)
+        template<typename T>
+        void ReadValue(T& value)
         {
             // Selects the best path at compile time
             if constexpr (sizeof(T) == 1)
             {
-                Read1(value);
+                Read1(&value);
             }
             else if constexpr (sizeof(T) == 2)
             {
-                Read2(value);
+                Read2(&value);
             }
             else if constexpr (sizeof(T) == 4)
             {
-                Read4(value);
+                Read4(&value);
             }
             else if constexpr (sizeof(T) == 8)
             {
-                Read8(value);
+                Read8(&value);
             }
             else if constexpr (sizeof(T) == 16)
             {
-                Read16(value);
+                Read16(&value);
             }
             else
             {
-                Read(value, sizeof(T));
+                Read(&value, sizeof(T));
             }
         }
 
         /**
-         * Writes the size of the given type to the stream directly from the given address.
+         * Reads the given type from the stream and returns the value directly
          */
-        template<typename T> void Write(const T* value)
+        template<typename T>
+        T ReadValue()
+        {
+            T value;
+            ReadValue(value);
+            return value;
+        }
+
+        /**
+         * Writes the given type to the stream
+         */
+        template<typename T>
+        void WriteValue(const T& value)
         {
             // Selects the best path at compile time
             if constexpr (sizeof(T) == 1)
             {
-                Write1(value);
+                Write1(&value);
             }
             else if constexpr (sizeof(T) == 2)
             {
-                Write2(value);
+                Write2(&value);
             }
             else if constexpr (sizeof(T) == 4)
             {
-                Write4(value);
+                Write4(&value);
             }
             else if constexpr (sizeof(T) == 8)
             {
-                Write8(value);
+                Write8(&value);
             }
             else if constexpr (sizeof(T) == 16)
             {
-                Write16(value);
+                Write16(&value);
             }
             else
             {
-                Write(value, sizeof(T));
+                Write(&value, sizeof(T));
             }
         }
 
-        /**
-         * Reads the given type from the stream. Use this only for small types (e.g. int8_t, int64_t, double)
-         */
-        template<typename T> T ReadValue()
+        template<typename T>
+        void ReadArray(T* buffer, size_t count)
         {
-            T buffer;
-            Read(&buffer);
-            return buffer;
+            Read(buffer, sizeof(T) * count);
         }
 
-        /**
-         * Writes the given type to the stream. Use this only for small types (e.g. int8_t, int64_t, double)
-         */
-        template<typename T> void WriteValue(const T value)
-        {
-            Write(&value);
-        }
-
-        template<typename T> [[nodiscard]] std::unique_ptr<T[]> ReadArray(size_t count)
+        template<typename T>
+        [[nodiscard]] std::unique_ptr<T[]> ReadArray(size_t count)
         {
             auto buffer = std::make_unique<T[]>(count);
             Read(buffer.get(), sizeof(T) * count);
             return buffer;
         }
 
-        template<typename T> void WriteArray(T* buffer, size_t count)
+        template<typename T>
+        void WriteArray(T* buffer, size_t count)
         {
             Write(buffer, sizeof(T) * count);
         }
 
-        utf8* ReadString();
-        std::string ReadStdString();
-        void WriteString(const utf8* str);
-        void WriteString(const std::string_view string);
-        void WriteString(const std::string& string);
+        std::string ReadString();
+        void WriteString(std::string_view string);
     };
 
 } // namespace OpenRCT2
 
 #ifdef __WARN_SUGGEST_FINAL_METHODS__
-#    pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 #endif
 
 class IOException : public std::runtime_error
@@ -226,7 +249,8 @@ public:
     }
 };
 
-template<typename T> class ivstream : public std::istream
+template<typename T>
+class ivstream : public std::istream
 {
 private:
     class vector_streambuf : public std::basic_streambuf<char, std::char_traits<char>>

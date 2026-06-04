@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,39 +11,39 @@
 
 #include "../../RideData.h"
 #include "../../ShopItem.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor CashMachineRTD =
 {
-    .Category = RIDE_CATEGORY_SHOP,
-    .StartTrackPiece = OpenRCT2::TrackElemType::FlatTrack1x1A,
+    .Category = RideCategory::shop,
+    .StartTrackPiece = TrackElemType::flatTrack1x1A,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = GetTrackPaintFunctionShop,
+        .trackStyle = TrackStyle::shop,
         .enabledTrackGroups = {},
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = EnumsToFlags(RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps, RtdFlag::noTestMode,
-                     RtdFlag::noVehicles, RtdFlag::isCashMachine, RtdFlag::isShopOrFacility,
+    .flags = RtdFlags(RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps, RtdFlag::noTestMode,
+                     RtdFlag::noVehicles, RtdFlag::isShopOrFacility,
                      RtdFlag::noWallsAroundTrack, RtdFlag::isFlatRide, RtdFlag::listVehiclesSeparately),
-    .RideModes = EnumsToFlags(RideMode::ShopStall),
-    .DefaultMode = RideMode::ShopStall,
+    .RideModes = EnumsToFlags(RideMode::shopStall),
+    .DefaultMode = RideMode::shopStall,
     .Naming = { STR_RIDE_NAME_CASH_MACHINE, STR_RIDE_DESCRIPTION_CASH_MACHINE },
     .NameConvention = { RideComponentType::Car, RideComponentType::Building, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_CASH_MACHINE",
-    .AvailableBreakdowns = 0,
-    .Heights = { 12, DefaultCashMachineHeight, 0, 0, },
+    .availableBreakdowns = {},
+    .Heights = { 12, kDefaultCashMachineHeight, 0, 0, },
     .MaxMass = 255,
-    .LiftData = { OpenRCT2::Audio::SoundId::Null, 5, 5 },
+    .LiftData = { Audio::SoundId::null, 5, 5 },
     .RatingsMultipliers = { 0, 0, 0 },
     .UpkeepCosts = { 40, 1, 0, 0, 0, 0 },
     .BuildCosts = { 200.00_GBP, 0.00_GBP, 1, },
     .DefaultPrices = { 0, 0 },
-    .DefaultMusic = MUSIC_OBJECT_GENTLE,
-    .PhotoItem = ShopItem::Photo,
+    .DefaultMusic = kMusicObjectGentle,
+    .PhotoItem = ShopItem::photo,
     .BonusValue = 5,
-    .ColourPresets = DEFAULT_FLAT_RIDE_COLOUR_PRESET,
+    .ColourPresets = kDefaultFlatRideColourPreset,
     .ColourPreview = { 0, 0 },
     .ColourKey = RideColourKey::CashMachine,
     .Name = "cash_machine",
@@ -52,15 +52,17 @@ constexpr RideTypeDescriptor CashMachineRTD =
         RatingsCalculationType::Stall,
         { 1, 1, 1 },
         1,
-        -1,
+        kDynamicRideShelterRating,
         false,
         { { RatingsModifierType::NoModifier, 0, 0, 0, 0 } }
     },
     .UpdateRotating = UpdateRotatingDefault,
     .LightFXAddLightsMagicVehicle = nullptr,
-    .StartRideMusic = OpenRCT2::RideAudio::DefaultStartRideMusicChannel,
+    .StartRideMusic = RideAudio::DefaultStartRideMusicChannel,
     .DesignCreateMode = TrackDesignCreateMode::Default,
     .MusicUpdateFunction = DefaultMusicUpdate,
-    .Classification = RideClassification::KioskOrFacility,
+    .Classification = RideClassification::kioskOrFacility,
+    .specialType = RtdSpecialType::cashMachine,
 };
+} // namespace OpenRCT2
 // clang-format on

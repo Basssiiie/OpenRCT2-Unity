@@ -22,11 +22,12 @@ if [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]]; then
     7z a -r $destination \
         openrct2.exe openrct2.com data \
         ../contributors.md \
+        ../PRIVACY.md \
         ../licence.txt \
         ../distribution/changelog.txt \
         ../distribution/readme.txt \
-        ../distribution/scripting.md \
-        ../distribution/openrct2.d.ts
+        ../distribution/scripting/scripting.md \
+        ../distribution/scripting/openrct2.d.ts
 
     destination=$(cygpath -w $(readlink -f $destination))
     printf '\033[0;32m%s\033[0m\n' "${destination} created successfully"

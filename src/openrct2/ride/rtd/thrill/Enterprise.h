@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,49 +11,49 @@
 
 #include "../../RideData.h"
 #include "../../ShopItem.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor EnterpriseRTD =
 {
-    .Category = RIDE_CATEGORY_THRILL,
-    .StartTrackPiece = OpenRCT2::TrackElemType::FlatTrack4x4,
+    .Category = RideCategory::thrill,
+    .StartTrackPiece = TrackElemType::flatTrack4x4,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = GetTrackPaintFunctionEnterprise,
+        .trackStyle = TrackStyle::enterprise,
         .enabledTrackGroups = {},
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = EnumsToFlags(RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps,
+    .flags = RtdFlags(RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps,
                      RtdFlag::hasLoadOptions, RtdFlag::vehicleIsIntegral, RtdFlag::noWallsAroundTrack,
                      RtdFlag::isFlatRide, RtdFlag::guestsWillRideAgain, RtdFlag::hasVehicleColours,
                      RtdFlag::allowMusic, RtdFlag::hasEntranceAndExit, RtdFlag::singleSession,
                      RtdFlag::interestingToLookAt, RtdFlag::listVehiclesSeparately),
-    .RideModes = EnumsToFlags(RideMode::Rotation),
-    .DefaultMode = RideMode::Rotation,
+    .RideModes = EnumsToFlags(RideMode::rotation),
+    .DefaultMode = RideMode::rotation,
     .OperatingSettings = { 10, 20 },
     .Naming = { STR_RIDE_NAME_ENTERPRISE, STR_RIDE_DESCRIPTION_ENTERPRISE },
     .NameConvention = { RideComponentType::Wheel, RideComponentType::Structure, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_ENTERPRISE",
-    .AvailableBreakdowns = (1 << BREAKDOWN_SAFETY_CUT_OUT),
+    .availableBreakdowns = { Breakdown::safetyCutOut },
     .Heights = { 16, 160, 3, 2, },
     .MaxMass = 255,
-    .LiftData = { OpenRCT2::Audio::SoundId::Null, 5, 5 },
+    .LiftData = { Audio::SoundId::null, 5, 5 },
     .RatingsMultipliers = { 50, 10, 0 },
     .UpkeepCosts = { 50, 1, 0, 0, 0, 0 },
     .BuildCosts = { 50.00_GBP, 1.00_GBP, 1, },
     .DefaultPrices = { 20, 0 },
-    .DefaultMusic = MUSIC_OBJECT_ROCK_2,
-    .PhotoItem = ShopItem::Photo,
+    .DefaultMusic = kMusicObjectRock2,
+    .PhotoItem = ShopItem::photo,
     .BonusValue = 45,
-    .ColourPresets = DEFAULT_FLAT_RIDE_COLOUR_PRESET,
+    .ColourPresets = kDefaultFlatRideColourPreset,
     .ColourPreview = { 0, 0 },
     .ColourKey = RideColourKey::Ride,
     .Name = "enterprise",
     .RatingsData = 
     {
         RatingsCalculationType::FlatRide,
-        { RIDE_RATING(3, 60), RIDE_RATING(4, 55), RIDE_RATING(5, 72) },
+        { RideRating::make(3, 60), RideRating::make(4, 55), RideRating::make(5, 72) },
         22,
         3,
         false,
@@ -64,12 +64,14 @@ constexpr RideTypeDescriptor EnterpriseRTD =
     },
     .UpdateRotating = UpdateRotatingEnterprise,
     .LightFXAddLightsMagicVehicle = nullptr,
-    .StartRideMusic = OpenRCT2::RideAudio::DefaultStartRideMusicChannel,
+    .StartRideMusic = RideAudio::DefaultStartRideMusicChannel,
     .DesignCreateMode = TrackDesignCreateMode::Default,
     .MusicUpdateFunction = DefaultMusicUpdate,
-    .Classification = RideClassification::Ride,
+    .Classification = RideClassification::ride,
     .UpdateLeaveEntrance = PeepUpdateRideLeaveEntranceDefault,
     .SpecialElementRatingAdjustment = SpecialTrackElementRatingsAjustment_Default,
     .GetGuestWaypointLocation = GetGuestWaypointLocationEnterprise,
+    .specialType = RtdSpecialType::enterprise,
 };
+} // namespace OpenRCT2
 // clang-format on

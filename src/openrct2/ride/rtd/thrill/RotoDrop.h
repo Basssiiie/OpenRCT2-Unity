@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,46 +9,46 @@
 
 #pragma once
 
-#include "../../../sprites.h"
+#include "../../../SpriteIds.h"
 #include "../../RideData.h"
 #include "../../ShopItem.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor RotoDropRTD =
 {
-    .Category = RIDE_CATEGORY_THRILL,
-    .StartTrackPiece = OpenRCT2::TrackElemType::TowerBase,
+    .Category = RideCategory::thrill,
+    .StartTrackPiece = TrackElemType::towerBase,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = GetTrackPaintFunctionRotoDrop,
+        .trackStyle = TrackStyle::rotoDrop,
         .enabledTrackGroups = {TrackGroup::tower},
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = kRtdFlagsHasThreeColours | EnumsToFlags(RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps,
+    .flags = kRtdFlagsHasThreeColours | RtdFlags(RtdFlag::hasSinglePieceStation, RtdFlag::cannotHaveGaps,
                      RtdFlag::hasDataLogging, RtdFlag::hasLoadOptions, RtdFlag::noWallsAroundTrack,
                      RtdFlag::guestsWillRideAgain, RtdFlag::hasVehicleColours, RtdFlag::hasTrack,
                      RtdFlag::supportsMultipleColourSchemes, RtdFlag::allowMusic, RtdFlag::hasEntranceAndExit,
                      RtdFlag::singleSession, RtdFlag::showInTrackDesigner, RtdFlag::interestingToLookAt),
-    .RideModes = EnumsToFlags(RideMode::FreefallDrop),
-    .DefaultMode = RideMode::FreefallDrop,
+    .RideModes = EnumsToFlags(RideMode::freefallDrop),
+    .DefaultMode = RideMode::freefallDrop,
     .Naming = { STR_RIDE_NAME_ROTO_DROP, STR_RIDE_DESCRIPTION_ROTO_DROP },
     .NameConvention = { RideComponentType::Car, RideComponentType::Track, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_ROTO_DROP",
-    .AvailableBreakdowns = (1 << BREAKDOWN_SAFETY_CUT_OUT) | (1 << BREAKDOWN_RESTRAINTS_STUCK_CLOSED) | (1 << BREAKDOWN_RESTRAINTS_STUCK_OPEN) | (1 << BREAKDOWN_VEHICLE_MALFUNCTION),
+    .availableBreakdowns = { Breakdown::safetyCutOut, Breakdown::restraintsStuckClosed, Breakdown::restraintsStuckOpen, Breakdown::vehicleMalfunction },
     .Heights = { 255, 32, 3, 2, },
     .MaxMass = 15,
-    .LiftData = { OpenRCT2::Audio::SoundId::Null, 5, 5 },
+    .LiftData = { Audio::SoundId::null, 5, 5 },
     .RatingsMultipliers = { 50, 50, 10 },
     .UpkeepCosts = { 50, 20, 0, 10, 0, 0 },
     .BuildCosts = { 22.50_GBP, 0.00_GBP, 4, },
     .DefaultPrices = { 20, 0 },
-    .DefaultMusic = MUSIC_OBJECT_ROCK_1,
-    .PhotoItem = ShopItem::Photo,
+    .DefaultMusic = kMusicObjectRock1,
+    .PhotoItem = ShopItem::photo,
     .BonusValue = 45,
     .ColourPresets = TRACK_COLOUR_PRESETS(
-        { COLOUR_BORDEAUX_RED, COLOUR_YELLOW, COLOUR_GREY },
-        { COLOUR_BLACK, COLOUR_LIGHT_BLUE, COLOUR_GREY },
+        { Drawing::Colour::bordeauxRed, Drawing::Colour::yellow, Drawing::Colour::grey },
+        { Drawing::Colour::black, Drawing::Colour::lightBlue, Drawing::Colour::grey },
     ),
     .ColourPreview = { SPR_RIDE_DESIGN_PREVIEW_ROTO_DROP_TRACK, SPR_RIDE_DESIGN_PREVIEW_ROTO_DROP_SUPPORTS },
     .ColourKey = RideColourKey::Ride,
@@ -56,9 +56,9 @@ constexpr RideTypeDescriptor RotoDropRTD =
     .RatingsData = 
     {
         RatingsCalculationType::Normal,
-        { RIDE_RATING(2, 80), RIDE_RATING(3, 50), RIDE_RATING(3, 50) },
+        { RideRating::make(2, 80), RideRating::make(3, 50), RideRating::make(3, 50) },
         24,
-        -1,
+        kDynamicRideShelterRating,
         false,
         {
             { RatingsModifierType::BonusProximity,   0, 11183, 0, 0 },
@@ -67,4 +67,5 @@ constexpr RideTypeDescriptor RotoDropRTD =
         },
     },
 };
+} // namespace OpenRCT2
 // clang-format on

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,13 +7,11 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
+#include "../../../SpriteIds.h"
 #include "../../../drawing/Drawing.h"
-#include "../../../interface/Viewport.h"
 #include "../../../ride/RideData.h"
-#include "../../../ride/TrackData.h"
 #include "../../../ride/TrackPaint.h"
-#include "../../../sprites.h"
-#include "../../../world/Map.h"
+#include "../../../world/tile_element/TrackElement.h"
 #include "../../Paint.h"
 #include "../../support/WoodenSupports.hpp"
 #include "../../tile_element/Paint.TileElement.h"
@@ -141,15 +139,15 @@ static void WoodenWildMouseTrackFlat(
 
     auto imageId = session.TrackColours.WithIndex(imageIds[direction]);
     PaintAddImageAsParentRotated(session, direction, imageId, { 0, 6, height }, { 32, 20, 1 });
-    DrawSupportForSequenceA<TrackElemType::Flat>(
+    DrawSupportForSequenceA<TrackElemType::flat>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(
         session,
         PaintUtilRotateSegments(
             EnumsToFlags(
-                PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::rightCorner, PaintSegment::bottomCorner,
-                PaintSegment::topLeftSide, PaintSegment::bottomRightSide),
+                PaintSegment::top, PaintSegment::left, PaintSegment::right, PaintSegment::bottom, PaintSegment::topLeft,
+                PaintSegment::bottomRight),
             direction),
         height, 0x20);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -160,22 +158,18 @@ static void WoodenWildMouseTrackStation(
     PaintSession& session, const Ride& ride, [[maybe_unused]] uint8_t trackSequence, uint8_t direction, int32_t height,
     const TrackElement& trackElement, SupportType supportType)
 {
-    static constexpr uint32_t imageIds[4][2] = {
-        { SPR_WOODEN_WILD_MOUSE_FLAT_SW_NE, SPR_STATION_BASE_B_SW_NE },
-        { SPR_WOODEN_WILD_MOUSE_FLAT_NW_SE, SPR_STATION_BASE_B_NW_SE },
-        { SPR_WOODEN_WILD_MOUSE_FLAT_SW_NE, SPR_STATION_BASE_B_SW_NE },
-        { SPR_WOODEN_WILD_MOUSE_FLAT_NW_SE, SPR_STATION_BASE_B_NW_SE },
+    static constexpr ImageIndex imageIds[4] = {
+        SPR_WOODEN_WILD_MOUSE_FLAT_SW_NE,
+        SPR_WOODEN_WILD_MOUSE_FLAT_NW_SE,
+        SPR_WOODEN_WILD_MOUSE_FLAT_SW_NE,
+        SPR_WOODEN_WILD_MOUSE_FLAT_NW_SE,
     };
-
     PaintAddImageAsParentRotated(
-        session, direction, GetStationColourScheme(session, trackElement).WithIndex(imageIds[direction][1]),
-        { 0, 0, height - 2 }, { { 0, 2, height }, { 32, 28, 1 } });
-    PaintAddImageAsChildRotated(
-        session, direction, session.TrackColours.WithIndex(imageIds[direction][0]), { 0, 6, height },
-        { { 0, 0, height }, { 32, 20, 1 } });
-    DrawSupportForSequenceA<TrackElemType::EndStation>(
+        session, direction, session.TrackColours.WithIndex(imageIds[direction]), { 0, 6, height },
+        { { 0, 6, height + 1 }, { 32, 20, 1 } });
+    DrawSupportForSequenceA<TrackElemType::endStation>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
-    TrackPaintUtilDrawStation(session, ride, direction, height, trackElement);
+    TrackPaintUtilDrawStation(session, ride, direction, height, trackElement, StationBaseType::b, -2);
     TrackPaintUtilDrawStationTunnel(session, direction, height);
     PaintUtilSetSegmentSupportHeight(session, kSegmentsAll, 0xFFFF, 0);
     PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -205,7 +199,7 @@ static void WoodenWildMouseTrack25DegUp(
     auto imageId = session.TrackColours.WithIndex(imageIds[isChained][direction]);
     PaintAddImageAsParentRotated(session, direction, imageId, { 0, 2, height }, { { 0, 3, height }, { 32, 25, 1 } });
 
-    DrawSupportForSequenceA<TrackElemType::Up25>(
+    DrawSupportForSequenceA<TrackElemType::up25>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     if (direction == 0 || direction == 3)
@@ -253,7 +247,7 @@ static void WoodenWildMouseTrack60DegUp(
             session, direction, imageId, { 0, 6, height }, { { 28, 4, height - 16 }, { 2, 24, 93 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::Up60>(
+    DrawSupportForSequenceA<TrackElemType::up60>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     if (direction == 0 || direction == 3)
@@ -293,7 +287,7 @@ static void WoodenWildMouseTrackFlatTo25DegUp(
     auto imageId = session.TrackColours.WithIndex(imageIds[isChained][direction]);
     PaintAddImageAsParentRotated(session, direction, imageId, { 0, 2, height }, { { 0, 3, height }, { 32, 25, 1 } });
 
-    DrawSupportForSequenceA<TrackElemType::FlatToUp25>(
+    DrawSupportForSequenceA<TrackElemType::flatToUp25>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     if (direction == 0 || direction == 3)
@@ -345,7 +339,7 @@ static void WoodenWildMouseTrack25DegUpTo60DegUp(
         PaintAddImageAsParentRotated(session, direction, imageId, { 0, 6, height }, { { 0, 4, height }, { 32, 2, 43 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::Up25ToUp60>(
+    DrawSupportForSequenceA<TrackElemType::up25ToUp60>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     if (direction == 0 || direction == 3)
@@ -396,7 +390,7 @@ static void WoodenWildMouseTrack60DegTo25DegUp(
         PaintAddImageAsParentRotated(session, direction, imageId, { 0, 6, height }, { { 0, 4, height }, { 32, 2, 43 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::Up60ToUp25>(
+    DrawSupportForSequenceA<TrackElemType::up60ToUp25>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     if (direction == 0 || direction == 3)
@@ -436,7 +430,7 @@ static void WoodenWildMouseTrack25DegUpToFlat(
     auto imageId = session.TrackColours.WithIndex(imageIds[isChained][direction]);
     PaintAddImageAsParentRotated(session, direction, imageId, { 0, 2, height }, { { 0, 3, height }, { 32, 25, 1 } });
 
-    DrawSupportForSequenceA<TrackElemType::Up25ToFlat>(
+    DrawSupportForSequenceA<TrackElemType::up25ToFlat>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     if (direction == 0 || direction == 3)
@@ -530,7 +524,7 @@ static void WoodenWildMouseTrackRightQuarterTurn3(
     TrackPaintUtilRightQuarterTurn3TilesPaint4(session, height, direction, trackSequence, session.TrackColours, imageIds);
     TrackPaintUtilRightQuarterTurn3TilesTunnel(session, kTunnelGroup, TunnelSubType::Flat, height, direction, trackSequence);
 
-    DrawSupportForSequenceA<TrackElemType::RightQuarterTurn3Tiles>(
+    DrawSupportForSequenceA<TrackElemType::rightQuarterTurn3Tiles>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     int32_t blockedSegments = 0;
@@ -541,7 +535,7 @@ static void WoodenWildMouseTrackRightQuarterTurn3(
             break;
         case 2:
             blockedSegments = EnumsToFlags(
-                PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide);
+                PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight);
             break;
         case 3:
             blockedSegments = kSegmentsAll;
@@ -586,7 +580,7 @@ static void WoodenWildMouseTrackLeftQuarterTurn1(
             PaintAddImageAsParent(session, imageId, { 6, 6, height }, { 24, 24, 1 });
             break;
     }
-    DrawSupportForSequenceA<TrackElemType::LeftQuarterTurn1Tile>(
+    DrawSupportForSequenceA<TrackElemType::leftQuarterTurn1Tile>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
     TrackPaintUtilLeftQuarterTurn1TileTunnel(
         session, kTunnelGroup, direction, height, 0, TunnelSubType::Flat, 0, TunnelSubType::Flat);
@@ -637,7 +631,7 @@ static void WoodenWildMouseTrackFlatTo60DegUp(
         PaintAddImageAsParentRotated(session, direction, imageId, { 0, 6, height }, { { 0, 4, height }, { 32, 2, 43 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::FlatToUp60>(
+    DrawSupportForSequenceA<TrackElemType::flatToUp60>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     if (direction == 0 || direction == 3)
@@ -688,7 +682,7 @@ static void WoodenWildMouseTrack60DegUpToFlat(
         PaintAddImageAsParentRotated(session, direction, imageId, { 0, 6, height }, { { 0, 4, height }, { 32, 2, 43 } });
     }
 
-    DrawSupportForSequenceA<TrackElemType::Up60ToFlat>(
+    DrawSupportForSequenceA<TrackElemType::up60ToFlat>(
         session, supportType.wooden, trackSequence, direction, height, session.SupportColours);
 
     if (direction == 0 || direction == 3)
@@ -720,56 +714,57 @@ static void WoodenWildMouseTrack60DegDownToFlat(
     WoodenWildMouseTrackFlatTo60DegUp(session, ride, trackSequence, (direction + 2) & 3, height, trackElement, supportType);
 }
 
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionWoodenWildMouse(int32_t trackType)
+TrackPaintFunction GetTrackPaintFunctionWoodenWildMouse(TrackElemType trackType)
 {
     switch (trackType)
     {
-        case TrackElemType::Flat:
+        case TrackElemType::flat:
             return WoodenWildMouseTrackFlat;
-        case TrackElemType::EndStation:
-        case TrackElemType::BeginStation:
-        case TrackElemType::MiddleStation:
+        case TrackElemType::endStation:
+        case TrackElemType::beginStation:
+        case TrackElemType::middleStation:
             return WoodenWildMouseTrackStation;
-        case TrackElemType::Up25:
+        case TrackElemType::up25:
             return WoodenWildMouseTrack25DegUp;
-        case TrackElemType::Up60:
+        case TrackElemType::up60:
             return WoodenWildMouseTrack60DegUp;
-        case TrackElemType::FlatToUp25:
+        case TrackElemType::flatToUp25:
             return WoodenWildMouseTrackFlatTo25DegUp;
-        case TrackElemType::Up25ToUp60:
+        case TrackElemType::up25ToUp60:
             return WoodenWildMouseTrack25DegUpTo60DegUp;
-        case TrackElemType::Up60ToUp25:
+        case TrackElemType::up60ToUp25:
             return WoodenWildMouseTrack60DegTo25DegUp;
-        case TrackElemType::Up25ToFlat:
+        case TrackElemType::up25ToFlat:
             return WoodenWildMouseTrack25DegUpToFlat;
-        case TrackElemType::Down25:
+        case TrackElemType::down25:
             return WoodenWildMouseTrack25DegDown;
-        case TrackElemType::Down60:
+        case TrackElemType::down60:
             return WoodenWildMouseTrack60DegDown;
-        case TrackElemType::FlatToDown25:
+        case TrackElemType::flatToDown25:
             return WoodenWildMouseTrackFlatTo25DegDown;
-        case TrackElemType::Down25ToDown60:
+        case TrackElemType::down25ToDown60:
             return WoodenWildMouseTrack25DegDownTo60DegDown;
-        case TrackElemType::Down60ToDown25:
+        case TrackElemType::down60ToDown25:
             return WoodenWildMouseTrack60DegDownTo25DegDown;
-        case TrackElemType::Down25ToFlat:
+        case TrackElemType::down25ToFlat:
             return WoodenWildMouseTrack25DegDownToFlat;
-        case TrackElemType::LeftQuarterTurn3Tiles:
+        case TrackElemType::leftQuarterTurn3Tiles:
             return WoodenWildMouseTrackLeftQuarterTurn3;
-        case TrackElemType::RightQuarterTurn3Tiles:
+        case TrackElemType::rightQuarterTurn3Tiles:
             return WoodenWildMouseTrackRightQuarterTurn3;
-        case TrackElemType::LeftQuarterTurn1Tile:
+        case TrackElemType::leftQuarterTurn1Tile:
             return WoodenWildMouseTrackLeftQuarterTurn1;
-        case TrackElemType::RightQuarterTurn1Tile:
+        case TrackElemType::rightQuarterTurn1Tile:
             return WoodenWildMouseTrackRightQuarterTurn1;
-        case TrackElemType::FlatToUp60:
+        case TrackElemType::flatToUp60:
             return WoodenWildMouseTrackFlatTo60DegUp;
-        case TrackElemType::Up60ToFlat:
+        case TrackElemType::up60ToFlat:
             return WoodenWildMouseTrack60DegUpToFlat;
-        case TrackElemType::FlatToDown60:
+        case TrackElemType::flatToDown60:
             return WoodenWildMouseTrackFlatTo60DegDown;
-        case TrackElemType::Down60ToFlat:
+        case TrackElemType::down60ToFlat:
             return WoodenWildMouseTrack60DegDownToFlat;
+        default:
+            return TrackPaintFunctionDummy;
     }
-    return nullptr;
 }

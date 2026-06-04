@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -14,12 +14,13 @@
 #include "../GameState.h"
 #include "../config/Config.h"
 #include "../entity/Guest.h"
-#include "../interface/Window.h"
 #include "../localisation/Formatter.h"
 #include "../profiling/Profiling.h"
 #include "../ride/Ride.h"
 #include "../ride/RideData.h"
+#include "../ride/RideManager.hpp"
 #include "../ride/ShopItem.h"
+#include "../ui/WindowManager.h"
 #include "../world/Park.h"
 #include "Finance.h"
 #include "NewsItem.h"
@@ -56,16 +57,18 @@ uint16_t MarketingGetCampaignGuestGenerationProbability(int32_t campaignType)
     if (campaign == nullptr)
         return 0;
 
+    auto& park = getGameState().park;
+
     // Lower probability of guest generation if price was already low
     auto probability = AdvertisingCampaignGuestGenerationProbabilities[campaign->Type];
     switch (campaign->Type)
     {
         case ADVERTISING_CAMPAIGN_PARK_ENTRY_FREE:
-            if (Park::GetEntranceFee() < 4.00_GBP)
+            if (Park::GetEntranceFee(park) < 4.00_GBP)
                 probability /= 8;
             break;
         case ADVERTISING_CAMPAIGN_PARK_ENTRY_HALF_PRICE:
-            if (Park::GetEntranceFee() < 6.00_GBP)
+            if (Park::GetEntranceFee(park) < 6.00_GBP)
                 probability /= 8;
             break;
         case ADVERTISING_CAMPAIGN_RIDE_FREE:
@@ -82,7 +85,7 @@ uint16_t MarketingGetCampaignGuestGenerationProbability(int32_t campaignType)
 
 static void MarketingRaiseFinishedNotification(const MarketingCampaign& campaign)
 {
-    if (Config::Get().notifications.ParkMarketingCampaignFinished)
+    if (Config::Get().notifications.parkMarketingCampaignFinished)
     {
         Formatter ft;
         // This sets the string parameters for the marketing types that have an argument.
@@ -91,7 +94,7 @@ static void MarketingRaiseFinishedNotification(const MarketingCampaign& campaign
             auto ride = GetRide(campaign.RideId);
             if (ride != nullptr)
             {
-                ride->FormatNameTo(ft);
+                ride->formatNameTo(ft);
             }
         }
         else if (campaign.Type == ADVERTISING_CAMPAIGN_FOOD_OR_DRINK_FREE)
@@ -99,7 +102,7 @@ static void MarketingRaiseFinishedNotification(const MarketingCampaign& campaign
             ft.Add<StringId>(GetShopItemDescriptor(campaign.ShopItemType).Naming.Plural);
         }
 
-        News::AddItemToQueue(News::ItemType::Campaign, kMarketingCampaignNames[campaign.Type][2], 0, ft);
+        News::AddItemToQueue(News::ItemType::campaign, kMarketingCampaignNames[campaign.Type][2], 0, ft);
     }
 }
 
@@ -111,19 +114,19 @@ void MarketingUpdate()
 {
     PROFILED_FUNCTION();
 
-    auto& gameState = GetGameState();
+    auto& gameState = getGameState();
 
-    if (gameState.Cheats.NeverendingMarketing)
+    if (gameState.cheats.neverendingMarketing)
         return;
 
-    for (auto it = gameState.MarketingCampaigns.begin(); it != gameState.MarketingCampaigns.end();)
+    for (auto it = gameState.park.marketingCampaigns.begin(); it != gameState.park.marketingCampaigns.end();)
     {
         auto& campaign = *it;
-        if (campaign.Flags & MarketingCampaignFlags::FIRST_WEEK)
+        if (campaign.flags.has(MarketingCampaignFlag::firstWeek))
         {
             // This ensures the campaign is active for x full weeks if started within the
             // middle of a week.
-            campaign.Flags &= ~MarketingCampaignFlags::FIRST_WEEK;
+            campaign.flags.unset(MarketingCampaignFlag::firstWeek);
         }
         else if (campaign.WeeksLeft > 0)
         {
@@ -133,7 +136,7 @@ void MarketingUpdate()
         if (campaign.WeeksLeft == 0)
         {
             MarketingRaiseFinishedNotification(campaign);
-            it = gameState.MarketingCampaigns.erase(it);
+            it = gameState.park.marketingCampaigns.erase(it);
         }
         else
         {
@@ -141,7 +144,8 @@ void MarketingUpdate()
         }
     }
 
-    WindowInvalidateByClass(WindowClass::Finances);
+    auto* windowMgr = Ui::GetWindowManager();
+    windowMgr->InvalidateByClass(WindowClass::finances);
 }
 
 void MarketingSetGuestCampaign(Guest* peep, int32_t campaignType)
@@ -153,22 +157,22 @@ void MarketingSetGuestCampaign(Guest* peep, int32_t campaignType)
     switch (campaign->Type)
     {
         case ADVERTISING_CAMPAIGN_PARK_ENTRY_FREE:
-            peep->GiveItem(ShopItem::Voucher);
+            peep->GiveItem(ShopItem::voucher);
             peep->VoucherType = VOUCHER_TYPE_PARK_ENTRY_FREE;
             break;
         case ADVERTISING_CAMPAIGN_RIDE_FREE:
-            peep->GiveItem(ShopItem::Voucher);
+            peep->GiveItem(ShopItem::voucher);
             peep->VoucherType = VOUCHER_TYPE_RIDE_FREE;
             peep->VoucherRideId = campaign->RideId;
             peep->GuestHeadingToRideId = campaign->RideId;
             peep->GuestIsLostCountdown = 240;
             break;
         case ADVERTISING_CAMPAIGN_PARK_ENTRY_HALF_PRICE:
-            peep->GiveItem(ShopItem::Voucher);
+            peep->GiveItem(ShopItem::voucher);
             peep->VoucherType = VOUCHER_TYPE_PARK_ENTRY_HALF_PRICE;
             break;
         case ADVERTISING_CAMPAIGN_FOOD_OR_DRINK_FREE:
-            peep->GiveItem(ShopItem::Voucher);
+            peep->GiveItem(ShopItem::voucher);
             peep->VoucherType = VOUCHER_TYPE_FOOD_OR_DRINK_FREE;
             peep->VoucherShopItem = campaign->ShopItemType;
             break;
@@ -183,24 +187,27 @@ void MarketingSetGuestCampaign(Guest* peep, int32_t campaignType)
 
 bool MarketingIsCampaignTypeApplicable(int32_t campaignType)
 {
+    auto& gameState = getGameState();
+    auto& park = gameState.park;
+
     switch (campaignType)
     {
         case ADVERTISING_CAMPAIGN_PARK_ENTRY_FREE:
         case ADVERTISING_CAMPAIGN_PARK_ENTRY_HALF_PRICE:
-            if (!Park::EntranceFeeUnlocked())
+            if (!Park::EntranceFeeUnlocked(park))
                 return false;
             return true;
 
         case ADVERTISING_CAMPAIGN_RIDE_FREE:
-            if (!Park::RidePricesUnlocked())
+            if (!Park::RidePricesUnlocked(park))
                 return false;
 
-            // fall-through
+            [[fallthrough]];
         case ADVERTISING_CAMPAIGN_RIDE:
-            // Check if any rides exist
-            for (auto& ride : GetRideManager())
+            // Check if any rides exist and are open
+            for (auto& ride : RideManager(gameState))
             {
-                if (ride.IsRide())
+                if (ride.isRide() && ride.status == RideStatus::open)
                 {
                     return true;
                 }
@@ -209,13 +216,15 @@ bool MarketingIsCampaignTypeApplicable(int32_t campaignType)
 
         case ADVERTISING_CAMPAIGN_FOOD_OR_DRINK_FREE:
             // Check if any food or drink stalls exist
-            for (auto& ride : GetRideManager())
+            for (auto& ride : RideManager(gameState))
             {
-                auto rideEntry = ride.GetRideEntry();
-                if (rideEntry != nullptr)
+                auto rideEntry = ride.getRideEntry();
+                if (rideEntry != nullptr && ride.status == RideStatus::open)
                 {
                     for (auto& item : rideEntry->shop_item)
                     {
+                        if (item == ShopItem::none)
+                            continue;
                         if (GetShopItemDescriptor(item).IsFoodOrDrink())
                         {
                             return true;
@@ -232,7 +241,7 @@ bool MarketingIsCampaignTypeApplicable(int32_t campaignType)
 
 MarketingCampaign* MarketingGetCampaign(int32_t campaignType)
 {
-    for (auto& campaign : GetGameState().MarketingCampaigns)
+    for (auto& campaign : getGameState().park.marketingCampaigns)
     {
         if (campaign.Type == campaignType)
         {
@@ -252,7 +261,7 @@ void MarketingNewCampaign(const MarketingCampaign& campaign)
     }
     else
     {
-        GetGameState().MarketingCampaigns.push_back(campaign);
+        getGameState().park.marketingCampaigns.push_back(campaign);
     }
 }
 
@@ -266,7 +275,7 @@ void MarketingCancelCampaignsForRide(const RideId rideId)
         return false;
     };
 
-    auto& v = GetGameState().MarketingCampaigns;
+    auto& v = getGameState().park.marketingCampaigns;
     auto removedIt = std::remove_if(v.begin(), v.end(), isCampaignForRideFn);
     v.erase(removedIt, v.end());
 }

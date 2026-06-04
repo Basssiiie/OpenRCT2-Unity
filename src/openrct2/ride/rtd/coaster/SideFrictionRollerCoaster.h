@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,47 +9,47 @@
 
 #pragma once
 
-#include "../../../sprites.h"
+#include "../../../SpriteIds.h"
 #include "../../RideData.h"
 #include "../../ShopItem.h"
-#include "../../Track.h"
 
 // clang-format off
+namespace OpenRCT2
+{
 constexpr RideTypeDescriptor SideFrictionRollerCoasterRTD =
 {
-    .Category = RIDE_CATEGORY_ROLLERCOASTER,
-    .StartTrackPiece = OpenRCT2::TrackElemType::EndStation,
+    .Category = RideCategory::rollerCoaster,
+    .StartTrackPiece = TrackElemType::endStation,
     .TrackPaintFunctions = TrackDrawerDescriptor({
-        .Drawer = GetTrackPaintFunctionSideFrictionRC,
-        .supportType = WoodenSupportType::Truss,
-        .enabledTrackGroups = {TrackGroup::straight, TrackGroup::stationEnd, TrackGroup::liftHill, TrackGroup::slope, TrackGroup::sBend, TrackGroup::curveSmall, TrackGroup::curve, TrackGroup::curveLarge, TrackGroup::brakes, TrackGroup::slopeSteepUp, TrackGroup::slopeSteepDown},
+        .trackStyle = TrackStyle::sideFrictionRollerCoaster,
+        .supportType = WoodenSupportType::truss,
+        .enabledTrackGroups = {TrackGroup::straight, TrackGroup::stationEnd, TrackGroup::liftHill, TrackGroup::slope, TrackGroup::sBend, TrackGroup::curveSmall, TrackGroup::curve, TrackGroup::curveLarge, TrackGroup::brakes, TrackGroup::slopeSteepUp, TrackGroup::slopeSteepDown, TrackGroup::diagSlope, TrackGroup::diagSlopeSteepUp, TrackGroup::diagSlopeSteepDown},
         .extraTrackGroups = {},
     }),
     .InvertedTrackPaintFunctions = {},
-    .Flags = kRtdFlagsHasThreeColours | kRtdFlagsCommonCoaster | kRtdFlagsCommonCoasterNonAlt | 
-        EnumsToFlags(RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation, RtdFlag::checkGForces,
+    .flags = kRtdFlagsHasThreeColours | kRtdFlagsCommonCoaster | kRtdFlagsCommonCoasterNonAlt | 
+        RtdFlags(RtdFlag::hasLeaveWhenAnotherVehicleArrivesAtStation, RtdFlag::checkGForces,
                      RtdFlag::allowMultipleCircuits, RtdFlag::allowReversedTrains),
-    .RideModes = EnumsToFlags(RideMode::ContinuousCircuit),
-    .DefaultMode = RideMode::ContinuousCircuit,
+    .RideModes = EnumsToFlags(RideMode::continuousCircuit),
+    .DefaultMode = RideMode::continuousCircuit,
     .Naming = { STR_RIDE_NAME_SIDE_FRICTION_ROLLER_COASTER, STR_RIDE_DESCRIPTION_SIDE_FRICTION_ROLLER_COASTER },
     .NameConvention = { RideComponentType::Train, RideComponentType::Track, RideComponentType::Station },
-    .EnumName = "RIDE_TYPE_SIDE_FRICTION_ROLLER_COASTER",
-    .AvailableBreakdowns = (1 << BREAKDOWN_SAFETY_CUT_OUT) | (1 << BREAKDOWN_VEHICLE_MALFUNCTION) | (1 << BREAKDOWN_BRAKES_FAILURE),
+    .availableBreakdowns = { Breakdown::safetyCutOut, Breakdown::vehicleMalfunction, Breakdown::brakesFailure },
     .Heights = { 18, 24, 4, 11, },
     .MaxMass = 15,
-    .LiftData = { OpenRCT2::Audio::SoundId::LiftWood, 3, 5 },
+    .LiftData = { Audio::SoundId::liftWood, 3, 5 },
     .RatingsMultipliers = { 48, 28, 7 },
     .UpkeepCosts = { 39, 20, 80, 10, 3, 10 },
     .BuildCosts = { 27.50_GBP, 3.00_GBP, 37, },
     .DefaultPrices = { 20, 20 },
-    .DefaultMusic = MUSIC_OBJECT_GENTLE,
-    .PhotoItem = ShopItem::Photo3,
+    .DefaultMusic = kMusicObjectGentle,
+    .PhotoItem = ShopItem::photo3,
     .BonusValue = 65,
     .ColourPresets = TRACK_COLOUR_PRESETS(
-        { COLOUR_WHITE, COLOUR_DARK_BROWN, COLOUR_WHITE },
-        { COLOUR_SATURATED_BROWN, COLOUR_WHITE, COLOUR_SATURATED_BROWN },
-        { COLOUR_DARK_BROWN, COLOUR_LIGHT_BROWN, COLOUR_DARK_BROWN },
-        { COLOUR_WHITE, COLOUR_DULL_GREEN_DARK, COLOUR_WHITE }, // Leap-The-Dips
+        { Drawing::Colour::white, Drawing::Colour::darkBrown, Drawing::Colour::white },
+        { Drawing::Colour::saturatedBrown, Drawing::Colour::white, Drawing::Colour::saturatedBrown },
+        { Drawing::Colour::darkBrown, Drawing::Colour::lightBrown, Drawing::Colour::darkBrown },
+        { Drawing::Colour::white, Drawing::Colour::viridian, Drawing::Colour::white }, // Leap-The-Dips
     ),
     .ColourPreview = { SPR_RIDE_DESIGN_PREVIEW_SIDE_FRICTION_ROLLER_COASTER_TRACK, SPR_RIDE_DESIGN_PREVIEW_SIDE_FRICTION_ROLLER_COASTER_SUPPORTS },
     .ColourKey = RideColourKey::Ride,
@@ -57,13 +57,13 @@ constexpr RideTypeDescriptor SideFrictionRollerCoasterRTD =
     .RatingsData = 
     {
         RatingsCalculationType::Normal,
-        { RIDE_RATING(2, 50), RIDE_RATING(2, 00), RIDE_RATING(1, 50) },
+        { RideRating::make(2, 50), RideRating::make(2, 00), RideRating::make(1, 50) },
         19,
-        -1,
+        kDynamicRideShelterRating,
         false,
         {
             { RatingsModifierType::BonusLength,           6000,             873, 0, 0 },
-            { RatingsModifierType::BonusSynchronisation,  0,                RIDE_RATING(0, 40), RIDE_RATING(0, 05), 0 },
+            { RatingsModifierType::BonusSynchronisation,  0,                RideRating::make(0, 40), RideRating::make(0, 05), 0 },
             { RatingsModifierType::BonusTrainLength,      0,                187245, 0, 0 },
             { RatingsModifierType::BonusMaxSpeed,         0,                44281, 88562, 35424 },
             { RatingsModifierType::BonusAverageSpeed,     0,                364088, 655360, 0 },
@@ -83,4 +83,5 @@ constexpr RideTypeDescriptor SideFrictionRollerCoasterRTD =
         },
     },
 };
+} // namespace OpenRCT2
 // clang-format on

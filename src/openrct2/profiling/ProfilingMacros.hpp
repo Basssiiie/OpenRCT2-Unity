@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,18 +11,18 @@
 namespace OpenRCT2::Profiling
 {
 #if defined(__clang__) || defined(__GNUC__)
-#    define PROFILING_FUNC_NAME __PRETTY_FUNCTION__
+    #define PROFILING_FUNC_NAME __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
-#    define PROFILING_FUNC_NAME __FUNCSIG__
+    #define PROFILING_FUNC_NAME __FUNCSIG__
 #else
-#    error "Unsupported compiler"
+    #error "Unsupported compiler"
 #endif
 
 #define PROFILED_FUNCTION_NAME(func)                                                                                           \
     static constexpr auto _profiling_func_name = func;                                                                         \
     struct Profiler_FunctionLiteral                                                                                            \
     {                                                                                                                          \
-        static constexpr const char* Str()                                                                                     \
+        static constexpr const char* str()                                                                                     \
         {                                                                                                                      \
             return _profiling_func_name;                                                                                       \
         }                                                                                                                      \
@@ -30,10 +30,10 @@ namespace OpenRCT2::Profiling
 
 #if defined(__clang_major__) && __clang_major__ <= 5
     // Clang 5 crashes using the profiler, we need to disable it.
-#    define PROFILED_FUNCTION()
+    #define PROFILED_FUNCTION()
 #else
 
-#    define PROFILED_FUNCTION()                                                                                                \
+    #define PROFILED_FUNCTION()                                                                                                \
         PROFILED_FUNCTION_NAME(PROFILING_FUNC_NAME)                                                                            \
         static auto& _profiling_func = ::OpenRCT2::Profiling::Detail::Storage<Profiler_FunctionLiteral>::Data;                 \
         ::OpenRCT2::Profiling::ScopedProfiling<decltype(_profiling_func)> _profiling_scope(_profiling_func);

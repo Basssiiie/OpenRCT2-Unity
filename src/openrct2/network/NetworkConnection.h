@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -11,63 +11,70 @@
 
 #ifndef DISABLE_NETWORK
 
-#    include "NetworkKey.h"
-#    include "NetworkPacket.h"
-#    include "NetworkTypes.h"
-#    include "Socket.h"
+    #include "NetworkKey.h"
+    #include "NetworkPacket.h"
+    #include "NetworkTypes.h"
+    #include "Socket.h"
 
-#    include <deque>
-#    include <memory>
-#    include <string_view>
-#    include <vector>
+    #include <memory>
+    #include <string_view>
+    #include <vector>
 
-class NetworkPlayer;
-struct ObjectRepositoryItem;
-
-class NetworkConnection final
+namespace OpenRCT2
 {
-public:
-    std::unique_ptr<ITcpSocket> Socket = nullptr;
-    NetworkPacket InboundPacket;
-    NetworkAuth AuthStatus = NetworkAuth::None;
-    NetworkStats Stats = {};
-    NetworkPlayer* Player = nullptr;
-    uint32_t PingTime = 0;
-    NetworkKey Key;
-    std::vector<uint8_t> Challenge;
-    std::vector<const ObjectRepositoryItem*> RequestedObjects;
-    bool ShouldDisconnect = false;
+    struct ObjectRepositoryItem;
+}
 
-    NetworkConnection() noexcept;
+namespace OpenRCT2::Network
+{
+    class Player;
 
-    NetworkReadPacket ReadPacket();
-    void QueuePacket(NetworkPacket&& packet, bool front = false);
-    void QueuePacket(const NetworkPacket& packet, bool front = false)
+    class Connection final
     {
-        auto copy = packet;
-        return QueuePacket(std::move(copy), front);
-    }
+    public:
+        std::unique_ptr<ITcpSocket> Socket = nullptr;
+        Packet InboundPacket;
+        Auth AuthStatus = Auth::none;
+        Stats stats = {};
+        Player* player = nullptr;
+        uint32_t PingTime = 0;
+        Key key;
+        std::vector<uint8_t> Challenge;
+        std::vector<const ObjectRepositoryItem*> RequestedObjects;
+        bool ShouldDisconnect = false;
 
-    // This will not immediately disconnect the client. The disconnect
-    // will happen post-tick.
-    void Disconnect() noexcept;
+        Connection() noexcept;
 
-    bool IsValid() const;
-    void SendQueuedPackets();
-    void ResetLastPacketTime() noexcept;
-    bool ReceivedPacketRecently() const noexcept;
+        void update();
+        ReadPacket readPacket();
+        void QueuePacket(const Packet& packet, bool front = false);
 
-    const utf8* GetLastDisconnectReason() const noexcept;
-    void SetLastDisconnectReason(std::string_view src);
-    void SetLastDisconnectReason(const StringId string_id, void* args = nullptr);
+        Command getPendingPacketCommand() const noexcept;
+        size_t getPendingPacketSize() const noexcept;
+        size_t getPendingPacketAvailable() const noexcept;
 
-private:
-    std::deque<NetworkPacket> _outboundPackets;
-    uint32_t _lastPacketTime = 0;
-    std::string _lastDisconnectReason;
+        // This will not immediately disconnect the client. The disconnect
+        // will happen post-tick.
+        void Disconnect() noexcept;
 
-    void RecordPacketStats(const NetworkPacket& packet, bool sending);
-    bool SendPacket(NetworkPacket& packet);
-};
+        bool IsValid() const;
+        void SendQueuedData();
+        bool ReceivedDataRecently() const noexcept;
+
+        const utf8* GetLastDisconnectReason() const noexcept;
+        void SetLastDisconnectReason(std::string_view src);
+        void SetLastDisconnectReason(StringId string_id, void* args = nullptr);
+
+    private:
+        std::vector<uint8_t> _inboundBuffer;
+        std::vector<uint8_t> _outboundBuffer;
+        uint32_t _lastReceiveTime = 0;
+        std::string _lastDisconnectReason;
+        bool _isLegacyProtocol = false;
+
+        void RecordPacketStats(const Packet& packet, bool sending);
+        void receiveData();
+    };
+} // namespace OpenRCT2::Network
 
 #endif // DISABLE_NETWORK

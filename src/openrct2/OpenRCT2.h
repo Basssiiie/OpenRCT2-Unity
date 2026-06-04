@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -22,17 +22,19 @@ enum class StartupAction
     Edit
 };
 
-enum
+enum class LegacyScene : uint8_t
 {
     // Although this is labeled a flag it actually means when
     // zero the screen is in playing mode.
-    SCREEN_FLAGS_PLAYING = 0,
-    SCREEN_FLAGS_TITLE_DEMO = 1,
-    SCREEN_FLAGS_SCENARIO_EDITOR = 2,
-    SCREEN_FLAGS_TRACK_DESIGNER = 4,
-    SCREEN_FLAGS_TRACK_MANAGER = 8,
-    SCREEN_FLAGS_EDITOR = (SCREEN_FLAGS_SCENARIO_EDITOR | SCREEN_FLAGS_TRACK_DESIGNER | SCREEN_FLAGS_TRACK_MANAGER),
+    playing,
+    titleSequence,
+    scenarioEditor,
+    trackDesigner,
+    trackDesignsManager,
 };
+
+bool isInEditorMode();
+bool isInTrackDesignerOrManager();
 
 extern StartupAction gOpenRCT2StartupAction;
 extern utf8 gOpenRCT2StartupActionPath[512];
@@ -49,18 +51,26 @@ extern u8string gSilentRecordingName;
 extern bool gSilentReplays;
 
 #ifndef DISABLE_NETWORK
-extern int32_t gNetworkStart;
-extern std::string gNetworkStartHost;
-extern int32_t gNetworkStartPort;
-extern std::string gNetworkStartAddress;
+namespace OpenRCT2::Network
+{
+    enum class Mode : int32_t;
+}
+
+namespace OpenRCT2
+{
+    extern Network::Mode gNetworkStart;
+    extern std::string gNetworkStartHost;
+    extern int32_t gNetworkStartPort;
+    extern std::string gNetworkStartAddress;
+} // namespace OpenRCT2
 #endif
 
+namespace OpenRCT2
+{
+    int32_t CommandLineRun(const char** argv, int32_t argc);
+} // namespace OpenRCT2
+
 extern uint32_t gCurrentDrawCount;
-extern uint8_t gScreenFlags;
+extern LegacyScene gLegacyScene;
 extern uint32_t gScreenAge;
 extern PromptMode gSavePromptMode;
-
-void OpenRCT2WriteFullVersionInfo(utf8* buffer, size_t bufferSize);
-void OpenRCT2Finish();
-
-int32_t CommandLineRun(const char** argv, int32_t argc);

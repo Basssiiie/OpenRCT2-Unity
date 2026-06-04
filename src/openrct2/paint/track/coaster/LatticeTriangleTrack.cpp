@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,19 +7,18 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
+#include "../../../SpriteIds.h"
 #include "../../../drawing/Drawing.h"
-#include "../../../interface/Viewport.h"
 #include "../../../ride/RideData.h"
-#include "../../../ride/TrackData.h"
 #include "../../../ride/TrackPaint.h"
-#include "../../../sprites.h"
-#include "../../../world/Map.h"
+#include "../../../world/tile_element/TrackElement.h"
 #include "../../Paint.h"
 #include "../../support/MetalSupports.h"
 #include "../../tile_element/Paint.TileElement.h"
 #include "../../tile_element/Segment.h"
 #include "../../track/Segment.h"
 #include "../../track/Support.h"
+#include "../../track_pieces/QuarterHelix.h"
 
 using namespace OpenRCT2;
 
@@ -35,7 +34,7 @@ static constexpr uint32_t LATTICE_TRIANGLE_BRAKE_NW_SE_OPEN_2 = 18081;
 static constexpr uint32_t LATTICE_TRIANGLE_BRAKE_SW_NE_CLOSED_2 = 18082;
 static constexpr uint32_t LATTICE_TRIANGLE_BRAKE_NW_SE_CLOSED_2 = 18083;
 
-static constexpr uint32_t _LatticeTriangleBrakeImages[kNumOrthogonalDirections][2][2] = {
+static constexpr uint32_t kLatticeTriangleBrakeImages[kNumOrthogonalDirections][2][2] = {
     { { LATTICE_TRIANGLE_BRAKE_SW_NE_OPEN_1, LATTICE_TRIANGLE_BRAKE_SW_NE_OPEN_2 },
       { LATTICE_TRIANGLE_BRAKE_SW_NE_CLOSED_1, LATTICE_TRIANGLE_BRAKE_SW_NE_CLOSED_2 } },
     { { LATTICE_TRIANGLE_BRAKE_NW_SE_OPEN_1, LATTICE_TRIANGLE_BRAKE_NW_SE_OPEN_2 },
@@ -50,42 +49,51 @@ static constexpr uint32_t _LatticeTriangleBrakeImages[kNumOrthogonalDirections][
  * second level: background, foreground
  * third level: direction
  */
-static constexpr uint32_t LatticeTriangleBrakeImages[2][2][kNumOrthogonalDirections] = {
+static constexpr uint32_t kLatticeTriangleDiagBrakeImages[2][2][kNumOrthogonalDirections] = {
     {
         // Open
         {
             // Background
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 3,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 3,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 3,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 3,
         },
         {
             // Foreground
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 2,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 4,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 2,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 4,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 2,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 4,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 2,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 4,
         },
     },
     {
         // Closed
         {
             // Background
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 1,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 3,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 1,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 3,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 1,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 3,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 1,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 3,
         },
         {
             // Foreground
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 2,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 5,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 2,
-            SPR_G2_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 5,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 2,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 5,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 2,
+            SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BRAKES + 5,
         },
     },
 };
+
+static constexpr std::array<std::array<int8_t, kNumOrthogonalDirections>, kQuarterHelixSequenceCount>
+    kLeftQuarterHelixSupportHeights = { { { 1, 0, 0, 0 }, {}, {}, {}, {}, {}, { 0, 4, 4, 1 } } };
+static constexpr std::array<std::array<int8_t, kNumOrthogonalDirections>, kQuarterHelixSequenceCount>
+    kRightQuarterHelixSupportHeights = { { { 0, 0, 0, 1 }, {}, {}, {}, {}, {}, { 1, 4, 4, 1 } } };
+static constexpr std::array<std::array<int8_t, kNumOrthogonalDirections>, kQuarterHelixSequenceCount>
+    kLeftQuarterBankedHelixSupportHeights = { { { 0, 0, 4, 5 }, {}, {}, {}, {}, {}, { 10, 1, 1, 8 } } };
+static constexpr std::array<std::array<int8_t, kNumOrthogonalDirections>, kQuarterHelixSequenceCount>
+    kRightQuarterBankedHelixSupportHeights = { { { 4, 4, 0, 0 }, {}, {}, {}, {}, {}, { 8, 1, 1, 10 } } };
 
 /** rct2: 0x008AD674 */
 static void LatticeTriangleTrackFlat(
@@ -111,7 +119,7 @@ static void LatticeTriangleTrackFlat(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
         }
     }
     else if (trackElement.HasChain())
@@ -141,7 +149,7 @@ static void LatticeTriangleTrackFlat(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
         }
     }
     else
@@ -163,7 +171,7 @@ static void LatticeTriangleTrackFlat(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
         }
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -175,31 +183,35 @@ static void LatticeTriangleTrackStation(
     PaintSession& session, const Ride& ride, [[maybe_unused]] uint8_t trackSequence, uint8_t direction, int32_t height,
     const TrackElement& trackElement, SupportType supportType)
 {
-    static constexpr uint32_t imageIds[4][2] = {
-        { 18084, SPR_STATION_BASE_A_SW_NE },
-        { 18085, SPR_STATION_BASE_A_NW_SE },
-        { 18084, SPR_STATION_BASE_A_SW_NE },
-        { 18085, SPR_STATION_BASE_A_NW_SE },
+    static constexpr ImageIndex imageIds[4] = {
+        18084,
+        18085,
+        18084,
+        18085,
     };
 
-    if (trackElement.GetTrackType() == TrackElemType::EndStation)
+    if (trackElement.GetTrackType() == TrackElemType::endStation)
     {
         bool isClosed = trackElement.IsBrakeClosed();
         PaintAddImageAsParentRotated(
-            session, direction, session.TrackColours.WithIndex(_LatticeTriangleBrakeImages[direction][isClosed][0]),
+            session, direction, session.TrackColours.WithIndex(kLatticeTriangleBrakeImages[direction][isClosed][0]),
             { 0, 0, height }, { { 0, 6, height + 3 }, { 32, 20, 1 } });
     }
     else
     {
         PaintAddImageAsParentRotated(
-            session, direction, session.TrackColours.WithIndex(imageIds[direction][0]), { 0, 0, height },
+            session, direction, session.TrackColours.WithIndex(imageIds[direction]), { 0, 0, height },
             { { 0, 6, height + 3 }, { 32, 20, 1 } });
     }
-    PaintAddImageAsParentRotated(
-        session, direction, GetStationColourScheme(session, trackElement).WithIndex(imageIds[direction][1]), { 0, 0, height },
-        { 32, 32, 1 });
-    DrawSupportsSideBySide(session, direction, height, session.SupportColours, supportType.metal);
-    TrackPaintUtilDrawStation2(session, ride, direction, height, trackElement, 9, 11);
+    if (TrackPaintUtilDrawStation2(session, ride, direction, height, trackElement, StationBaseType::a, 0, 9, 11))
+    {
+        DrawSupportsSideBySide(session, direction, height, session.SupportColours, supportType.metal);
+    }
+    else if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
+    {
+        MetalASupportsPaintSetupRotated(
+            session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
+    }
     TrackPaintUtilDrawStationTunnel(session, direction, height);
     PaintUtilSetSegmentSupportHeight(session, kSegmentsAll, 0xFFFF, 0);
     PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -237,7 +249,7 @@ static void LatticeTriangleTrack25DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
         }
     }
     else if (trackElement.HasChain())
@@ -267,7 +279,7 @@ static void LatticeTriangleTrack25DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
         }
     }
     else
@@ -297,7 +309,7 @@ static void LatticeTriangleTrack25DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
         }
     }
     if (direction == 0 || direction == 3)
@@ -344,7 +356,7 @@ static void LatticeTriangleTrack60DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 32, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 32, height, session.SupportColours);
         }
     }
     else
@@ -374,7 +386,7 @@ static void LatticeTriangleTrack60DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 32, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 32, height, session.SupportColours);
         }
     }
     if (direction == 0 || direction == 3)
@@ -421,7 +433,7 @@ static void LatticeTriangleTrackFlatTo25DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
         }
     }
     else if (trackElement.HasChain())
@@ -451,7 +463,7 @@ static void LatticeTriangleTrackFlatTo25DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
         }
     }
     else
@@ -481,7 +493,7 @@ static void LatticeTriangleTrackFlatTo25DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
         }
     }
     if (direction == 0 || direction == 3)
@@ -534,7 +546,7 @@ static void LatticeTriangleTrack25DegUpTo60DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
         }
     }
     else
@@ -570,7 +582,7 @@ static void LatticeTriangleTrack25DegUpTo60DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
         }
     }
     if (direction == 0 || direction == 3)
@@ -623,7 +635,7 @@ static void LatticeTriangleTrack60DegUpTo25DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 20, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 20, height, session.SupportColours);
         }
     }
     else
@@ -659,7 +671,7 @@ static void LatticeTriangleTrack60DegUpTo25DegUp(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 20, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 20, height, session.SupportColours);
         }
     }
     if (direction == 0 || direction == 3)
@@ -706,7 +718,7 @@ static void LatticeTriangleTrack25DegUpToFlat(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
         }
     }
     else if (trackElement.HasChain())
@@ -736,7 +748,7 @@ static void LatticeTriangleTrack25DegUpToFlat(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
         }
     }
     else
@@ -766,7 +778,7 @@ static void LatticeTriangleTrack25DegUpToFlat(
         }
         if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
         {
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
         }
     }
     if (direction == 0 || direction == 3)
@@ -860,7 +872,7 @@ static void LatticeTriangleTrackLeftQuarterTurn5(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -868,9 +880,7 @@ static void LatticeTriangleTrackLeftQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -906,8 +916,8 @@ static void LatticeTriangleTrackLeftQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -939,9 +949,7 @@ static void LatticeTriangleTrackLeftQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -977,8 +985,8 @@ static void LatticeTriangleTrackLeftQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -1007,7 +1015,7 @@ static void LatticeTriangleTrackLeftQuarterTurn5(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -1020,9 +1028,7 @@ static void LatticeTriangleTrackLeftQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -1075,7 +1081,7 @@ static void LatticeTriangleTrackFlatToLeftBank(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -1118,7 +1124,7 @@ static void LatticeTriangleTrackFlatToRightBank(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -1161,7 +1167,7 @@ static void LatticeTriangleTrackLeftBankToFlat(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -1204,7 +1210,7 @@ static void LatticeTriangleTrackRightBankToFlat(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -1245,7 +1251,7 @@ static void LatticeTriangleTrackBankedLeftQuarterTurn5(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -1253,9 +1259,7 @@ static void LatticeTriangleTrackBankedLeftQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -1291,8 +1295,8 @@ static void LatticeTriangleTrackBankedLeftQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -1324,9 +1328,7 @@ static void LatticeTriangleTrackBankedLeftQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -1362,8 +1364,8 @@ static void LatticeTriangleTrackBankedLeftQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -1395,7 +1397,7 @@ static void LatticeTriangleTrackBankedLeftQuarterTurn5(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -1408,9 +1410,7 @@ static void LatticeTriangleTrackBankedLeftQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -1464,7 +1464,7 @@ static void LatticeTriangleTrackLeftBankTo25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -1514,7 +1514,7 @@ static void LatticeTriangleTrackRightBankTo25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -1564,7 +1564,7 @@ static void LatticeTriangleTrack25DegUpToLeftBank(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -1614,7 +1614,7 @@ static void LatticeTriangleTrack25DegUpToRightBank(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -1692,7 +1692,7 @@ static void LatticeTriangleTrackLeftBank(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -1738,7 +1738,7 @@ static void LatticeTriangleTrackLeftQuarterTurn525DegUp(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -1746,9 +1746,7 @@ static void LatticeTriangleTrackLeftQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -1782,8 +1780,8 @@ static void LatticeTriangleTrackLeftQuarterTurn525DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -1814,9 +1812,7 @@ static void LatticeTriangleTrackLeftQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -1850,8 +1846,8 @@ static void LatticeTriangleTrackLeftQuarterTurn525DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -1880,7 +1876,7 @@ static void LatticeTriangleTrackLeftQuarterTurn525DegUp(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -1893,9 +1889,7 @@ static void LatticeTriangleTrackLeftQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -1934,7 +1928,7 @@ static void LatticeTriangleTrackRightQuarterTurn525DegUp(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -1942,9 +1936,7 @@ static void LatticeTriangleTrackRightQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -1978,8 +1970,8 @@ static void LatticeTriangleTrackRightQuarterTurn525DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -2010,8 +2002,7 @@ static void LatticeTriangleTrackRightQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -2045,8 +2036,8 @@ static void LatticeTriangleTrackRightQuarterTurn525DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -2075,7 +2066,7 @@ static void LatticeTriangleTrackRightQuarterTurn525DegUp(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -2088,9 +2079,7 @@ static void LatticeTriangleTrackRightQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -2157,9 +2146,7 @@ static void LatticeTriangleTrackSBendLeft(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2191,8 +2178,8 @@ static void LatticeTriangleTrackSBendLeft(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2224,8 +2211,8 @@ static void LatticeTriangleTrackSBendLeft(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2254,7 +2241,7 @@ static void LatticeTriangleTrackSBendLeft(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 1:
@@ -2267,9 +2254,7 @@ static void LatticeTriangleTrackSBendLeft(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2316,9 +2301,7 @@ static void LatticeTriangleTrackSBendRight(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2350,8 +2333,8 @@ static void LatticeTriangleTrackSBendRight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2383,8 +2366,8 @@ static void LatticeTriangleTrackSBendRight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2426,9 +2409,7 @@ static void LatticeTriangleTrackSBendRight(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2467,7 +2448,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -2475,9 +2456,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2512,9 +2491,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2543,7 +2520,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -2556,9 +2533,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2609,7 +2584,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3Bank(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -2617,9 +2592,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3Bank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2654,9 +2627,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3Bank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2688,7 +2659,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3Bank(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -2701,9 +2672,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3Bank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -2748,7 +2717,7 @@ static void LatticeTriangleTrackLeftQuarterTurn325DegUp(
                         session, direction, session.TrackColours.WithIndex(18303), { 0, 6, height }, { 32, 20, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -2756,9 +2725,7 @@ static void LatticeTriangleTrackLeftQuarterTurn325DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -2789,7 +2756,7 @@ static void LatticeTriangleTrackLeftQuarterTurn325DegUp(
                         session, direction, session.TrackColours.WithIndex(18302), { 6, 0, height }, { 20, 32, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -2802,9 +2769,7 @@ static void LatticeTriangleTrackLeftQuarterTurn325DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -2839,7 +2804,7 @@ static void LatticeTriangleTrackRightQuarterTurn325DegUp(
                         session, direction, session.TrackColours.WithIndex(18300), { 0, 6, height }, { 32, 20, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -2847,9 +2812,7 @@ static void LatticeTriangleTrackRightQuarterTurn325DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -2867,25 +2830,25 @@ static void LatticeTriangleTrackRightQuarterTurn325DegUp(
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18295), { 6, 0, height }, { 20, 32, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18297), { 6, 0, height }, { 20, 32, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18299), { 6, 0, height }, { 20, 32, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 10, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 10, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18301), { 6, 0, height }, { 20, 32, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
             }
             switch (direction)
@@ -2900,9 +2863,7 @@ static void LatticeTriangleTrackRightQuarterTurn325DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -2964,7 +2925,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 2, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 2, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -2973,8 +2934,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3009,9 +2970,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3043,7 +3002,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                         { { 6, 0, height + 8 }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -3057,8 +3016,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3090,7 +3049,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 2, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 2, height, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -3104,8 +3063,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3141,8 +3100,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3174,7 +3132,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                         { { 0, 27, height }, { 32, 1, 26 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height + 8, kTunnelGroup, TunnelSubType::Flat);
@@ -3183,8 +3141,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3226,7 +3184,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                         { { 0, 27, height }, { 32, 1, 26 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 2, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 2, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -3235,8 +3193,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3272,8 +3230,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3305,7 +3262,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -3319,8 +3276,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3352,7 +3309,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 2, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 2, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -3366,8 +3323,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3402,9 +3359,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3436,7 +3391,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                         { { 0, 6, height + 8 }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height + 8, kTunnelGroup, TunnelSubType::Flat);
@@ -3445,8 +3400,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpSmall(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3518,7 +3473,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 1, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 1, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -3527,8 +3482,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3564,8 +3519,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3597,9 +3552,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3635,8 +3588,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3668,7 +3621,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                         { { 6, 0, height + 8 }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -3682,8 +3635,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3715,7 +3668,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 1, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 1, height, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -3729,8 +3682,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3766,8 +3719,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3799,8 +3752,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3836,8 +3788,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3869,7 +3821,7 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                         { { 0, 27, height }, { 32, 1, 26 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height + 8, kTunnelGroup, TunnelSubType::Flat);
@@ -3878,8 +3830,8 @@ static void LatticeTriangleTrackLeftHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3921,7 +3873,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                         { { 0, 27, height }, { 32, 1, 26 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 1, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 1, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -3930,8 +3882,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -3967,8 +3919,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4000,8 +3952,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4037,8 +3988,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4051,7 +4002,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                         session, direction, session.TrackColours.WithIndex(18342), { 0, 0, height },
                         { { 6, 0, height + 8 }, { 20, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
@@ -4061,21 +4012,21 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                         session, direction, session.TrackColours.WithIndex(18358), { 0, 0, height },
                         { { 27, 0, height }, { 1, 32, 26 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18352), { 0, 0, height },
                         { { 27, 0, height }, { 1, 32, 26 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18357), { 0, 0, height },
                         { { 6, 0, height }, { 20, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
                     break;
             }
             switch (direction)
@@ -4091,8 +4042,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4124,7 +4075,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 1, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 1, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -4138,8 +4089,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4175,8 +4126,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4208,9 +4159,7 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4246,8 +4195,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4263,28 +4212,28 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                         session, direction, session.TrackColours.WithIndex(18358), { 0, 0, height },
                         { { 0, 27, height }, { 32, 1, 26 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18352), { 0, 0, height },
                         { { 0, 27, height }, { 32, 1, 26 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18357), { 0, 0, height },
                         { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18342), { 0, 0, height },
                         { { 0, 6, height + 8 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -4295,8 +4244,8 @@ static void LatticeTriangleTrackRightHalfBankedHelixUpLarge(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -4472,7 +4421,7 @@ static void LatticeTriangleTrackBrakes(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -4509,7 +4458,7 @@ static void LatticeTriangleTrack25DegUpLeftBanked(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -4553,7 +4502,7 @@ static void LatticeTriangleTrack25DegUpRightBanked(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -4653,7 +4602,7 @@ static void LatticeTriangleTrackFlatTo60DegUpLongBase(
                 if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
                 {
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
                 }
             }
             else
@@ -4684,7 +4633,7 @@ static void LatticeTriangleTrackFlatTo60DegUpLongBase(
                 if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
                 {
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
                 }
             }
             if (direction == 0 || direction == 3)
@@ -4724,7 +4673,7 @@ static void LatticeTriangleTrackFlatTo60DegUpLongBase(
                 if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
                 {
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
                 }
             }
             else
@@ -4755,7 +4704,7 @@ static void LatticeTriangleTrackFlatTo60DegUpLongBase(
                 if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
                 {
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
                 }
             }
             PaintUtilSetSegmentSupportHeight(
@@ -4791,7 +4740,7 @@ static void LatticeTriangleTrackFlatTo60DegUpLongBase(
                 if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
                 {
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
                 }
             }
             else
@@ -4822,7 +4771,7 @@ static void LatticeTriangleTrackFlatTo60DegUpLongBase(
                 if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
                 {
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
                 }
             }
             PaintUtilSetSegmentSupportHeight(
@@ -4858,7 +4807,7 @@ static void LatticeTriangleTrackFlatTo60DegUpLongBase(
                 if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
                 {
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
                 }
             }
             else
@@ -4889,7 +4838,7 @@ static void LatticeTriangleTrackFlatTo60DegUpLongBase(
                 if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
                 {
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
                 }
             }
             switch (direction)
@@ -4942,7 +4891,7 @@ static void LatticeTriangleTrack60DegUpToFlatLongBase(
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 16, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 16, height, session.SupportColours);
             }
             if (direction == 0 || direction == 3)
             {
@@ -4979,7 +4928,7 @@ static void LatticeTriangleTrack60DegUpToFlatLongBase(
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
             }
             PaintUtilSetSegmentSupportHeight(
                 session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -5012,7 +4961,7 @@ static void LatticeTriangleTrack60DegUpToFlatLongBase(
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 9, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 9, height, session.SupportColours);
             }
             PaintUtilSetSegmentSupportHeight(
                 session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -5045,15 +4994,15 @@ static void LatticeTriangleTrack60DegUpToFlatLongBase(
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
             }
             switch (direction)
             {
                 case 1:
-                    PaintUtilPushTunnelRight(session, height + 8, kTunnelGroup, TunnelSubType::Flat);
+                    PaintUtilPushTunnelRight(session, height + 8, kTunnelGroup, TunnelSubType::FlatTo25Deg);
                     break;
                 case 2:
-                    PaintUtilPushTunnelLeft(session, height + 8, kTunnelGroup, TunnelSubType::Flat);
+                    PaintUtilPushTunnelLeft(session, height + 8, kTunnelGroup, TunnelSubType::FlatTo25Deg);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
@@ -5115,7 +5064,7 @@ static void LatticeTriangleTrackCableLiftHill(
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
             }
             if (direction == 0 || direction == 3)
             {
@@ -5156,7 +5105,7 @@ static void LatticeTriangleTrackCableLiftHill(
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
             }
             if (direction == 0 || direction == 3)
             {
@@ -5203,7 +5152,7 @@ static void LatticeTriangleTrackCableLiftHill(
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 20, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 20, height, session.SupportColours);
             }
             if (direction == 0 || direction == 3)
             {
@@ -5244,7 +5193,7 @@ static void LatticeTriangleTrackCableLiftHill(
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 32, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 32, height, session.SupportColours);
             }
             if (direction == 0 || direction == 3)
             {
@@ -5292,7 +5241,7 @@ static void LatticeTriangleTrackLeftEighthToDiag(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -5329,8 +5278,8 @@ static void LatticeTriangleTrackLeftEighthToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5363,8 +5312,8 @@ static void LatticeTriangleTrackLeftEighthToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5373,9 +5322,7 @@ static void LatticeTriangleTrackLeftEighthToDiag(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5388,36 +5335,36 @@ static void LatticeTriangleTrackLeftEighthToDiag(
                         session, direction, session.TrackColours.WithIndex(18417), { 0, 0, height },
                         { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18421), { 0, 0, height },
                         { { 0, 16, height }, { 16, 18, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18425), { 0, 0, height },
                         { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18429), { 0, 0, height },
                         { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5456,7 +5403,7 @@ static void LatticeTriangleTrackRightEighthToDiag(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -5493,8 +5440,8 @@ static void LatticeTriangleTrackRightEighthToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5515,7 +5462,7 @@ static void LatticeTriangleTrackRightEighthToDiag(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18408), { 0, 0, height },
-                        { { 4, 4, height }, { 28, 28, 3 } });
+                        { { 16, 16, height }, { 16, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
@@ -5527,8 +5474,8 @@ static void LatticeTriangleTrackRightEighthToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5538,8 +5485,7 @@ static void LatticeTriangleTrackRightEighthToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5552,36 +5498,36 @@ static void LatticeTriangleTrackRightEighthToDiag(
                         session, direction, session.TrackColours.WithIndex(18401), { 0, 0, height },
                         { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18405), { 0, 0, height },
                         { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18409), { 0, 0, height },
                         { { 0, 16, height }, { 16, 18, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18413), { 0, 0, height },
                         { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5638,7 +5584,7 @@ static void LatticeTriangleTrackLeftEighthBankToDiag(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -5675,8 +5621,8 @@ static void LatticeTriangleTrackLeftEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5709,8 +5655,8 @@ static void LatticeTriangleTrackLeftEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5719,9 +5665,7 @@ static void LatticeTriangleTrackLeftEighthBankToDiag(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5734,36 +5678,36 @@ static void LatticeTriangleTrackLeftEighthBankToDiag(
                         session, direction, session.TrackColours.WithIndex(18449), { 0, 0, height },
                         { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18453), { 0, 0, height },
                         { { 0, 16, height + 27 }, { 16, 18, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18457), { 0, 0, height },
                         { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18461), { 0, 0, height },
                         { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5802,7 +5746,7 @@ static void LatticeTriangleTrackRightEighthBankToDiag(
                         { { 0, 27, height }, { 32, 1, 26 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -5839,8 +5783,8 @@ static void LatticeTriangleTrackRightEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5873,8 +5817,8 @@ static void LatticeTriangleTrackRightEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5884,8 +5828,7 @@ static void LatticeTriangleTrackRightEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -5898,36 +5841,36 @@ static void LatticeTriangleTrackRightEighthBankToDiag(
                         session, direction, session.TrackColours.WithIndex(18433), { 0, 0, height },
                         { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18437), { 0, 0, height },
                         { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18441), { 0, 0, height },
                         { { 0, 16, height + 27 }, { 16, 18, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18445), { 0, 0, height },
                         { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -6002,9 +5945,7 @@ static void LatticeTriangleTrackDiag25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6035,8 +5976,7 @@ static void LatticeTriangleTrackDiag25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6068,8 +6008,7 @@ static void LatticeTriangleTrackDiag25DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6081,22 +6020,22 @@ static void LatticeTriangleTrackDiag25DegUp(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 8, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18537), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 8, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 8, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 8, height, session.SupportColours);
                         break;
                 }
             }
@@ -6106,31 +6045,29 @@ static void LatticeTriangleTrackDiag25DegUp(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 8, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18475), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 8, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 8, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 8, height, session.SupportColours);
                         break;
                 }
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6157,9 +6094,7 @@ static void LatticeTriangleTrackDiag60DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 104);
@@ -6176,8 +6111,7 @@ static void LatticeTriangleTrackDiag60DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 104);
@@ -6195,8 +6129,7 @@ static void LatticeTriangleTrackDiag60DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 104);
@@ -6206,30 +6139,28 @@ static void LatticeTriangleTrackDiag60DegUp(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 32, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 32, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18487), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 36, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 36, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 32, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 32, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 36, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 36, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 104);
@@ -6270,9 +6201,7 @@ static void LatticeTriangleTrackDiagFlatTo25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -6303,8 +6232,7 @@ static void LatticeTriangleTrackDiagFlatTo25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -6336,8 +6264,7 @@ static void LatticeTriangleTrackDiagFlatTo25DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -6349,22 +6276,22 @@ static void LatticeTriangleTrackDiagFlatTo25DegUp(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18529), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                         break;
                 }
             }
@@ -6374,31 +6301,29 @@ static void LatticeTriangleTrackDiagFlatTo25DegUp(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18467), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                         break;
                 }
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -6425,9 +6350,7 @@ static void LatticeTriangleTrackDiag25DegUpTo60DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -6444,8 +6367,7 @@ static void LatticeTriangleTrackDiag25DegUpTo60DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -6463,8 +6385,7 @@ static void LatticeTriangleTrackDiag25DegUpTo60DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -6474,30 +6395,28 @@ static void LatticeTriangleTrackDiag25DegUpTo60DegUp(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 16, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18479), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 16, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 16, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 16, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -6524,9 +6443,7 @@ static void LatticeTriangleTrackDiag60DegUpTo25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -6543,8 +6460,7 @@ static void LatticeTriangleTrackDiag60DegUpTo25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -6562,8 +6478,7 @@ static void LatticeTriangleTrackDiag60DegUpTo25DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -6573,30 +6488,28 @@ static void LatticeTriangleTrackDiag60DegUpTo25DegUp(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 21, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 21, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18483), { -16, -16, height },
                         { { 0, 0, height }, { 16, 16, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 21, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 21, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 21, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 21, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 21, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 21, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -6637,9 +6550,7 @@ static void LatticeTriangleTrackDiag25DegUpToFlat(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6670,8 +6581,7 @@ static void LatticeTriangleTrackDiag25DegUpToFlat(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6703,8 +6613,7 @@ static void LatticeTriangleTrackDiag25DegUpToFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6716,22 +6625,22 @@ static void LatticeTriangleTrackDiag25DegUpToFlat(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18533), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                         break;
                 }
             }
@@ -6741,31 +6650,29 @@ static void LatticeTriangleTrackDiag25DegUpToFlat(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18471), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                         break;
                 }
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6806,9 +6713,7 @@ static void LatticeTriangleTrackDiag25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6839,8 +6744,7 @@ static void LatticeTriangleTrackDiag25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6872,8 +6776,7 @@ static void LatticeTriangleTrackDiag25DegDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6885,22 +6788,22 @@ static void LatticeTriangleTrackDiag25DegDown(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 8, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18539), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 8, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 8, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 8, height, session.SupportColours);
                         break;
                 }
             }
@@ -6910,31 +6813,29 @@ static void LatticeTriangleTrackDiag25DegDown(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 8, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18477), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 8, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 8, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 8, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 8, height, session.SupportColours);
                         break;
                 }
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -6961,9 +6862,7 @@ static void LatticeTriangleTrackDiag60DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 104);
@@ -6980,8 +6879,7 @@ static void LatticeTriangleTrackDiag60DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 104);
@@ -6999,8 +6897,7 @@ static void LatticeTriangleTrackDiag60DegDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 104);
@@ -7010,30 +6907,28 @@ static void LatticeTriangleTrackDiag60DegDown(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 24, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 24, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18489), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 28, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 28, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 24, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 24, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 28, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 28, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 104);
@@ -7074,9 +6969,7 @@ static void LatticeTriangleTrackDiagFlatTo25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -7106,8 +6999,7 @@ static void LatticeTriangleTrackDiagFlatTo25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -7138,8 +7030,7 @@ static void LatticeTriangleTrackDiagFlatTo25DegDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -7150,22 +7041,22 @@ static void LatticeTriangleTrackDiagFlatTo25DegDown(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18535), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                         break;
                 }
             }
@@ -7175,31 +7066,29 @@ static void LatticeTriangleTrackDiagFlatTo25DegDown(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18473), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                         break;
                 }
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             break;
@@ -7227,9 +7116,7 @@ static void LatticeTriangleTrackDiag25DegDownTo60DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -7246,8 +7133,7 @@ static void LatticeTriangleTrackDiag25DegDownTo60DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -7265,8 +7151,7 @@ static void LatticeTriangleTrackDiag25DegDownTo60DegDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -7276,30 +7161,28 @@ static void LatticeTriangleTrackDiag25DegDownTo60DegDown(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 17, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 17, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18485), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 17, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 17, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 17, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 17, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 17, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 17, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -7326,9 +7209,7 @@ static void LatticeTriangleTrackDiag60DegDownTo25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -7345,8 +7226,7 @@ static void LatticeTriangleTrackDiag60DegDownTo25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -7364,8 +7244,7 @@ static void LatticeTriangleTrackDiag60DegDownTo25DegDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -7375,30 +7254,28 @@ static void LatticeTriangleTrackDiag60DegDownTo25DegDown(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 8, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18481), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 8, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 8, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 8, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -7439,9 +7316,7 @@ static void LatticeTriangleTrackDiag25DegDownToFlat(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -7472,8 +7347,7 @@ static void LatticeTriangleTrackDiag25DegDownToFlat(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -7505,8 +7379,7 @@ static void LatticeTriangleTrackDiag25DegDownToFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -7518,22 +7391,22 @@ static void LatticeTriangleTrackDiag25DegDownToFlat(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18531), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                         break;
                 }
             }
@@ -7543,31 +7416,29 @@ static void LatticeTriangleTrackDiag25DegDownToFlat(
                 {
                     case 0:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                         break;
                     case 1:
                         PaintAddImageAsParentRotated(
                             session, direction, session.TrackColours.WithIndex(18469), { -16, -16, height },
                             { { -16, -16, height }, { 32, 32, 3 } });
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                         break;
                     case 2:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                         break;
                     case 3:
                         MetalBSupportsPaintSetup(
-                            session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                            session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                         break;
                 }
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -7594,9 +7465,7 @@ static void LatticeTriangleTrackDiagFlatToLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7616,8 +7485,7 @@ static void LatticeTriangleTrackDiagFlatToLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7635,8 +7503,7 @@ static void LatticeTriangleTrackDiagFlatToLeftBank(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7646,30 +7513,28 @@ static void LatticeTriangleTrackDiagFlatToLeftBank(
             {
                 case 0:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18495), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7696,9 +7561,7 @@ static void LatticeTriangleTrackDiagFlatToRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7715,8 +7578,7 @@ static void LatticeTriangleTrackDiagFlatToRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7737,8 +7599,7 @@ static void LatticeTriangleTrackDiagFlatToRightBank(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7748,30 +7609,28 @@ static void LatticeTriangleTrackDiagFlatToRightBank(
             {
                 case 0:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18500), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7798,9 +7657,7 @@ static void LatticeTriangleTrackDiagLeftBankToFlat(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7820,8 +7677,7 @@ static void LatticeTriangleTrackDiagLeftBankToFlat(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7839,8 +7695,7 @@ static void LatticeTriangleTrackDiagLeftBankToFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7850,30 +7705,28 @@ static void LatticeTriangleTrackDiagLeftBankToFlat(
             {
                 case 0:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18502), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7900,9 +7753,7 @@ static void LatticeTriangleTrackDiagRightBankToFlat(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7919,8 +7770,7 @@ static void LatticeTriangleTrackDiagRightBankToFlat(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7941,8 +7791,7 @@ static void LatticeTriangleTrackDiagRightBankToFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -7952,30 +7801,28 @@ static void LatticeTriangleTrackDiagRightBankToFlat(
             {
                 case 0:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18497), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -8002,9 +7849,7 @@ static void LatticeTriangleTrackDiagLeftBankTo25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8024,8 +7869,7 @@ static void LatticeTriangleTrackDiagLeftBankTo25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8043,8 +7887,7 @@ static void LatticeTriangleTrackDiagLeftBankTo25DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8054,30 +7897,28 @@ static void LatticeTriangleTrackDiagLeftBankTo25DegUp(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18515), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8104,9 +7945,7 @@ static void LatticeTriangleTrackDiagRightBankTo25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8123,8 +7962,7 @@ static void LatticeTriangleTrackDiagRightBankTo25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8145,8 +7983,7 @@ static void LatticeTriangleTrackDiagRightBankTo25DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8156,30 +7993,28 @@ static void LatticeTriangleTrackDiagRightBankTo25DegUp(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18520), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8206,9 +8041,7 @@ static void LatticeTriangleTrackDiag25DegUpToLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -8228,8 +8061,7 @@ static void LatticeTriangleTrackDiag25DegUpToLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -8247,8 +8079,7 @@ static void LatticeTriangleTrackDiag25DegUpToLeftBank(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -8258,30 +8089,28 @@ static void LatticeTriangleTrackDiag25DegUpToLeftBank(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18505), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -8308,9 +8137,7 @@ static void LatticeTriangleTrackDiag25DegUpToRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -8327,8 +8154,7 @@ static void LatticeTriangleTrackDiag25DegUpToRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -8349,8 +8175,7 @@ static void LatticeTriangleTrackDiag25DegUpToRightBank(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -8360,30 +8185,28 @@ static void LatticeTriangleTrackDiag25DegUpToRightBank(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18510), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -8410,9 +8233,7 @@ static void LatticeTriangleTrackDiagLeftBankTo25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -8431,8 +8252,7 @@ static void LatticeTriangleTrackDiagLeftBankTo25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -8449,8 +8269,7 @@ static void LatticeTriangleTrackDiagLeftBankTo25DegDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -8459,30 +8278,28 @@ static void LatticeTriangleTrackDiagLeftBankTo25DegDown(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18512), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             break;
@@ -8510,9 +8327,7 @@ static void LatticeTriangleTrackDiagRightBankTo25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -8528,8 +8343,7 @@ static void LatticeTriangleTrackDiagRightBankTo25DegDown(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -8549,8 +8363,7 @@ static void LatticeTriangleTrackDiagRightBankTo25DegDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -8559,30 +8372,28 @@ static void LatticeTriangleTrackDiagRightBankTo25DegDown(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18507), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             break;
@@ -8610,9 +8421,7 @@ static void LatticeTriangleTrackDiag25DegDownToLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8632,8 +8441,7 @@ static void LatticeTriangleTrackDiag25DegDownToLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8651,8 +8459,7 @@ static void LatticeTriangleTrackDiag25DegDownToLeftBank(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8662,30 +8469,28 @@ static void LatticeTriangleTrackDiag25DegDownToLeftBank(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18522), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8712,9 +8517,7 @@ static void LatticeTriangleTrackDiag25DegDownToRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8731,8 +8534,7 @@ static void LatticeTriangleTrackDiag25DegDownToRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8753,8 +8555,7 @@ static void LatticeTriangleTrackDiag25DegDownToRightBank(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8764,30 +8565,28 @@ static void LatticeTriangleTrackDiag25DegDownToRightBank(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18517), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -8814,9 +8613,7 @@ static void LatticeTriangleTrackDiagLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -8833,8 +8630,7 @@ static void LatticeTriangleTrackDiagLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -8852,8 +8648,7 @@ static void LatticeTriangleTrackDiagLeftBank(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -8863,30 +8658,28 @@ static void LatticeTriangleTrackDiagLeftBank(
             {
                 case 0:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18491), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -8913,9 +8706,7 @@ static void LatticeTriangleTrackDiagRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -8932,8 +8723,7 @@ static void LatticeTriangleTrackDiagRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -8951,8 +8741,7 @@ static void LatticeTriangleTrackDiagRightBank(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -8962,30 +8751,28 @@ static void LatticeTriangleTrackDiagRightBank(
             {
                 case 0:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18493), { -16, -16, height },
                         { { -16, -16, height }, { 32, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height, session.SupportColours);
                     break;
                 case 2:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -9000,15 +8787,15 @@ static void LatticeTriangleTrackBlockBrakes(
 {
     bool isClosed = trackElement.IsBrakeClosed();
     PaintAddImageAsParentRotated(
-        session, direction, session.TrackColours.WithIndex(_LatticeTriangleBrakeImages[direction][isClosed][0]),
+        session, direction, session.TrackColours.WithIndex(kLatticeTriangleBrakeImages[direction][isClosed][0]),
         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
     PaintAddImageAsParentRotated(
-        session, direction, session.TrackColours.WithIndex(_LatticeTriangleBrakeImages[direction][isClosed][1]),
+        session, direction, session.TrackColours.WithIndex(kLatticeTriangleBrakeImages[direction][isClosed][1]),
         { 0, 0, height }, { { 0, 27, height + 5 }, { 32, 1, 11 } });
 
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -9043,7 +8830,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn325DegUp(
                         session, direction, session.TrackColours.WithIndex(18653), { 0, 6, height }, { 32, 20, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -9051,9 +8838,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn325DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9086,7 +8871,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn325DegUp(
                         session, direction, session.TrackColours.WithIndex(18652), { 6, 0, height }, { 20, 32, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -9099,9 +8884,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn325DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9137,7 +8920,7 @@ static void LatticeTriangleTrackRightBankedQuarterTurn325DegUp(
                         session, direction, session.TrackColours.WithIndex(18650), { 0, 6, height }, { 32, 20, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -9145,9 +8928,7 @@ static void LatticeTriangleTrackRightBankedQuarterTurn325DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9165,27 +8946,27 @@ static void LatticeTriangleTrackRightBankedQuarterTurn325DegUp(
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18645), { 6, 0, height }, { 20, 32, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18647), { 6, 0, height },
                         { { 27, 0, height }, { 1, 32, 34 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18649), { 6, 0, height },
                         { { 27, 0, height }, { 1, 32, 34 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 10, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 10, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction, session.TrackColours.WithIndex(18651), { 6, 0, height }, { 20, 32, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
             }
             switch (direction)
@@ -9200,9 +8981,7 @@ static void LatticeTriangleTrackRightBankedQuarterTurn325DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9261,7 +9040,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn525DegUp(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -9269,9 +9048,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9306,8 +9083,8 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn525DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9338,9 +9115,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -9376,8 +9151,8 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn525DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9406,7 +9181,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn525DegUp(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -9419,9 +9194,7 @@ static void LatticeTriangleTrackLeftBankedQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9460,7 +9233,7 @@ static void LatticeTriangleTrackRightBankedQuarterTurn525DegUp(
                         { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -9468,9 +9241,7 @@ static void LatticeTriangleTrackRightBankedQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9505,8 +9276,8 @@ static void LatticeTriangleTrackRightBankedQuarterTurn525DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9537,8 +9308,7 @@ static void LatticeTriangleTrackRightBankedQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -9574,8 +9344,8 @@ static void LatticeTriangleTrackRightBankedQuarterTurn525DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9604,7 +9374,7 @@ static void LatticeTriangleTrackRightBankedQuarterTurn525DegUp(
                         { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -9617,9 +9387,7 @@ static void LatticeTriangleTrackRightBankedQuarterTurn525DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -9680,7 +9448,7 @@ static void LatticeTriangleTrack25DegUpToLeftBanked25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -9727,7 +9495,7 @@ static void LatticeTriangleTrack25DegUpToRightBanked25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -9774,7 +9542,7 @@ static void LatticeTriangleTrackLeftBanked25DegUpTo25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -9821,7 +9589,7 @@ static void LatticeTriangleTrackRightBanked25DegUpTo25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -9901,7 +9669,7 @@ static void LatticeTriangleTrackLeftBankedFlatToLeftBanked25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -9945,7 +9713,7 @@ static void LatticeTriangleTrackRightBankedFlatToRightBanked25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -9989,7 +9757,7 @@ static void LatticeTriangleTrackLeftBanked25DegUpToLeftBankedFlat(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -10033,7 +9801,7 @@ static void LatticeTriangleTrackRightBanked25DegUpToRightBankedFlat(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -10116,7 +9884,7 @@ static void LatticeTriangleTrackFlatToLeftBanked25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -10163,7 +9931,7 @@ static void LatticeTriangleTrackFlatToRightBanked25DegUp(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -10210,7 +9978,7 @@ static void LatticeTriangleTrackLeftBanked25DegUpToFlat(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -10257,7 +10025,7 @@ static void LatticeTriangleTrackRightBanked25DegUpToFlat(
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -10316,19 +10084,19 @@ static void LatticeTriangleTrackBooster(
         case 0:
         case 2:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_BOOSTER_NE_SW),
+                session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BOOSTER_NE_SW),
                 { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
             break;
         case 1:
         case 3:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_BOOSTER_NW_SE),
+                session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BOOSTER_NW_SE),
                 { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
             break;
     }
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
     }
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
     PaintUtilSetSegmentSupportHeight(session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
@@ -10340,12 +10108,12 @@ static void LatticeTriangleTrackPoweredLift(
     const TrackElement& trackElement, SupportType supportType)
 {
     PaintAddImageAsParentRotated(
-        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_POWERED_LIFT_0 + direction),
+        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_POWERED_LIFT_1 + direction),
         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
 
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
-        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+        MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
     }
     if (direction == 0 || direction == 3)
     {
@@ -10370,22 +10138,22 @@ static void LatticeTriangleTrack90DegUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 8)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 8)),
                         { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 9)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 9)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 10)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 10)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 11)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 11)),
                         { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 31 } });
                     break;
             }
@@ -10417,29 +10185,29 @@ static void LatticeTriangleTrack60DegUpTo90DegUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 0)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 0)),
+                        { 0, 0, height }, { { 4, 6, height + 8 }, { 13, 20, 55 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 1)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 1)),
                         { 0, 0, height }, { { 24, 6, height }, { 2, 20, 55 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 2)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 2)),
                         { 0, 0, height }, { { 24, 6, height }, { 2, 20, 55 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 3)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 3)),
+                        { 0, 0, height }, { { 4, 6, height + 8 }, { 13, 20, 55 } });
                     break;
             }
             if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
             {
                 MetalASupportsPaintSetup(
-                    session, supportType.metal, MetalSupportPlace::Centre, 36, height, session.SupportColours);
+                    session, supportType.metal, MetalSupportPlace::centre, 36, height, session.SupportColours);
             }
             if (direction == 0 || direction == 3)
             {
@@ -10470,23 +10238,23 @@ static void LatticeTriangleTrack90DegUpTo60DegUp(
     {
         case 0:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 4)),
-                { 0, 0, height }, { { 0, 6, height + 8 }, { 32, 20, 3 } });
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 4)),
+                { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 48 } });
             break;
         case 1:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 5)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 5)),
                 { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
             break;
         case 2:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 6)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 6)),
                 { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
             break;
         case 3:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 7)),
-                { 0, 0, height }, { { 0, 6, height + 8 }, { 32, 20, 3 } });
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 7)),
+                { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 48 } });
             break;
     }
     switch (direction)
@@ -10513,22 +10281,22 @@ static void LatticeTriangleTrack60DegDownTo90DegDown(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 6)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 6)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 7)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 7)),
                         { 0, 0, height }, { { 0, 6, height + 8 }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 4)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 4)),
                         { 0, 0, height }, { { 0, 6, height + 8 }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL + 5)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL + 5)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
                     break;
             }
@@ -10556,28 +10324,34 @@ static void LatticeTriangleTrackLeftQuarterTurn190DegUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 0)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 0)),
                         { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 96 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 1)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 1)),
                         { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 96 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 2)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 2)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 96 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 3)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 3)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 96 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 4)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 4)),
                         { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 96 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 5)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 5)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 96 } });
                     break;
             }
@@ -10602,28 +10376,34 @@ static void LatticeTriangleTrackRightQuarterTurn190DegUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 6)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 6)),
                         { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 96 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 7)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 7)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 96 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 8)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 8)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 96 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 9)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 9)),
                         { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 96 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 10)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 10)),
                         { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 96 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 11)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_TWIST + 11)),
                         { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 96 } });
                     break;
             }
@@ -10664,43 +10444,47 @@ static void LatticeTriangleTrackLeftBarrelRollUpToDown(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 0)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 0)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 1)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 1)),
                         { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height - 2, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height - 2, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 6)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 6)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 7)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 7)),
                         { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height - 2, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height - 2, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 12)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 12)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 13)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 13)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height + 1, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height + 1, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 18)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 18)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 19)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 19)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height + 1, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height + 1, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -10711,8 +10495,8 @@ static void LatticeTriangleTrackLeftBarrelRollUpToDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -10722,43 +10506,47 @@ static void LatticeTriangleTrackLeftBarrelRollUpToDown(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 2)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 2)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 3)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 3)),
                         { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 8)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 8)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 9)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 9)),
                         { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 14)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 14)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 15)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 15)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 20)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 20)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 21)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 21)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -10768,35 +10556,41 @@ static void LatticeTriangleTrackLeftBarrelRollUpToDown(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 4)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 4)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 5)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 5)),
                         { 0, 0, height }, { { 0, 6, height + 44 }, { 32, 20, 0 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 10)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 10)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 11)),
-                        { 0, 0, height }, { { 0, 6, height + 44 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 11)), { 0, 0, height },
+                        { { 0, 6, height + 44 }, { 32, 20, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 16)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 16)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 17)),
-                        { 0, 0, height }, { { 0, 6, height + 44 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 17)), { 0, 0, height },
+                        { { 0, 6, height + 44 }, { 32, 20, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 22)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 22)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 23)),
-                        { 0, 0, height }, { { 0, 6, height + 44 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 23)), { 0, 0, height },
+                        { { 0, 6, height + 44 }, { 32, 20, 0 } });
                     break;
             }
             switch (direction)
@@ -10812,8 +10606,8 @@ static void LatticeTriangleTrackLeftBarrelRollUpToDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -10832,43 +10626,51 @@ static void LatticeTriangleTrackRightBarrelRollUpToDown(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 24)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 24)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 25)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 25)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 0, height + 1, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height + 1, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 30)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 30)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 31)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 31)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height + 1, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height + 1, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 36)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 36)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 37)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 37)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height - 2, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height - 2, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 42)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 42)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 43)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 43)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height - 2, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height - 2, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -10879,8 +10681,8 @@ static void LatticeTriangleTrackRightBarrelRollUpToDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -10890,43 +10692,51 @@ static void LatticeTriangleTrackRightBarrelRollUpToDown(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 26)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 26)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 27)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 27)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 32)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 32)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 33)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 33)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 38)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 38)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 39)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 39)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 44)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 44)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 45)),
-                        { 0, 0, height }, { { 0, 6, height + 28 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 45)), { 0, 0, height },
+                        { { 0, 6, height + 28 }, { 32, 20, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -10936,35 +10746,43 @@ static void LatticeTriangleTrackRightBarrelRollUpToDown(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 28)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 28)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 29)),
-                        { 0, 0, height }, { { 0, 6, height + 44 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 29)), { 0, 0, height },
+                        { { 0, 6, height + 44 }, { 32, 20, 0 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 34)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 34)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 35)),
-                        { 0, 0, height }, { { 0, 6, height + 44 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 35)), { 0, 0, height },
+                        { { 0, 6, height + 44 }, { 32, 20, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 40)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 40)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 41)),
-                        { 0, 0, height }, { { 0, 6, height + 44 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 41)), { 0, 0, height },
+                        { { 0, 6, height + 44 }, { 32, 20, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 46)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 46)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 47)),
-                        { 0, 0, height }, { { 0, 6, height + 44 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_BARREL_ROLL + 47)), { 0, 0, height },
+                        { { 0, 6, height + 44 }, { 32, 20, 0 } });
                     break;
             }
             switch (direction)
@@ -10980,8 +10798,8 @@ static void LatticeTriangleTrackRightBarrelRollUpToDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -11016,26 +10834,26 @@ static void LatticeTriangleTrackHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 0)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 0)),
                         { 0, 6, height }, { 32, 20, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 4)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 4)),
                         { 0, 6, height }, { 32, 20, 11 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 8)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 8)),
                         { 0, 6, height }, { 32, 20, 9 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 12)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 12)),
                         { 0, 6, height }, { 32, 20, 7 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -11049,31 +10867,31 @@ static void LatticeTriangleTrackHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 1)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 1)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 20, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 20, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 5)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 5)),
                         { 0, 14, height }, { { 28, 6, height }, { 3, 20, 63 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 15, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 15, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 9)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 9)),
                         { 0, 6, height }, { { 28, 6, height }, { 3, 20, 63 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 16, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 13)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 13)),
                         { 0, 6, height }, { 32, 20, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 16, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(session, kSegmentsAll, 0xFFFF, 0);
@@ -11084,22 +10902,22 @@ static void LatticeTriangleTrackHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 2)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 2)),
                         { 16, 0, height }, { 2, 16, 119 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 6)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 6)),
                         { 12, 0, height }, { { 12, 0, height }, { 3, 16, 119 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 10)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 10)),
                         { 10, 16, height }, { 4, 12, 119 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 14)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 14)),
                         { 16, 16, height }, { { 15, 6, height }, { 2, 16, 119 } });
                     break;
             }
@@ -11107,8 +10925,8 @@ static void LatticeTriangleTrackHalfLoopUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 168);
@@ -11118,22 +10936,22 @@ static void LatticeTriangleTrackHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 3)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 3)),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 7)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 7)),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 11)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 11)),
                         { 0, 16, height + 32 }, { 32, 12, 3 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 15)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_HALF_LOOP + 15)),
                         { 0, 16, height + 32 }, { 32, 12, 3 });
                     break;
             }
@@ -11166,31 +10984,32 @@ static void LatticeTriangleTrackLeftVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 0),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 0),
                         { 0, 6, height }, { 32, 20, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 4),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 4),
                         { 0, 6, height }, { 32, 20, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 8),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 8),
                         { 0, 6, height }, { 32, 20, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 12),
-                        { 0, 6, height }, { 32, 20, 7 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 12), { 0, 6, height },
+                        { 32, 20, 7 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -11201,8 +11020,8 @@ static void LatticeTriangleTrackLeftVerticalLoop(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -11212,39 +11031,40 @@ static void LatticeTriangleTrackLeftVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 1),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 1),
                         { 0, 0, height }, { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 26, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 26, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 5),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 5),
                         { 0, 14, height }, { 32, 2, 63 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height + 10, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height + 10, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 9),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 9),
                         { 0, 6, height }, { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 14, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 13),
-                        { 0, 6, height }, { 32, 26, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 13), { 0, 6, height },
+                        { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -11254,31 +11074,31 @@ static void LatticeTriangleTrackLeftVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 2),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 2),
                         { 16, 0, height }, { { 16, 0, height }, { 3, 16, 119 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 6),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 6),
                         { 12, 0, height }, { { 12, 0, height }, { 3, 16, 119 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 10),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 10),
                         { 10, 16, height }, { { 10, 16, height }, { 4, 16, 119 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 14),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 14),
                         { 16, 16, height }, { { 16, 16, height }, { 2, 16, 119 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 168);
@@ -11288,22 +11108,24 @@ static void LatticeTriangleTrackLeftVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 3),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 3),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 7),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 7),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 11),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 11),
                         { 0, 16, height + 32 }, { 32, 16, 3 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 15),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 15),
                         { 0, 16, height + 32 }, { 32, 16, 3 });
                     break;
             }
@@ -11311,8 +11133,8 @@ static void LatticeTriangleTrackLeftVerticalLoop(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -11328,22 +11150,24 @@ static void LatticeTriangleTrackLeftVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 11),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 11),
                         { 0, 16, height + 32 }, { 32, 16, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 15),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 15),
                         { 0, 16, height + 32 }, { 32, 16, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 3),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 3),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 7),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 7),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
             }
@@ -11351,8 +11175,8 @@ static void LatticeTriangleTrackLeftVerticalLoop(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -11362,31 +11186,31 @@ static void LatticeTriangleTrackLeftVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 10),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 10),
                         { 10, 16, height }, { { 10, 16, height }, { 4, 16, 119 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 14),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 14),
                         { 16, 16, height }, { { 16, 16, height }, { 2, 16, 119 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 2),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 2),
                         { 16, 0, height }, { { 16, 0, height }, { 3, 16, 119 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 6),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 6),
                         { 12, 0, height }, { { 12, 0, height }, { 3, 16, 119 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 168);
@@ -11396,39 +11220,40 @@ static void LatticeTriangleTrackLeftVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 9),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 9),
                         { 0, 6, height }, { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 14, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 13),
-                        { 0, 6, height }, { 32, 26, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 13), { 0, 6, height },
+                        { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 1),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 1),
                         { 0, 0, height }, { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 26, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 26, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 5),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 5),
                         { 0, 14, height }, { 32, 2, 63 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height + 10, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height + 10, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -11438,31 +11263,32 @@ static void LatticeTriangleTrackLeftVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 8),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 8),
                         { 0, 6, height }, { 32, 20, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 12),
-                        { 0, 6, height }, { 32, 20, 7 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 12), { 0, 6, height },
+                        { 32, 20, 7 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 0),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 0),
                         { 0, 6, height }, { 32, 20, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 4),
+                        session, direction, session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 4),
                         { 0, 6, height }, { 32, 20, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
             }
             switch (direction)
@@ -11478,8 +11304,8 @@ static void LatticeTriangleTrackLeftVerticalLoop(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -11498,26 +11324,30 @@ static void LatticeTriangleTrackRightVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 16),
-                        { 0, 6, height }, { 32, 20, 7 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 16), { 0, 6, height },
+                        { 32, 20, 7 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 20),
-                        { 0, 6, height }, { 32, 20, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 20), { 0, 6, height },
+                        { 32, 20, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 24),
-                        { 0, 6, height }, { 32, 20, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 24), { 0, 6, height },
+                        { 32, 20, 3 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 28),
-                        { 0, 6, height }, { 32, 20, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 28), { 0, 6, height },
+                        { 32, 20, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -11529,31 +11359,35 @@ static void LatticeTriangleTrackRightVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 17),
-                        { 0, 6, height }, { 32, 26, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 17), { 0, 6, height },
+                        { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 21),
-                        { 0, 6, height }, { 32, 26, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 21), { 0, 6, height },
+                        { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 14, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 25),
-                        { 0, 14, height }, { 32, 2, 63 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 25), { 0, 14, height },
+                        { 32, 2, 63 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height + 10, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height + 10, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 29),
-                        { 0, 0, height }, { 32, 26, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 29), { 0, 0, height },
+                        { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 26, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 26, height, session.SupportColours);
                     break;
             }
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -11563,23 +11397,27 @@ static void LatticeTriangleTrackRightVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 18),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 18),
                         { 16, 16, height }, { { 16, 16, height }, { 2, 16, 119 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 22),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 22),
                         { 10, 16, height }, { { 10, 16, height }, { 4, 16, 119 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 26),
-                        { 12, 0, height }, { { 12, 0, height }, { 3, 16, 119 } });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 26), { 12, 0, height },
+                        { { 12, 0, height }, { 3, 16, 119 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 30),
-                        { 16, 0, height }, { { 16, 0, height }, { 2, 16, 119 } });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 30), { 16, 0, height },
+                        { { 16, 0, height }, { 2, 16, 119 } });
                     break;
             }
             PaintUtilSetGeneralSupportHeight(session, height + 168);
@@ -11589,22 +11427,26 @@ static void LatticeTriangleTrackRightVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 19),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 19),
                         { 0, 16, height + 32 }, { 32, 16, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 23),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 23),
                         { 0, 16, height + 32 }, { 32, 16, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 27),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 27),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 31),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 31),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
             }
@@ -11621,22 +11463,26 @@ static void LatticeTriangleTrackRightVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 27),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 27),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 31),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 31),
                         { 0, 0, height + 32 }, { 32, 16, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 19),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 19),
                         { 0, 16, height + 32 }, { 32, 16, 3 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 23),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 23),
                         { 0, 16, height + 32 }, { 32, 16, 3 });
                     break;
             }
@@ -11647,22 +11493,26 @@ static void LatticeTriangleTrackRightVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 26),
-                        { 12, 0, height }, { { 12, 0, height }, { 3, 16, 119 } });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 26), { 12, 0, height },
+                        { { 12, 0, height }, { 3, 16, 119 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 30),
-                        { 16, 0, height }, { { 16, 0, height }, { 2, 16, 119 } });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 30), { 16, 0, height },
+                        { { 16, 0, height }, { 2, 16, 119 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 18),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 18),
                         { 16, 16, height }, { { 16, 16, height }, { 2, 16, 119 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 22),
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 22),
                         { 10, 16, height }, { { 10, 16, height }, { 4, 16, 119 } });
                     break;
             }
@@ -11673,31 +11523,35 @@ static void LatticeTriangleTrackRightVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 25),
-                        { 0, 14, height }, { 32, 2, 63 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 25), { 0, 14, height },
+                        { 32, 2, 63 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height + 10, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height + 10, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 29),
-                        { 0, 0, height }, { 32, 26, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 29), { 0, 0, height },
+                        { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 26, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 26, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 17),
-                        { 0, 6, height }, { 32, 26, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 17), { 0, 6, height },
+                        { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 21),
-                        { 0, 6, height }, { 32, 26, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 21), { 0, 6, height },
+                        { 32, 26, 3 });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 14, height, session.SupportColours);
                     break;
             }
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -11707,26 +11561,30 @@ static void LatticeTriangleTrackRightVerticalLoop(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 24),
-                        { 0, 6, height }, { 32, 20, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 24), { 0, 6, height },
+                        { 32, 20, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 28),
-                        { 0, 6, height }, { 32, 20, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 28), { 0, 6, height },
+                        { 32, 20, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 16),
-                        { 0, 6, height }, { 32, 20, 7 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 16), { 0, 6, height },
+                        { 32, 20, 7 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex(SPR_G2_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 20),
-                        { 0, 6, height }, { 32, 20, 3 });
+                        session, direction,
+                        session.TrackColours.WithIndex(SPR_TRACKS_LATTICE_TRIANGLE_TRACK_VERTICAL_LOOP + 20), { 0, 6, height },
+                        { 32, 20, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
             switch (direction)
             {
                 case 1:
@@ -11754,31 +11612,31 @@ static void LatticeTriangleTrackLeftCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 0)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 0)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height - 3, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height - 3, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 3)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 3)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 6)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 6)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 9)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 9)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height + 3, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height + 3, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -11789,8 +11647,8 @@ static void LatticeTriangleTrackLeftCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -11800,22 +11658,22 @@ static void LatticeTriangleTrackLeftCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 1)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 1)),
                         { 0, 0, height }, { { 6, 6, height + 10 }, { 20, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 4)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 4)),
                         { 0, 0, height }, { { 6, 6, height + 10 }, { 20, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 7)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 7)),
                         { 0, 0, height }, { { 6, 6, height + 10 }, { 20, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 10)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 10)),
                         { 0, 0, height }, { { 6, 6, height + 10 }, { 20, 20, 3 } });
                     break;
             }
@@ -11827,22 +11685,22 @@ static void LatticeTriangleTrackLeftCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 2)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 2)),
                         { 0, 0, height }, { { 6, 0, height + 24 }, { 20, 32, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 5)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 5)),
                         { 0, 0, height }, { { 6, 0, height + 24 }, { 20, 32, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 8)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 8)),
                         { 0, 0, height }, { { 6, 0, height + 24 }, { 20, 32, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 11)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 11)),
                         { 0, 0, height }, { { 6, 0, height + 24 }, { 20, 32, 3 } });
                     break;
             }
@@ -11851,12 +11709,12 @@ static void LatticeTriangleTrackLeftCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, 0, height + 40, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, 0, height + 40, session.SupportColours);
 
             switch (direction)
             {
@@ -11883,31 +11741,31 @@ static void LatticeTriangleTrackRightCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 12)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 12)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height + 3, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height + 3, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 15)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 15)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 18)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 18)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 21)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 21)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height - 3, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height - 3, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -11918,8 +11776,8 @@ static void LatticeTriangleTrackRightCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -11929,22 +11787,22 @@ static void LatticeTriangleTrackRightCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 13)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 13)),
                         { 0, 0, height }, { { 6, 6, height + 10 }, { 20, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 16)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 16)),
                         { 0, 0, height }, { { 6, 6, height + 10 }, { 20, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 19)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 19)),
                         { 0, 0, height }, { { 6, 6, height + 10 }, { 20, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 22)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 22)),
                         { 0, 0, height }, { { 6, 6, height + 10 }, { 20, 20, 3 } });
                     break;
             }
@@ -11956,22 +11814,22 @@ static void LatticeTriangleTrackRightCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 14)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 14)),
                         { 0, 0, height }, { { 6, 0, height + 24 }, { 20, 32, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 17)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 17)),
                         { 0, 0, height }, { { 6, 0, height + 24 }, { 20, 32, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 20)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 20)),
                         { 0, 0, height }, { { 6, 0, height + 24 }, { 20, 32, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_CORKSCREW + 23)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_CORKSCREW + 23)),
                         { 0, 0, height }, { { 6, 0, height + 24 }, { 20, 32, 3 } });
                     break;
             }
@@ -11980,12 +11838,12 @@ static void LatticeTriangleTrackRightCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, 0, height + 40, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, 0, height + 40, session.SupportColours);
 
             switch (direction)
             {
@@ -12027,29 +11885,31 @@ static void LatticeTriangleTrackLeftLargeCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 0)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 0)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 5)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 5)),
                         { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 10)), { 0, 0, height },
-                        { { 0, 6, height + 4 }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 10)),
+                        { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 15)), { 0, 0, height },
-                        { { 0, 6, height + 4 }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 15)),
+                        { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     break;
             }
 
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
 
             if (direction == 0 || direction == 3)
             {
@@ -12059,8 +11919,8 @@ static void LatticeTriangleTrackLeftLargeCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 40);
@@ -12070,41 +11930,43 @@ static void LatticeTriangleTrackLeftLargeCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 1)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 1)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 21, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 21, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 6)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 6)),
                         { 0, 0, height }, { { 0, 29, height }, { 26, 1, 32 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 19, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 19, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 11)), { 0, 0, height },
-                        { { 0, 6, height }, { 20, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 11)),
+                        { 0, 0, height }, { { 0, 6, height }, { 20, 20, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 19, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 19, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 16)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 16)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 16, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -12114,33 +11976,33 @@ static void LatticeTriangleTrackLeftLargeCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 2)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 2)),
                         { 0, 0, height }, { { 0, 31, height }, { 48, 1, 64 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 7)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 7)),
                         { 0, 0, height }, { { 2, 2, height + 40 }, { 28, 28, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 12)), { 0, 0, height },
-                        { { 2, 2, height + 48 }, { 28, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 12)),
+                        { 0, 0, height }, { { 2, 2, height + 48 }, { 28, 28, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 17)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 17)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -12153,41 +12015,43 @@ static void LatticeTriangleTrackLeftLargeCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomLeftSide, PaintSegment::bottomCorner,
-                        PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottomLeft, PaintSegment::bottom, PaintSegment::topLeft,
+                        PaintSegment::centre, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             switch (direction)
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 3)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 3)),
                         { 0, 0, height }, { { 2, 2, height + 50 }, { 28, 28, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 0, height + 65, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 0, height + 65, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 8)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 8)),
                         { 0, 0, height }, { { 2, 2, height + 50 }, { 28, 28, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 0, height + 65, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 0, height + 65, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 13)), { 0, 0, height },
-                        { { 2, 2, height + 50 }, { 24, 28, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 13)),
+                        { 0, 0, height }, { { 2, 2, height + 50 }, { 24, 28, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 0, height + 65, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 0, height + 65, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 18)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 18)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 0, height + 65, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 0, height + 65, session.SupportColours);
                     break;
             }
 
@@ -12198,25 +12062,27 @@ static void LatticeTriangleTrackLeftLargeCorkscrewUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 4)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 4)),
                         { 0, 0, height }, { { 2, 2, height + 40 }, { 28, 28, 1 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 9)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 9)),
                         { 0, 0, height }, { { 2, 2, height + 40 }, { 28, 28, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 14)), { 0, 0, height },
-                        { { 2, 2, height + 40 }, { 26, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 14)),
+                        { 0, 0, height }, { { 2, 2, height + 40 }, { 26, 28, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 19)), { 0, 0, height },
-                        { { 2, 2, height + 40 }, { 26, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 19)),
+                        { 0, 0, height }, { { 2, 2, height + 40 }, { 26, 28, 1 } });
                     break;
             }
 
@@ -12224,8 +12090,8 @@ static void LatticeTriangleTrackLeftLargeCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomLeftSide, PaintSegment::bottomCorner,
-                        PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottomLeft, PaintSegment::bottom, PaintSegment::topLeft,
+                        PaintSegment::centre, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             switch (direction)
@@ -12254,30 +12120,30 @@ static void LatticeTriangleTrackRightLargeCorkscrewUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 20)), { 0, 0, height },
-                        { { 0, 6, height + 4 }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 20)),
+                        { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 25)), { 0, 0, height },
-                        { { 0, 6, height + 4 }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 25)),
+                        { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 30)), { 0, 0, height },
-                        { { 0, 6, height + 4 }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 30)),
+                        { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 35)), { 0, 0, height },
-                        { { 0, 6, height + 4 }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 35)),
+                        { 0, 0, height }, { { 0, 6, height + 4 }, { 32, 20, 3 } });
                     break;
             }
 
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
 
             if (direction == 0 || direction == 3)
             {
@@ -12287,8 +12153,8 @@ static void LatticeTriangleTrackRightLargeCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomRightSide, PaintSegment::centre, PaintSegment::rightCorner,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::bottomRight, PaintSegment::centre, PaintSegment::right, PaintSegment::topRight,
+                        PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 40);
@@ -12299,42 +12165,42 @@ static void LatticeTriangleTrackRightLargeCorkscrewUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 21)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 21)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 16, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 26)), { 0, 0, height },
-                        { { 0, 6, height }, { 20, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 26)),
+                        { 0, 0, height }, { { 0, 6, height }, { 20, 20, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 19, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 19, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 31)), { 0, 0, height },
-                        { { 0, 29, height }, { 26, 1, 32 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 31)),
+                        { 0, 0, height }, { { 0, 29, height }, { 26, 1, 32 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 19, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 19, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 36)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 36)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 21, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 21, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre,
-                        PaintSegment::bottomRightSide, PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomRight,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -12345,34 +12211,33 @@ static void LatticeTriangleTrackRightLargeCorkscrewUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 22)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 22)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 27)), { 0, 0, height },
-                        { { 2, 2, height + 48 }, { 28, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 27)),
+                        { 0, 0, height }, { { 2, 2, height + 48 }, { 28, 28, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 32)), { 0, 0, height },
-                        { { 2, 2, height + 48 }, { 28, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 32)),
+                        { 0, 0, height }, { { 2, 2, height + 48 }, { 28, 28, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 37)), { 0, 0, height },
-                        { { 0, 31, height }, { 48, 1, 64 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 37)),
+                        { 0, 0, height }, { { 0, 31, height }, { 48, 1, 64 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomRightSide,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -12385,8 +12250,8 @@ static void LatticeTriangleTrackRightLargeCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomLeftSide, PaintSegment::bottomCorner,
-                        PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottomLeft, PaintSegment::bottom, PaintSegment::topLeft,
+                        PaintSegment::centre, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             switch (direction)
@@ -12394,34 +12259,34 @@ static void LatticeTriangleTrackRightLargeCorkscrewUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 23)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 23)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 0, height + 65, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 0, height + 65, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 28)), { 0, 0, height },
-                        { { 2, 2, height + 50 }, { 24, 28, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 28)),
+                        { 0, 0, height }, { { 2, 2, height + 50 }, { 24, 28, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 0, height + 65, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 0, height + 65, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 33)), { 0, 0, height },
-                        { { 2, 2, height + 50 }, { 28, 28, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 33)),
+                        { 0, 0, height }, { { 2, 2, height + 50 }, { 28, 28, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 0, height + 65, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 0, height + 65, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 38)), { 0, 0, height },
-                        { { 2, 2, height + 50 }, { 28, 28, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 38)),
+                        { 0, 0, height }, { { 2, 2, height + 50 }, { 28, 28, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 0, height + 65, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 0, height + 65, session.SupportColours);
                     break;
             }
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -12432,26 +12297,26 @@ static void LatticeTriangleTrackRightLargeCorkscrewUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 24)), { 0, 0, height },
-                        { { 2, 2, height + 40 }, { 26, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 24)),
+                        { 0, 0, height }, { { 2, 2, height + 40 }, { 26, 28, 1 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 29)), { 0, 0, height },
-                        { { 2, 2, height + 40 }, { 26, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 29)),
+                        { 0, 0, height }, { { 2, 2, height + 40 }, { 26, 28, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 34)), { 0, 0, height },
-                        { { 2, 2, height + 40 }, { 28, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 34)),
+                        { 0, 0, height }, { { 2, 2, height + 40 }, { 28, 28, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 39)), { 0, 0, height },
-                        { { 2, 2, height + 40 }, { 28, 28, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_CORKSCREW + 39)),
+                        { 0, 0, height }, { { 2, 2, height + 40 }, { 28, 28, 1 } });
                     break;
             }
 
@@ -12459,8 +12324,8 @@ static void LatticeTriangleTrackRightLargeCorkscrewUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomLeftSide, PaintSegment::bottomCorner,
-                        PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottomLeft, PaintSegment::bottom, PaintSegment::topLeft,
+                        PaintSegment::centre, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             switch (direction)
@@ -12505,30 +12370,30 @@ static void LatticeTriangleTrackLeftMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 0)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 0)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 5)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 5)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 10)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 10)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 15)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 15)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
 
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
 
             if (direction == 0 || direction == 3)
             {
@@ -12544,26 +12409,26 @@ static void LatticeTriangleTrackLeftMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 1)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 1)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 6)), { 0, 0, height },
-                        { { 0, 31, height }, { 0, 32, 64 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 6)),
+                        { 0, 0, height }, { { 0, 31, height }, { 0, 32, 64 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 11)), { 0, 0, height },
-                        { { 0, 32, height }, { 40, 0, 64 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 11)),
+                        { 0, 0, height }, { { 0, 32, height }, { 40, 0, 64 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 16)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 16)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
 
@@ -12571,8 +12436,8 @@ static void LatticeTriangleTrackLeftMediumHalfLoopUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::topCorner),
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::top),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -12583,42 +12448,40 @@ static void LatticeTriangleTrackLeftMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 2)), { 0, 0, height },
-                        { { 0, 0, height + 2 }, { 32, 32, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 2)),
+                        { 0, 0, height }, { { 0, 0, height + 2 }, { 32, 32, 0 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 14, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 7)), { 0, 0, height },
-                        { { 29, 0, height }, { 1, 32, 96 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 7)),
+                        { 0, 0, height }, { { 29, 0, height }, { 1, 32, 96 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 16, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 12)), { 0, 0, height },
-                        { { 31, 0, height }, { 1, 32, 96 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 12)),
+                        { 0, 0, height }, { { 31, 0, height }, { 1, 32, 96 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 18, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 18, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 17)), { 0, 0, height },
-                        { { 0, 0, height }, { 32, 32, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 17)),
+                        { 0, 0, height }, { { 0, 0, height }, { 32, 32, 0 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 14, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::centre,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::topLeft, PaintSegment::centre, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 144);
@@ -12629,34 +12492,33 @@ static void LatticeTriangleTrackLeftMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 3)), { 0, 0, height },
-                        { { 2, 0, height }, { 1, 32, 160 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 3)),
+                        { 0, 0, height }, { { 2, 0, height }, { 1, 32, 160 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 8)), { 0, 0, height },
-                        { { 30, 24, height }, { 0, 8, 160 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 8)),
+                        { 0, 0, height }, { { 30, 24, height }, { 0, 8, 160 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 13)), { 0, 0, height },
-                        { { 29, 0, height }, { 1, 32, 160 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 13)),
+                        { 0, 0, height }, { { 29, 0, height }, { 1, 32, 160 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 18)), { 0, 0, height },
-                        { { 0, 0, height }, { 1, 32, 160 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 18)),
+                        { 0, 0, height }, { { 0, 0, height }, { 1, 32, 160 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::bottomRightSide, PaintSegment::centre,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::bottom, PaintSegment::bottomRight, PaintSegment::centre, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 144);
@@ -12667,26 +12529,26 @@ static void LatticeTriangleTrackLeftMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 4)), { 0, 0, height },
-                        { { 0, 2, height + 48 }, { 32, 32, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 4)),
+                        { 0, 0, height }, { { 0, 2, height + 48 }, { 32, 32, 1 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 9)), { 0, 0, height },
-                        { { 0, 2, height + 48 }, { 32, 32, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 9)),
+                        { 0, 0, height }, { { 0, 2, height + 48 }, { 32, 32, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 14)), { 0, 0, height },
-                        { { 0, 0, height + 48 }, { 32, 32, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 14)),
+                        { 0, 0, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 19)), { 0, 0, height },
-                        { { 0, 0, height + 48 }, { 32, 32, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 19)),
+                        { 0, 0, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
                     break;
             }
 
@@ -12694,8 +12556,8 @@ static void LatticeTriangleTrackLeftMediumHalfLoopUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topRightSide, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomCorner, PaintSegment::bottomRightSide, PaintSegment::rightCorner),
+                        PaintSegment::topRight, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottom,
+                        PaintSegment::bottomRight, PaintSegment::right),
                     direction),
                 0xFFFF, 0);
 
@@ -12720,30 +12582,30 @@ static void LatticeTriangleTrackRightMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 20)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 20)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 25)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 25)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 30)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 30)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 35)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 35)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
 
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 7, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 7, height, session.SupportColours);
 
             if (direction == 0 || direction == 3)
             {
@@ -12759,26 +12621,26 @@ static void LatticeTriangleTrackRightMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 21)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 21)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 26)), { 0, 0, height },
-                        { { 0, 32, height }, { 40, 0, 64 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 26)),
+                        { 0, 0, height }, { { 0, 32, height }, { 40, 0, 64 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 31)), { 0, 0, height },
-                        { { 0, 31, height }, { 0, 32, 64 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 31)),
+                        { 0, 0, height }, { { 0, 31, height }, { 0, 32, 64 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 36)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 36)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
 
@@ -12786,8 +12648,8 @@ static void LatticeTriangleTrackRightMediumHalfLoopUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topRightSide, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomCorner, PaintSegment::bottomRightSide, PaintSegment::rightCorner),
+                        PaintSegment::topRight, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottom,
+                        PaintSegment::bottomRight, PaintSegment::right),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -12798,42 +12660,41 @@ static void LatticeTriangleTrackRightMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 22)), { 0, 0, height },
-                        { { 0, 0, height }, { 32, 32, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 22)),
+                        { 0, 0, height }, { { 0, 0, height }, { 32, 32, 0 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 14, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 27)), { 0, 0, height },
-                        { { 30, 16, height }, { 0, 32, 96 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 27)),
+                        { 0, 0, height }, { { 30, 16, height }, { 0, 32, 96 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 18, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 18, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 32)), { 0, 0, height },
-                        { { 29, 0, height }, { 0, 32, 96 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 32)),
+                        { 0, 0, height }, { { 29, 0, height }, { 0, 32, 96 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 16, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 16, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 37)), { 0, 0, height },
-                        { { 0, 0, height + 2 }, { 32, 32, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 37)),
+                        { 0, 0, height }, { { 0, 0, height + 2 }, { 32, 32, 0 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 14, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::bottomRightSide, PaintSegment::centre,
-                        PaintSegment::bottomLeftSide),
+                        PaintSegment::bottom, PaintSegment::bottomRight, PaintSegment::centre, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 144);
@@ -12844,35 +12705,33 @@ static void LatticeTriangleTrackRightMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 23)), { 0, 0, height },
-                        { { 0, 0, height }, { 1, 32, 160 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 23)),
+                        { 0, 0, height }, { { 0, 0, height }, { 1, 32, 160 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 28)), { 0, 0, height },
-                        { { 29, 16, height }, { 0, 16, 160 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 28)),
+                        { 0, 0, height }, { { 29, 16, height }, { 0, 16, 160 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 33)), { 0, 0, height },
-                        { { 30, 0, height }, { 0, 32, 160 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 33)),
+                        { 0, 0, height }, { { 30, 0, height }, { 0, 32, 160 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 38)), { 0, 0, height },
-                        { { 2, 0, height }, { 1, 32, 160 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 38)),
+                        { 0, 0, height }, { { 2, 0, height }, { 1, 32, 160 } });
                     break;
             }
 
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 144);
@@ -12883,26 +12742,26 @@ static void LatticeTriangleTrackRightMediumHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 24)), { 0, 0, height },
-                        { { 0, 0, height + 48 }, { 32, 32, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 24)),
+                        { 0, 0, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 29)), { 0, 0, height },
-                        { { 0, 0, height + 48 }, { 32, 32, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 29)),
+                        { 0, 0, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 34)), { 0, 0, height },
-                        { { 0, 0, height + 48 }, { 32, 32, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 34)),
+                        { 0, 0, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 39)), { 0, 0, height },
-                        { { 0, 0, height + 48 }, { 32, 32, 1 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_MEDIUM_HALF_LOOP + 39)),
+                        { 0, 0, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
                     break;
             }
 
@@ -12910,8 +12769,8 @@ static void LatticeTriangleTrackRightMediumHalfLoopUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::topCorner),
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::top),
                     direction),
                 0xFFFF, 0);
             if (direction == 0 || direction == 3)
@@ -12948,37 +12807,38 @@ static void LatticeTriangleTrackLeftZeroGRollUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 0)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 0)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 1)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 1)),
                         { 0, 0, height }, { { 0, 6, height + 32 }, { 32, 20, 1 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 4)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 4)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 5)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 5)),
                         { 0, 0, height }, { { 0, 31, height }, { 40, 1, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 8)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 8)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 12)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 12)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 11, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 11, height, session.SupportColours);
                     break;
             }
 
@@ -12995,31 +12855,32 @@ static void LatticeTriangleTrackLeftZeroGRollUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 2)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 2)),
                         { 0, 0, height }, { { 0, 6, height + 32 }, { 32, 20, 1 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 6)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 6)),
                         { 0, 0, height }, { { 0, 6, height + 32 }, { 40, 20, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 9)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 9)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 13)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 13)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::topCorner,
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide),
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::top, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -13029,29 +12890,33 @@ static void LatticeTriangleTrackLeftZeroGRollUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 3)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 3)),
                         { 0, 0, height }, { { 0, 6, height + 32 }, { 40, 20, 1 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 7)),
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 7)),
                         { 0, 0, height }, { { 0, 6, height + 32 }, { 32, 20, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 10)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 10)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 11)),
-                        { 0, 0, height }, { { 0, 6, height + 36 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 11)), { 0, 0, height },
+                        { { 0, 6, height + 36 }, { 32, 20, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 14)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 14)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 15)),
-                        { 0, 0, height }, { { 0, 6, height + 36 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 15)), { 0, 0, height },
+                        { { 0, 6, height + 36 }, { 32, 20, 0 } });
                     break;
             }
             switch (direction)
@@ -13067,12 +12932,12 @@ static void LatticeTriangleTrackLeftZeroGRollUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::topCorner,
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide),
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::top, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, 0, height + 42, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, 0, height + 42, session.SupportColours);
             PaintUtilSetGeneralSupportHeight(session, height + 40);
             break;
     }
@@ -13089,37 +12954,43 @@ static void LatticeTriangleTrackRightZeroGRollUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 16)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 16)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 11, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 11, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 20)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 20)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 24)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 24)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 25)),
-                        { 0, 0, height }, { { 0, 31, height }, { 40, 1, 32 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 25)), { 0, 0, height },
+                        { { 0, 31, height }, { 40, 1, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 28)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 28)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 29)),
-                        { 0, 0, height }, { { 0, 6, height + 32 }, { 32, 20, 1 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 29)), { 0, 0, height },
+                        { { 0, 6, height + 32 }, { 32, 20, 1 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -13135,31 +13006,35 @@ static void LatticeTriangleTrackRightZeroGRollUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 17)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 17)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 21)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 21)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 26)),
-                        { 0, 0, height }, { { 0, 31, height }, { 44, 1, 32 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 26)), { 0, 0, height },
+                        { { 0, 31, height }, { 44, 1, 32 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 30)),
-                        { 0, 0, height }, { { 0, 6, height + 32 }, { 32, 20, 1 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 30)), { 0, 0, height },
+                        { { 0, 6, height + 32 }, { 32, 20, 1 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::bottomRightSide, PaintSegment::rightCorner,
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide),
+                        PaintSegment::bottom, PaintSegment::bottomRight, PaintSegment::right, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -13169,29 +13044,35 @@ static void LatticeTriangleTrackRightZeroGRollUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 18)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 18)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 19)),
-                        { 0, 0, height }, { { 0, 6, height + 36 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 19)), { 0, 0, height },
+                        { { 0, 6, height + 36 }, { 32, 20, 0 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 22)),
-                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 32 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 22)), { 0, 0, height },
+                        { { 0, 6, height }, { 32, 20, 32 } });
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 23)),
-                        { 0, 0, height }, { { 0, 6, height + 36 }, { 32, 20, 0 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 23)), { 0, 0, height },
+                        { { 0, 6, height + 36 }, { 32, 20, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 27)),
-                        { 0, 0, height }, { { 0, 6, height + 32 }, { 32, 20, 1 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 27)), { 0, 0, height },
+                        { { 0, 6, height + 32 }, { 32, 20, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 31)),
-                        { 0, 0, height }, { { 0, 6, height + 32 }, { 40, 20, 1 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_ZERO_G_ROLL + 31)), { 0, 0, height },
+                        { { 0, 6, height + 32 }, { 40, 20, 1 } });
                     break;
             }
             switch (direction)
@@ -13207,12 +13088,12 @@ static void LatticeTriangleTrackRightZeroGRollUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::bottomRightSide, PaintSegment::rightCorner,
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide),
+                        PaintSegment::bottom, PaintSegment::bottomRight, PaintSegment::right, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, 0, height + 42, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, 0, height + 42, session.SupportColours);
             PaintUtilSetGeneralSupportHeight(session, height + 40);
             break;
     }
@@ -13246,33 +13127,33 @@ static void LatticeTriangleTrackLeftLargeZeroGRollUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 0)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 0)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 5)), { 0, 0, height },
-                        { { 0, 30, height }, { 32, 0, 96 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 5)),
+                        { 0, 0, height }, { { 0, 30, height }, { 32, 0, 96 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 9)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 9)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 10)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 10)),
                         { 0, 0, height }, { { 0, 30, height }, { 32, 0, 96 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 15)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 15)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 21, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 21, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -13287,29 +13168,29 @@ static void LatticeTriangleTrackLeftLargeZeroGRollUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 1)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 1)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 2)), { 0, 0, height },
-                        { { 0, 30, height }, { 32, 0, 96 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 2)),
+                        { 0, 0, height }, { { 0, 30, height }, { 32, 0, 96 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 6)), { 0, 0, height },
-                        { { 0, 30, height }, { 32, 0, 64 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 6)),
+                        { 0, 0, height }, { { 0, 30, height }, { 32, 0, 64 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 11)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 11)),
                         { 0, 0, height }, { { 0, 2, height }, { 32, 0, 64 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 16)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 16)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
@@ -13323,29 +13204,29 @@ static void LatticeTriangleTrackLeftLargeZeroGRollUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 3)), { 0, 0, height },
-                        { { 0, 30, height }, { 32, 0, 64 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 3)),
+                        { 0, 0, height }, { { 0, 30, height }, { 32, 0, 64 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 7)), { 0, 0, height },
-                        { { 0, 30, height }, { 32, 0, 48 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 7)),
+                        { 0, 0, height }, { { 0, 30, height }, { 32, 0, 48 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 12)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 12)),
                         { 0, 0, height }, { { 0, 2, height }, { 32, 0, 48 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 17)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 17)),
                         { 0, 0, height }, { { 0, 2, height }, { 32, 0, 32 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 18)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 18)),
                         { 0, 0, height }, { { 0, 6, height + 40 }, { 32, 20, 3 } });
                     break;
             }
@@ -13353,8 +13234,8 @@ static void LatticeTriangleTrackLeftLargeZeroGRollUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::topCorner,
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide),
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::top, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -13364,8 +13245,8 @@ static void LatticeTriangleTrackLeftLargeZeroGRollUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::topLeftSide, PaintSegment::topCorner,
-                        PaintSegment::bottomLeftSide, PaintSegment::centre, PaintSegment::topRightSide),
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::top, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             switch (direction)
@@ -13373,38 +13254,38 @@ static void LatticeTriangleTrackLeftLargeZeroGRollUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 4)), { 0, 0, height },
-                        { { 0, 26, height }, { 32, 0, 32 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 4)),
+                        { 0, 0, height }, { { 0, 26, height }, { 32, 0, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 0, height + 37, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 0, height + 37, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 8)), { 0, 0, height },
-                        { { 0, 26, height }, { 26, 0, 20 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 8)),
+                        { 0, 0, height }, { { 0, 26, height }, { 26, 0, 20 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 0, height + 37, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 0, height + 37, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 13)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 13)),
                         { 0, 0, height }, { { 0, 2, height }, { 32, 0, 32 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 14)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 14)),
                         { 0, 0, height }, { { 0, 6, height + 40 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 0, height + 37, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 0, height + 37, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 19)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 19)),
                         { 0, 0, height }, { { 0, 18, height }, { 32, 1, 30 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 0, height + 37, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 0, height + 37, session.SupportColours);
                     break;
             }
             switch (direction)
@@ -13433,33 +13314,33 @@ static void LatticeTriangleTrackRightLargeZeroGRollUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 20)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 20)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 25)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 25)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 26)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 26)),
                         { 0, 0, height }, { { 0, 30, height }, { 32, 0, 96 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 31)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 31)),
                         { 0, 0, height }, { { 0, 30, height }, { 32, 0, 96 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 35)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 35)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 21, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 21, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -13474,29 +13355,29 @@ static void LatticeTriangleTrackRightLargeZeroGRollUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 21)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 21)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 27)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 27)),
                         { 0, 0, height }, { { 0, 2, height }, { 32, 0, 64 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 32)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 32)),
                         { 0, 0, height }, { { 0, 30, height }, { 32, 0, 64 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 36)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 36)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 37)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 37)),
                         { 0, 0, height }, { { 0, 30, height }, { 32, 0, 96 } });
                     break;
             }
@@ -13510,29 +13391,29 @@ static void LatticeTriangleTrackRightLargeZeroGRollUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 22)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 22)),
                         { 0, 0, height }, { { 0, 2, height }, { 32, 0, 32 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 23)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 23)),
                         { 0, 0, height }, { { 0, 6, height + 40 }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 28)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 28)),
                         { 0, 0, height }, { { 0, 2, height }, { 32, 0, 48 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 33)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 33)),
                         { 0, 0, height }, { { 0, 30, height }, { 32, 0, 48 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 38)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 38)),
                         { 0, 0, height }, { { 0, 30, height }, { 32, 0, 64 } });
                     break;
             }
@@ -13541,8 +13422,8 @@ static void LatticeTriangleTrackRightLargeZeroGRollUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -13552,8 +13433,8 @@ static void LatticeTriangleTrackRightLargeZeroGRollUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             switch (direction)
@@ -13561,38 +13442,38 @@ static void LatticeTriangleTrackRightLargeZeroGRollUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 24)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 24)),
                         { 0, 0, height }, { { 0, 18, height }, { 32, 1, 30 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 0, height + 37, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 0, height + 37, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 29)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 29)),
                         { 0, 0, height }, { { 0, 2, height }, { 32, 0, 32 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 30)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 30)),
                         { 0, 0, height }, { { 0, 6, height + 40 }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 0, height + 37, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 0, height + 37, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 34)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 34)),
                         { 0, 0, height }, { { 0, 26, height }, { 32, 0, 30 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 0, height + 37, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 0, height + 37, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 39)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_ZERO_G_ROLL + 39)),
                         { 0, 0, height }, { { 0, 26, height }, { 40, 0, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 0, height + 37, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 0, height + 37, session.SupportColours);
                     break;
             }
             switch (direction)
@@ -13636,30 +13517,31 @@ static void LatticeTriangleTrack90DegToInvertedFlatQuarterLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 0)),
-                        { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 31 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 0)), { 0, 0, height },
+                        { { 4, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 3)),
-                        { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 3)), { 0, 0, height },
+                        { { 24, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 6)),
-                        { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 6)), { 0, 0, height },
+                        { { 24, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 9)),
-                        { 0, 0, height }, { { 4, 6, height + 8 }, { 2, 20, 31 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 9)), { 0, 0, height },
+                        { { 4, 6, height + 8 }, { 2, 20, 31 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
-                session,
-                PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomRightSide), direction),
-                0xFFFF, 0);
+                session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 88);
             break;
         case 1:
@@ -13667,30 +13549,31 @@ static void LatticeTriangleTrack90DegToInvertedFlatQuarterLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 1)),
-                        { 0, 0, height }, { { -8, 6, height }, { 2, 20, 31 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 1)), { 0, 0, height },
+                        { { -8, 6, height }, { 2, 20, 31 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 4)),
-                        { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 63 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 4)), { 0, 0, height },
+                        { { 24, 6, height + 8 }, { 2, 20, 63 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 7)),
-                        { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 63 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 7)), { 0, 0, height },
+                        { { 24, 6, height + 8 }, { 2, 20, 63 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 10)),
-                        { 0, 0, height }, { { -8, 6, height }, { 2, 20, 31 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 10)), { 0, 0, height },
+                        { { -8, 6, height }, { 2, 20, 31 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
-                session,
-                PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomRightSide), direction),
-                0xFFFF, 0);
+                session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
             break;
         case 2:
@@ -13698,23 +13581,27 @@ static void LatticeTriangleTrack90DegToInvertedFlatQuarterLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 2)),
-                        { 0, 0, height }, { { 0, 6, height + 24 }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 2)), { 0, 0, height },
+                        { { 0, 6, height + 24 }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 5)),
-                        { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 5)), { 0, 0, height },
+                        { { 24, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 8)),
-                        { 0, 0, height }, { { 24, 6, height + 8 }, { 2, 20, 31 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 8)), { 0, 0, height },
+                        { { 24, 6, height + 8 }, { 2, 20, 31 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 11)),
-                        { 0, 0, height }, { { 0, 6, height + 24 }, { 32, 20, 3 } });
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_LOOP + 11)), { 0, 0, height },
+                        { { 0, 6, height + 24 }, { 32, 20, 3 } });
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -13722,10 +13609,7 @@ static void LatticeTriangleTrack90DegToInvertedFlatQuarterLoopUp(
                 PaintUtilPushTunnelRotated(session, direction, height + 8, kTunnelGroup, TunnelSubType::Flat);
             }
             PaintUtilSetSegmentSupportHeight(
-                session,
-                PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomRightSide), direction),
-                0xFFFF, 0);
+                session, PaintUtilRotateSegments(BlockedSegments::kStraightFlat, direction), 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
             break;
     }
@@ -13751,33 +13635,33 @@ static void LatticeTriangleTrackLeftBankToLeftQuarterTurn3Tile25DegUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 0)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 0)),
                         { 0, 6, height }, { 32, 20, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 2)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 2)),
                         { 0, 6, height }, { 32, 20, 3 });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 3)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 3)),
                         { 0, 6, height }, { { 0, 27, height }, { 32, 1, 26 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 5)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 5)),
                         { 0, 6, height }, { 32, 20, 3 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 7)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 7)),
                         { 0, 6, height }, { 32, 20, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -13785,9 +13669,7 @@ static void LatticeTriangleTrackLeftBankToLeftQuarterTurn3Tile25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -13804,30 +13686,30 @@ static void LatticeTriangleTrackLeftBankToLeftQuarterTurn3Tile25DegUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 1)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 1)),
                         { 6, 0, height }, { { 0, 6, height - 6 }, { 20, 32, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 4)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 4)),
                         { 6, 0, height }, { { 0, 6, height - 6 }, { 20, 32, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 6)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 6)),
                         { 6, 0, height }, { { 0, 6, height - 6 }, { 20, 32, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 8)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 8)),
                         { 6, 0, height }, { { 0, 6, height - 6 }, { 20, 32, 3 } });
                     break;
             }
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, 4, height - 6, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, 4, height - 6, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -13840,9 +13722,7 @@ static void LatticeTriangleTrackLeftBankToLeftQuarterTurn3Tile25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -13862,33 +13742,33 @@ static void LatticeTriangleTrackRightBankToRightQuarterTurn3Tile25DegUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 9)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 9)),
                         { 0, 6, height }, { 32, 20, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 11)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 11)),
                         { 0, 6, height }, { 32, 20, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 13)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 13)),
                         { 0, 6, height }, { 32, 20, 3 });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 14)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 14)),
                         { 0, 6, height }, { { 0, 27, height }, { 32, 1, 26 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 16)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 16)),
                         { 0, 6, height }, { 32, 20, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -13896,9 +13776,7 @@ static void LatticeTriangleTrackRightBankToRightQuarterTurn3Tile25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -13915,30 +13793,30 @@ static void LatticeTriangleTrackRightBankToRightQuarterTurn3Tile25DegUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 10)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 10)),
                         { 6, 0, height }, { { 0, 6, height - 6 }, { 20, 32, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 12)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 12)),
                         { 6, 0, height }, { { 0, 6, height - 6 }, { 20, 32, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 15)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 15)),
                         { 6, 0, height }, { { 0, 6, height - 6 }, { 20, 32, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 17)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 17)),
                         { 6, 0, height }, { { 0, 6, height - 6 }, { 20, 32, 3 } });
                     break;
             }
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, 4, height - 6, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, 4, height - 6, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -13951,9 +13829,7 @@ static void LatticeTriangleTrackRightBankToRightQuarterTurn3Tile25DegUp(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -13973,30 +13849,30 @@ static void LatticeTriangleTrackLeftQuarterTurn3Tile25DegDownToLeftBank(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 12)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 12)),
                         { 0, 6, height }, { { 0, 6, height - 6 }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 15)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 15)),
                         { 0, 6, height }, { { 0, 6, height - 6 }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 17)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 17)),
                         { 0, 6, height }, { { 0, 6, height - 6 }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 10)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 10)),
                         { 0, 6, height }, { { 0, 6, height - 6 }, { 32, 20, 3 } });
                     break;
             }
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, 4, height - 6, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, 4, height - 6, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::SlopeEnd);
@@ -14004,9 +13880,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3Tile25DegDownToLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -14023,33 +13897,33 @@ static void LatticeTriangleTrackLeftQuarterTurn3Tile25DegDownToLeftBank(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 11)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 11)),
                         { 6, 0, height }, { 20, 32, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 13)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 13)),
                         { 6, 0, height }, { 20, 32, 3 });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 14)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 14)),
                         { 6, 0, height }, { { 27, 0, height }, { 1, 32, 26 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 16)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 16)),
                         { 6, 0, height }, { 20, 32, 3 });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 9)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 9)),
                         { 6, 0, height }, { 20, 32, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 2:
@@ -14062,9 +13936,7 @@ static void LatticeTriangleTrackLeftQuarterTurn3Tile25DegDownToLeftBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -14084,30 +13956,30 @@ static void LatticeTriangleTrackRightQuarterTurn3Tile25DegDownToRightBank(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 8)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 8)),
                         { 0, 6, height }, { { 0, 6, height - 6 }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 1)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 1)),
                         { 0, 6, height }, { { 0, 6, height - 6 }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 4)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 4)),
                         { 0, 6, height }, { { 0, 6, height - 6 }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 6)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 6)),
                         { 0, 6, height }, { { 0, 6, height - 6 }, { 32, 20, 3 } });
                     break;
             }
             MetalASupportsPaintSetup(
-                session, supportType.metal, MetalSupportPlace::Centre, 4, height - 6, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, 4, height - 6, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::SlopeEnd);
@@ -14115,9 +13987,7 @@ static void LatticeTriangleTrackRightQuarterTurn3Tile25DegDownToRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -14134,33 +14004,33 @@ static void LatticeTriangleTrackRightQuarterTurn3Tile25DegDownToRightBank(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 7)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 7)),
                         { 6, 0, height }, { 20, 32, 3 });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 0)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 0)),
                         { 6, 0, height }, { 20, 32, 3 });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 2)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 2)),
                         { 6, 0, height }, { 20, 32, 3 });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 3)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 3)),
                         { 6, 0, height }, { { 27, 0, height }, { 1, 32, 26 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 5)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_TURN_BANK_TRANSITION + 5)),
                         { 6, 0, height }, { 20, 32, 3 });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -14173,9 +14043,7 @@ static void LatticeTriangleTrackRightQuarterTurn3Tile25DegDownToRightBank(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -14194,28 +14062,30 @@ static void LatticeTriangleTrackLeftLargeHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 0)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 0)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 7)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 7)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 14)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 14)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 21)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 21)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -14229,33 +14099,35 @@ static void LatticeTriangleTrackLeftLargeHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 1)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 1)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 8)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 8)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 9 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 15)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 15)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 22)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 22)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
@@ -14267,33 +14139,35 @@ static void LatticeTriangleTrackLeftLargeHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 2)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 2)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 9)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 9)),
                         { 0, 0, height }, { { 0, 0, height + 70 }, { 32, 16, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 16)), { 0, 0, height },
-                        { { 0, 16, height + 70 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 16)),
+                        { 0, 0, height }, { { 0, 16, height + 70 }, { 32, 16, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 23)), { 0, 0, height },
-                        { { 0, 16, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 23)),
+                        { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 88);
@@ -14303,42 +14177,43 @@ static void LatticeTriangleTrackLeftLargeHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 3)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 3)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 14, height + 8, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 14, height + 8, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 10)), { 0, 0, height },
-                        { { 0, 0, height + 200 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 10)),
+                        { 0, 0, height }, { { 0, 0, height + 200 }, { 32, 16, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 14, height + 8, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 14, height + 8, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 17)), { 0, 0, height },
-                        { { 0, 16, height + 200 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 17)),
+                        { 0, 0, height }, { { 0, 16, height + 200 }, { 32, 16, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 0, height + 21, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 0, height + 21, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 24)), { 0, 0, height },
-                        { { 0, 16, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 24)),
+                        { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 22, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 22, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 224);
@@ -14348,34 +14223,34 @@ static void LatticeTriangleTrackLeftLargeHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 4)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 4)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 11)), { 0, 0, height },
-                        { { 0, 16, height + 110 }, { 16, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 11)),
+                        { 0, 0, height }, { { 0, 16, height + 110 }, { 16, 16, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 18)), { 0, 0, height },
-                        { { 0, 0, height + 100 }, { 16, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 18)),
+                        { 0, 0, height }, { { 0, 0, height + 100 }, { 16, 16, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 25)), { 0, 0, height },
-                        { { 16, 0, height }, { 16, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 25)),
+                        { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 128);
@@ -14385,34 +14260,35 @@ static void LatticeTriangleTrackLeftLargeHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 5)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 5)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 12)), { 0, 0, height },
-                        { { 0, 16, height + 200 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 12)),
+                        { 0, 0, height }, { { 0, 16, height + 200 }, { 32, 16, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 19)), { 0, 0, height },
-                        { { 0, 0, height + 200 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 19)),
+                        { 0, 0, height }, { { 0, 0, height + 200 }, { 32, 16, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 26)), { 0, 0, height },
-                        { { 0, 0, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 26)),
+                        { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 224);
@@ -14422,26 +14298,27 @@ static void LatticeTriangleTrackLeftLargeHalfLoopUp(
             {
                 case 0:
                     PaintAddImageAsParentRotated(
-                        session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 6)),
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 6)),
                         { 0, 0, height }, { { 0, 16, height + 32 }, { 32, 16, 0 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 13)), { 0, 0, height },
-                        { { 0, 16, height + 32 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 13)),
+                        { 0, 0, height }, { { 0, 16, height + 32 }, { 32, 16, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 20)), { 0, 0, height },
-                        { { 0, 0, height + 32 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 20)),
+                        { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 16, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 27)), { 0, 0, height },
-                        { { 0, 0, height + 32 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 27)),
+                        { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 16, 0 } });
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -14452,8 +14329,8 @@ static void LatticeTriangleTrackLeftLargeHalfLoopUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 40);
@@ -14473,29 +14350,29 @@ static void LatticeTriangleTrackRightLargeHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 28)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 28)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 35)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 35)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 42)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 42)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 49)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 49)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 5, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 5, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -14510,34 +14387,34 @@ static void LatticeTriangleTrackRightLargeHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 29)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 29)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 36)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 36)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 43)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 9 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 43)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 9 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 50)), { 0, 0, height },
-                        { { 0, 6, height }, { 32, 20, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 50)),
+                        { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
@@ -14550,34 +14427,34 @@ static void LatticeTriangleTrackRightLargeHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 30)), { 0, 0, height },
-                        { { 0, 16, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 30)),
+                        { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 37)), { 0, 0, height },
-                        { { 0, 16, height + 70 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 37)),
+                        { 0, 0, height }, { { 0, 16, height + 70 }, { 32, 16, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 44)), { 0, 0, height },
-                        { { 0, 0, height + 70 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 44)),
+                        { 0, 0, height }, { { 0, 0, height + 70 }, { 32, 16, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 51)), { 0, 0, height },
-                        { { 0, 0, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 51)),
+                        { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 88);
@@ -14588,42 +14465,42 @@ static void LatticeTriangleTrackRightLargeHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 31)), { 0, 0, height },
-                        { { 0, 16, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 31)),
+                        { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomRightSide, 22, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 22, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 38)), { 0, 0, height },
-                        { { 0, 16, height + 200 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 38)),
+                        { 0, 0, height }, { { 0, 16, height + 200 }, { 32, 16, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomLeftSide, 0, height + 21, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 0, height + 21, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 45)), { 0, 0, height },
-                        { { 0, 0, height + 200 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 45)),
+                        { 0, 0, height }, { { 0, 0, height + 200 }, { 32, 16, 0 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopLeftSide, 14, height + 8, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 14, height + 8, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 52)), { 0, 0, height },
-                        { { 0, 0, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 52)),
+                        { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopRightSide, 14, height + 8, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 14, height + 8, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 224);
@@ -14634,34 +14511,32 @@ static void LatticeTriangleTrackRightLargeHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 32)), { 0, 0, height },
-                        { { 16, 0, height }, { 16, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 32)),
+                        { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 39)), { 0, 0, height },
-                        { { 0, 0, height + 100 }, { 16, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 39)),
+                        { 0, 0, height }, { { 0, 0, height + 100 }, { 16, 16, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 46)), { 0, 0, height },
-                        { { 0, 16, height + 110 }, { 16, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 46)),
+                        { 0, 0, height }, { { 0, 16, height + 110 }, { 16, 16, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 53)), { 0, 0, height },
-                        { { 16, 16, height }, { 16, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 53)),
+                        { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 128);
@@ -14672,34 +14547,34 @@ static void LatticeTriangleTrackRightLargeHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 33)), { 0, 0, height },
-                        { { 0, 0, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 33)),
+                        { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 40)), { 0, 0, height },
-                        { { 0, 0, height + 200 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 40)),
+                        { 0, 0, height }, { { 0, 0, height + 200 }, { 32, 16, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 47)), { 0, 0, height },
-                        { { 0, 16, height + 200 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 47)),
+                        { 0, 0, height }, { { 0, 16, height + 200 }, { 32, 16, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 54)), { 0, 0, height },
-                        { { 0, 16, height }, { 32, 16, 3 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 54)),
+                        { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 224);
@@ -14710,26 +14585,26 @@ static void LatticeTriangleTrackRightLargeHalfLoopUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 34)), { 0, 0, height },
-                        { { 0, 0, height + 32 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 34)),
+                        { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 16, 0 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 41)), { 0, 0, height },
-                        { { 0, 0, height + 32 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 41)),
+                        { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 16, 0 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 48)), { 0, 0, height },
-                        { { 0, 16, height + 32 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 48)),
+                        { 0, 0, height }, { { 0, 16, height + 32 }, { 32, 16, 0 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 55)), { 0, 0, height },
-                        { { 0, 16, height + 32 }, { 32, 16, 0 } });
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_LARGE_HALF_LOOP + 55)),
+                        { 0, 0, height }, { { 0, 16, height + 32 }, { 32, 16, 0 } });
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -14740,8 +14615,8 @@ static void LatticeTriangleTrackRightLargeHalfLoopUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 40);
@@ -14771,32 +14646,32 @@ static void LatticeTriangleTrackFlatTo60DegUp(
     {
         case 0:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 0)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 0)),
                 { 0, 0, height }, { { 0, 2, height }, { 32, 27, 4 } });
             break;
         case 1:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 2)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 2)),
                 { 0, 0, height }, { { 29, 4, height + 2 }, { 1, 24, 43 } });
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 1)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 1)),
                 { 0, 0, height }, { { 0, 4, height }, { 32, 2, 43 } });
             break;
         case 2:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 4)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 4)),
                 { 0, 0, height }, { { 29, 4, height + 2 }, { 1, 24, 43 } });
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 3)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 3)),
                 { 0, 0, height }, { { 0, 4, height }, { 32, 2, 43 } });
             break;
         case 3:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 5)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 5)),
                 { 0, 0, height }, { { 0, 2, height }, { 32, 27, 4 } });
             break;
     }
-    MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 1, height, session.SupportColours);
+    MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 1, height, session.SupportColours);
     if (direction == 0 || direction == 3)
     {
         PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -14817,32 +14692,34 @@ static void LatticeTriangleTrack60DegUpToFlat(
     {
         case 0:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 6)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 6)),
                 { 0, 0, height }, { { 0, 2, height }, { 32, 27, 4 } });
             break;
         case 1:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 7)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 7)),
                 { 0, 0, height }, { { 0, 4, height }, { 32, 2, 43 } });
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 8)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 8)),
                 { 0, 0, height }, { { 29, 4, height + 2 }, { 1, 24, 43 } });
             break;
         case 2:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 10)),
-                { 0, 0, height }, { { 29, 4, height + 2 }, { 1, 24, 43 } });
+                session, direction,
+                session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 10)), { 0, 0, height },
+                { { 29, 4, height + 2 }, { 1, 24, 43 } });
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 9)),
+                session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 9)),
                 { 0, 0, height }, { { 0, 4, height }, { 32, 2, 43 } });
             break;
         case 3:
             PaintAddImageAsParentRotated(
-                session, direction, session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 11)),
-                { 0, 0, height }, { { 0, 2, height }, { 32, 27, 4 } });
+                session, direction,
+                session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 11)), { 0, 0, height },
+                { { 0, 2, height }, { 32, 27, 4 } });
             break;
     }
-    MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 14, height, session.SupportColours);
+    MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 14, height, session.SupportColours);
     if (direction == 0 || direction == 3)
     {
         PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -14881,16 +14758,14 @@ static void LatticeTriangleTrackDiagFlatTo60DegUp(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 15)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 15)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -14901,15 +14776,14 @@ static void LatticeTriangleTrackDiagFlatTo60DegUp(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 12)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 12)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -14920,7 +14794,7 @@ static void LatticeTriangleTrackDiagFlatTo60DegUp(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 14)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 14)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
@@ -14928,8 +14802,7 @@ static void LatticeTriangleTrackDiagFlatTo60DegUp(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -14939,31 +14812,29 @@ static void LatticeTriangleTrackDiagFlatTo60DegUp(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 13)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 13)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -14983,16 +14854,14 @@ static void LatticeTriangleTrackDiag60DegUpToFlat(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 19)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 19)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15003,15 +14872,14 @@ static void LatticeTriangleTrackDiag60DegUpToFlat(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 16)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 16)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15022,7 +14890,7 @@ static void LatticeTriangleTrackDiag60DegUpToFlat(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 18)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 18)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
@@ -15030,8 +14898,7 @@ static void LatticeTriangleTrackDiag60DegUpToFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15041,31 +14908,29 @@ static void LatticeTriangleTrackDiag60DegUpToFlat(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 18, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 18, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 17)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 17)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 18, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 18, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 18, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 18, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 18, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 18, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15085,16 +14950,14 @@ static void LatticeTriangleTrackDiagFlatTo60DegDown(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 17)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 17)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15105,15 +14968,14 @@ static void LatticeTriangleTrackDiagFlatTo60DegDown(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 18)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 18)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15124,7 +14986,7 @@ static void LatticeTriangleTrackDiagFlatTo60DegDown(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 16)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 16)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
@@ -15132,8 +14994,7 @@ static void LatticeTriangleTrackDiagFlatTo60DegDown(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15143,31 +15004,29 @@ static void LatticeTriangleTrackDiagFlatTo60DegDown(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 14, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 19)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 19)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 14, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 14, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 14, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 14, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15187,16 +15046,14 @@ static void LatticeTriangleTrackDiag60DegDownToFlat(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 13)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 13)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -15207,15 +15064,14 @@ static void LatticeTriangleTrackDiag60DegDownToFlat(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 14)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 14)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -15226,7 +15082,7 @@ static void LatticeTriangleTrackDiag60DegDownToFlat(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 12)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 12)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     break;
             }
@@ -15234,8 +15090,7 @@ static void LatticeTriangleTrackDiag60DegDownToFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -15245,31 +15100,29 @@ static void LatticeTriangleTrackDiag60DegDownToFlat(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 2, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 2, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 15)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_SMALL_FLAT_TO_STEEP + 15)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 4 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 2, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 2, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 2, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 2, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 2, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 2, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 64);
@@ -15289,29 +15142,29 @@ static void LatticeTriangleTrackLeftEighthToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 0)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 0)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 4)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 4)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 8)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 8)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 12)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 12)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -15326,25 +15179,25 @@ static void LatticeTriangleTrackLeftEighthToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 1)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 1)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 5)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 5)),
                         { 0, 0, height }, { { 0, 0, height }, { 34, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 9)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 9)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 13)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 13)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
             }
@@ -15352,8 +15205,8 @@ static void LatticeTriangleTrackLeftEighthToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15364,25 +15217,25 @@ static void LatticeTriangleTrackLeftEighthToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 2)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 2)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 6)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 6)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 10)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 10)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 14)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 14)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     break;
             }
@@ -15390,8 +15243,8 @@ static void LatticeTriangleTrackLeftEighthToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15400,9 +15253,7 @@ static void LatticeTriangleTrackLeftEighthToDiagUp25(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15413,42 +15264,42 @@ static void LatticeTriangleTrackLeftEighthToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 3)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 3)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 2, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 2, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 7)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 7)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 18, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 3, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 11)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 11)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 2, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 2, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 15)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 15)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 1, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 1, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15468,29 +15319,29 @@ static void LatticeTriangleTrackRightEighthToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 16)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 16)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 20)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 20)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 24)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 24)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 28)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 28)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height - 8, kTunnelGroup, TunnelSubType::SlopeStart);
@@ -15505,25 +15356,25 @@ static void LatticeTriangleTrackRightEighthToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 17)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 17)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 21)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 21)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 25)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 25)),
                         { 0, 0, height }, { { 0, 0, height }, { 34, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 29)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 29)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
             }
@@ -15531,8 +15382,8 @@ static void LatticeTriangleTrackRightEighthToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15543,25 +15394,25 @@ static void LatticeTriangleTrackRightEighthToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 18)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 18)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 22)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 22)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 26)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 26)),
                         { 0, 0, height }, { { 4, 4, height }, { 28, 28, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 30)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 30)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     break;
             }
@@ -15569,8 +15420,8 @@ static void LatticeTriangleTrackRightEighthToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15580,8 +15431,7 @@ static void LatticeTriangleTrackRightEighthToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15592,42 +15442,42 @@ static void LatticeTriangleTrackRightEighthToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 19)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 19)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 1, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 1, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 23)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 23)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 2, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 2, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 27)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 27)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 18, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 3, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 31)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 31)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 2, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 2, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15647,42 +15497,42 @@ static void LatticeTriangleTrackLeftEighthToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 32)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 32)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 5, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 36)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 36)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 18, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 5, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 40)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 40)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 3, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 44)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 44)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15693,25 +15543,25 @@ static void LatticeTriangleTrackLeftEighthToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 33)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 33)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 37)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 37)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 41)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 41)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 45)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 45)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
             }
@@ -15719,8 +15569,8 @@ static void LatticeTriangleTrackLeftEighthToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15729,8 +15579,7 @@ static void LatticeTriangleTrackLeftEighthToOrthogonalUp25(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15741,25 +15590,25 @@ static void LatticeTriangleTrackLeftEighthToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 34)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 34)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 38)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 38)),
                         { 0, 0, height }, { { 0, 0, height }, { 34, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 42)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 42)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 46)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 46)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
             }
@@ -15767,8 +15616,8 @@ static void LatticeTriangleTrackLeftEighthToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15779,29 +15628,29 @@ static void LatticeTriangleTrackLeftEighthToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 35)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 35)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 39)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 39)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 43)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 43)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 10 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 47)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 47)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 4, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 4, height, session.SupportColours);
 
             if (direction == 1 || direction == 2)
             {
@@ -15827,42 +15676,42 @@ static void LatticeTriangleTrackRightEighthToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 48)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 48)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 3, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 52)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 52)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 5, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 56)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 56)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 18, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 5, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 60)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 60)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15873,25 +15722,25 @@ static void LatticeTriangleTrackRightEighthToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 49)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 49)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 53)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 53)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 57)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 57)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 61)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 61)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     break;
             }
@@ -15899,8 +15748,8 @@ static void LatticeTriangleTrackRightEighthToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide),
+                        PaintSegment::top, PaintSegment::right, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15910,8 +15759,7 @@ static void LatticeTriangleTrackRightEighthToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15922,25 +15770,25 @@ static void LatticeTriangleTrackRightEighthToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 50)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 50)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 32, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 54)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 54)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 32, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 58)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 58)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 32, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 62)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 62)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 32, 3 } });
                     break;
             }
@@ -15948,8 +15796,8 @@ static void LatticeTriangleTrackRightEighthToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -15960,29 +15808,29 @@ static void LatticeTriangleTrackRightEighthToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 51)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 51)),
                         { 0, 0, height }, { { 6, 0, height }, { 20, 32, 10 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 55)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 55)),
                         { 0, 0, height }, { { 6, 0, height }, { 20, 32, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 59)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 59)),
                         { 0, 0, height }, { { 6, 0, height }, { 20, 32, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 63)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE + 63)),
                         { 0, 0, height }, { { 6, 0, height }, { 20, 32, 3 } });
                     break;
             }
-            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::Centre, 4, height, session.SupportColours);
+            MetalASupportsPaintSetup(session, supportType.metal, MetalSupportPlace::centre, 4, height, session.SupportColours);
             if (direction == 0 || direction == 1)
             {
                 PaintUtilPushTunnelRotated(session, direction + 1, height + 8, kTunnelGroup, TunnelSubType::SlopeEnd);
@@ -15990,7 +15838,7 @@ static void LatticeTriangleTrackRightEighthToOrthogonalUp25(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomRightSide), direction),
+                    EnumsToFlags(PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight), direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
             break;
@@ -16047,16 +15895,14 @@ static void LatticeTriangleTrackDiagUp25ToLeftBankedUp25(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 4)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 4)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -16067,19 +15913,18 @@ static void LatticeTriangleTrackDiagUp25ToLeftBankedUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 0)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 0)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 1)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 1)),
                         { -16, -16, height }, { { -16, -16, height + 48 }, { 32, 32, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -16090,7 +15935,7 @@ static void LatticeTriangleTrackDiagUp25ToLeftBankedUp25(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 3)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 3)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
@@ -16098,8 +15943,7 @@ static void LatticeTriangleTrackDiagUp25ToLeftBankedUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -16109,31 +15953,29 @@ static void LatticeTriangleTrackDiagUp25ToLeftBankedUp25(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 5, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 2)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 2)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 10, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 10, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 10, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 10, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 10, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 10, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -16153,16 +15995,14 @@ static void LatticeTriangleTrackDiagUp25ToRightBankedUp25(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 9)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 9)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -16173,15 +16013,14 @@ static void LatticeTriangleTrackDiagUp25ToRightBankedUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 5)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 5)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -16192,11 +16031,11 @@ static void LatticeTriangleTrackDiagUp25ToRightBankedUp25(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 7)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 7)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 8)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 8)),
                         { -16, -16, height }, { { -16, -16, height + 48 }, { 32, 32, 0 } });
                     break;
             }
@@ -16204,8 +16043,7 @@ static void LatticeTriangleTrackDiagUp25ToRightBankedUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -16215,31 +16053,29 @@ static void LatticeTriangleTrackDiagUp25ToRightBankedUp25(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 10, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 10, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 6)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 6)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 10, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 10, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 5, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 10, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 10, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -16259,16 +16095,14 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToUp25(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 14)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 14)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16279,19 +16113,18 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 10)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 10)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 11)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 11)),
                         { -16, -16, height }, { { -16, -16, height + 48 }, { 32, 32, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16302,7 +16135,7 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToUp25(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 13)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 13)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
@@ -16310,8 +16143,7 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16321,31 +16153,29 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToUp25(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 5, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 12)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 12)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 9, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 9, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 9, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16365,16 +16195,14 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToUp25(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 19)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 19)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16385,15 +16213,14 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 15)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 15)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16404,11 +16231,11 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToUp25(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 17)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 17)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 18)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 18)),
                         { -16, -16, height }, { { -16, -16, height + 48 }, { 32, 32, 0 } });
                     break;
             }
@@ -16416,8 +16243,7 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16427,31 +16253,29 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToUp25(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 9, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 16)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 16)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 9, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 5, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 9, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16503,16 +16327,14 @@ static void LatticeTriangleTrackDiagLeftBankedFlatToLeftBankedUp25(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 23)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 23)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -16523,15 +16345,14 @@ static void LatticeTriangleTrackDiagLeftBankedFlatToLeftBankedUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 20)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 20)),
                         { -16, -16, height }, { { -16, -16, height + 27 }, { 32, 32, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -16542,7 +16363,7 @@ static void LatticeTriangleTrackDiagLeftBankedFlatToLeftBankedUp25(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 22)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 22)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
@@ -16550,8 +16371,7 @@ static void LatticeTriangleTrackDiagLeftBankedFlatToLeftBankedUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -16561,31 +16381,29 @@ static void LatticeTriangleTrackDiagLeftBankedFlatToLeftBankedUp25(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 21)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 21)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -16605,16 +16423,14 @@ static void LatticeTriangleTrackDiagRightBankedFlatToRightBankedUp25(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 27)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 27)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -16625,15 +16441,14 @@ static void LatticeTriangleTrackDiagRightBankedFlatToRightBankedUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 24)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 24)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -16644,7 +16459,7 @@ static void LatticeTriangleTrackDiagRightBankedFlatToRightBankedUp25(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 26)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 26)),
                         { -16, -16, height }, { { -16, -16, height + 27 }, { 32, 32, 0 } });
                     break;
             }
@@ -16652,8 +16467,7 @@ static void LatticeTriangleTrackDiagRightBankedFlatToRightBankedUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -16663,31 +16477,29 @@ static void LatticeTriangleTrackDiagRightBankedFlatToRightBankedUp25(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 25)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 25)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -16707,16 +16519,14 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToLeftBankedFlat(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 31)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 31)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16727,15 +16537,14 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToLeftBankedFlat(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 28)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 28)),
                         { -16, -16, height }, { { -16, -16, height + 27 }, { 32, 32, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16746,7 +16555,7 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToLeftBankedFlat(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 30)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 30)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
@@ -16754,8 +16563,7 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToLeftBankedFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16765,31 +16573,29 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToLeftBankedFlat(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 29)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 29)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 8, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 8, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 8, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16809,16 +16615,14 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToRightBankedFlat(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 35)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 35)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16829,15 +16633,14 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToRightBankedFlat(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 32)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 32)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16848,7 +16651,7 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToRightBankedFlat(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 34)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 34)),
                         { -16, -16, height }, { { -16, -16, height + 27 }, { 32, 32, 0 } });
                     break;
             }
@@ -16856,8 +16659,7 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToRightBankedFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16867,31 +16669,29 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToRightBankedFlat(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 8, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 33)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 33)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 8, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 8, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16943,16 +16743,14 @@ static void LatticeTriangleTrackDiagUp25LeftBanked(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 39)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 39)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16963,15 +16761,14 @@ static void LatticeTriangleTrackDiagUp25LeftBanked(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 36)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 36)),
                         { -16, -16, height }, { { -16, -16, height + 48 }, { 32, 32, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -16982,7 +16779,7 @@ static void LatticeTriangleTrackDiagUp25LeftBanked(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 38)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 38)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
@@ -16990,8 +16787,7 @@ static void LatticeTriangleTrackDiagUp25LeftBanked(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17001,31 +16797,29 @@ static void LatticeTriangleTrackDiagUp25LeftBanked(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 6, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 37)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 37)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 11, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 11, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 11, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 11, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 11, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 11, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17045,16 +16839,14 @@ static void LatticeTriangleTrackDiagUp25RightBanked(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 43)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 43)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17065,15 +16857,14 @@ static void LatticeTriangleTrackDiagUp25RightBanked(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 40)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 40)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17084,7 +16875,7 @@ static void LatticeTriangleTrackDiagUp25RightBanked(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 42)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 42)),
                         { -16, -16, height }, { { -16, -16, height + 48 }, { 32, 32, 0 } });
                     break;
             }
@@ -17092,8 +16883,7 @@ static void LatticeTriangleTrackDiagUp25RightBanked(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17103,31 +16893,29 @@ static void LatticeTriangleTrackDiagUp25RightBanked(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 11, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 11, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 41)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 41)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 11, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 11, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 6, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 11, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 11, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17163,16 +16951,14 @@ static void LatticeTriangleTrackDiagFlatToLeftBankedUp25(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 48)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 48)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -17183,19 +16969,18 @@ static void LatticeTriangleTrackDiagFlatToLeftBankedUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 44)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 44)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 45)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 45)),
                         { -16, -16, height }, { { -16, -16, height + 27 }, { 32, 32, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -17206,7 +16991,7 @@ static void LatticeTriangleTrackDiagFlatToLeftBankedUp25(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 47)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 47)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
@@ -17214,8 +16999,7 @@ static void LatticeTriangleTrackDiagFlatToLeftBankedUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -17225,31 +17009,29 @@ static void LatticeTriangleTrackDiagFlatToLeftBankedUp25(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 46)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 46)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -17269,16 +17051,14 @@ static void LatticeTriangleTrackDiagFlatToRightBankedUp25(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 53)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 53)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -17289,15 +17069,14 @@ static void LatticeTriangleTrackDiagFlatToRightBankedUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 49)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 49)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -17308,11 +17087,11 @@ static void LatticeTriangleTrackDiagFlatToRightBankedUp25(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 51)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 51)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 52)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 52)),
                         { -16, -16, height }, { { -16, -16, height + 27 }, { 32, 32, 0 } });
                     break;
             }
@@ -17320,8 +17099,7 @@ static void LatticeTriangleTrackDiagFlatToRightBankedUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -17331,31 +17109,29 @@ static void LatticeTriangleTrackDiagFlatToRightBankedUp25(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 50)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 50)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 4, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 48);
@@ -17375,16 +17151,14 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToFlat(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 58)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 58)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17395,19 +17169,18 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToFlat(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 54)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 54)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 55)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 55)),
                         { -16, -16, height }, { { -16, -16, height + 27 }, { 32, 32, 0 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17418,7 +17191,7 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToFlat(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 57)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 57)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
@@ -17426,8 +17199,7 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17437,31 +17209,29 @@ static void LatticeTriangleTrackDiagLeftBankedUp25ToFlat(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 56)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 56)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 6, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 6, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 6, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17481,16 +17251,14 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToFlat(
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 63)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 63)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17501,15 +17269,14 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToFlat(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 59)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 59)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17520,11 +17287,11 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToFlat(
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 61)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 61)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 62)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 62)),
                         { -16, -16, height }, { { -16, -16, height + 27 }, { 32, 32, 0 } });
                     break;
             }
@@ -17532,8 +17299,7 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToFlat(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17543,31 +17309,29 @@ static void LatticeTriangleTrackDiagRightBankedUp25ToFlat(
             {
                 case 0:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 6, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 60)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 60)),
                         { -16, -16, height }, { { -16, -16, height }, { 32, 32, 3 } });
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 6, height, session.SupportColours);
                     break;
                 case 2:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     MetalBSupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 6, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 56);
@@ -17619,34 +17383,34 @@ static void LatticeTriangleTrackLeftEighthBankToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 64)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 64)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 1, height - 4, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 1, height - 4, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 68)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 68)),
                         { 0, 0, height }, { { 0, 31, height }, { 32, 1, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 72)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 72)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 9, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 76)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 76)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -17663,25 +17427,25 @@ static void LatticeTriangleTrackLeftEighthBankToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 65)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 65)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 69)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 69)),
                         { 0, 0, height }, { { 0, 31, height }, { 32, 1, 32 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 73)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 73)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 77)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 77)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
             }
@@ -17689,8 +17453,8 @@ static void LatticeTriangleTrackLeftEighthBankToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -17701,25 +17465,25 @@ static void LatticeTriangleTrackLeftEighthBankToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 66)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 66)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 70)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 70)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 40, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 74)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 74)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 78)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 78)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     break;
             }
@@ -17727,8 +17491,8 @@ static void LatticeTriangleTrackLeftEighthBankToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -17737,9 +17501,7 @@ static void LatticeTriangleTrackLeftEighthBankToDiagUp25(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -17750,42 +17512,42 @@ static void LatticeTriangleTrackLeftEighthBankToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 67)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 67)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 7, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 71)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 71)),
                         { 0, 0, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 4, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 75)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 75)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 7, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 79)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 79)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 7, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -17805,34 +17567,34 @@ static void LatticeTriangleTrackRightEighthBankToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 80)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 80)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 12, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 12, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 84)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 84)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 9, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 88)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 88)),
                         { 0, 0, height }, { { 0, 31, height }, { 32, 1, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 6, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 6, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 92)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 92)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 1, height - 4, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 1, height - 4, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 3)
@@ -17849,25 +17611,25 @@ static void LatticeTriangleTrackRightEighthBankToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 81)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 81)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 85)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 85)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 89)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 89)),
                         { 0, 0, height }, { { 0, 31, height }, { 32, 1, 32 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 93)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 93)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 16, 3 } });
                     break;
             }
@@ -17875,8 +17637,8 @@ static void LatticeTriangleTrackRightEighthBankToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -17887,25 +17649,25 @@ static void LatticeTriangleTrackRightEighthBankToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 82)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 82)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 86)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 86)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 90)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 90)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 40, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 94)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 94)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     break;
             }
@@ -17913,8 +17675,8 @@ static void LatticeTriangleTrackRightEighthBankToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -17924,8 +17686,7 @@ static void LatticeTriangleTrackRightEighthBankToDiagUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -17936,42 +17697,42 @@ static void LatticeTriangleTrackRightEighthBankToDiagUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 83)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 83)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 7, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 87)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 87)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 7, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 91)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 91)),
                         { 0, 0, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 4, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 4, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 95)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 95)),
                         { 0, 0, height }, { { 16, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 7, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -17991,42 +17752,42 @@ static void LatticeTriangleTrackLeftEighthBankToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 96)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 96)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 32, 1 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 5, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 100)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 100)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 32, 1 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 7, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 104)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 104)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 9, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 108)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 108)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 7, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -18037,25 +17798,25 @@ static void LatticeTriangleTrackLeftEighthBankToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 97)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 97)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 32, 1 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 101)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 101)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 32, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 105)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 105)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 109)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 109)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 16, 3 } });
                     break;
             }
@@ -18063,8 +17824,8 @@ static void LatticeTriangleTrackLeftEighthBankToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -18073,8 +17834,7 @@ static void LatticeTriangleTrackLeftEighthBankToOrthogonalUp25(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -18085,25 +17845,25 @@ static void LatticeTriangleTrackLeftEighthBankToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 98)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 98)),
                         { 0, 0, height }, { { 0, 31, height }, { 32, 1, 32 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 102)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 102)),
                         { 0, 0, height }, { { 0, 31, height }, { 32, 1, 32 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 106)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 106)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 16, 10 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 110)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 110)),
                         { 0, 0, height }, { { 0, 16, height }, { 32, 16, 3 } });
                     break;
             }
@@ -18111,8 +17871,8 @@ static void LatticeTriangleTrackLeftEighthBankToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -18123,34 +17883,34 @@ static void LatticeTriangleTrackLeftEighthBankToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 99)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 99)),
                         { 0, 0, height }, { { 0, 31, height }, { 32, 1, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 103)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 103)),
                         { 0, 0, height }, { { 0, 31, height }, { 32, 1, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 107)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 107)),
                         { 0, 0, height }, { { 0, 0, height }, { 32, 20, 10 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 111)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 111)),
                         { 0, 0, height }, { { 0, 6, height }, { 32, 20, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 9, height, session.SupportColours);
                     break;
             }
             if (direction == 1 || direction == 2)
@@ -18176,42 +17936,42 @@ static void LatticeTriangleTrackRightEighthBankToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 112)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 112)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::RightCorner, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 9, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 116)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 116)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 32, 1 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::BottomCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 7, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 120)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 120)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 32, 1 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::LeftCorner, 5, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 5, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 124)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 124)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::TopCorner, 7, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::topCorner, 7, height, session.SupportColours);
                     break;
             }
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -18222,25 +17982,25 @@ static void LatticeTriangleTrackRightEighthBankToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 113)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 113)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 16, 3 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 117)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 117)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 32, 1 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 121)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 121)),
                         { 0, 0, height }, { { 0, 0, height + 32 }, { 32, 32, 1 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 125)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 125)),
                         { 0, 0, height }, { { 0, 16, height }, { 16, 16, 3 } });
                     break;
             }
@@ -18248,8 +18008,8 @@ static void LatticeTriangleTrackRightEighthBankToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide),
+                        PaintSegment::top, PaintSegment::right, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -18259,8 +18019,7 @@ static void LatticeTriangleTrackRightEighthBankToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -18271,25 +18030,25 @@ static void LatticeTriangleTrackRightEighthBankToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 114)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 114)),
                         { 0, 0, height }, { { 0, 0, height }, { 16, 32, 10 } });
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 118)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 118)),
                         { 0, 0, height }, { { 31, 0, height }, { 1, 32, 32 } });
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 122)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 122)),
                         { 0, 0, height }, { { 31, 0, height }, { 1, 32, 32 } });
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 126)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 126)),
                         { 0, 0, height }, { { 16, 0, height }, { 16, 32, 3 } });
                     break;
             }
@@ -18297,8 +18056,8 @@ static void LatticeTriangleTrackRightEighthBankToOrthogonalUp25(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
@@ -18309,34 +18068,34 @@ static void LatticeTriangleTrackRightEighthBankToOrthogonalUp25(
                 case 0:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 115)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 115)),
                         { 0, 0, height }, { { 6, 0, height }, { 20, 32, 10 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 8, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 8, height, session.SupportColours);
                     break;
                 case 1:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 119)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 119)),
                         { 0, 0, height }, { { 31, 0, height }, { 1, 32, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 3, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 3, height, session.SupportColours);
                     break;
                 case 2:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 123)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 123)),
                         { 0, 0, height }, { { 31, 0, height }, { 1, 32, 32 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 0, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 0, height, session.SupportColours);
                     break;
                 case 3:
                     PaintAddImageAsParentRotated(
                         session, direction,
-                        session.TrackColours.WithIndex((SPR_G2_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 127)),
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_GENTLE_LARGE_CURVE_BANKED + 127)),
                         { 0, 0, height }, { { 6, 0, height }, { 20, 32, 3 } });
                     MetalASupportsPaintSetup(
-                        session, supportType.metal, MetalSupportPlace::Centre, 9, height, session.SupportColours);
+                        session, supportType.metal, MetalSupportPlace::centre, 9, height, session.SupportColours);
                     break;
             }
             if (direction == 0 || direction == 1)
@@ -18346,7 +18105,7 @@ static void LatticeTriangleTrackRightEighthBankToOrthogonalUp25(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::bottomRightSide), direction),
+                    EnumsToFlags(PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight), direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + 72);
             break;
@@ -18403,11 +18162,11 @@ static void LatticeTriangleTrackDiagBrakes(
     const TrackElement& trackElement, SupportType supportType)
 {
     TrackPaintUtilDiagTilesPaint(
-        session, 3, height, direction, trackSequence, LatticeTriangleBrakeImages[trackElement.IsBrakeClosed()][0],
+        session, 3, height, direction, trackSequence, kLatticeTriangleDiagBrakeImages[trackElement.IsBrakeClosed()][0],
         defaultDiagTileOffsets, defaultDiagBoundLengths, nullptr);
 
     TrackPaintUtilDiagTilesPaint(
-        session, 3, height, direction, trackSequence, LatticeTriangleBrakeImages[trackElement.IsBrakeClosed()][1],
+        session, 3, height, direction, trackSequence, kLatticeTriangleDiagBrakeImages[trackElement.IsBrakeClosed()][1],
         defaultDiagTileOffsets, defaultDiagBoundLengths, diagBrakeBoundsOffsets);
 
     if (trackSequence == 3)
@@ -18416,499 +18175,1939 @@ static void LatticeTriangleTrackDiagBrakes(
             session, supportType.metal, kDiagSupportPlacement[direction], 0, height, session.SupportColours);
     }
 
-    PaintUtilSetSegmentSupportHeight(session, kSegmentsAll, 0xFFFF, 0);
+    PaintUtilSetSegmentSupportHeight(
+        session, PaintUtilRotateSegments(BlockedSegments::kDiagStraightFlat[trackSequence], direction), 0xFFFF, 0);
     PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
 }
 
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionLatticeTriangleTrack(int32_t trackType)
+static void LatticeTriangleTrackDiagBooster(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    constexpr ImageIndex images[kNumOrthogonalDirections] = { SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BOOSTER_1,
+                                                              SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BOOSTER_2,
+                                                              SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BOOSTER_1,
+                                                              SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIAG_BOOSTER_2 };
+
+    TrackPaintUtilDiagTilesPaintExtra(session, 3, height, direction, trackSequence, images, supportType.metal);
+}
+
+static void LatticeTriangleTrackDiagFlatTo60DegUpLongBase(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    switch (trackSequence)
+    {
+        case 0:
+            switch (direction)
+            {
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 9)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 32);
+            break;
+        case 1:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 0)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 48);
+            break;
+        case 2:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 6)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 48);
+            break;
+        case 3:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 3)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 10)),
+                        { -16, -16, height }, { { -20, -20, height + 8 }, { 24, 24, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 64);
+            break;
+        case 4:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 1)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 72);
+            break;
+        case 5:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 7)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 72);
+            break;
+        case 6:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 11, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 4)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 11, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 11, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 11)),
+                        { -16, -16, height }, { { -16, -16, height + 32 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 11, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 96);
+            break;
+        case 7:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 2)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 120);
+            break;
+        case 8:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 8)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 120);
+            break;
+        case 9:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 19, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 5)),
+                        { -16, -16, height }, { { -16, -16, height + 80 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 19, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 19, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 19, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 136);
+            break;
+    }
+}
+
+static void LatticeTriangleTrackDiag60DegUpToFlatLongBase(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    switch (trackSequence)
+    {
+        case 0:
+            switch (direction)
+            {
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 21)),
+                        { -16, -16, height }, { { -8, -8, height + 0 }, { 16, 16, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 96);
+            break;
+        case 1:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 12)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 104);
+            break;
+        case 2:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 18)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 104);
+            break;
+        case 3:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 28, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 15)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 28, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 28, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 22)),
+                        { -16, -16, height }, { { -8, -8, height + 56 }, { 16, 16, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 28, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 112);
+            break;
+        case 4:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 13)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 64);
+            break;
+        case 5:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 19)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 64);
+            break;
+        case 6:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 10, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 16)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 10, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 10, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 23)),
+                        { -16, -16, height }, { { -16, -16, height + 24 }, { 24, 24, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 10, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 40);
+            break;
+        case 7:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 14)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 40);
+            break;
+        case 8:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 20)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 40);
+            break;
+        case 9:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 3, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 17)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 3, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 3, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 3, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 40);
+            break;
+    }
+}
+
+static void LatticeTriangleTrackDiagFlatTo60DegDownLongBase(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    switch (trackSequence)
+    {
+        case 0:
+            switch (direction)
+            {
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 17)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 40);
+            break;
+        case 1:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 20)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 40);
+            break;
+        case 2:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 14)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 40);
+            break;
+        case 3:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 24, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 23)),
+                        { -16, -16, height }, { { -16, -16, height + 24 }, { 24, 24, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 24, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 24, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 16)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 24, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 40);
+            break;
+        case 4:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 19)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 64);
+            break;
+        case 5:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 13)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 64);
+            break;
+        case 6:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 58, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 22)),
+                        { -16, -16, height }, { { -8, -8, height + 56 }, { 16, 16, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 58, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 58, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 15)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 58, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 112);
+            break;
+        case 7:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 18)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 104);
+            break;
+        case 8:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 12)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 104);
+            break;
+        case 9:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 14, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 21)),
+                        { -16, -16, height }, { { -8, -8, height + 0 }, { 16, 16, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 14, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 14, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 14, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 96);
+            break;
+    }
+}
+
+static void LatticeTriangleTrackDiag60DegDownToFlatLongBase(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    switch (trackSequence)
+    {
+        case 0:
+            switch (direction)
+            {
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 5)),
+                        { -16, -16, height }, { { -16, -16, height + 80 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 136);
+            break;
+        case 1:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 8)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 120);
+            break;
+        case 2:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 2)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 120);
+            break;
+        case 3:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 38, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 11)),
+                        { -16, -16, height }, { { -16, -16, height + 32 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 38, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 38, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 4)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 38, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 96);
+            break;
+        case 4:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 7)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 72);
+            break;
+        case 5:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 1)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 72);
+            break;
+        case 6:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 12, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 10)),
+                        { -16, -16, height }, { { -8, -8, height + 8 }, { 24, 24, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 12, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 12, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 3)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 12, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 64);
+            break;
+        case 7:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 6)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 48);
+            break;
+        case 8:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 0)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 48);
+            break;
+        case 9:
+            switch (direction)
+            {
+                case 0:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height + 0, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction,
+                        session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_FLAT_TO_STEEP_DIAGONAL + 9)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height + 0, session.SupportColours);
+                    break;
+                case 2:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height + 0, session.SupportColours);
+                    break;
+                case 3:
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height + 0, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 32);
+            break;
+    }
+}
+
+static void LatticeTriangleTrackLeftEighthDiveLoopUpToOrthogonal(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    switch (trackSequence)
+    {
+        case 0:
+            switch (direction)
+            {
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 4)),
+                        { -16, -16, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 12)),
+                        { -16, -16, height }, { { 0, 0, height + -8 }, { 32, 32, 1 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 96);
+            break;
+        case 1:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 0)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 120);
+            break;
+        case 2:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 8)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 120);
+            break;
+        case 3:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 1)),
+                        { -16, -16, height }, { { 0, 31, height + 0 }, { 32, 1, 64 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height + 4, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 5)),
+                        { -16, -16, height }, { { 0, 31, height + 0 }, { 32, 1, 64 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height + 4, session.SupportColours);
+                    break;
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 9)),
+                        { -16, -16, height }, { { 2, 2, height + 4 }, { 28, 28, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height + 4, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 13)),
+                        { -16, -16, height }, { { 2, 2, height + 12 }, { 28, 28, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height + 4, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::top, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 112);
+            break;
+        case 4:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 2)),
+                        { -16, -16, height }, { { 0, 31, height + 0 }, { 32, 1, 64 } });
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 6)),
+                        { -16, -16, height }, { { 0, 31, height + 0 }, { 32, 1, 64 } });
+                    break;
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 10)),
+                        { -16, -16, height }, { { 0, 0, height + 0 }, { 32, 1, 64 } });
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 14)),
+                        { -16, -16, height }, { { 0, 6, height + 58 }, { 32, 20, 1 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::top, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 80);
+            break;
+        case 5:
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::top, PaintSegment::bottomLeft,
+                        PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 3)),
+                        { -16, -16, height }, { { 0, 6, height + 36 }, { 32, 20, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 0, height + 44, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 7)),
+                        { -16, -16, height }, { { 0, 6, height + 36 }, { 32, 20, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 0, height + 44, session.SupportColours);
+                    PaintUtilPushTunnelRight(session, height + 8, kTunnelGroup, TunnelSubType::Tall);
+                    break;
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 11)),
+                        { -16, -16, height }, { { 0, 6, height + 36 }, { 32, 20, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 0, height + 44, session.SupportColours);
+                    PaintUtilPushTunnelLeft(session, height + 8, kTunnelGroup, TunnelSubType::Tall);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 15)),
+                        { -16, -16, height }, { { 0, 6, height + 36 }, { 32, 20, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 0, height + 44, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetGeneralSupportHeight(session, height + 56);
+            break;
+    }
+}
+
+static void LatticeTriangleTrackRightEighthDiveLoopUpToOrthogonal(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    switch (trackSequence)
+    {
+        case 0:
+            switch (direction)
+            {
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 20)),
+                        { -16, -16, height }, { { 0, 0, height + 48 }, { 32, 32, 1 } });
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 28)),
+                        { -16, -16, height }, { { 0, 0, height + -8 }, { 32, 32, 1 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight, PaintSegment::right),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 96);
+            break;
+        case 1:
+            switch (direction)
+            {
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 24)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::bottomLeft, PaintSegment::centre, PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 120);
+            break;
+        case 2:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 16)),
+                        { -16, -16, height }, { { -16, -16, height + 0 }, { 32, 32, 3 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(PaintSegment::topLeft, PaintSegment::top, PaintSegment::centre, PaintSegment::topRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 120);
+            break;
+        case 3:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 17)),
+                        { -16, -16, height }, { { 2, 2, height + 4 }, { 28, 28, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::leftCorner, 0, height + 4, session.SupportColours);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 21)),
+                        { -16, -16, height }, { { 31, 0, height + 0 }, { 1, 32, 64 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topCorner, 0, height + 4, session.SupportColours);
+                    break;
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 25)),
+                        { -16, -16, height }, { { 31, 0, height + 0 }, { 1, 32, 64 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::rightCorner, 0, height + 4, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 29)),
+                        { -16, -16, height }, { { 2, 2, height + 12 }, { 28, 28, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomCorner, 0, height + 4, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 112);
+            break;
+        case 4:
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 18)),
+                        { -16, -16, height }, { { 0, 0, height + 0 }, { 1, 32, 64 } });
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 22)),
+                        { -16, -16, height }, { { 31, 0, height + 0 }, { 1, 32, 64 } });
+                    break;
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 26)),
+                        { -16, -16, height }, { { 31, 0, height + 0 }, { 1, 32, 64 } });
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 30)),
+                        { -16, -16, height }, { { 6, 0, height + 58 }, { 20, 32, 1 } });
+                    break;
+            }
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            PaintUtilSetGeneralSupportHeight(session, height + 80);
+            break;
+        case 5:
+            PaintUtilSetSegmentSupportHeight(
+                session,
+                PaintUtilRotateSegments(
+                    EnumsToFlags(
+                        PaintSegment::left, PaintSegment::topLeft, PaintSegment::bottomLeft, PaintSegment::centre,
+                        PaintSegment::bottom, PaintSegment::bottomRight),
+                    direction),
+                0xFFFF, 0);
+            switch (direction)
+            {
+                case 0:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 19)),
+                        { -16, -16, height }, { { 6, 0, height + 36 }, { 20, 32, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topLeftSide, 0, height + 44, session.SupportColours);
+                    PaintUtilPushTunnelRight(session, height + 8, kTunnelGroup, TunnelSubType::Tall);
+                    break;
+                case 1:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 23)),
+                        { -16, -16, height }, { { 6, 0, height + 36 }, { 20, 32, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::topRightSide, 0, height + 44, session.SupportColours);
+                    PaintUtilPushTunnelLeft(session, height + 8, kTunnelGroup, TunnelSubType::Tall);
+                    break;
+                case 2:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 27)),
+                        { -16, -16, height }, { { 6, 0, height + 36 }, { 20, 32, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomRightSide, 0, height + 44, session.SupportColours);
+                    break;
+                case 3:
+                    PaintAddImageAsParentRotated(
+                        session, direction, session.TrackColours.WithIndex((SPR_TRACKS_LATTICE_TRIANGLE_TRACK_DIVE_LOOP + 31)),
+                        { -16, -16, height }, { { 6, 0, height + 36 }, { 20, 32, 1 } });
+                    MetalASupportsPaintSetup(
+                        session, supportType.metal, MetalSupportPlace::bottomLeftSide, 0, height + 44, session.SupportColours);
+                    break;
+            }
+            PaintUtilSetGeneralSupportHeight(session, height + 56);
+            break;
+    }
+}
+
+static void LatticeTriangleTrackLeftEighthDiveLoopDownToDiag(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    LatticeTriangleTrackRightEighthDiveLoopUpToOrthogonal(
+        session, ride, 5 - trackSequence, (direction + 1) & 3, height, trackElement, supportType);
+}
+
+static void LatticeTriangleTrackRightEighthDiveLoopToDownOrthogonal(
+    PaintSession& session, const Ride& ride, uint8_t trackSequence, uint8_t direction, int32_t height,
+    const TrackElement& trackElement, SupportType supportType)
+{
+    LatticeTriangleTrackLeftEighthDiveLoopUpToOrthogonal(
+        session, ride, 5 - trackSequence, (direction + 2) & 3, height, trackElement, supportType);
+}
+
+TrackPaintFunction GetTrackPaintFunctionLatticeTriangleTrack(TrackElemType trackType)
 {
     switch (trackType)
     {
-        case TrackElemType::Flat:
+        case TrackElemType::flat:
             return LatticeTriangleTrackFlat;
-        case TrackElemType::EndStation:
-        case TrackElemType::BeginStation:
-        case TrackElemType::MiddleStation:
+        case TrackElemType::endStation:
+        case TrackElemType::beginStation:
+        case TrackElemType::middleStation:
             return LatticeTriangleTrackStation;
-        case TrackElemType::Up25:
+        case TrackElemType::up25:
             return LatticeTriangleTrack25DegUp;
-        case TrackElemType::Up60:
+        case TrackElemType::up60:
             return LatticeTriangleTrack60DegUp;
-        case TrackElemType::FlatToUp25:
+        case TrackElemType::flatToUp25:
             return LatticeTriangleTrackFlatTo25DegUp;
-        case TrackElemType::Up25ToUp60:
+        case TrackElemType::up25ToUp60:
             return LatticeTriangleTrack25DegUpTo60DegUp;
-        case TrackElemType::Up60ToUp25:
+        case TrackElemType::up60ToUp25:
             return LatticeTriangleTrack60DegUpTo25DegUp;
-        case TrackElemType::Up25ToFlat:
+        case TrackElemType::up25ToFlat:
             return LatticeTriangleTrack25DegUpToFlat;
-        case TrackElemType::Down25:
+        case TrackElemType::down25:
             return LatticeTriangleTrack25DegDown;
-        case TrackElemType::Down60:
+        case TrackElemType::down60:
             return LatticeTriangleTrack60DegDown;
-        case TrackElemType::FlatToDown25:
+        case TrackElemType::flatToDown25:
             return LatticeTriangleTrackFlatTo25DegDown;
-        case TrackElemType::Down25ToDown60:
+        case TrackElemType::down25ToDown60:
             return LatticeTriangleTrack25DegDownTo60DegDown;
-        case TrackElemType::Down60ToDown25:
+        case TrackElemType::down60ToDown25:
             return LatticeTriangleTrack60DegDownTo25DegDown;
-        case TrackElemType::Down25ToFlat:
+        case TrackElemType::down25ToFlat:
             return LatticeTriangleTrack25DegDownToFlat;
-        case TrackElemType::LeftQuarterTurn5Tiles:
+        case TrackElemType::leftQuarterTurn5Tiles:
             return LatticeTriangleTrackLeftQuarterTurn5;
-        case TrackElemType::RightQuarterTurn5Tiles:
+        case TrackElemType::rightQuarterTurn5Tiles:
             return LatticeTriangleTrackRightQuarterTurn5;
-        case TrackElemType::FlatToLeftBank:
+        case TrackElemType::flatToLeftBank:
             return LatticeTriangleTrackFlatToLeftBank;
-        case TrackElemType::FlatToRightBank:
+        case TrackElemType::flatToRightBank:
             return LatticeTriangleTrackFlatToRightBank;
-        case TrackElemType::LeftBankToFlat:
+        case TrackElemType::leftBankToFlat:
             return LatticeTriangleTrackLeftBankToFlat;
-        case TrackElemType::RightBankToFlat:
+        case TrackElemType::rightBankToFlat:
             return LatticeTriangleTrackRightBankToFlat;
-        case TrackElemType::BankedLeftQuarterTurn5Tiles:
+        case TrackElemType::bankedLeftQuarterTurn5Tiles:
             return LatticeTriangleTrackBankedLeftQuarterTurn5;
-        case TrackElemType::BankedRightQuarterTurn5Tiles:
+        case TrackElemType::bankedRightQuarterTurn5Tiles:
             return LatticeTriangleTrackBankedRightQuarterTurn5;
-        case TrackElemType::LeftBankToUp25:
+        case TrackElemType::leftBankToUp25:
             return LatticeTriangleTrackLeftBankTo25DegUp;
-        case TrackElemType::RightBankToUp25:
+        case TrackElemType::rightBankToUp25:
             return LatticeTriangleTrackRightBankTo25DegUp;
-        case TrackElemType::Up25ToLeftBank:
+        case TrackElemType::up25ToLeftBank:
             return LatticeTriangleTrack25DegUpToLeftBank;
-        case TrackElemType::Up25ToRightBank:
+        case TrackElemType::up25ToRightBank:
             return LatticeTriangleTrack25DegUpToRightBank;
-        case TrackElemType::LeftBankToDown25:
+        case TrackElemType::leftBankToDown25:
             return LatticeTriangleTrackLeftBankTo25DegDown;
-        case TrackElemType::RightBankToDown25:
+        case TrackElemType::rightBankToDown25:
             return LatticeTriangleTrackRightBankTo25DegDown;
-        case TrackElemType::Down25ToLeftBank:
+        case TrackElemType::down25ToLeftBank:
             return LatticeTriangleTrack25DegDownToLeftBank;
-        case TrackElemType::Down25ToRightBank:
+        case TrackElemType::down25ToRightBank:
             return LatticeTriangleTrack25DegDownToRightBank;
-        case TrackElemType::LeftBank:
+        case TrackElemType::leftBank:
             return LatticeTriangleTrackLeftBank;
-        case TrackElemType::RightBank:
+        case TrackElemType::rightBank:
             return LatticeTriangleTrackRightBank;
-        case TrackElemType::LeftQuarterTurn5TilesUp25:
+        case TrackElemType::leftQuarterTurn5TilesUp25:
             return LatticeTriangleTrackLeftQuarterTurn525DegUp;
-        case TrackElemType::RightQuarterTurn5TilesUp25:
+        case TrackElemType::rightQuarterTurn5TilesUp25:
             return LatticeTriangleTrackRightQuarterTurn525DegUp;
-        case TrackElemType::LeftQuarterTurn5TilesDown25:
+        case TrackElemType::leftQuarterTurn5TilesDown25:
             return LatticeTriangleTrackLeftQuarterTurn525DegDown;
-        case TrackElemType::RightQuarterTurn5TilesDown25:
+        case TrackElemType::rightQuarterTurn5TilesDown25:
             return LatticeTriangleTrackRightQuarterTurn525DegDown;
-        case TrackElemType::SBendLeft:
+        case TrackElemType::sBendLeft:
             return LatticeTriangleTrackSBendLeft;
-        case TrackElemType::SBendRight:
+        case TrackElemType::sBendRight:
             return LatticeTriangleTrackSBendRight;
-        case TrackElemType::LeftQuarterTurn3Tiles:
+        case TrackElemType::leftQuarterTurn3Tiles:
             return LatticeTriangleTrackLeftQuarterTurn3;
-        case TrackElemType::RightQuarterTurn3Tiles:
+        case TrackElemType::rightQuarterTurn3Tiles:
             return LatticeTriangleTrackRightQuarterTurn3;
-        case TrackElemType::LeftBankedQuarterTurn3Tiles:
+        case TrackElemType::leftBankedQuarterTurn3Tiles:
             return LatticeTriangleTrackLeftQuarterTurn3Bank;
-        case TrackElemType::RightBankedQuarterTurn3Tiles:
+        case TrackElemType::rightBankedQuarterTurn3Tiles:
             return LatticeTriangleTrackRightQuarterTurn3Bank;
-        case TrackElemType::LeftQuarterTurn3TilesUp25:
+        case TrackElemType::leftQuarterTurn3TilesUp25:
             return LatticeTriangleTrackLeftQuarterTurn325DegUp;
-        case TrackElemType::RightQuarterTurn3TilesUp25:
+        case TrackElemType::rightQuarterTurn3TilesUp25:
             return LatticeTriangleTrackRightQuarterTurn325DegUp;
-        case TrackElemType::LeftQuarterTurn3TilesDown25:
+        case TrackElemType::leftQuarterTurn3TilesDown25:
             return LatticeTriangleTrackLeftQuarterTurn325DegDown;
-        case TrackElemType::RightQuarterTurn3TilesDown25:
+        case TrackElemType::rightQuarterTurn3TilesDown25:
             return LatticeTriangleTrackRightQuarterTurn325DegDown;
-        case TrackElemType::LeftHalfBankedHelixUpSmall:
+        case TrackElemType::leftHalfBankedHelixUpSmall:
             return LatticeTriangleTrackLeftHalfBankedHelixUpSmall;
-        case TrackElemType::RightHalfBankedHelixUpSmall:
+        case TrackElemType::rightHalfBankedHelixUpSmall:
             return LatticeTriangleTrackRightHalfBankedHelixUpSmall;
-        case TrackElemType::LeftHalfBankedHelixDownSmall:
+        case TrackElemType::leftHalfBankedHelixDownSmall:
             return LatticeTriangleTrackLeftHalfBankedHelixDownSmall;
-        case TrackElemType::RightHalfBankedHelixDownSmall:
+        case TrackElemType::rightHalfBankedHelixDownSmall:
             return LatticeTriangleTrackRightHalfBankedHelixDownSmall;
-        case TrackElemType::LeftHalfBankedHelixUpLarge:
+        case TrackElemType::leftHalfBankedHelixUpLarge:
             return LatticeTriangleTrackLeftHalfBankedHelixUpLarge;
-        case TrackElemType::RightHalfBankedHelixUpLarge:
+        case TrackElemType::rightHalfBankedHelixUpLarge:
             return LatticeTriangleTrackRightHalfBankedHelixUpLarge;
-        case TrackElemType::LeftHalfBankedHelixDownLarge:
+        case TrackElemType::leftHalfBankedHelixDownLarge:
             return LatticeTriangleTrackLeftHalfBankedHelixDownLarge;
-        case TrackElemType::RightHalfBankedHelixDownLarge:
+        case TrackElemType::rightHalfBankedHelixDownLarge:
             return LatticeTriangleTrackRightHalfBankedHelixDownLarge;
-        case TrackElemType::LeftQuarterTurn1TileUp60:
+        case TrackElemType::leftQuarterTurn1TileUp60:
             return LatticeTriangleTrackLeftQuarterTurn160DegUp;
-        case TrackElemType::RightQuarterTurn1TileUp60:
+        case TrackElemType::rightQuarterTurn1TileUp60:
             return LatticeTriangleTrackRightQuarterTurn160DegUp;
-        case TrackElemType::LeftQuarterTurn1TileDown60:
+        case TrackElemType::leftQuarterTurn1TileDown60:
             return LatticeTriangleTrackLeftQuarterTurn160DegDown;
-        case TrackElemType::RightQuarterTurn1TileDown60:
+        case TrackElemType::rightQuarterTurn1TileDown60:
             return LatticeTriangleTrackRightQuarterTurn160DegDown;
-        case TrackElemType::Brakes:
+        case TrackElemType::brakes:
             return LatticeTriangleTrackBrakes;
-        case TrackElemType::Up25LeftBanked:
+        case TrackElemType::up25LeftBanked:
             return LatticeTriangleTrack25DegUpLeftBanked;
-        case TrackElemType::Up25RightBanked:
+        case TrackElemType::up25RightBanked:
             return LatticeTriangleTrack25DegUpRightBanked;
-        case TrackElemType::OnRidePhoto:
+        case TrackElemType::onRidePhoto:
             return LatticeTriangleTrackOnRidePhoto;
-        case TrackElemType::Down25LeftBanked:
+        case TrackElemType::down25LeftBanked:
             return LatticeTriangleTrack25DegDownLeftBanked;
-        case TrackElemType::Down25RightBanked:
+        case TrackElemType::down25RightBanked:
             return LatticeTriangleTrack25DegDownRightBanked;
-        case TrackElemType::FlatToUp60LongBase:
+        case TrackElemType::flatToUp60LongBase:
             return LatticeTriangleTrackFlatTo60DegUpLongBase;
-        case TrackElemType::Up60ToFlatLongBase:
+        case TrackElemType::up60ToFlatLongBase:
             return LatticeTriangleTrack60DegUpToFlatLongBase;
-        case TrackElemType::Down60ToFlatLongBase:
+        case TrackElemType::down60ToFlatLongBase:
             return LatticeTriangleTrack60DegDownToFlatLongBase;
-        case TrackElemType::FlatToDown60LongBase:
+        case TrackElemType::flatToDown60LongBase:
             return LatticeTriangleTrackFlatTo60DegDownLongBase;
-        case TrackElemType::CableLiftHill:
+        case TrackElemType::cableLiftHill:
             return LatticeTriangleTrackCableLiftHill;
-        case TrackElemType::LeftEighthToDiag:
+        case TrackElemType::leftEighthToDiag:
             return LatticeTriangleTrackLeftEighthToDiag;
-        case TrackElemType::RightEighthToDiag:
+        case TrackElemType::rightEighthToDiag:
             return LatticeTriangleTrackRightEighthToDiag;
-        case TrackElemType::LeftEighthToOrthogonal:
+        case TrackElemType::leftEighthToOrthogonal:
             return LatticeTriangleTrackLeftEighthToOrthogonal;
-        case TrackElemType::RightEighthToOrthogonal:
+        case TrackElemType::rightEighthToOrthogonal:
             return LatticeTriangleTrackRightEighthToOrthogonal;
-        case TrackElemType::LeftEighthBankToDiag:
+        case TrackElemType::leftEighthBankToDiag:
             return LatticeTriangleTrackLeftEighthBankToDiag;
-        case TrackElemType::RightEighthBankToDiag:
+        case TrackElemType::rightEighthBankToDiag:
             return LatticeTriangleTrackRightEighthBankToDiag;
-        case TrackElemType::LeftEighthBankToOrthogonal:
+        case TrackElemType::leftEighthBankToOrthogonal:
             return LatticeTriangleTrackLeftEighthBankToOrthogonal;
-        case TrackElemType::RightEighthBankToOrthogonal:
+        case TrackElemType::rightEighthBankToOrthogonal:
             return LatticeTriangleTrackRightEighthBankToOrthogonal;
-        case TrackElemType::DiagFlat:
+        case TrackElemType::diagFlat:
             return LatticeTriangleTrackDiagFlat;
-        case TrackElemType::DiagUp25:
+        case TrackElemType::diagUp25:
             return LatticeTriangleTrackDiag25DegUp;
-        case TrackElemType::DiagUp60:
+        case TrackElemType::diagUp60:
             return LatticeTriangleTrackDiag60DegUp;
-        case TrackElemType::DiagFlatToUp25:
+        case TrackElemType::diagFlatToUp25:
             return LatticeTriangleTrackDiagFlatTo25DegUp;
-        case TrackElemType::DiagUp25ToUp60:
+        case TrackElemType::diagUp25ToUp60:
             return LatticeTriangleTrackDiag25DegUpTo60DegUp;
-        case TrackElemType::DiagUp60ToUp25:
+        case TrackElemType::diagUp60ToUp25:
             return LatticeTriangleTrackDiag60DegUpTo25DegUp;
-        case TrackElemType::DiagUp25ToFlat:
+        case TrackElemType::diagUp25ToFlat:
             return LatticeTriangleTrackDiag25DegUpToFlat;
-        case TrackElemType::DiagDown25:
+        case TrackElemType::diagDown25:
             return LatticeTriangleTrackDiag25DegDown;
-        case TrackElemType::DiagDown60:
+        case TrackElemType::diagDown60:
             return LatticeTriangleTrackDiag60DegDown;
-        case TrackElemType::DiagFlatToDown25:
+        case TrackElemType::diagFlatToDown25:
             return LatticeTriangleTrackDiagFlatTo25DegDown;
-        case TrackElemType::DiagDown25ToDown60:
+        case TrackElemType::diagDown25ToDown60:
             return LatticeTriangleTrackDiag25DegDownTo60DegDown;
-        case TrackElemType::DiagDown60ToDown25:
+        case TrackElemType::diagDown60ToDown25:
             return LatticeTriangleTrackDiag60DegDownTo25DegDown;
-        case TrackElemType::DiagDown25ToFlat:
+        case TrackElemType::diagDown25ToFlat:
             return LatticeTriangleTrackDiag25DegDownToFlat;
-        case TrackElemType::DiagFlatToLeftBank:
+        case TrackElemType::diagFlatToLeftBank:
             return LatticeTriangleTrackDiagFlatToLeftBank;
-        case TrackElemType::DiagFlatToRightBank:
+        case TrackElemType::diagFlatToRightBank:
             return LatticeTriangleTrackDiagFlatToRightBank;
-        case TrackElemType::DiagLeftBankToFlat:
+        case TrackElemType::diagLeftBankToFlat:
             return LatticeTriangleTrackDiagLeftBankToFlat;
-        case TrackElemType::DiagRightBankToFlat:
+        case TrackElemType::diagRightBankToFlat:
             return LatticeTriangleTrackDiagRightBankToFlat;
-        case TrackElemType::DiagLeftBankToUp25:
+        case TrackElemType::diagLeftBankToUp25:
             return LatticeTriangleTrackDiagLeftBankTo25DegUp;
-        case TrackElemType::DiagRightBankToUp25:
+        case TrackElemType::diagRightBankToUp25:
             return LatticeTriangleTrackDiagRightBankTo25DegUp;
-        case TrackElemType::DiagUp25ToLeftBank:
+        case TrackElemType::diagUp25ToLeftBank:
             return LatticeTriangleTrackDiag25DegUpToLeftBank;
-        case TrackElemType::DiagUp25ToRightBank:
+        case TrackElemType::diagUp25ToRightBank:
             return LatticeTriangleTrackDiag25DegUpToRightBank;
-        case TrackElemType::DiagLeftBankToDown25:
+        case TrackElemType::diagLeftBankToDown25:
             return LatticeTriangleTrackDiagLeftBankTo25DegDown;
-        case TrackElemType::DiagRightBankToDown25:
+        case TrackElemType::diagRightBankToDown25:
             return LatticeTriangleTrackDiagRightBankTo25DegDown;
-        case TrackElemType::DiagDown25ToLeftBank:
+        case TrackElemType::diagDown25ToLeftBank:
             return LatticeTriangleTrackDiag25DegDownToLeftBank;
-        case TrackElemType::DiagDown25ToRightBank:
+        case TrackElemType::diagDown25ToRightBank:
             return LatticeTriangleTrackDiag25DegDownToRightBank;
-        case TrackElemType::DiagLeftBank:
+        case TrackElemType::diagLeftBank:
             return LatticeTriangleTrackDiagLeftBank;
-        case TrackElemType::DiagRightBank:
+        case TrackElemType::diagRightBank:
             return LatticeTriangleTrackDiagRightBank;
-        case TrackElemType::BlockBrakes:
+        case TrackElemType::blockBrakes:
             return LatticeTriangleTrackBlockBrakes;
-        case TrackElemType::LeftBankedQuarterTurn3TileUp25:
+        case TrackElemType::leftBankedQuarterTurn3TileUp25:
             return LatticeTriangleTrackLeftBankedQuarterTurn325DegUp;
-        case TrackElemType::RightBankedQuarterTurn3TileUp25:
+        case TrackElemType::rightBankedQuarterTurn3TileUp25:
             return LatticeTriangleTrackRightBankedQuarterTurn325DegUp;
-        case TrackElemType::LeftBankedQuarterTurn3TileDown25:
+        case TrackElemType::leftBankedQuarterTurn3TileDown25:
             return LatticeTriangleTrackLeftBankedQuarterTurn325DegDown;
-        case TrackElemType::RightBankedQuarterTurn3TileDown25:
+        case TrackElemType::rightBankedQuarterTurn3TileDown25:
             return LatticeTriangleTrackRightBankedQuarterTurn325DegDown;
-        case TrackElemType::LeftBankedQuarterTurn5TileUp25:
+        case TrackElemType::leftBankedQuarterTurn5TileUp25:
             return LatticeTriangleTrackLeftBankedQuarterTurn525DegUp;
-        case TrackElemType::RightBankedQuarterTurn5TileUp25:
+        case TrackElemType::rightBankedQuarterTurn5TileUp25:
             return LatticeTriangleTrackRightBankedQuarterTurn525DegUp;
-        case TrackElemType::LeftBankedQuarterTurn5TileDown25:
+        case TrackElemType::leftBankedQuarterTurn5TileDown25:
             return LatticeTriangleTrackLeftBankedQuarterTurn525DegDown;
-        case TrackElemType::RightBankedQuarterTurn5TileDown25:
+        case TrackElemType::rightBankedQuarterTurn5TileDown25:
             return LatticeTriangleTrackRightBankedQuarterTurn525DegDown;
-        case TrackElemType::Up25ToLeftBankedUp25:
+        case TrackElemType::up25ToLeftBankedUp25:
             return LatticeTriangleTrack25DegUpToLeftBanked25DegUp;
-        case TrackElemType::Up25ToRightBankedUp25:
+        case TrackElemType::up25ToRightBankedUp25:
             return LatticeTriangleTrack25DegUpToRightBanked25DegUp;
-        case TrackElemType::LeftBankedUp25ToUp25:
+        case TrackElemType::leftBankedUp25ToUp25:
             return LatticeTriangleTrackLeftBanked25DegUpTo25DegUp;
-        case TrackElemType::RightBankedUp25ToUp25:
+        case TrackElemType::rightBankedUp25ToUp25:
             return LatticeTriangleTrackRightBanked25DegUpTo25DegUp;
-        case TrackElemType::Down25ToLeftBankedDown25:
+        case TrackElemType::down25ToLeftBankedDown25:
             return LatticeTriangleTrack25DegDownToLeftBanked25DegDown;
-        case TrackElemType::Down25ToRightBankedDown25:
+        case TrackElemType::down25ToRightBankedDown25:
             return LatticeTriangleTrack25DegDownToRightBanked25DegDown;
-        case TrackElemType::LeftBankedDown25ToDown25:
+        case TrackElemType::leftBankedDown25ToDown25:
             return LatticeTriangleTrackLeftBanked25DegDownTo25DegDown;
-        case TrackElemType::RightBankedDown25ToDown25:
+        case TrackElemType::rightBankedDown25ToDown25:
             return LatticeTriangleTrackRightBanked25DegDownTo25DegDown;
-        case TrackElemType::LeftBankedFlatToLeftBankedUp25:
+        case TrackElemType::leftBankedFlatToLeftBankedUp25:
             return LatticeTriangleTrackLeftBankedFlatToLeftBanked25DegUp;
-        case TrackElemType::RightBankedFlatToRightBankedUp25:
+        case TrackElemType::rightBankedFlatToRightBankedUp25:
             return LatticeTriangleTrackRightBankedFlatToRightBanked25DegUp;
-        case TrackElemType::LeftBankedUp25ToLeftBankedFlat:
+        case TrackElemType::leftBankedUp25ToLeftBankedFlat:
             return LatticeTriangleTrackLeftBanked25DegUpToLeftBankedFlat;
-        case TrackElemType::RightBankedUp25ToRightBankedFlat:
+        case TrackElemType::rightBankedUp25ToRightBankedFlat:
             return LatticeTriangleTrackRightBanked25DegUpToRightBankedFlat;
-        case TrackElemType::LeftBankedFlatToLeftBankedDown25:
+        case TrackElemType::leftBankedFlatToLeftBankedDown25:
             return LatticeTriangleTrackLeftBankedFlatToLeftBanked25DegDown;
-        case TrackElemType::RightBankedFlatToRightBankedDown25:
+        case TrackElemType::rightBankedFlatToRightBankedDown25:
             return LatticeTriangleTrackRightBankedFlatToRightBanked25DegDown;
-        case TrackElemType::LeftBankedDown25ToLeftBankedFlat:
+        case TrackElemType::leftBankedDown25ToLeftBankedFlat:
             return LatticeTriangleTrackLeftBanked25DegDownToLeftBankedFlat;
-        case TrackElemType::RightBankedDown25ToRightBankedFlat:
+        case TrackElemType::rightBankedDown25ToRightBankedFlat:
             return LatticeTriangleTrackRightBanked25DegDownToRightBankedFlat;
-        case TrackElemType::FlatToLeftBankedUp25:
+        case TrackElemType::flatToLeftBankedUp25:
             return LatticeTriangleTrackFlatToLeftBanked25DegUp;
-        case TrackElemType::FlatToRightBankedUp25:
+        case TrackElemType::flatToRightBankedUp25:
             return LatticeTriangleTrackFlatToRightBanked25DegUp;
-        case TrackElemType::LeftBankedUp25ToFlat:
+        case TrackElemType::leftBankedUp25ToFlat:
             return LatticeTriangleTrackLeftBanked25DegUpToFlat;
-        case TrackElemType::RightBankedUp25ToFlat:
+        case TrackElemType::rightBankedUp25ToFlat:
             return LatticeTriangleTrackRightBanked25DegUpToFlat;
-        case TrackElemType::FlatToLeftBankedDown25:
+        case TrackElemType::flatToLeftBankedDown25:
             return LatticeTriangleTrackFlatToLeftBanked25DegDown;
-        case TrackElemType::FlatToRightBankedDown25:
+        case TrackElemType::flatToRightBankedDown25:
             return LatticeTriangleTrackFlatToRightBanked25DegDown;
-        case TrackElemType::LeftBankedDown25ToFlat:
+        case TrackElemType::leftBankedDown25ToFlat:
             return LatticeTriangleTrackLeftBanked25DegDownToFlat;
-        case TrackElemType::RightBankedDown25ToFlat:
+        case TrackElemType::rightBankedDown25ToFlat:
             return LatticeTriangleTrackRightBanked25DegDownToFlat;
-        case TrackElemType::Booster:
+        case TrackElemType::booster:
             return LatticeTriangleTrackBooster;
-        case TrackElemType::PoweredLift:
+        case TrackElemType::poweredLift:
             return LatticeTriangleTrackPoweredLift;
 
-        case TrackElemType::Up90:
+        case TrackElemType::up90:
             return LatticeTriangleTrack90DegUp;
-        case TrackElemType::Down90:
+        case TrackElemType::down90:
             return LatticeTriangleTrack90DegDown;
-        case TrackElemType::Up60ToUp90:
+        case TrackElemType::up60ToUp90:
             return LatticeTriangleTrack60DegUpTo90DegUp;
-        case TrackElemType::Down90ToDown60:
+        case TrackElemType::down90ToDown60:
             return LatticeTriangleTrack90DegDownTo60DegDown;
-        case TrackElemType::Up90ToUp60:
+        case TrackElemType::up90ToUp60:
             return LatticeTriangleTrack90DegUpTo60DegUp;
-        case TrackElemType::Down60ToDown90:
+        case TrackElemType::down60ToDown90:
             return LatticeTriangleTrack60DegDownTo90DegDown;
-        case TrackElemType::LeftQuarterTurn1TileUp90:
+        case TrackElemType::leftQuarterTurn1TileUp90:
             return LatticeTriangleTrackLeftQuarterTurn190DegUp;
-        case TrackElemType::RightQuarterTurn1TileUp90:
+        case TrackElemType::rightQuarterTurn1TileUp90:
             return LatticeTriangleTrackRightQuarterTurn190DegUp;
-        case TrackElemType::LeftQuarterTurn1TileDown90:
+        case TrackElemType::leftQuarterTurn1TileDown90:
             return LatticeTriangleTrackLeftQuarterTurn190DegDown;
-        case TrackElemType::RightQuarterTurn1TileDown90:
+        case TrackElemType::rightQuarterTurn1TileDown90:
             return LatticeTriangleTrackRightQuarterTurn190DegDown;
-        case TrackElemType::LeftBarrelRollUpToDown:
+        case TrackElemType::leftBarrelRollUpToDown:
             return LatticeTriangleTrackLeftBarrelRollUpToDown;
-        case TrackElemType::RightBarrelRollUpToDown:
+        case TrackElemType::rightBarrelRollUpToDown:
             return LatticeTriangleTrackRightBarrelRollUpToDown;
-        case TrackElemType::LeftBarrelRollDownToUp:
+        case TrackElemType::leftBarrelRollDownToUp:
             return LatticeTriangleTrackLeftBarrelRollDownToUp;
-        case TrackElemType::RightBarrelRollDownToUp:
+        case TrackElemType::rightBarrelRollDownToUp:
             return LatticeTriangleTrackRightBarrelRollDownToUp;
-        case TrackElemType::HalfLoopUp:
+        case TrackElemType::halfLoopUp:
             return LatticeTriangleTrackHalfLoopUp;
-        case TrackElemType::HalfLoopDown:
+        case TrackElemType::halfLoopDown:
             return LatticeTriangleTrackHalfLoopDown;
-        case TrackElemType::LeftVerticalLoop:
+        case TrackElemType::leftVerticalLoop:
             return LatticeTriangleTrackLeftVerticalLoop;
-        case TrackElemType::RightVerticalLoop:
+        case TrackElemType::rightVerticalLoop:
             return LatticeTriangleTrackRightVerticalLoop;
-        case TrackElemType::LeftCorkscrewUp:
+        case TrackElemType::leftCorkscrewUp:
             return LatticeTriangleTrackLeftCorkscrewUp;
-        case TrackElemType::RightCorkscrewUp:
+        case TrackElemType::rightCorkscrewUp:
             return LatticeTriangleTrackRightCorkscrewUp;
-        case TrackElemType::LeftCorkscrewDown:
+        case TrackElemType::leftCorkscrewDown:
             return LatticeTriangleTrackLeftCorkscrewDown;
-        case TrackElemType::RightCorkscrewDown:
+        case TrackElemType::rightCorkscrewDown:
             return LatticeTriangleTrackRightCorkscrewDown;
 
-        case TrackElemType::LeftLargeCorkscrewUp:
+        case TrackElemType::leftLargeCorkscrewUp:
             return LatticeTriangleTrackLeftLargeCorkscrewUp;
-        case TrackElemType::RightLargeCorkscrewUp:
+        case TrackElemType::rightLargeCorkscrewUp:
             return LatticeTriangleTrackRightLargeCorkscrewUp;
-        case TrackElemType::LeftLargeCorkscrewDown:
+        case TrackElemType::leftLargeCorkscrewDown:
             return LatticeTriangleTrackLeftLargeCorkscrewDown;
-        case TrackElemType::RightLargeCorkscrewDown:
+        case TrackElemType::rightLargeCorkscrewDown:
             return LatticeTriangleTrackRightLargeCorkscrewDown;
-        case TrackElemType::LeftZeroGRollUp:
+        case TrackElemType::leftZeroGRollUp:
             return LatticeTriangleTrackLeftZeroGRollUp;
-        case TrackElemType::RightZeroGRollUp:
+        case TrackElemType::rightZeroGRollUp:
             return LatticeTriangleTrackRightZeroGRollUp;
-        case TrackElemType::LeftZeroGRollDown:
+        case TrackElemType::leftZeroGRollDown:
             return LatticeTriangleTrackLeftZeroGRollDown;
-        case TrackElemType::RightZeroGRollDown:
+        case TrackElemType::rightZeroGRollDown:
             return LatticeTriangleTrackRightZeroGRollDown;
-        case TrackElemType::LeftLargeZeroGRollUp:
+        case TrackElemType::leftLargeZeroGRollUp:
             return LatticeTriangleTrackLeftLargeZeroGRollUp;
-        case TrackElemType::RightLargeZeroGRollUp:
+        case TrackElemType::rightLargeZeroGRollUp:
             return LatticeTriangleTrackRightLargeZeroGRollUp;
-        case TrackElemType::LeftLargeZeroGRollDown:
+        case TrackElemType::leftLargeZeroGRollDown:
             return LatticeTriangleTrackLeftLargeZeroGRollDown;
-        case TrackElemType::RightLargeZeroGRollDown:
+        case TrackElemType::rightLargeZeroGRollDown:
             return LatticeTriangleTrackRightLargeZeroGRollDown;
-        case TrackElemType::Up90ToInvertedFlatQuarterLoop:
+
+        case TrackElemType::leftEighthDiveLoopUpToOrthogonal:
+            return LatticeTriangleTrackLeftEighthDiveLoopUpToOrthogonal;
+        case TrackElemType::rightEighthDiveLoopUpToOrthogonal:
+            return LatticeTriangleTrackRightEighthDiveLoopUpToOrthogonal;
+        case TrackElemType::leftEighthDiveLoopDownToDiag:
+            return LatticeTriangleTrackLeftEighthDiveLoopDownToDiag;
+        case TrackElemType::rightEighthDiveLoopDownToDiag:
+            return LatticeTriangleTrackRightEighthDiveLoopToDownOrthogonal;
+
+        case TrackElemType::up90ToInvertedFlatQuarterLoop:
             return LatticeTriangleTrack90DegToInvertedFlatQuarterLoopUp;
-        case TrackElemType::InvertedFlatToDown90QuarterLoop:
+        case TrackElemType::invertedFlatToDown90QuarterLoop:
             return LatticeTriangleTrackInvertedFlatTo90DegQuarterLoopDown;
-        case TrackElemType::LeftBankToLeftQuarterTurn3TilesUp25:
+        case TrackElemType::leftBankToLeftQuarterTurn3TilesUp25:
             return LatticeTriangleTrackLeftBankToLeftQuarterTurn3Tile25DegUp;
-        case TrackElemType::RightBankToRightQuarterTurn3TilesUp25:
+        case TrackElemType::rightBankToRightQuarterTurn3TilesUp25:
             return LatticeTriangleTrackRightBankToRightQuarterTurn3Tile25DegUp;
-        case TrackElemType::LeftQuarterTurn3TilesDown25ToLeftBank:
+        case TrackElemType::leftQuarterTurn3TilesDown25ToLeftBank:
             return LatticeTriangleTrackLeftQuarterTurn3Tile25DegDownToLeftBank;
-        case TrackElemType::RightQuarterTurn3TilesDown25ToRightBank:
+        case TrackElemType::rightQuarterTurn3TilesDown25ToRightBank:
             return LatticeTriangleTrackRightQuarterTurn3Tile25DegDownToRightBank;
-        case TrackElemType::LeftMediumHalfLoopUp:
+        case TrackElemType::leftMediumHalfLoopUp:
             return LatticeTriangleTrackLeftMediumHalfLoopUp;
-        case TrackElemType::RightMediumHalfLoopUp:
+        case TrackElemType::rightMediumHalfLoopUp:
             return LatticeTriangleTrackRightMediumHalfLoopUp;
-        case TrackElemType::LeftMediumHalfLoopDown:
+        case TrackElemType::leftMediumHalfLoopDown:
             return LatticeTriangleTrackLeftMediumHalfLoopDown;
-        case TrackElemType::RightMediumHalfLoopDown:
+        case TrackElemType::rightMediumHalfLoopDown:
             return LatticeTriangleTrackRightMediumHalfLoopDown;
-        case TrackElemType::LeftLargeHalfLoopUp:
+        case TrackElemType::leftLargeHalfLoopUp:
             return LatticeTriangleTrackLeftLargeHalfLoopUp;
-        case TrackElemType::RightLargeHalfLoopUp:
+        case TrackElemType::rightLargeHalfLoopUp:
             return LatticeTriangleTrackRightLargeHalfLoopUp;
-        case TrackElemType::RightLargeHalfLoopDown:
+        case TrackElemType::rightLargeHalfLoopDown:
             return LatticeTriangleTrackRightLargeHalfLoopDown;
-        case TrackElemType::LeftLargeHalfLoopDown:
+        case TrackElemType::leftLargeHalfLoopDown:
             return LatticeTriangleTrackLeftLargeHalfLoopDown;
-        case TrackElemType::FlatToUp60:
+        case TrackElemType::flatToUp60:
             return LatticeTriangleTrackFlatTo60DegUp;
-        case TrackElemType::Up60ToFlat:
+        case TrackElemType::up60ToFlat:
             return LatticeTriangleTrack60DegUpToFlat;
-        case TrackElemType::FlatToDown60:
+        case TrackElemType::flatToDown60:
             return LatticeTriangleTrackFlatTo60DegDown;
-        case TrackElemType::Down60ToFlat:
+        case TrackElemType::down60ToFlat:
             return LatticeTriangleTrack60DegDownToFlat;
-        case TrackElemType::DiagFlatToUp60:
+        case TrackElemType::diagFlatToUp60:
             return LatticeTriangleTrackDiagFlatTo60DegUp;
-        case TrackElemType::DiagUp60ToFlat:
+        case TrackElemType::diagUp60ToFlat:
             return LatticeTriangleTrackDiag60DegUpToFlat;
-        case TrackElemType::DiagFlatToDown60:
+        case TrackElemType::diagFlatToDown60:
             return LatticeTriangleTrackDiagFlatTo60DegDown;
-        case TrackElemType::DiagDown60ToFlat:
+        case TrackElemType::diagDown60ToFlat:
             return LatticeTriangleTrackDiag60DegDownToFlat;
-        case TrackElemType::LeftEighthToDiagUp25:
+        case TrackElemType::diagFlatToUp60LongBase:
+            return LatticeTriangleTrackDiagFlatTo60DegUpLongBase;
+        case TrackElemType::diagUp60ToFlatLongBase:
+            return LatticeTriangleTrackDiag60DegUpToFlatLongBase;
+        case TrackElemType::diagFlatToDown60LongBase:
+            return LatticeTriangleTrackDiagFlatTo60DegDownLongBase;
+        case TrackElemType::diagDown60ToFlatLongBase:
+            return LatticeTriangleTrackDiag60DegDownToFlatLongBase;
+        case TrackElemType::leftEighthToDiagUp25:
             return LatticeTriangleTrackLeftEighthToDiagUp25;
-        case TrackElemType::RightEighthToDiagUp25:
+        case TrackElemType::rightEighthToDiagUp25:
             return LatticeTriangleTrackRightEighthToDiagUp25;
-        case TrackElemType::LeftEighthToDiagDown25:
+        case TrackElemType::leftEighthToDiagDown25:
             return LatticeTriangleTrackLeftEighthToDiagDown25;
-        case TrackElemType::RightEighthToDiagDown25:
+        case TrackElemType::rightEighthToDiagDown25:
             return LatticeTriangleTrackRightEighthToDiagDown25;
-        case TrackElemType::LeftEighthToOrthogonalUp25:
+        case TrackElemType::leftEighthToOrthogonalUp25:
             return LatticeTriangleTrackLeftEighthToOrthogonalUp25;
-        case TrackElemType::RightEighthToOrthogonalUp25:
+        case TrackElemType::rightEighthToOrthogonalUp25:
             return LatticeTriangleTrackRightEighthToOrthogonalUp25;
-        case TrackElemType::LeftEighthToOrthogonalDown25:
+        case TrackElemType::leftEighthToOrthogonalDown25:
             return LatticeTriangleTrackLeftEighthToOrthogonalDown25;
-        case TrackElemType::RightEighthToOrthogonalDown25:
+        case TrackElemType::rightEighthToOrthogonalDown25:
             return LatticeTriangleTrackRightEighthToOrthogonalDown25;
-        case TrackElemType::DiagUp25ToLeftBankedUp25:
+        case TrackElemType::diagUp25ToLeftBankedUp25:
             return LatticeTriangleTrackDiagUp25ToLeftBankedUp25;
-        case TrackElemType::DiagUp25ToRightBankedUp25:
+        case TrackElemType::diagUp25ToRightBankedUp25:
             return LatticeTriangleTrackDiagUp25ToRightBankedUp25;
-        case TrackElemType::DiagLeftBankedUp25ToUp25:
+        case TrackElemType::diagLeftBankedUp25ToUp25:
             return LatticeTriangleTrackDiagLeftBankedUp25ToUp25;
-        case TrackElemType::DiagRightBankedUp25ToUp25:
+        case TrackElemType::diagRightBankedUp25ToUp25:
             return LatticeTriangleTrackDiagRightBankedUp25ToUp25;
-        case TrackElemType::DiagDown25ToLeftBankedDown25:
+        case TrackElemType::diagDown25ToLeftBankedDown25:
             return LatticeTriangleTrackDiagDown25ToLeftBankedDown25;
-        case TrackElemType::DiagDown25ToRightBankedDown25:
+        case TrackElemType::diagDown25ToRightBankedDown25:
             return LatticeTriangleTrackDiagDown25ToRightBankedDown25;
-        case TrackElemType::DiagLeftBankedDown25ToDown25:
+        case TrackElemType::diagLeftBankedDown25ToDown25:
             return LatticeTriangleTrackDiagLeftBankedDown25ToDown25;
-        case TrackElemType::DiagRightBankedDown25ToDown25:
+        case TrackElemType::diagRightBankedDown25ToDown25:
             return LatticeTriangleTrackDiagRightBankedDown25ToDown25;
-        case TrackElemType::DiagLeftBankedFlatToLeftBankedUp25:
+        case TrackElemType::diagLeftBankedFlatToLeftBankedUp25:
             return LatticeTriangleTrackDiagLeftBankedFlatToLeftBankedUp25;
-        case TrackElemType::DiagRightBankedFlatToRightBankedUp25:
+        case TrackElemType::diagRightBankedFlatToRightBankedUp25:
             return LatticeTriangleTrackDiagRightBankedFlatToRightBankedUp25;
-        case TrackElemType::DiagLeftBankedUp25ToLeftBankedFlat:
+        case TrackElemType::diagLeftBankedUp25ToLeftBankedFlat:
             return LatticeTriangleTrackDiagLeftBankedUp25ToLeftBankedFlat;
-        case TrackElemType::DiagRightBankedUp25ToRightBankedFlat:
+        case TrackElemType::diagRightBankedUp25ToRightBankedFlat:
             return LatticeTriangleTrackDiagRightBankedUp25ToRightBankedFlat;
-        case TrackElemType::DiagLeftBankedFlatToLeftBankedDown25:
+        case TrackElemType::diagLeftBankedFlatToLeftBankedDown25:
             return LatticeTriangleTrackDiagLeftBankedFlatToLeftBankedDown25;
-        case TrackElemType::DiagRightBankedFlatToRightBankedDown25:
+        case TrackElemType::diagRightBankedFlatToRightBankedDown25:
             return LatticeTriangleTrackDiagRightBankedFlatToRightBankedDown25;
-        case TrackElemType::DiagLeftBankedDown25ToLeftBankedFlat:
+        case TrackElemType::diagLeftBankedDown25ToLeftBankedFlat:
             return LatticeTriangleTrackDiagLeftBankedDown25ToLeftBankedFlat;
-        case TrackElemType::DiagRightBankedDown25ToRightBankedFlat:
+        case TrackElemType::diagRightBankedDown25ToRightBankedFlat:
             return LatticeTriangleTrackDiagRightBankedDown25ToRightBankedFlat;
-        case TrackElemType::DiagUp25LeftBanked:
+        case TrackElemType::diagUp25LeftBanked:
             return LatticeTriangleTrackDiagUp25LeftBanked;
-        case TrackElemType::DiagUp25RightBanked:
+        case TrackElemType::diagUp25RightBanked:
             return LatticeTriangleTrackDiagUp25RightBanked;
-        case TrackElemType::DiagDown25LeftBanked:
+        case TrackElemType::diagDown25LeftBanked:
             return LatticeTriangleTrackDiagDown25LeftBanked;
-        case TrackElemType::DiagDown25RightBanked:
+        case TrackElemType::diagDown25RightBanked:
             return LatticeTriangleTrackDiagDown25RightBanked;
-        case TrackElemType::DiagFlatToLeftBankedUp25:
+        case TrackElemType::diagFlatToLeftBankedUp25:
             return LatticeTriangleTrackDiagFlatToLeftBankedUp25;
-        case TrackElemType::DiagFlatToRightBankedUp25:
+        case TrackElemType::diagFlatToRightBankedUp25:
             return LatticeTriangleTrackDiagFlatToRightBankedUp25;
-        case TrackElemType::DiagLeftBankedUp25ToFlat:
+        case TrackElemType::diagLeftBankedUp25ToFlat:
             return LatticeTriangleTrackDiagLeftBankedUp25ToFlat;
-        case TrackElemType::DiagRightBankedUp25ToFlat:
+        case TrackElemType::diagRightBankedUp25ToFlat:
             return LatticeTriangleTrackDiagRightBankedUp25ToFlat;
-        case TrackElemType::DiagFlatToLeftBankedDown25:
+        case TrackElemType::diagFlatToLeftBankedDown25:
             return LatticeTriangleTrackDiagFlatToLeftBankedDown25;
-        case TrackElemType::DiagFlatToRightBankedDown25:
+        case TrackElemType::diagFlatToRightBankedDown25:
             return LatticeTriangleTrackDiagFlatToRightBankedDown25;
-        case TrackElemType::DiagLeftBankedDown25ToFlat:
+        case TrackElemType::diagLeftBankedDown25ToFlat:
             return LatticeTriangleTrackDiagLeftBankedDown25ToFlat;
-        case TrackElemType::DiagRightBankedDown25ToFlat:
+        case TrackElemType::diagRightBankedDown25ToFlat:
             return LatticeTriangleTrackDiagRightBankedDown25ToFlat;
-        case TrackElemType::LeftEighthBankToDiagUp25:
+        case TrackElemType::leftEighthBankToDiagUp25:
             return LatticeTriangleTrackLeftEighthBankToDiagUp25;
-        case TrackElemType::RightEighthBankToDiagUp25:
+        case TrackElemType::rightEighthBankToDiagUp25:
             return LatticeTriangleTrackRightEighthBankToDiagUp25;
-        case TrackElemType::LeftEighthBankToDiagDown25:
+        case TrackElemType::leftEighthBankToDiagDown25:
             return LatticeTriangleTrackLeftEighthBankToDiagDown25;
-        case TrackElemType::RightEighthBankToDiagDown25:
+        case TrackElemType::rightEighthBankToDiagDown25:
             return LatticeTriangleTrackRightEighthBankToDiagDown25;
-        case TrackElemType::LeftEighthBankToOrthogonalUp25:
+        case TrackElemType::leftEighthBankToOrthogonalUp25:
             return LatticeTriangleTrackLeftEighthBankToOrthogonalUp25;
-        case TrackElemType::RightEighthBankToOrthogonalUp25:
+        case TrackElemType::rightEighthBankToOrthogonalUp25:
             return LatticeTriangleTrackRightEighthBankToOrthogonalUp25;
-        case TrackElemType::LeftEighthBankToOrthogonalDown25:
+        case TrackElemType::leftEighthBankToOrthogonalDown25:
             return LatticeTriangleTrackLeftEighthBankToOrthogonalDown25;
-        case TrackElemType::RightEighthBankToOrthogonalDown25:
+        case TrackElemType::rightEighthBankToOrthogonalDown25:
             return LatticeTriangleTrackRightEighthBankToOrthogonalDown25;
-        case TrackElemType::DiagBlockBrakes:
-        case TrackElemType::DiagBrakes:
+        case TrackElemType::diagBlockBrakes:
+        case TrackElemType::diagBrakes:
             return LatticeTriangleTrackDiagBrakes;
+        case TrackElemType::diagBooster:
+            return LatticeTriangleTrackDiagBooster;
+        case TrackElemType::leftQuarterHelixLargeUp:
+            return OpenRCT2::trackPaintLeftQuarterHelixLargeUp<
+                SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_HELIX_LEFT, OpenRCT2::kLeftQuarterHelixLargeUpSpriteMap, false,
+                kLeftQuarterHelixSupportHeights, OpenRCT2::BlockedSegmentsType::narrow, kTunnelGroup, false>;
+        case TrackElemType::rightQuarterHelixLargeUp:
+            return OpenRCT2::trackPaintRightQuarterHelixLargeUp<
+                SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_HELIX_RIGHT, OpenRCT2::kRightQuarterHelixLargeUpSpriteMap, false,
+                kRightQuarterHelixSupportHeights, OpenRCT2::BlockedSegmentsType::narrow, kTunnelGroup, false>;
+        case TrackElemType::leftQuarterHelixLargeDown:
+            return OpenRCT2::trackPaintLeftQuarterHelixLargeDown<
+                SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_HELIX_RIGHT, OpenRCT2::kRightQuarterHelixLargeUpSpriteMap, false,
+                kRightQuarterHelixSupportHeights, OpenRCT2::BlockedSegmentsType::narrow, kTunnelGroup, false>;
+        case TrackElemType::rightQuarterHelixLargeDown:
+            return OpenRCT2::trackPaintRightQuarterHelixLargeDown<
+                SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_HELIX_LEFT, OpenRCT2::kLeftQuarterHelixLargeUpSpriteMap, false,
+                kLeftQuarterHelixSupportHeights, OpenRCT2::BlockedSegmentsType::narrow, kTunnelGroup, false>;
+        case TrackElemType::leftQuarterBankedHelixLargeUp:
+            return OpenRCT2::trackPaintLeftQuarterBankedHelixLargeUp<
+                SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_HELIX_LEFT_BANKED, OpenRCT2::kLeftQuarterBankedHelixLargeUpSpriteMap,
+                false, kLeftQuarterBankedHelixSupportHeights, OpenRCT2::BlockedSegmentsType::narrow, kTunnelGroup, false>;
+        case TrackElemType::rightQuarterBankedHelixLargeUp:
+            return OpenRCT2::trackPaintRightQuarterBankedHelixLargeUp<
+                SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_HELIX_RIGHT_BANKED,
+                OpenRCT2::kRightQuarterBankedHelixLargeUpSpriteMap, false, kRightQuarterBankedHelixSupportHeights,
+                OpenRCT2::BlockedSegmentsType::narrow, kTunnelGroup, false>;
+        case TrackElemType::leftQuarterBankedHelixLargeDown:
+            return OpenRCT2::trackPaintLeftQuarterBankedHelixLargeDown<
+                SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_HELIX_RIGHT_BANKED,
+                OpenRCT2::kRightQuarterBankedHelixLargeUpSpriteMap, false, kRightQuarterBankedHelixSupportHeights,
+                OpenRCT2::BlockedSegmentsType::narrow, kTunnelGroup, false>;
+        case TrackElemType::rightQuarterBankedHelixLargeDown:
+            return OpenRCT2::trackPaintRightQuarterBankedHelixLargeDown<
+                SPR_TRACKS_LATTICE_TRIANGLE_TRACK_QUARTER_HELIX_LEFT_BANKED, OpenRCT2::kLeftQuarterBankedHelixLargeUpSpriteMap,
+                false, kLeftQuarterBankedHelixSupportHeights, OpenRCT2::BlockedSegmentsType::narrow, kTunnelGroup, false>;
+        default:
+            return TrackPaintFunctionDummy;
     }
-    return nullptr;
 }

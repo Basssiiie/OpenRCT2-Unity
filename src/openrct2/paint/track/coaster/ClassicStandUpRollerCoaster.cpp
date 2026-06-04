@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -7,9 +7,12 @@
  * OpenRCT2 is licensed under the GNU General Public License version 3.
  *****************************************************************************/
 
-#include "../../../ride/Track.h"
+#include "../../../SpriteIds.h"
+#include "../../../drawing/Drawing.h"
+#include "../../../ride/Ride.h"
 #include "../../../ride/TrackPaint.h"
-#include "../../../sprites.h"
+#include "../../../ride/ted/TrackElemType.h"
+#include "../../../world/tile_element/TrackElement.h"
 #include "../../tile_element/Segment.h"
 #include "../../track/Segment.h"
 #include "../../track/Support.h"
@@ -162,7 +165,7 @@ static void classicStandUpRCTrackFlatToLeftBank(
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
         MetalASupportsPaintSetupRotated(
-            session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+            session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
     }
 
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -187,7 +190,7 @@ static void classicStandUpRCTrackFlatToRightBank(
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
         MetalASupportsPaintSetupRotated(
-            session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+            session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
     }
 
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -230,7 +233,7 @@ static void classicStandUpRCTrackBankedRightQuarterTurn5(
                 session, direction, session.TrackColours.WithIndex(map[direction]), { 0, 6, height }, { 32, 20, 3 });
 
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -243,9 +246,7 @@ static void classicStandUpRCTrackBankedRightQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -281,8 +282,8 @@ static void classicStandUpRCTrackBankedRightQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::rightCorner, PaintSegment::centre,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide, PaintSegment::topRightSide),
+                        PaintSegment::bottom, PaintSegment::right, PaintSegment::centre, PaintSegment::bottomLeft,
+                        PaintSegment::bottomRight, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -314,8 +315,7 @@ static void classicStandUpRCTrackBankedRightQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -351,8 +351,8 @@ static void classicStandUpRCTrackBankedRightQuarterTurn5(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::bottomCorner, PaintSegment::centre,
-                        PaintSegment::bottomLeftSide, PaintSegment::topLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft,
+                        PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -370,7 +370,7 @@ static void classicStandUpRCTrackBankedRightQuarterTurn5(
                 session, direction, session.TrackColours.WithIndex(map[direction]), { 6, 0, height }, { 20, 32, 3 });
 
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
             if (direction == 1 || direction == 0)
             {
                 PaintUtilPushTunnelRotated(session, direction ^ 1, height, kTunnelGroup, TunnelSubType::Flat);
@@ -378,9 +378,7 @@ static void classicStandUpRCTrackBankedRightQuarterTurn5(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -417,7 +415,7 @@ static void classicStandUpRCTrackLeftBankTo25DegUp(
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
         MetalASupportsPaintSetupRotated(
-            session, supportType.metal, MetalSupportPlace::Centre, direction, 3, height, session.SupportColours);
+            session, supportType.metal, MetalSupportPlace::centre, direction, 3, height, session.SupportColours);
     }
 
     if (direction == 0 || direction == 3)
@@ -449,7 +447,7 @@ static void classicStandUpRCTrackRightBankTo25DegUp(
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
         MetalASupportsPaintSetupRotated(
-            session, supportType.metal, MetalSupportPlace::Centre, direction, 3, height, session.SupportColours);
+            session, supportType.metal, MetalSupportPlace::centre, direction, 3, height, session.SupportColours);
     }
 
     if (direction == 0 || direction == 3)
@@ -481,7 +479,7 @@ static void classicStandUpRCTrack25DegUpToLeftBank(
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
         MetalASupportsPaintSetupRotated(
-            session, supportType.metal, MetalSupportPlace::Centre, direction, 6, height, session.SupportColours);
+            session, supportType.metal, MetalSupportPlace::centre, direction, 6, height, session.SupportColours);
     }
 
     if (direction == 0 || direction == 3)
@@ -513,7 +511,7 @@ static void classicStandUpRCTrack25DegUpToRightBank(
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
         MetalASupportsPaintSetupRotated(
-            session, supportType.metal, MetalSupportPlace::Centre, direction, 6, height, session.SupportColours);
+            session, supportType.metal, MetalSupportPlace::centre, direction, 6, height, session.SupportColours);
     }
 
     if (direction == 0 || direction == 3)
@@ -577,7 +575,7 @@ static void classicStandUpRCTrackLeftBank(
     if (TrackPaintUtilShouldPaintSupports(session.MapPosition))
     {
         MetalASupportsPaintSetupRotated(
-            session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+            session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
     }
 
     PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -604,7 +602,7 @@ static void classicStandUpRCTrackLeftEighthBankToDiag(
           kClassicStandUpRcLeftBankedOrthogonalToDiag2_1, kClassicStandUpRcLeftBankedOrthogonalToDiag3_1 },
         { kClassicStandUpRcLeftBankedOrthogonalToDiag0_2, kClassicStandUpRcLeftBankedOrthogonalToDiag1_2,
           kClassicStandUpRcLeftBankedOrthogonalToDiag2_2, kClassicStandUpRcLeftBankedOrthogonalToDiag3_2 },
-        { ImageIndexUndefined, ImageIndexUndefined, ImageIndexUndefined, ImageIndexUndefined },
+        { kImageIndexUndefined, kImageIndexUndefined, kImageIndexUndefined, kImageIndexUndefined },
         { kClassicStandUpRcLeftBankedOrthogonalToDiag0_3, kClassicStandUpRcLeftBankedOrthogonalToDiag1_3,
           kClassicStandUpRcLeftBankedOrthogonalToDiag2_3, kClassicStandUpRcLeftBankedOrthogonalToDiag3_3 },
     };
@@ -619,7 +617,7 @@ static void classicStandUpRCTrackLeftEighthBankToDiag(
                 { { 0, 6, height }, { 32, 20, 3 } });
 
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -656,8 +654,8 @@ static void classicStandUpRCTrackLeftEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide, PaintSegment::bottomLeftSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -690,8 +688,8 @@ static void classicStandUpRCTrackLeftEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -700,9 +698,7 @@ static void classicStandUpRCTrackLeftEighthBankToDiag(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -732,14 +728,14 @@ static void classicStandUpRCTrackLeftEighthBankToDiag(
                     break;
             }
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::BottomCorner, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::bottomCorner, direction, 0, height, session.SupportColours);
 
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -758,7 +754,7 @@ static void classicStandUpRCTrackRightEighthBankToDiag(
           kClassicStandUpRcRightBankedOrthogonalToDiag2_1, kClassicStandUpRcRightBankedOrthogonalToDiag3_1 },
         { kClassicStandUpRcRightBankedOrthogonalToDiag0_2, kClassicStandUpRcRightBankedOrthogonalToDiag1_2,
           kClassicStandUpRcRightBankedOrthogonalToDiag2_2, kClassicStandUpRcRightBankedOrthogonalToDiag3_2 },
-        { ImageIndexUndefined, ImageIndexUndefined, ImageIndexUndefined, ImageIndexUndefined },
+        { kImageIndexUndefined, kImageIndexUndefined, kImageIndexUndefined, kImageIndexUndefined },
         { kClassicStandUpRcRightBankedOrthogonalToDiag0_3, kClassicStandUpRcRightBankedOrthogonalToDiag1_3,
           kClassicStandUpRcRightBankedOrthogonalToDiag2_3, kClassicStandUpRcRightBankedOrthogonalToDiag3_3 },
     };
@@ -773,7 +769,7 @@ static void classicStandUpRCTrackRightEighthBankToDiag(
                 { { 0, 6, height }, { 32, 20, 3 } });
 
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
             if (direction == 0 || direction == 3)
             {
                 PaintUtilPushTunnelRotated(session, direction, height, kTunnelGroup, TunnelSubType::Flat);
@@ -810,8 +806,8 @@ static void classicStandUpRCTrackRightEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::right, PaintSegment::bottom, PaintSegment::centre, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -844,8 +840,8 @@ static void classicStandUpRCTrackRightEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::topRightSide),
+                        PaintSegment::top, PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft,
+                        PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -855,8 +851,7 @@ static void classicStandUpRCTrackRightEighthBankToDiag(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -886,14 +881,14 @@ static void classicStandUpRCTrackRightEighthBankToDiag(
                     break;
             }
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::LeftCorner, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::leftCorner, direction, 0, height, session.SupportColours);
 
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide,
-                        PaintSegment::bottomLeftSide, PaintSegment::bottomRightSide),
+                        PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight,
+                        PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             PaintUtilSetGeneralSupportHeight(session, height + kDefaultGeneralSupportHeight);
@@ -926,7 +921,7 @@ static void classicStandUpRCTrackRightBankedQuarterTurn3(
     static constexpr ImageIndex map[4][kNumOrthogonalDirections] = {
         { kClassicStandUpRcRightTurn3TilesBanked0_0, kClassicStandUpRcRightTurn3TilesBanked1_0,
           kClassicStandUpRcRightTurn3TilesBanked2_0, kClassicStandUpRcRightTurn3TilesBanked3_0 },
-        { ImageIndexUndefined, ImageIndexUndefined, ImageIndexUndefined, ImageIndexUndefined },
+        { kImageIndexUndefined, kImageIndexUndefined, kImageIndexUndefined, kImageIndexUndefined },
         { kClassicStandUpRcRightTurn3TilesBanked0_1, kClassicStandUpRcRightTurn3TilesBanked1_1,
           kClassicStandUpRcRightTurn3TilesBanked2_1, kClassicStandUpRcRightTurn3TilesBanked3_1 },
 
@@ -943,7 +938,7 @@ static void classicStandUpRCTrackRightBankedQuarterTurn3(
                 session, direction, session.TrackColours.WithIndex(imageId), { 0, 6, height }, { 32, 20, 3 });
 
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
             switch (direction)
             {
                 case 0:
@@ -956,9 +951,7 @@ static void classicStandUpRCTrackRightBankedQuarterTurn3(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -988,8 +981,7 @@ static void classicStandUpRCTrackRightBankedQuarterTurn3(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -998,7 +990,7 @@ static void classicStandUpRCTrackRightBankedQuarterTurn3(
                 session, direction, session.TrackColours.WithIndex(imageId), { 6, 0, height }, { 20, 32, 3 });
 
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::Centre, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::centre, direction, 0, height, session.SupportColours);
             if (direction == 0 || direction == 1)
             {
                 PaintUtilPushTunnelRotated(session, direction ^ 1, height, kTunnelGroup, TunnelSubType::Flat);
@@ -1006,9 +998,7 @@ static void classicStandUpRCTrackRightBankedQuarterTurn3(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1075,7 +1065,7 @@ static inline void classicStandUpRCTrackDiagFlatWithBank(
                     break;
             }
             MetalASupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::LeftCorner, direction, 0, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::leftCorner, direction, 0, height, session.SupportColours);
 
             break;
     }
@@ -1158,9 +1148,7 @@ static void classicStandUpRCTrackDiagFlatTo25DegUpBanked(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1176,8 +1164,7 @@ static void classicStandUpRCTrackDiagFlatTo25DegUpBanked(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1194,8 +1181,7 @@ static void classicStandUpRCTrackDiagFlatTo25DegUpBanked(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1209,14 +1195,12 @@ static void classicStandUpRCTrackDiagFlatTo25DegUpBanked(
                     break;
             }
             MetalBSupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::LeftCorner, direction, 4, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::leftCorner, direction, 4, height, session.SupportColours);
 
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1281,9 +1265,7 @@ static void classicStandUpRCTrackDiag25DegUpToFlatBanked(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::rightCorner, PaintSegment::centre, PaintSegment::topRightSide,
-                        PaintSegment::bottomRightSide),
+                    EnumsToFlags(PaintSegment::right, PaintSegment::centre, PaintSegment::topRight, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1299,8 +1281,7 @@ static void classicStandUpRCTrackDiag25DegUpToFlatBanked(
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::topCorner, PaintSegment::centre, PaintSegment::topLeftSide, PaintSegment::topRightSide),
+                    EnumsToFlags(PaintSegment::top, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::topRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1317,8 +1298,7 @@ static void classicStandUpRCTrackDiag25DegUpToFlatBanked(
                 session,
                 PaintUtilRotateSegments(
                     EnumsToFlags(
-                        PaintSegment::bottomCorner, PaintSegment::centre, PaintSegment::bottomLeftSide,
-                        PaintSegment::bottomRightSide),
+                        PaintSegment::bottom, PaintSegment::centre, PaintSegment::bottomLeft, PaintSegment::bottomRight),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1332,14 +1312,12 @@ static void classicStandUpRCTrackDiag25DegUpToFlatBanked(
                     break;
             }
             MetalBSupportsPaintSetupRotated(
-                session, supportType.metal, MetalSupportPlace::LeftCorner, direction, 8, height, session.SupportColours);
+                session, supportType.metal, MetalSupportPlace::leftCorner, direction, 8, height, session.SupportColours);
 
             PaintUtilSetSegmentSupportHeight(
                 session,
                 PaintUtilRotateSegments(
-                    EnumsToFlags(
-                        PaintSegment::leftCorner, PaintSegment::centre, PaintSegment::topLeftSide,
-                        PaintSegment::bottomLeftSide),
+                    EnumsToFlags(PaintSegment::left, PaintSegment::centre, PaintSegment::topLeft, PaintSegment::bottomLeft),
                     direction),
                 0xFFFF, 0);
             break;
@@ -1386,7 +1364,7 @@ static void classicStandUpRCTrackDiagRightBankTo25DegDown(
     classicStandUpRCTrackDiag25DegUpToLeftBank(session, ride, trackSequence, direction, height, trackElement, supportType);
 }
 
-TRACK_PAINT_FUNCTION GetTrackPaintFunctionClassicStandUpRC(int32_t trackType)
+TrackPaintFunction GetTrackPaintFunctionClassicStandUpRC(TrackElemType trackType)
 {
     if (!IsCsgLoaded())
     {
@@ -1395,81 +1373,164 @@ TRACK_PAINT_FUNCTION GetTrackPaintFunctionClassicStandUpRC(int32_t trackType)
 
     switch (trackType)
     {
-        case TrackElemType::FlatToLeftBank:
+        case TrackElemType::flatToLeftBank:
             return classicStandUpRCTrackFlatToLeftBank;
-        case TrackElemType::FlatToRightBank:
+        case TrackElemType::flatToRightBank:
             return classicStandUpRCTrackFlatToRightBank;
-        case TrackElemType::LeftBankToFlat:
+        case TrackElemType::leftBankToFlat:
             return classicStandUpRCTrackLeftBankToFlat;
-        case TrackElemType::RightBankToFlat:
+        case TrackElemType::rightBankToFlat:
             return classicStandUpRCTrackRightBankToFlat;
-        case TrackElemType::BankedLeftQuarterTurn5Tiles:
+        case TrackElemType::bankedLeftQuarterTurn5Tiles:
             return classicStandUpRCTrackBankedLeftQuarterTurn5;
-        case TrackElemType::BankedRightQuarterTurn5Tiles:
+        case TrackElemType::bankedRightQuarterTurn5Tiles:
             return classicStandUpRCTrackBankedRightQuarterTurn5;
-        case TrackElemType::LeftBankToUp25:
+        case TrackElemType::leftBankToUp25:
             return classicStandUpRCTrackLeftBankTo25DegUp;
-        case TrackElemType::RightBankToUp25:
+        case TrackElemType::rightBankToUp25:
             return classicStandUpRCTrackRightBankTo25DegUp;
-        case TrackElemType::Up25ToLeftBank:
+        case TrackElemType::up25ToLeftBank:
             return classicStandUpRCTrack25DegUpToLeftBank;
-        case TrackElemType::Up25ToRightBank:
+        case TrackElemType::up25ToRightBank:
             return classicStandUpRCTrack25DegUpToRightBank;
-        case TrackElemType::LeftBankToDown25:
+        case TrackElemType::leftBankToDown25:
             return classicStandUpRCTrackLeftBankTo25DegDown;
-        case TrackElemType::RightBankToDown25:
+        case TrackElemType::rightBankToDown25:
             return classicStandUpRCTrackRightBankTo25DegDown;
-        case TrackElemType::Down25ToLeftBank:
+        case TrackElemType::down25ToLeftBank:
             return classicStandUpRCTrack25DegDownToLeftBank;
-        case TrackElemType::Down25ToRightBank:
+        case TrackElemType::down25ToRightBank:
             return classicStandUpRCTrack25DegDownToRightBank;
-        case TrackElemType::LeftBank:
+        case TrackElemType::leftBank:
             return classicStandUpRCTrackLeftBank;
-        case TrackElemType::RightBank:
+        case TrackElemType::rightBank:
             return classicStandUpRCTrackRightBank;
 
-        case TrackElemType::LeftEighthBankToDiag:
+        case TrackElemType::leftEighthBankToDiag:
             return classicStandUpRCTrackLeftEighthBankToDiag;
-        case TrackElemType::RightEighthBankToDiag:
+        case TrackElemType::rightEighthBankToDiag:
             return classicStandUpRCTrackRightEighthBankToDiag;
-        case TrackElemType::LeftEighthBankToOrthogonal:
+        case TrackElemType::leftEighthBankToOrthogonal:
             return classicStandUpRCTrackLeftEighthDiagBankToOrthogonal;
-        case TrackElemType::RightEighthBankToOrthogonal:
+        case TrackElemType::rightEighthBankToOrthogonal:
             return classicStandUpRCTrackRightEighthDiagBankToOrthogonal;
 
-        case TrackElemType::LeftBankedQuarterTurn3Tiles:
+        case TrackElemType::leftBankedQuarterTurn3Tiles:
             return classicStandUpRCTrackLeftBankedQuarterTurn3;
-        case TrackElemType::RightBankedQuarterTurn3Tiles:
+        case TrackElemType::rightBankedQuarterTurn3Tiles:
             return classicStandUpRCTrackRightBankedQuarterTurn3;
-        case TrackElemType::DiagFlatToLeftBank:
+        case TrackElemType::diagFlatToLeftBank:
             return classicStandUpRCTrackDiagFlatToLeftBank;
-        case TrackElemType::DiagFlatToRightBank:
+        case TrackElemType::diagFlatToRightBank:
             return classicStandUpRCTrackDiagFlatToRightBank;
-        case TrackElemType::DiagLeftBankToFlat:
+        case TrackElemType::diagLeftBankToFlat:
             return classicStandUpRCTrackDiagLeftBankToFlat;
-        case TrackElemType::DiagRightBankToFlat:
+        case TrackElemType::diagRightBankToFlat:
             return classicStandUpRCTrackDiagRightBankToFlat;
-        case TrackElemType::DiagLeftBankToUp25:
+        case TrackElemType::diagLeftBankToUp25:
             return classicStandUpRCTrackDiagLeftBankTo25DegUp;
-        case TrackElemType::DiagRightBankToUp25:
+        case TrackElemType::diagRightBankToUp25:
             return classicStandUpRCTrackDiagRightBankTo25DegUp;
-        case TrackElemType::DiagUp25ToLeftBank:
+        case TrackElemType::diagUp25ToLeftBank:
             return classicStandUpRCTrackDiag25DegUpToLeftBank;
-        case TrackElemType::DiagUp25ToRightBank:
+        case TrackElemType::diagUp25ToRightBank:
             return classicStandUpRCTrackDiag25DegUpToRightBank;
-        case TrackElemType::DiagLeftBankToDown25:
+        case TrackElemType::diagLeftBankToDown25:
             return classicStandUpRCTrackDiagLeftBankTo25DegDown;
-        case TrackElemType::DiagRightBankToDown25:
+        case TrackElemType::diagRightBankToDown25:
             return classicStandUpRCTrackDiagRightBankTo25DegDown;
-        case TrackElemType::DiagDown25ToLeftBank:
+        case TrackElemType::diagDown25ToLeftBank:
             return classicStandUpRCTrackDiag25DegDownToLeftBank;
-        case TrackElemType::DiagDown25ToRightBank:
+        case TrackElemType::diagDown25ToRightBank:
             return classicStandUpRCTrackDiag25DegDownToRightBank;
-        case TrackElemType::DiagLeftBank:
+        case TrackElemType::diagLeftBank:
             return classicStandUpRCTrackDiagLeftBank;
-        case TrackElemType::DiagRightBank:
+        case TrackElemType::diagRightBank:
             return classicStandUpRCTrackDiagRightBank;
-    }
 
-    return GetTrackPaintFunctionStandUpRC(trackType);
+        case TrackElemType::up25ToLeftBankedUp25:
+        case TrackElemType::up25ToRightBankedUp25:
+        case TrackElemType::leftBankedUp25ToUp25:
+        case TrackElemType::rightBankedUp25ToUp25:
+        case TrackElemType::down25ToLeftBankedDown25:
+        case TrackElemType::down25ToRightBankedDown25:
+        case TrackElemType::leftBankedDown25ToDown25:
+        case TrackElemType::rightBankedDown25ToDown25:
+        case TrackElemType::leftBankedFlatToLeftBankedUp25:
+        case TrackElemType::rightBankedFlatToRightBankedUp25:
+        case TrackElemType::leftBankedUp25ToLeftBankedFlat:
+        case TrackElemType::rightBankedUp25ToRightBankedFlat:
+        case TrackElemType::leftBankedFlatToLeftBankedDown25:
+        case TrackElemType::rightBankedFlatToRightBankedDown25:
+        case TrackElemType::leftBankedDown25ToLeftBankedFlat:
+        case TrackElemType::rightBankedDown25ToRightBankedFlat:
+        case TrackElemType::down25LeftBanked:
+        case TrackElemType::down25RightBanked:
+        case TrackElemType::flatToLeftBankedUp25:
+        case TrackElemType::flatToRightBankedUp25:
+        case TrackElemType::leftBankedUp25ToFlat:
+        case TrackElemType::rightBankedUp25ToFlat:
+        case TrackElemType::flatToLeftBankedDown25:
+        case TrackElemType::flatToRightBankedDown25:
+        case TrackElemType::leftBankedDown25ToFlat:
+        case TrackElemType::rightBankedDown25ToFlat:
+        case TrackElemType::up25LeftBanked:
+        case TrackElemType::up25RightBanked:
+        case TrackElemType::leftBankedQuarterTurn3TileUp25:
+        case TrackElemType::rightBankedQuarterTurn3TileUp25:
+        case TrackElemType::leftBankedQuarterTurn3TileDown25:
+        case TrackElemType::rightBankedQuarterTurn3TileDown25:
+        case TrackElemType::leftBankedQuarterTurn5TileUp25:
+        case TrackElemType::rightBankedQuarterTurn5TileUp25:
+        case TrackElemType::leftBankedQuarterTurn5TileDown25:
+        case TrackElemType::rightBankedQuarterTurn5TileDown25:
+        case TrackElemType::diagUp25ToLeftBankedUp25:
+        case TrackElemType::diagUp25ToRightBankedUp25:
+        case TrackElemType::diagLeftBankedUp25ToUp25:
+        case TrackElemType::diagRightBankedUp25ToUp25:
+        case TrackElemType::diagDown25ToLeftBankedDown25:
+        case TrackElemType::diagDown25ToRightBankedDown25:
+        case TrackElemType::diagLeftBankedDown25ToDown25:
+        case TrackElemType::diagRightBankedDown25ToDown25:
+        case TrackElemType::diagLeftBankedFlatToLeftBankedUp25:
+        case TrackElemType::diagRightBankedFlatToRightBankedUp25:
+        case TrackElemType::diagLeftBankedUp25ToLeftBankedFlat:
+        case TrackElemType::diagRightBankedUp25ToRightBankedFlat:
+        case TrackElemType::diagLeftBankedFlatToLeftBankedDown25:
+        case TrackElemType::diagRightBankedFlatToRightBankedDown25:
+        case TrackElemType::diagLeftBankedDown25ToLeftBankedFlat:
+        case TrackElemType::diagRightBankedDown25ToRightBankedFlat:
+        case TrackElemType::diagUp25LeftBanked:
+        case TrackElemType::diagUp25RightBanked:
+        case TrackElemType::diagDown25LeftBanked:
+        case TrackElemType::diagDown25RightBanked:
+        case TrackElemType::diagFlatToLeftBankedUp25:
+        case TrackElemType::diagFlatToRightBankedUp25:
+        case TrackElemType::diagLeftBankedUp25ToFlat:
+        case TrackElemType::diagRightBankedUp25ToFlat:
+        case TrackElemType::diagFlatToLeftBankedDown25:
+        case TrackElemType::diagFlatToRightBankedDown25:
+        case TrackElemType::diagLeftBankedDown25ToFlat:
+        case TrackElemType::diagRightBankedDown25ToFlat:
+        case TrackElemType::leftEighthBankToDiagUp25:
+        case TrackElemType::rightEighthBankToDiagUp25:
+        case TrackElemType::leftEighthBankToDiagDown25:
+        case TrackElemType::rightEighthBankToDiagDown25:
+        case TrackElemType::leftEighthBankToOrthogonalUp25:
+        case TrackElemType::rightEighthBankToOrthogonalUp25:
+        case TrackElemType::leftEighthBankToOrthogonalDown25:
+        case TrackElemType::rightEighthBankToOrthogonalDown25:
+        case TrackElemType::leftBankToLeftQuarterTurn3TilesUp25:
+        case TrackElemType::rightBankToRightQuarterTurn3TilesUp25:
+        case TrackElemType::leftQuarterTurn3TilesDown25ToLeftBank:
+        case TrackElemType::rightQuarterTurn3TilesDown25ToRightBank:
+        case TrackElemType::leftQuarterBankedHelixLargeUp:
+        case TrackElemType::rightQuarterBankedHelixLargeUp:
+        case TrackElemType::leftQuarterBankedHelixLargeDown:
+        case TrackElemType::rightQuarterBankedHelixLargeDown:
+            return TrackPaintFunctionDummy;
+
+        default:
+            return GetTrackPaintFunctionStandUpRC(trackType);
+    }
 }

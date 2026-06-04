@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -9,31 +9,26 @@
 
 #include "IStream.hpp"
 
-#include "../object/Object.h"
-#include "Memory.hpp"
+#include "StreamBuffer.hpp"
 #include "String.hpp"
 
 #include <vector>
 
 namespace OpenRCT2
 {
-    utf8* IStream::ReadString()
+    constexpr size_t kIStreamCopyBufferLength = 16 * 1024;
+
+    void IStream::CopyFromStream(IStream& stream, uint64_t length)
     {
-        std::vector<utf8> result;
-
-        uint8_t ch;
-        while ((ch = ReadValue<uint8_t>()) != 0)
+        StreamReadBuffer buffer(stream, length, kIStreamCopyBufferLength);
+        while (buffer)
         {
-            result.push_back(ch);
+            auto block = buffer.ReadBlock(stream);
+            this->Write(block.first, block.second);
         }
-        result.push_back(0);
-
-        utf8* resultString = Memory::AllocateArray<utf8>(result.size());
-        std::copy(result.begin(), result.end(), resultString);
-        return resultString;
     }
 
-    std::string IStream::ReadStdString()
+    std::string IStream::ReadString()
     {
         std::string result;
         uint8_t ch;
@@ -44,32 +39,11 @@ namespace OpenRCT2
         return result;
     }
 
-    void IStream::WriteString(const utf8* str)
+    void IStream::WriteString(std::string_view str)
     {
-        if (str == nullptr)
-        {
-            WriteValue<uint8_t>(0);
-        }
-        else
-        {
-            size_t numBytes = String::SizeOf(str) + 1;
-            Write(str, numBytes);
-        }
-    }
-
-    void IStream::WriteString(const std::string_view str)
-    {
-        for (const auto c : str)
-        {
-            if (c == '\0')
-                break;
-            WriteValue<uint8_t>(c);
-        }
+        // if the string contains any null characters, then stop the write at the first one
+        str = String::toStringView(str.data(), str.size());
+        Write(str.data(), str.size());
         WriteValue<uint8_t>(0);
-    }
-
-    void IStream::WriteString(const std::string& str)
-    {
-        WriteString(str.c_str());
     }
 } // namespace OpenRCT2

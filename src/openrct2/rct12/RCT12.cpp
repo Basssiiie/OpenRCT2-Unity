@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -17,16 +17,15 @@
 #include "../rct12/CSStringConverter.h"
 #include "../rct2/RCT2.h"
 #include "../ride/Ride.h"
-#include "../ride/Track.h"
-#include "../ride/TrackDesign.h"
+#include "../ride/ted/TrackElemType.h"
 #include "../scenario/Scenario.h"
-#include "../world/Banner.h"
 #include "../world/Footpath.h"
-#include "../world/SmallScenery.h"
-#include "../world/Surface.h"
-#include "../world/TileElement.h"
 #include "../world/Wall.h"
+#include "../world/tile_element/PathElement.h"
 #include "../world/tile_element/Slope.h"
+#include "../world/tile_element/SmallSceneryElement.h"
+#include "../world/tile_element/SurfaceElement.h"
+#include "../world/tile_element/WallElement.h"
 #include "EntryList.h"
 
 using namespace OpenRCT2;
@@ -36,21 +35,21 @@ RCT12TileElementType RCT12TileElementBase::GetType() const
     auto elem_type = static_cast<RCT12TileElementType>((this->Type & kTileElementTypeMask) >> 2);
     switch (elem_type)
     {
-        case RCT12TileElementType::Surface:
-        case RCT12TileElementType::Path:
-        case RCT12TileElementType::Track:
-        case RCT12TileElementType::SmallScenery:
-        case RCT12TileElementType::Entrance:
-        case RCT12TileElementType::Wall:
-        case RCT12TileElementType::LargeScenery:
-        case RCT12TileElementType::Banner:
-        case RCT12TileElementType::Corrupt:
-        case RCT12TileElementType::EightCarsCorrupt14:
-        case RCT12TileElementType::EightCarsCorrupt15:
+        case RCT12TileElementType::surface:
+        case RCT12TileElementType::path:
+        case RCT12TileElementType::track:
+        case RCT12TileElementType::smallScenery:
+        case RCT12TileElementType::entrance:
+        case RCT12TileElementType::wall:
+        case RCT12TileElementType::largeScenery:
+        case RCT12TileElementType::banner:
+        case RCT12TileElementType::corrupt:
+        case RCT12TileElementType::eightCarsCorrupt14:
+        case RCT12TileElementType::eightCarsCorrupt15:
             return elem_type;
         default:
             // Most corrupt elements were set to 0x255, but not all. Fallback to corrupt element if encountered unknown type.
-            return RCT12TileElementType::EightCarsCorrupt15;
+            return RCT12TileElementType::eightCarsCorrupt15;
     }
 }
 
@@ -82,7 +81,7 @@ uint8_t RCT12SurfaceElement::GetSlope() const
 uint32_t RCT12SurfaceElement::GetSurfaceStyle() const
 {
     uint32_t retVal = (Terrain >> 5) & 7;
-    retVal |= (Type & RCT12_SURFACE_ELEMENT_TYPE_SURFACE_MASK) << 3;
+    retVal |= (Type & kRCT12SurfaceElementTypeSurfaceMask) << 3;
     return retVal;
 }
 
@@ -106,7 +105,7 @@ uint8_t RCT12SurfaceElement::GetOwnership() const
 
 uint32_t RCT12SurfaceElement::GetWaterHeight() const
 {
-    return (Terrain & RCT12_TILE_ELEMENT_SURFACE_WATER_HEIGHT_MASK) * WATER_HEIGHT_STEP;
+    return (Terrain & kRCT12SurfaceElementWaterHeightMask) * kWaterHeightStep;
 }
 
 uint8_t RCT12SurfaceElement::GetParkFences() const
@@ -202,7 +201,7 @@ uint8_t RCT12PathElement::GetRCT1SupportType() const
     return (Flags & 0b01100000) >> 5;
 }
 
-uint8_t RCT12TrackElement::GetTrackType() const
+RCT12::TrackElemType RCT12TrackElement::GetTrackType() const
 {
     return TrackType;
 }
@@ -224,7 +223,7 @@ RideColourScheme RCT12TrackElement::GetColourScheme() const
 
 uint8_t RCT12TrackElement::GetStationIndex() const
 {
-    if (TrackTypeIsStation(TrackType) || TrackType == TrackElemType::TowerBase)
+    if (trackTypeIsStation(TrackType) || TrackType == RCT12::TrackElemType::towerBase)
     {
         return (Sequence & RCT12_TRACK_ELEMENT_SEQUENCE_STATION_INDEX_MASK) >> 4;
     }
@@ -233,7 +232,7 @@ uint8_t RCT12TrackElement::GetStationIndex() const
 
 bool RCT12TrackElement::HasChain() const
 {
-    return Type & RCT12_TRACK_ELEMENT_TYPE_FLAG_CHAIN_LIFT;
+    return Type & kRCT12TrackElementTypeFlagChainLift;
 }
 
 bool RCT12TrackElement::HasCableLift() const
@@ -248,7 +247,7 @@ bool RCT12TrackElement::IsInverted() const
 
 uint8_t RCT12TrackElement::GetBrakeBoosterSpeed() const
 {
-    if (TrackTypeHasSpeedSetting(GetTrackType()))
+    if (trackTypeHasSpeedSetting(TrackType))
     {
         return (Sequence >> 4) << 1;
     }
@@ -257,9 +256,9 @@ uint8_t RCT12TrackElement::GetBrakeBoosterSpeed() const
 
 bool RCT12TrackElement::HasGreenLight() const
 {
-    if (TrackTypeIsStation(TrackType))
+    if (trackTypeIsStation(TrackType))
     {
-        return (Sequence & MAP_ELEM_TRACK_SEQUENCE_GREEN_LIGHT) != 0;
+        return (Sequence & kRCT12TrackElementSequenceGreenLight) != 0;
     }
     return false;
 }
@@ -276,7 +275,7 @@ uint16_t RCT12TrackElement::GetMazeEntry() const
 
 uint8_t RCT12TrackElement::GetPhotoTimeout() const
 {
-    if (GetTrackType() == TrackElemType::OnRidePhoto)
+    if (TrackType == RCT12::TrackElemType::onRidePhoto)
     {
         return Sequence >> 4;
     }
@@ -313,44 +312,44 @@ uint8_t RCT12SmallSceneryElement::GetSceneryQuadrant() const
     return (this->Type & kTileElementQuadrantMask) >> 6;
 }
 
-colour_t RCT12SmallSceneryElement::GetPrimaryColour() const
+Drawing::Colour RCT12SmallSceneryElement::GetPrimaryColour() const
 {
-    return Colour1 & RCT12_TILE_ELEMENT_COLOUR_MASK;
+    return static_cast<Drawing::Colour>(Colour1 & kRCT12TileElementColourMask);
 }
 
-colour_t RCT12SmallSceneryElement::GetSecondaryColour() const
+Drawing::Colour RCT12SmallSceneryElement::GetSecondaryColour() const
 {
-    return Colour2 & RCT12_TILE_ELEMENT_COLOUR_MASK;
+    return static_cast<Drawing::Colour>(Colour2 & kRCT12TileElementColourMask);
 }
 
 bool RCT12SmallSceneryElement::NeedsSupports() const
 {
-    return Colour1 & RCT12_SMALL_SCENERY_ELEMENT_NEEDS_SUPPORTS_FLAG;
+    return Colour1 & kRCT12SmallSceneryElementNeedsSupportsFlag;
 }
 
 uint32_t RCT12LargeSceneryElement::GetEntryIndex() const
 {
-    return EntryIndex & RCT12_TILE_ELEMENT_LARGE_TYPE_MASK;
+    return EntryIndex & kRCT12TileElementLargeTypeMask;
 }
 
 uint16_t RCT12LargeSceneryElement::GetSequenceIndex() const
 {
     return (EntryIndex >> 10);
 }
-colour_t RCT12LargeSceneryElement::GetPrimaryColour() const
+Drawing::Colour RCT12LargeSceneryElement::GetPrimaryColour() const
 {
-    return Colour[0] & RCT12_TILE_ELEMENT_COLOUR_MASK;
+    return static_cast<Drawing::Colour>(Colour[0] & kRCT12TileElementColourMask);
 }
 
-colour_t RCT12LargeSceneryElement::GetSecondaryColour() const
+Drawing::Colour RCT12LargeSceneryElement::GetSecondaryColour() const
 {
-    return Colour[1] & RCT12_TILE_ELEMENT_COLOUR_MASK;
+    return static_cast<Drawing::Colour>(Colour[1] & kRCT12TileElementColourMask);
 }
 
 uint8_t RCT12LargeSceneryElement::GetBannerIndex() const
 {
-    return (Type & 0xC0) | (((Colour[0]) & ~RCT12_TILE_ELEMENT_COLOUR_MASK) >> 2)
-        | (((Colour[1]) & ~RCT12_TILE_ELEMENT_COLOUR_MASK) >> 5);
+    return (Type & 0xC0) | (((Colour[0]) & ~kRCT12TileElementColourMask) >> 2)
+        | (((Colour[1]) & ~kRCT12TileElementColourMask) >> 5);
 }
 
 uint8_t RCT12WallElement::GetEntryIndex() const
@@ -363,21 +362,21 @@ uint8_t RCT12WallElement::GetSlope() const
     return (Type & kTileElementQuadrantMask) >> 6;
 }
 
-colour_t RCT12WallElement::GetPrimaryColour() const
+Drawing::Colour RCT12WallElement::GetPrimaryColour() const
 {
-    return Colour1 & RCT12_TILE_ELEMENT_COLOUR_MASK;
+    return static_cast<Drawing::Colour>(Colour1 & kRCT12TileElementColourMask);
 }
 
-colour_t RCT12WallElement::GetSecondaryColour() const
+Drawing::Colour RCT12WallElement::GetSecondaryColour() const
 {
-    uint8_t secondaryColour = (Colour1 & ~RCT12_TILE_ELEMENT_COLOUR_MASK) >> 5;
+    uint8_t secondaryColour = (Colour1 & ~kRCT12TileElementColourMask) >> 5;
     secondaryColour |= (Flags & 0x60) >> 2;
-    return secondaryColour;
+    return static_cast<Drawing::Colour>(secondaryColour);
 }
 
-colour_t RCT12WallElement::GetTertiaryColour() const
+Drawing::Colour RCT12WallElement::GetTertiaryColour() const
 {
-    return Colour3 & RCT12_TILE_ELEMENT_COLOUR_MASK;
+    return static_cast<Drawing::Colour>(Colour3 & kRCT12TileElementColourMask);
 }
 
 uint8_t RCT12WallElement::GetAnimationFrame() const
@@ -423,9 +422,9 @@ int32_t RCT12WallElement::GetRCT1WallType(int32_t edge) const
     return -1;
 }
 
-colour_t RCT12WallElement::GetRCT1WallColour() const
+Drawing::Colour RCT12WallElement::GetRCT1WallColour() const
 {
-    return ((Type & 0xC0) >> 3) | ((EntryIndex & 0xE0) >> 5);
+    return static_cast<Drawing::Colour>(((Type & 0xC0) >> 3) | ((EntryIndex & 0xE0) >> 5));
 }
 
 uint8_t RCT12WallElement::GetRCT1Slope() const
@@ -495,30 +494,30 @@ bool RCT12TrackElement::BlockBrakeClosed() const
 
 bool RCT12ResearchItem::IsInventedEndMarker() const
 {
-    return RawValue == RCT12_RESEARCHED_ITEMS_SEPARATOR;
+    return RawValue == kRCT12ResearchedItemsSeparator;
 }
 
 bool RCT12ResearchItem::IsUninventedEndMarker() const
 {
-    return RawValue == RCT12_RESEARCHED_ITEMS_END;
+    return RawValue == kRCT12ResearchedItemsEnd;
 }
 
 bool RCT12ResearchItem::IsRandomEndMarker() const
 {
-    return RawValue == RCT12_RESEARCHED_ITEMS_END_2;
+    return RawValue == kRCT12ResearchedItemsEnd2;
 }
 
 ObjectEntryIndex RCTEntryIndexToOpenRCT2EntryIndex(const RCT12ObjectEntryIndex index)
 {
-    if (index == RCT12_OBJECT_ENTRY_INDEX_NULL)
-        return OBJECT_ENTRY_INDEX_NULL;
+    if (index == kRCT12ObjectEntryIndexNull)
+        return kObjectEntryIndexNull;
 
     return index;
 }
 
 RideId RCT12RideIdToOpenRCT2RideId(const RCT12RideId rideId)
 {
-    if (rideId == RCT12_RIDE_ID_NULL)
+    if (rideId == kRCT12RideIdNull)
         return RideId::GetNull();
 
     return RideId::FromUnderlying(rideId);
@@ -526,11 +525,11 @@ RideId RCT12RideIdToOpenRCT2RideId(const RCT12RideId rideId)
 
 static bool RCT12IsFormatChar(codepoint_t c)
 {
-    if (c >= RCT2_STRING_FORMAT_ARG_START && c <= RCT2_STRING_FORMAT_ARG_END)
+    if (c >= kRCT12StringFormatArgStart && c <= kRCT12StringFormatArgEnd)
     {
         return true;
     }
-    if (c >= RCT2_STRING_FORMAT_COLOUR_START && c <= RCT2_STRING_FORMAT_COLOUR_END)
+    if (c >= kRCT12StringFormatColourStart && c <= kRCT12StringFormatColourEnd)
     {
         return true;
     }
@@ -567,7 +566,7 @@ std::string RCT12RemoveFormattingUTF8(std::string_view s)
     {
         if (!RCT12IsFormatChar(codepoint))
         {
-            String::AppendCodepoint(result, codepoint);
+            String::appendCodepoint(result, codepoint);
         }
     }
 
@@ -600,39 +599,39 @@ static FormatToken GetFormatTokenFromRCT12Code(codepoint_t codepoint)
     switch (codepoint)
     {
         case RCT12FormatCode::Newline:
-            return FormatToken::Newline;
+            return FormatToken::newline;
         case RCT12FormatCode::NewlineSmall:
-            return FormatToken::NewlineSmall;
+            return FormatToken::newlineSmall;
         case RCT12FormatCode::ColourBlack:
-            return FormatToken::ColourBlack;
+            return FormatToken::colourBlack;
         case RCT12FormatCode::ColourGrey:
-            return FormatToken::ColourGrey;
+            return FormatToken::colourGrey;
         case RCT12FormatCode::ColourWhite:
-            return FormatToken::ColourWhite;
+            return FormatToken::colourWhite;
         case RCT12FormatCode::ColourRed:
-            return FormatToken::ColourRed;
+            return FormatToken::colourRed;
         case RCT12FormatCode::ColourGreen:
-            return FormatToken::ColourGreen;
+            return FormatToken::colourGreen;
         case RCT12FormatCode::ColourYellow:
-            return FormatToken::ColourYellow;
+            return FormatToken::colourYellow;
         case RCT12FormatCode::ColourTopaz:
-            return FormatToken::ColourTopaz;
+            return FormatToken::colourTopaz;
         case RCT12FormatCode::ColourCeladon:
-            return FormatToken::ColourCeladon;
+            return FormatToken::colourCeladon;
         case RCT12FormatCode::ColourBabyBlue:
-            return FormatToken::ColourBabyBlue;
+            return FormatToken::colourBabyBlue;
         case RCT12FormatCode::ColourPaleLavender:
-            return FormatToken::ColourPaleLavender;
+            return FormatToken::colourPaleLavender;
         case RCT12FormatCode::ColourPaleGold:
-            return FormatToken::ColourPaleGold;
+            return FormatToken::colourPaleGold;
         case RCT12FormatCode::ColourLightPink:
-            return FormatToken::ColourLightPink;
+            return FormatToken::colourLightPink;
         case RCT12FormatCode::ColourPearlAqua:
-            return FormatToken::ColourPearlAqua;
+            return FormatToken::colourPearlAqua;
         case RCT12FormatCode::ColourPaleSilver:
-            return FormatToken::ColourPaleSilver;
+            return FormatToken::colourPaleSilver;
         default:
-            return FormatToken::Unknown;
+            return FormatToken::unknown;
     }
 }
 
@@ -643,88 +642,97 @@ std::string ConvertFormattedStringToOpenRCT2(std::string_view buffer)
     {
         buffer = buffer.substr(0, nullTerminator);
     }
-    auto asUtf8 = RCT2StringToUTF8(buffer, RCT2LanguageId::EnglishUK);
+    auto asUtf8 = RCT2StringToUTF8(buffer, RCT2LanguageId::englishUK);
 
     std::string result;
     CodepointView codepoints(asUtf8);
     for (auto codepoint : codepoints)
     {
         auto token = GetFormatTokenFromRCT12Code(codepoint);
-        if (token != FormatToken::Unknown)
+        if (token != FormatToken::unknown)
         {
             result += FormatTokenToStringWithBraces(token);
         }
         else
         {
-            String::AppendCodepoint(result, codepoint);
+            String::appendCodepoint(result, codepoint);
         }
     }
     return result;
 }
 
-track_type_t RCT12FlatTrackTypeToOpenRCT2(RCT12TrackType origTrackType)
+TrackElemType RCT12FlatTrackTypeToOpenRCT2(RCT12::TrackElemType origTrackType)
 {
     switch (origTrackType)
     {
-        case TrackElemType::FlatTrack1x4A_Alias:
-            return TrackElemType::FlatTrack1x4A;
-        case TrackElemType::FlatTrack2x2_Alias:
-            return TrackElemType::FlatTrack2x2;
-        case TrackElemType::FlatTrack4x4_Alias:
-            return TrackElemType::FlatTrack4x4;
-        case TrackElemType::FlatTrack2x4_Alias:
-            return TrackElemType::FlatTrack2x4;
-        case TrackElemType::FlatTrack1x5_Alias:
-            return TrackElemType::FlatTrack1x5;
-        case TrackElemType::FlatTrack1x1A_Alias:
-            return TrackElemType::FlatTrack1x1A;
-        case TrackElemType::FlatTrack1x4B_Alias:
-            return TrackElemType::FlatTrack1x4B;
-        case TrackElemType::FlatTrack1x1B_Alias:
-            return TrackElemType::FlatTrack1x1B;
-        case TrackElemType::FlatTrack1x4C_Alias:
-            return TrackElemType::FlatTrack1x4C;
-        case TrackElemType::FlatTrack3x3_Alias:
-            return TrackElemType::FlatTrack3x3;
+        case RCT12::TrackElemType::flatTrack1x4A_Alias:
+            return TrackElemType::flatTrack1x4A;
+        case RCT12::TrackElemType::flatTrack2x2_Alias:
+            return TrackElemType::flatTrack2x2;
+        case RCT12::TrackElemType::flatTrack4x4_Alias:
+            return TrackElemType::flatTrack4x4;
+        case RCT12::TrackElemType::flatTrack2x4_Alias:
+            return TrackElemType::flatTrack2x4;
+        case RCT12::TrackElemType::flatTrack1x5_Alias:
+            return TrackElemType::flatTrack1x5;
+        case RCT12::TrackElemType::flatTrack1x1A_Alias:
+            return TrackElemType::flatTrack1x1A;
+        case RCT12::TrackElemType::flatTrack1x4B_Alias:
+            return TrackElemType::flatTrack1x4B;
+        case RCT12::TrackElemType::flatTrack1x1B_Alias:
+            return TrackElemType::flatTrack1x1B;
+        case RCT12::TrackElemType::flatTrack1x4C_Alias:
+            return TrackElemType::flatTrack1x4C;
+        case RCT12::TrackElemType::flatTrack3x3_Alias:
+            return TrackElemType::flatTrack3x3;
+        default:
+            return static_cast<TrackElemType>(origTrackType);
     }
-
-    return origTrackType;
 }
 
-RCT12TrackType OpenRCT2FlatTrackTypeToRCT12(track_type_t origTrackType)
+RCT12::TrackElemType OpenRCT2FlatTrackTypeToRCT12(TrackElemType origTrackType)
 {
     switch (origTrackType)
     {
-        case TrackElemType::FlatTrack1x4A:
-            return TrackElemType::FlatTrack1x4A_Alias;
-        case TrackElemType::FlatTrack2x2:
-            return TrackElemType::FlatTrack2x2_Alias;
-        case TrackElemType::FlatTrack4x4:
-            return TrackElemType::FlatTrack4x4_Alias;
-        case TrackElemType::FlatTrack2x4:
-            return TrackElemType::FlatTrack2x4_Alias;
-        case TrackElemType::FlatTrack1x5:
-            return TrackElemType::FlatTrack1x5_Alias;
-        case TrackElemType::FlatTrack1x1A:
-            return TrackElemType::FlatTrack1x1A_Alias;
-        case TrackElemType::FlatTrack1x4B:
-            return TrackElemType::FlatTrack1x4B_Alias;
-        case TrackElemType::FlatTrack1x1B:
-            return TrackElemType::FlatTrack1x1B_Alias;
-        case TrackElemType::FlatTrack1x4C:
-            return TrackElemType::FlatTrack1x4C_Alias;
-        case TrackElemType::FlatTrack3x3:
-            return TrackElemType::FlatTrack3x3_Alias;
+        case TrackElemType::flatTrack1x4A:
+            return RCT12::TrackElemType::flatTrack1x4A_Alias;
+        case TrackElemType::flatTrack2x2:
+            return RCT12::TrackElemType::flatTrack2x2_Alias;
+        case TrackElemType::flatTrack4x4:
+            return RCT12::TrackElemType::flatTrack4x4_Alias;
+        case TrackElemType::flatTrack2x4:
+            return RCT12::TrackElemType::flatTrack2x4_Alias;
+        case TrackElemType::flatTrack1x5:
+            return RCT12::TrackElemType::flatTrack1x5_Alias;
+        case TrackElemType::flatTrack1x1A:
+            return RCT12::TrackElemType::flatTrack1x1A_Alias;
+        case TrackElemType::flatTrack1x4B:
+            return RCT12::TrackElemType::flatTrack1x4B_Alias;
+        case TrackElemType::flatTrack1x1B:
+            return RCT12::TrackElemType::flatTrack1x1B_Alias;
+        case TrackElemType::flatTrack1x4C:
+            return RCT12::TrackElemType::flatTrack1x4C_Alias;
+        case TrackElemType::flatTrack3x3:
+            return RCT12::TrackElemType::flatTrack3x3_Alias;
+        default:
+            return static_cast<RCT12::TrackElemType>(origTrackType);
     }
-
-    return origTrackType;
 }
 
-static constexpr std::string_view _stationStyles[] = {
-    "rct2.station.plain",          "rct2.station.wooden", "rct2.station.canvas_tent", "rct2.station.castle_grey",
-    "rct2.station.castle_brown",   "rct2.station.jungle", "rct2.station.log",         "rct2.station.classical",
-    "rct2.station.abstract",       "rct2.station.snow",   "rct2.station.pagoda",      "rct2.station.space",
-    "openrct2.station.noentrance",
+static constexpr std::string_view _stationStyleMap[] = {
+    "rct2.station.plain",          // RCT12_STATION_STYLE_PLAIN
+    "rct2.station.wooden",         // RCT12_STATION_STYLE_WOODEN
+    "rct2.station.canvas_tent",    // RCT12_STATION_STYLE_CANVAS_TENT
+    "rct2.station.castle_grey",    // RCT12_STATION_STYLE_CASTLE_GREY
+    "rct2.station.castle_brown",   // RCT12_STATION_STYLE_CASTLE_BROWN
+    "rct2.station.jungle",         // RCT12_STATION_STYLE_JUNGLE
+    "rct2.station.log",            // RCT12_STATION_STYLE_LOG_CABIN
+    "rct2.station.classical",      // RCT12_STATION_STYLE_CLASSICAL
+    "rct2.station.abstract",       // RCT12_STATION_STYLE_ABSTRACT
+    "rct2.station.snow",           // RCT12_STATION_STYLE_SNOW
+    "rct2.station.pagoda",         // RCT12_STATION_STYLE_PAGODA
+    "rct2.station.space",          // RCT12_STATION_STYLE_SPACE
+    "openrct2.station.noentrance", // RCT12_STATION_STYLE_INVISIBLE
 };
 
 static constexpr std::string_view _musicStyles[] = {
@@ -765,22 +773,22 @@ static constexpr std::string_view _musicStyles[] = {
 
 std::string_view GetStationIdentifierFromStyle(uint8_t style)
 {
-    if (style < std::size(_stationStyles))
+    if (style < std::size(_stationStyleMap))
     {
-        return _stationStyles[style];
+        return _stationStyleMap[style];
     }
-    return _stationStyles[RCT12_STATION_STYLE_INVISIBLE];
+    return _stationStyleMap[RCT12_STATION_STYLE_INVISIBLE];
 }
 
 uint8_t GetStationStyleFromIdentifier(u8string_view identifier)
 {
     // Not supported in TD6, closest match.
-    if (identifier == "openrct2.station.noplatformnoentrance")
+    if (identifier == kNoEntranceNoPlatformIdentifier)
         return RCT12_STATION_STYLE_INVISIBLE;
 
-    for (uint8_t i = RCT12_STATION_STYLE_PLAIN; i < std::size(_stationStyles); i++)
+    for (uint8_t i = RCT12_STATION_STYLE_PLAIN; i < std::size(_stationStyleMap); i++)
     {
-        if (_stationStyles[i] == identifier)
+        if (_stationStyleMap[i] == identifier)
         {
             return i;
         }
@@ -799,25 +807,19 @@ std::optional<uint8_t> GetStyleFromMusicIdentifier(std::string_view identifier)
     return std::nullopt;
 }
 
-void RCT12AddDefaultObjects(ObjectList& objectList)
+void RCT12AddDefaultMusic(ObjectList& objectList)
 {
-    // Stations
-    for (size_t i = 0; i < std::size(_stationStyles); i++)
-    {
-        objectList.SetObject(ObjectType::Station, static_cast<ObjectEntryIndex>(i), _stationStyles[i]);
-    }
-
     // Music
     for (size_t i = 0; i < std::size(_musicStyles); i++)
     {
         if (!_musicStyles[i].empty())
         {
-            objectList.SetObject(ObjectType::Music, static_cast<ObjectEntryIndex>(i), _musicStyles[i]);
+            objectList.SetObject(ObjectType::music, static_cast<ObjectEntryIndex>(i), _musicStyles[i]);
         }
     }
 }
 
-void AppendRequiredObjects(ObjectList& objectList, ObjectType objectType, const std::vector<std::string>& objectNames)
+void AppendRequiredObjects(ObjectList& objectList, ObjectType objectType, std::span<const std::string_view> objectNames)
 {
     for (const auto& objectName : objectNames)
     {
@@ -834,8 +836,8 @@ void AppendRequiredObjects(ObjectList& objectList, ObjectType objectType, const 
 
 money64 RCT12CompletedCompanyValueToOpenRCT2(money32 origValue)
 {
-    if (origValue == RCT12_COMPANY_VALUE_ON_FAILED_OBJECTIVE)
-        return COMPANY_VALUE_ON_FAILED_OBJECTIVE;
+    if (origValue == kRCT12CompanyValueOnFailedObjective)
+        return kCompanyValueOnFailedObjective;
 
     return ToMoney64(origValue);
 }
@@ -847,7 +849,7 @@ ResearchItem RCT12ResearchItem::ToResearchItem() const
     {
         newResearchItem.rawValue = 0;
         newResearchItem.flags = 0;
-        newResearchItem.category = ResearchCategory::Transport;
+        newResearchItem.category = ResearchCategory::transport;
         newResearchItem.SetNull();
     }
     else
@@ -856,7 +858,7 @@ ResearchItem RCT12ResearchItem::ToResearchItem() const
         newResearchItem.entryIndex = RCTEntryIndexToOpenRCT2EntryIndex(EntryIndex);
         newResearchItem.flags = Flags;
         newResearchItem.category = static_cast<ResearchCategory>(Category);
-        if (newResearchItem.type == Research::EntryType::Ride)
+        if (newResearchItem.type == Research::EntryType::ride)
         {
             auto* rideEntry = GetRideEntryByIndex(newResearchItem.entryIndex);
             newResearchItem.baseRideType = rideEntry != nullptr ? RCT2::RCT2RideTypeToOpenRCT2RideType(BaseRideType, *rideEntry)
@@ -871,89 +873,16 @@ ResearchItem RCT12ResearchItem::ToResearchItem() const
     return newResearchItem;
 }
 
-void ConvertFromTD46Flags(TrackDesignTrackElement& target, uint8_t flags)
-{
-    target.brakeBoosterSpeed = kRCT2DefaultBlockBrakeSpeed;
-    if (TrackTypeIsStation(target.type))
-    {
-        auto stationIndex = flags & EnumValue(TD46Flags::StationId);
-        target.stationIndex = StationIndex::FromUnderlying(stationIndex);
-    }
-    else
-    {
-        auto speedOrSeatRotation = flags & EnumValue(TD46Flags::SpeedOrSeatRotation);
-        if (TrackTypeHasSpeedSetting(target.type) && target.type != TrackElemType::BlockBrakes)
-        {
-            target.brakeBoosterSpeed = speedOrSeatRotation << 1;
-        }
-        else
-        {
-            target.seatRotation = speedOrSeatRotation;
-        }
-    }
-
-    target.colourScheme = (flags & EnumValue(TD46Flags::ColourScheme)) >> 4;
-    if (flags & EnumValue(TD46Flags::IsInverted))
-        target.SetFlag(TrackDesignTrackElementFlag::isInverted);
-    if (flags & EnumValue(TD46Flags::HasChain))
-        target.SetFlag(TrackDesignTrackElementFlag::hasChain);
-}
-
-uint8_t ConvertToTD46Flags(const TrackDesignTrackElement& source)
-{
-    uint8_t trackFlags = 0;
-    if (TrackTypeIsStation(source.type))
-    {
-        trackFlags = (source.stationIndex.ToUnderlying() & EnumValue(TD46Flags::StationId));
-    }
-    else if (TrackTypeHasSpeedSetting(source.type) && source.type != TrackElemType::BlockBrakes)
-    {
-        trackFlags = (source.brakeBoosterSpeed >> 1);
-    }
-    else
-    {
-        trackFlags = source.seatRotation;
-    }
-
-    trackFlags |= source.colourScheme << 4;
-
-    if (source.HasFlag(TrackDesignTrackElementFlag::hasChain))
-        trackFlags |= EnumValue(TD46Flags::HasChain);
-    if (source.HasFlag(TrackDesignTrackElementFlag::isInverted))
-        trackFlags |= EnumValue(TD46Flags::IsInverted);
-
-    return trackFlags;
-}
-
-void ImportMazeElement(TrackDesign& td, const TD46MazeElement& td46MazeElement)
-{
-    if (td46MazeElement.IsEntrance() || td46MazeElement.IsExit())
-    {
-        TrackDesignEntranceElement element{};
-        element.location = TileCoordsXYZD(td46MazeElement.x, td46MazeElement.y, 0, td46MazeElement.Direction);
-        element.isExit = td46MazeElement.IsExit();
-        td.entranceElements.push_back(element);
-    }
-    else
-    {
-        TrackDesignMazeElement mazeElement{};
-        mazeElement.location.x = td46MazeElement.x;
-        mazeElement.location.y = td46MazeElement.y;
-        mazeElement.mazeEntry = td46MazeElement.MazeEntry;
-        td.mazeElements.push_back(mazeElement);
-    }
-}
-
 namespace OpenRCT2::RCT12
 {
     size_t GetRCTStringBufferLen(const char* buffer, size_t maxBufferLen)
     {
-        constexpr char MULTIBYTE = static_cast<char>(255);
+        constexpr char kMultibyte = static_cast<char>(255);
         size_t len = 0;
         for (size_t i = 0; i < maxBufferLen; i++)
         {
             auto ch = buffer[i];
-            if (ch == MULTIBYTE)
+            if (ch == kMultibyte)
             {
                 i += 2;
 
@@ -973,5 +902,23 @@ namespace OpenRCT2::RCT12
             }
         }
         return len;
+    }
+
+    bool trackTypeHasSpeedSetting(TrackElemType trackType)
+    {
+        return trackType == TrackElemType::booster || trackType == TrackElemType::brakes;
+    }
+
+    bool trackTypeIsStation(TrackElemType trackType)
+    {
+        switch (trackType)
+        {
+            case TrackElemType::endStation:
+            case TrackElemType::beginStation:
+            case TrackElemType::middleStation:
+                return true;
+            default:
+                return false;
+        }
     }
 } // namespace OpenRCT2::RCT12

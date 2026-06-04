@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) 2014-2024 OpenRCT2 developers
+ * Copyright (c) 2014-2026 OpenRCT2 developers
  *
  * For a complete list of all authors, please refer to contributors.md
  * Interested in contributing? Visit https://github.com/OpenRCT2/OpenRCT2
@@ -69,10 +69,6 @@ extern const CoordsXY SceneryQuadrantOffsets[];
 void SceneryUpdateTile(const CoordsXY& sceneryPos);
 void SceneryRemoveGhostToolPlacement();
 
-struct WallSceneryEntry;
-
-int32_t WallEntryGetDoorSound(const WallSceneryEntry* wallEntry);
-
 bool IsSceneryAvailableToBuild(const ScenerySelection& item);
 
 bool IsSceneryItemRestricted(const ScenerySelection& item);
@@ -81,7 +77,7 @@ void RestrictAllMiscScenery();
 void MarkAllUnrestrictedSceneryAsInvented();
 std::vector<ScenerySelection>& GetRestrictedScenery();
 void SetSceneryItemRestricted(const ScenerySelection& item, bool on);
-bool ObjectTypeCanBeRestricted(ObjectType objectType);
+bool ObjectTypeCanBeRestricted(OpenRCT2::ObjectType objectType);
 
-ObjectType GetObjectTypeFromSceneryType(uint8_t type);
-uint8_t GetSceneryTypeFromObjectType(ObjectType type);
+OpenRCT2::ObjectType GetObjectTypeFromSceneryType(uint8_t type);
+uint8_t GetSceneryTypeFromObjectType(OpenRCT2::ObjectType type);
