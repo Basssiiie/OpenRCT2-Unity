@@ -1,0 +1,8 @@
+﻿<Solution>
+  <Project Path="OpenRCT2.Bindings.csproj" />
+  <Project Path="OpenRCT2.Unity.Generators.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="OpenRCT2.Unity.Behaviours.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="OpenRCT2.Unity.Utilities.csproj" />
+</Solution>

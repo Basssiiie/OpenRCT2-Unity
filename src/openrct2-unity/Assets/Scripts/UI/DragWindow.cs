@@ -20,7 +20,7 @@ public class DragWindow : MonoBehaviour, IDragHandler, IPointerDownHandler
 
         if (_canvas == null)
         {
-            _canvas = FindObjectOfType<Canvas>().transform.GetComponent<Canvas>();
+            _canvas = FindAnyObjectByType<Canvas>().transform.GetComponent<Canvas>();
         }
     }
 
