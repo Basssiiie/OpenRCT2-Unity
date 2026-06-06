@@ -6,8 +6,8 @@
 #include <openrct2/drawing/Colour.h>
 #include <openrct2/drawing/ColourMap.h>
 #include <openrct2/drawing/ColourPalette.h>
-#include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/Drawing.Sprite.h>
+#include <openrct2/drawing/Drawing.h>
 #include <openrct2/drawing/G1Element.h>
 #include <openrct2/drawing/ImageId.hpp>
 #include <openrct2/drawing/PaletteIndex.h>

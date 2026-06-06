@@ -2,16 +2,16 @@
 #include "../Utilities/Logging.h"
 #include "../Utilities/TileElementHelper.h"
 
-#include <openrct2/object/TerrainEdgeObject.h>
-#include <openrct2/object/TerrainSurfaceObject.h>
-#include <openrct2/paint/tile_element/Paint.Surface.h>
-#include <openrct2/world/Map.h>
-#include <openrct2/world/tile_element/SurfaceElement.h>
 #include <cstdint>
 #include <openrct2/drawing/Colour.h>
 #include <openrct2/drawing/FilterPaletteIds.h>
 #include <openrct2/drawing/ImageId.hpp>
+#include <openrct2/object/TerrainEdgeObject.h>
+#include <openrct2/object/TerrainSurfaceObject.h>
+#include <openrct2/paint/tile_element/Paint.Surface.h>
 #include <openrct2/world/Location.hpp>
+#include <openrct2/world/Map.h>
+#include <openrct2/world/tile_element/SurfaceElement.h>
 #include <openrct2/world/tile_element/TileElement.h>
 #include <openrct2/world/tile_element/TileElementType.h>
 

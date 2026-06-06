@@ -8,12 +8,12 @@
 #include <openrct2/ride/Ride.h>
 #include <openrct2/ride/RideColour.h>
 #include <openrct2/ride/RideData.h>
-#include <openrct2/ride/ted/PitchAndRoll.h>
-#include <openrct2/ride/ted/TrackElementDescriptor.h>
-#include <openrct2/ride/ted/TrackElemType.h>
 #include <openrct2/ride/TrackData.h>
 #include <openrct2/ride/Vehicle.h>
 #include <openrct2/ride/VehicleSubpositionData.h>
+#include <openrct2/ride/ted/PitchAndRoll.h>
+#include <openrct2/ride/ted/TrackElemType.h>
+#include <openrct2/ride/ted/TrackElementDescriptor.h>
 #include <openrct2/world/Location.hpp>
 #include <openrct2/world/Map.h>
 #include <openrct2/world/tile_element/TileElement.h>

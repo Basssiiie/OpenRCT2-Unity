@@ -4,12 +4,12 @@
 #include <algorithm>
 #include <cstdint>
 #include <openrct2/Context.h>
+#include <openrct2/GameState.h>
+#include <openrct2/Identifiers.h>
 #include <openrct2/entity/EntityList.h>
 #include <openrct2/entity/Guest.h>
 #include <openrct2/entity/Peep.h>
 #include <openrct2/entity/Staff.h>
-#include <openrct2/GameState.h>
-#include <openrct2/Identifiers.h>
 #include <openrct2/object/ObjectManager.h>
 #include <openrct2/object/PeepAnimationsObject.h>
 #include <openrct2/peep/PeepSpriteIds.h>
@@ -19,9 +19,7 @@ using namespace OpenRCT2::Drawing;
 
 extern "C"
 {
-    EXPORT 
-
-    struct PeepEntity
+    EXPORT struct PeepEntity
     {
         int32_t x;
         int32_t y;
@@ -66,7 +64,7 @@ extern "C"
             return;
         }
 
-        switch (group) 
+        switch (group)
         {
             case PeepAnimationGroup::umbrella:
                 entity->accessoryColour = guest->UmbrellaColour;
@@ -98,7 +96,7 @@ extern "C"
 
         return peepCount;
     }
-            
+
     // Loads all the staff into the specified buffer, returns the total amount of staff loaded.
     EXPORT int32_t GetAllStaff(PeepEntity* peeps, int32_t length)
     {
@@ -124,7 +122,8 @@ extern "C"
     };
 
     // Inspired by PaintPeepGetBaseImageAndOffset in Paint.Peep.cpp
-    EXPORT void GetPeepAnimationData(ObjectEntryIndex animationObjectId, PeepAnimationGroup group, PeepAnimationType type, PeepAnimationData* out)
+    EXPORT void GetPeepAnimationData(
+        ObjectEntryIndex animationObjectId, PeepAnimationGroup group, PeepAnimationType type, PeepAnimationData* out)
     {
         auto& objManager = GetContext()->GetObjectManager();
         auto* animObj = objManager.GetLoadedObject<PeepAnimationsObject>(animationObjectId);

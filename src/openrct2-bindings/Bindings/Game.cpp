@@ -3,11 +3,11 @@
 
 #include <memory>
 #include <openrct2/Context.h>
-#include <openrct2/core/EnumUtils.hpp>
-#include <openrct2/core/Path.hpp>
 #include <openrct2/Diagnostic.h>
 #include <openrct2/GameState.h>
 #include <openrct2/OpenRCT2.h>
+#include <openrct2/core/EnumUtils.hpp>
+#include <openrct2/core/Path.hpp>
 #include <openrct2/scenes/Scene.h>
 #include <openrct2/world/ParkData.h>
 #include <string>

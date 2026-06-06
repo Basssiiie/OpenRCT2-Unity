@@ -1,9 +1,10 @@
 #include "./TileElementHelper.h"
+
 #include "./Logging.h"
 
 #include <openrct2/world/Location.hpp>
-#include <openrct2/world/MapLimits.h>
 #include <openrct2/world/Map.h>
+#include <openrct2/world/MapLimits.h>
 #include <openrct2/world/tile_element/TileElement.h>
 #include <openrct2/world/tile_element/TileElementType.h>
 

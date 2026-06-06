@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <openrct2/entity/EntityList.h>
 #include <openrct2/ride/Angles.h>
-#include <openrct2/ride/ted/TrackElemType.h>
 #include <openrct2/ride/Vehicle.h>
+#include <openrct2/ride/ted/TrackElemType.h>
 
 extern "C"
 {

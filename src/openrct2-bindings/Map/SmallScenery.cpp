@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <openrct2/drawing/ImageId.hpp>
 #include <openrct2/object/Object.h>
 #include <openrct2/object/ObjectTypes.h>
 #include <openrct2/object/SmallSceneryEntry.h>
@@ -13,7 +14,6 @@
 #include <openrct2/world/tile_element/SmallSceneryElement.h>
 #include <openrct2/world/tile_element/TileElement.h>
 #include <openrct2/world/tile_element/TileElementType.h>
-#include <openrct2/drawing/ImageId.hpp>
 
 using namespace OpenRCT2::Drawing;
 

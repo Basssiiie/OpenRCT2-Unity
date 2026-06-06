@@ -1,9 +1,9 @@
 #include "../OpenRCT2.Bindings.h"
 
 #include <cstdint>
+#include <openrct2/GameState.h>
 #include <openrct2/entity/EntityBase.h>
 #include <openrct2/entity/EntityRegistry.h>
-#include <openrct2/GameState.h>
 
 extern "C"
 {
