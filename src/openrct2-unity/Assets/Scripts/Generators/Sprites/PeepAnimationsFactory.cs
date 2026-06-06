@@ -14,16 +14,16 @@ namespace OpenRCT2.Generators.Sprites
         /// <summary>
         /// Get a sprite sheet for the specified peep animation.
         /// </summary>
-        public static PeepAnimation GetOrCreate(byte group, byte type, byte tshirt, byte trousers, byte accessory)
+        public static PeepAnimation GetOrCreate(ushort animationObjectId, byte group, byte type, byte tshirt, byte trousers, byte accessory)
         {
-            var key = HashCode.Combine(group, type, tshirt, trousers, accessory);
+            var key = HashCode.Combine(animationObjectId, group, type, tshirt, trousers, accessory);
 
             if (_cache.TryGetValue(key, out PeepAnimation animation))
             {
                 return animation;
             }
 
-            animation = Create(group, type, tshirt, trousers, accessory);
+            animation = Create(animationObjectId, group, type, tshirt, trousers, accessory);
             _cache.Add(key, animation);
 
             return animation;
@@ -32,9 +32,9 @@ namespace OpenRCT2.Generators.Sprites
         /// <summary>
         /// Create a sprite sheet for the specified peep animation.
         /// </summary>
-        public static PeepAnimation Create(byte group, byte type, byte tshirt, byte trousers, byte accessory)
+        public static PeepAnimation Create(ushort animationObjectId, byte group, byte type, byte tshirt, byte trousers, byte accessory)
         {
-            var data = EntityRegistry.GetPeepAnimationData(group, type);
+            var data = EntityRegistry.GetPeepAnimationData(animationObjectId, group, type);
             var rotations = data.rotations;
             var framesLength = data.length;
             var sprites = new SpriteTexture[rotations * framesLength];

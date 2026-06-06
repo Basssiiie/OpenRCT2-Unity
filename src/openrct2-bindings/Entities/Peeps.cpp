@@ -1,12 +1,21 @@
 #include "../OpenRCT2.Bindings.h"
 #include "../Utilities/Logging.h"
 
+#include <algorithm>
+#include <cstdint>
+#include <openrct2/Context.h>
 #include <openrct2/entity/EntityList.h>
 #include <openrct2/entity/Guest.h>
 #include <openrct2/entity/Peep.h>
 #include <openrct2/entity/Staff.h>
-#include <openrct2/peep/PeepAnimationData.h>
+#include <openrct2/GameState.h>
+#include <openrct2/Identifiers.h>
+#include <openrct2/object/ObjectManager.h>
+#include <openrct2/object/PeepAnimationsObject.h>
 #include <openrct2/peep/PeepSpriteIds.h>
+#include <openrct2/ride/RideColour.h>
+
+using namespace OpenRCT2::Drawing;
 
 extern "C"
 {
@@ -18,9 +27,10 @@ extern "C"
         int32_t y;
         int32_t z;
         uint8_t direction;
-        uint8_t tshirtColour;
-        uint8_t trousersColour;
-        uint8_t accessoryColour;
+        Colour tshirtColour;
+        Colour trousersColour;
+        Colour accessoryColour;
+        ObjectEntryIndex animationObjectId;
         PeepAnimationGroup animationGroup;
         PeepAnimationType animationType;
         uint8_t animationOffset;
@@ -34,11 +44,12 @@ extern "C"
         entity->direction = peep->PeepDirection;
         entity->tshirtColour = peep->TshirtColour;
         entity->trousersColour = peep->TrousersColour;
+        entity->animationObjectId = peep->AnimationObjectIndex;
 
         const auto group = peep->AnimationGroup;
         entity->animationGroup = group;
 
-        if (peep->Action == PeepActionType::Idle)
+        if (peep->Action == PeepActionType::idle)
         {
             entity->animationType = peep->NextAnimationType;
             entity->animationOffset = 0;
@@ -57,15 +68,15 @@ extern "C"
 
         switch (group) 
         {
-            case PeepAnimationGroup::Umbrella:
+            case PeepAnimationGroup::umbrella:
                 entity->accessoryColour = guest->UmbrellaColour;
                 return;
 
-            case PeepAnimationGroup::Balloon:
+            case PeepAnimationGroup::balloon:
                 entity->accessoryColour = guest->BalloonColour;
                 return;
 
-            case PeepAnimationGroup::Hat:
+            case PeepAnimationGroup::hat:
                 entity->accessoryColour = guest->HatColour;
                 return;
         }
@@ -112,19 +123,23 @@ extern "C"
         uint8_t rotations;
     };
 
-    EXPORT void GetPeepAnimationData(PeepAnimationGroup group, PeepAnimationType type, PeepAnimationData* out)
+    // Inspired by PaintPeepGetBaseImageAndOffset in Paint.Peep.cpp
+    EXPORT void GetPeepAnimationData(ObjectEntryIndex animationObjectId, PeepAnimationGroup group, PeepAnimationType type, PeepAnimationData* out)
     {
-        const auto& animation = GetPeepAnimation(group, type);
-        const auto& frames = animation.frame_offsets;
-        const auto baseImageId = animation.base_image;
+        auto& objManager = GetContext()->GetObjectManager();
+        auto* animObj = objManager.GetLoadedObject<PeepAnimationsObject>(animationObjectId);
+        auto& animation = animObj->GetPeepAnimation(group, type);
+
+        auto baseImageId = animation.baseImage;
+        auto& frames = animation.frameOffsets;
 
         out->baseImageId = baseImageId;
         out->length = (*std::max_element(frames.begin(), frames.end())) + 1;
-        out->rotations = (type == PeepAnimationType::Hanging) ? 1 : 4;
+        out->rotations = (type == PeepAnimationType::hanging) ? 1 : 4;
 
         if ((baseImageId >= kPeepSpriteHatStateWatchRideId && baseImageId < (kPeepSpriteHatStateSittingIdleId + 4))
             || (baseImageId >= kPeepSpriteBalloonStateWatchRideId && baseImageId < (kPeepSpriteBalloonStateSittingIdleId + 4))
-            || (baseImageId >= kPeepSpriteUmbrellaStateNoneId && baseImageId < (kPeepSpriteUmbrellaStateSittingIdleId + 4)))
+            || (baseImageId >= kPeepSpriteUmbrellaStateWalkingId && baseImageId < (kPeepSpriteUmbrellaStateSittingIdleId + 4)))
         {
             out->accessoryImageOffset = 32;
         }
@@ -148,13 +163,15 @@ extern "C"
 
     // Writes statistics about the specified peep to the specified struct, returns true
     // or false depending on whether the peep existed or not.
-    EXPORT bool GetGuestStats(uint16_t spriteIndex, GuestStats* stats)
+    EXPORT bool GetGuestStats(uint16_t entityIndex, GuestStats* stats)
     {
-        const Guest* guest = TryGetEntity<Guest>(EntityId::FromUnderlying(spriteIndex));
+        auto& entities = getGameState().entities;
+        const auto entityId = EntityId::FromUnderlying(entityIndex);
+        const Guest* guest = entities.TryGetEntity<Guest>(entityId);
 
         if (guest == nullptr)
         {
-            dll_log("Peep does not exist anymore. ( sprite id: %i )", spriteIndex);
+            dll_log("Peep does not exist anymore. ( entity id: %i )", entityIndex);
             return false;
         }
 

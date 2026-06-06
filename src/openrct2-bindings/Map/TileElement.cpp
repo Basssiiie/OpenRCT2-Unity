@@ -1,8 +1,9 @@
 #include "../OpenRCT2.Bindings.h"
-#include "../Utilities/Logging.h"
 #include "../Utilities/TileElementHelper.h"
 
-#include <openrct2/world/Park.h>
+#include <cstdint>
+#include <openrct2/world/tile_element/TileElement.h>
+#include <openrct2/world/tile_element/TileElementType.h>
 
 extern "C"
 {

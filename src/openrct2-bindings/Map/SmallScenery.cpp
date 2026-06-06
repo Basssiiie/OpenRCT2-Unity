@@ -2,12 +2,20 @@
 #include "../Utilities/Logging.h"
 #include "../Utilities/TileElementHelper.h"
 
-#include <iostream>
-#include <openrct2/object/ObjectManager.h>
+#include <algorithm>
+#include <cstdint>
+#include <openrct2/object/Object.h>
 #include <openrct2/object/ObjectTypes.h>
 #include <openrct2/object/SmallSceneryEntry.h>
+#include <openrct2/world/Location.hpp>
 #include <openrct2/world/Map.h>
 #include <openrct2/world/Scenery.h>
+#include <openrct2/world/tile_element/SmallSceneryElement.h>
+#include <openrct2/world/tile_element/TileElement.h>
+#include <openrct2/world/tile_element/TileElementType.h>
+#include <openrct2/drawing/ImageId.hpp>
+
+using namespace OpenRCT2::Drawing;
 
 extern "C"
 {
@@ -19,9 +27,9 @@ extern "C"
         ObjectEntryIndex objectIndex;
         uint8_t quadrant;
         bool fullTile;
-        uint8_t colour1;
-        uint8_t colour2;
-        uint8_t colour3;
+        Colour colour1;
+        Colour colour2;
+        Colour colour3;
         bool animated;
         uint16_t animationFrameCount;
         uint16_t animationFrameDelay;
@@ -34,7 +42,7 @@ extern "C"
         uint32_t imageIndex = entry->image;
 
         // Wither flowers
-        if (entry->HasFlag(SMALL_SCENERY_FLAG_CAN_WITHER))
+        if (entry->flags.has(SmallSceneryFlag::canWither))
         {
             uint8_t age = element->GetAge();
 
@@ -66,13 +74,13 @@ extern "C"
         target->objectIndex = scenery->GetEntryIndex();
         target->imageIndex = GetIndexWithWither(scenery, entry);
         target->quadrant = scenery->GetSceneryQuadrant();
-        target->fullTile = entry->HasFlag(SMALL_SCENERY_FLAG_FULL_TILE);
+        target->fullTile = entry->flags.has(SmallSceneryFlag::occupiesFullTile);
         target->colour1 = scenery->GetPrimaryColour();
         target->colour2 = scenery->GetSecondaryColour();
         target->colour3 = scenery->GetTertiaryColour();
-        target->animated = entry->HasFlag(SMALL_SCENERY_FLAG_ANIMATED);
+        target->animated = entry->flags.has(SmallSceneryFlag::isAnimated);
 
-        if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_FRAME_OFFSETS))
+        if (entry->flags.has(SmallSceneryFlag::hasFrameOffsets))
         {
             target->animationFrameCount = entry->FrameOffsetCount;
             target->animationFrameDelay = entry->animation_delay & 0xFF;
@@ -83,7 +91,7 @@ extern "C"
             target->animationFrameDelay = 1;
         }
 
-        const Object* object = ObjectEntryGetObject(ObjectType::SmallScenery, scenery->GetEntryIndex());
+        const Object* object = ObjectEntryGetObject(ObjectType::smallScenery, scenery->GetEntryIndex());
         object->GetIdentifier().copy(target->identifier, IdentifierSize);
     }
 
@@ -131,14 +139,14 @@ extern "C"
             return 0;
         }
 
-        if (!entry->HasFlag(SMALL_SCENERY_FLAG_ANIMATED))
+        if (!entry->flags.has(SmallSceneryFlag::isAnimated))
         {
             dll_log("This small scenery entry is not animated.");
             return 0;
         }
 
         // Only frame offset animations have been implemented so far
-        if (entry->HasFlag(SMALL_SCENERY_FLAG_FOUNTAIN_SPRAY_1))
+        if (entry->flags.has(SmallSceneryFlag::isFountain))
         {
             uint16_t frame = 0;
             const uint8_t max_frames = 0xF;
@@ -149,7 +157,7 @@ extern "C"
             }
             return frame;
         }
-        else if (entry->HasFlag(SMALL_SCENERY_FLAG_HAS_FRAME_OFFSETS))
+        else if (entry->flags.has(SmallSceneryFlag::hasFrameOffsets))
         {
             uint16_t frame = 0;
             uint16_t max_frames = std::min(entry->FrameOffsetCount, (uint16_t)length);
@@ -159,7 +167,7 @@ extern "C"
                 int32_t image_offset = entry->frame_offsets[frame];
                 image_offset = (image_offset * 4);
 
-                if (entry->HasFlag(SMALL_SCENERY_FLAG_VISIBLE_WHEN_ZOOMED | SMALL_SCENERY_FLAG17))
+                if (entry->flags.hasAny(SmallSceneryFlag::isVisibleWhenZoomed, SmallSceneryFlag::flag17))
                 {
                     image_offset += 4;
                 }

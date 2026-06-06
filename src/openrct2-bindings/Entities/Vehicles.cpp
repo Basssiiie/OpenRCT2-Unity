@@ -1,6 +1,9 @@
 #include "../OpenRCT2.Bindings.h"
 
+#include <cstdint>
 #include <openrct2/entity/EntityList.h>
+#include <openrct2/ride/Angles.h>
+#include <openrct2/ride/ted/TrackElemType.h>
 #include <openrct2/ride/Vehicle.h>
 
 extern "C"
@@ -11,9 +14,9 @@ extern "C"
         int32_t y;
         int32_t z;
         uint8_t direction;
-        uint8_t banking;
-        uint8_t pitch;
-        track_type_t trackType;
+        VehicleRoll banking;
+        VehiclePitch pitch;
+        TrackElemType trackType;
         uint8_t trackDirection;
         uint16_t trackProgress;
     };
@@ -32,8 +35,8 @@ extern "C"
             target->z = vehicle->z;
 
             target->direction = vehicle->Orientation;
-            target->banking = vehicle->bank_rotation;
-            target->pitch = vehicle->Pitch;
+            target->banking = vehicle->roll;
+            target->pitch = vehicle->pitch;
 
             target->trackType = vehicle->GetTrackType();
             target->trackDirection = vehicle->GetTrackDirection();

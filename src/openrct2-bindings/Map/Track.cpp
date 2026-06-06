@@ -2,22 +2,38 @@
 #include "../Utilities/Logging.h"
 #include "../Utilities/TileElementHelper.h"
 
+#include <cstdint>
+#include <openrct2/core/EnumUtils.hpp>
+#include <openrct2/drawing/Colour.h>
 #include <openrct2/ride/Ride.h>
+#include <openrct2/ride/RideColour.h>
 #include <openrct2/ride/RideData.h>
+#include <openrct2/ride/ted/PitchAndRoll.h>
+#include <openrct2/ride/ted/TrackElementDescriptor.h>
+#include <openrct2/ride/ted/TrackElemType.h>
 #include <openrct2/ride/TrackData.h>
+#include <openrct2/ride/Vehicle.h>
+#include <openrct2/ride/VehicleSubpositionData.h>
+#include <openrct2/world/Location.hpp>
+#include <openrct2/world/Map.h>
+#include <openrct2/world/tile_element/TileElement.h>
+#include <openrct2/world/tile_element/TileElementType.h>
+#include <openrct2/world/tile_element/TrackElement.h>
+#include <string.h>
 
-using namespace OpenRCT2::TrackMetaData;
+using namespace OpenRCT2::Drawing;
+using namespace OpenRCT2::TrackMetadata;
 
 extern "C"
 {
     struct TrackInfo
     {
-        uint16_t trackType;
+        TrackElemType trackType;
         int8_t trackHeight;
         uint8_t sequenceIndex;
-        uint8_t mainColour;
-        uint8_t additionalColour;
-        uint8_t supportsColour;
+        Colour mainColour;
+        Colour additionalColour;
+        Colour supportsColour;
         bool chainlift;
         bool cablelift;
         bool inverted;
@@ -37,7 +53,7 @@ extern "C"
 
         const Ride* ride = GetRide(track->GetRideIndex());
         const RideTypeDescriptor& rtd = GetRideTypeDescriptor(track->GetRideType());
-        uint16_t trackType = track->GetTrackType();
+        TrackElemType trackType = track->GetTrackType();
 
         target->trackType = trackType;
         target->trackHeight = rtd.Heights.VehicleZOffset;
@@ -46,14 +62,14 @@ extern "C"
         target->cablelift = track->HasCableLift();
         target->inverted = track->IsInverted();
 
-        const TrackColour scheme = ride->track_colour[track->GetColourScheme()];
+        const TrackColour scheme = ride->trackColours[track->GetColourScheme()];
         target->mainColour = scheme.main;
         target->additionalColour = scheme.additional;
         target->supportsColour = scheme.supports;
 
         const TrackElementDescriptor& ted = GetTrackElementDescriptor(track->GetTrackType());
-        target->normalToInverted = (ted.flags & TRACK_ELEM_FLAG_NORMAL_TO_INVERSION);
-        target->invertedToNormal = (ted.flags & TRACK_ELEM_FLAG_INVERSION_TO_NORMAL);
+        target->normalToInverted = (ted.flags.has(TrackElementFlag::normalToInversion));
+        target->invertedToNormal = (ted.flags.has(TrackElementFlag::inversionToNormal));
     }
 
     // Writes the track element details to the specified buffer.
@@ -108,12 +124,12 @@ extern "C"
 
     // Hack: manually fix the gaps.
     // (please tell me if you know a better way to fix there gaps, without any bumps!)
-    static void FixTrackPiecePosition(TrackSubposition* target, uint32_t trackType, TrackPitch slope)
+    static void FixTrackPiecePosition(TrackSubposition* target, TrackElemType trackType, TrackPitch slope)
     {
         switch (slope)
         {
-            case TrackPitch::Up90:
-            case TrackPitch::Down90:
+            case TrackPitch::up90:
+            case TrackPitch::down90:
                 target->z = RoundToMultiple(target->z, 8);
                 break;
 
@@ -125,7 +141,7 @@ extern "C"
         }
 
         // Custom hacks for specific track types.
-        if (trackType == TrackElemType::LeftCurvedLiftHill || trackType == TrackElemType::RightCurvedLiftHill)
+        if (trackType == TrackElemType::leftCurvedLiftHill || trackType == TrackElemType::rightCurvedLiftHill)
         {
             target->pitch = 0;
         }
@@ -134,28 +150,29 @@ extern "C"
     // Returns the upper bound of the track types array.
     EXPORT int32_t GetTrackTypesCount()
     {
-        return static_cast<int32_t>(TrackElemType::Count);
+        return static_cast<int32_t>(TrackElemType::count);
     }
 
     // Returns the length of the pathing route for the specified track element.
-    EXPORT uint16_t GetTrackSubpositionsLength(VehicleTrackSubposition subposition, uint16_t trackType, uint8_t direction)
+    EXPORT uint16_t GetTrackSubpositionsLength(VehicleTrackSubposition subposition, TrackElemType trackType, uint8_t direction)
     {
         return VehicleGetMoveInfoSize(subposition, trackType, direction);
     }
 
     // Returns the pathing route for the specified track element.
     EXPORT void GetTrackSubpositions(
-        VehicleTrackSubposition subposition, uint16_t trackType, uint8_t direction, TrackSubposition* nodes, int32_t arraySize)
+        VehicleTrackSubposition subposition, TrackElemType trackType, uint8_t direction, TrackSubposition* nodes,
+        int32_t arraySize)
     {
         static_assert(sizeof(TrackSubposition) == sizeof(VehicleInfo), "Size is not correct");
 
-        auto typeAndDirection = static_cast<uint16_t>((trackType << 2) | (direction & 3));
+        auto typeAndDirection = static_cast<uint16_t>((EnumValue(trackType) << 2) | (direction & 3));
         auto trackSubposition = static_cast<uint8_t>(subposition);
 
         const VehicleInfoList* list = gTrackVehicleInfo[trackSubposition][typeAndDirection];
         std::memcpy(nodes, list->info, sizeof(VehicleInfo) * arraySize);
 
-        const TrackDefinition definition = TrackMetaData::GetTrackElementDescriptor(trackType).definition;
+        const TrackDefinition definition = TrackMetadata::GetTrackElementDescriptor(trackType).definition;
         FixTrackPiecePosition(&nodes[0], trackType, definition.pitchStart);
         FixTrackPiecePosition(&nodes[arraySize - 1], trackType, definition.pitchEnd);
     }

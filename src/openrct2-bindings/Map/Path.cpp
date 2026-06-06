@@ -2,8 +2,14 @@
 #include "../Utilities/Logging.h"
 #include "../Utilities/TileElementHelper.h"
 
+#include <cstdint>
 #include <openrct2/object/FootpathSurfaceObject.h>
+#include <openrct2/world/Location.hpp>
 #include <openrct2/world/Map.h>
+#include <openrct2/world/tile_element/PathElement.h>
+#include <openrct2/world/tile_element/TileElement.h>
+#include <openrct2/world/tile_element/TileElementBase.h>
+#include <openrct2/world/tile_element/TileElementType.h>
 
 extern "C"
 {

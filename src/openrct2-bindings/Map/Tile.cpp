@@ -1,7 +1,12 @@
 #include "../OpenRCT2.Bindings.h"
-#include "../Utilities/Logging.h"
 
+#include <cstdint>
+#include <openrct2/world/Location.hpp>
 #include <openrct2/world/Map.h>
+#include <openrct2/world/tile_element/TileElement.h>
+#include <openrct2/world/tile_element/TileElementType.h>
+
+using namespace OpenRCT2;
 
 extern "C"
 {

@@ -7,13 +7,13 @@ namespace OpenRCT2.Bindings.Entities
     public static class EntityRegistry
     {
         /// <summary>
-        /// Gets the amount of sprites for the specified type currently on the map.
+        /// Gets the amount of entities for the specified type currently on the map.
         /// </summary>
-        public static int GetCount(EntityType spriteType)
-            => GetEntityCount(spriteType);
+        public static int GetCount(EntityType entityType)
+            => GetEntityCount(entityType);
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl)]
-        static extern int GetEntityCount(EntityType spriteType);
+        static extern int GetEntityCount(EntityType entityType);
 
 
         /// <summary>
@@ -39,14 +39,14 @@ namespace OpenRCT2.Bindings.Entities
         /// <summary>
         /// Gets additional data about the animation group and type combination.
         /// </summary>
-        public static PeepAnimationData GetPeepAnimationData(byte group, byte type)
+        public static PeepAnimationData GetPeepAnimationData(ushort animationObjectId, byte animationGroup, byte animationType)
         {
-            GetPeepAnimationData(group, type, out PeepAnimationData data);
+            GetPeepAnimationData(animationObjectId, animationGroup, animationType, out PeepAnimationData data);
             return data;
         }
 
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl)]
-        static extern void GetPeepAnimationData(byte group, byte type, out PeepAnimationData data);
+        static extern void GetPeepAnimationData(ushort animationObjectId, byte animationGroup, byte animationType, out PeepAnimationData data);
 
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace OpenRCT2.Bindings.Entities
         /// the peep does not exist (anymore).
         /// </summary>
         [DllImport(Plugin.FileName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool GetGuestStats(ushort spriteIndex, out GuestStats peepStats);
+        public static extern bool GetGuestStats(ushort entityId, out GuestStats peepStats);
 
         /// <summary>
         /// Reads all vehicles in the park into the specified buffer.

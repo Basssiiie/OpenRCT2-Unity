@@ -19,6 +19,7 @@ namespace OpenRCT2.Bindings.Entities
         public readonly byte trousersColour;
         public readonly byte accessoryColour;
 
+        public readonly ushort animationObjectId;
         public readonly byte animationGroup;
         public readonly byte animationType;
         public readonly byte animationOffset;

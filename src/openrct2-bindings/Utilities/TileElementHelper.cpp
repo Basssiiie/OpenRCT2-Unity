@@ -1,8 +1,13 @@
 #include "./TileElementHelper.h"
-
 #include "./Logging.h"
 
+#include <openrct2/world/Location.hpp>
+#include <openrct2/world/MapLimits.h>
 #include <openrct2/world/Map.h>
+#include <openrct2/world/tile_element/TileElement.h>
+#include <openrct2/world/tile_element/TileElementType.h>
+
+using namespace OpenRCT2;
 
 // Get a tile element at a specified x, y, and index.
 const TileElement* GetTileElementAt(int x, int y, int index)

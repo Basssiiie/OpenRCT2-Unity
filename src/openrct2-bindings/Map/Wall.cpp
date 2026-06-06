@@ -2,8 +2,16 @@
 #include "../Utilities/Logging.h"
 #include "../Utilities/TileElementHelper.h"
 
+#include <cstdint>
 #include <openrct2/object/WallSceneryEntry.h>
+#include <openrct2/world/Location.hpp>
 #include <openrct2/world/Map.h>
+#include <openrct2/world/tile_element/TileElement.h>
+#include <openrct2/world/tile_element/TileElementBase.h>
+#include <openrct2/world/tile_element/TileElementType.h>
+#include <openrct2/world/tile_element/WallElement.h>
+
+using namespace OpenRCT2::Drawing;
 
 extern "C"
 {
@@ -11,9 +19,9 @@ extern "C"
     {
         uint32_t imageIndex;
         uint8_t slope;
-        uint8_t colour1;
-        uint8_t colour2;
-        uint8_t colour3;
+        Colour colour1;
+        Colour colour2;
+        Colour colour3;
         uint16_t animationFrameCount;
         uint16_t animationFrameDelay;
         bool animated;

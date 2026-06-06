@@ -71,7 +71,7 @@ namespace OpenRCT2.Behaviours.Controllers
 
             if (animationKey != state.animation)
             {
-                var animation = PeepAnimationsFactory.GetOrCreate(entity.animationGroup, entity.animationType, entity.tshirtColour, entity.trousersColour, entity.accessoryColour);
+                var animation = PeepAnimationsFactory.GetOrCreate(entity.animationObjectId, entity.animationGroup, entity.animationType, entity.tshirtColour, entity.trousersColour, entity.accessoryColour);
                 var frames = animation.frames;
 
                 material.SetTexture(_animationKey, frames);

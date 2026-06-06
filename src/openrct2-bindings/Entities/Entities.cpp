@@ -1,16 +1,15 @@
 #include "../OpenRCT2.Bindings.h"
-#include "../Utilities/Logging.h"
 
-#include <openrct2/entity/EntityList.h>
-#include <openrct2/entity/Guest.h>
-#include <openrct2/entity/Staff.h>
-#include <openrct2/ride/Vehicle.h>
+#include <cstdint>
+#include <openrct2/entity/EntityBase.h>
+#include <openrct2/entity/EntityRegistry.h>
+#include <openrct2/GameState.h>
 
 extern "C"
 {
     EXPORT int GetEntityCount(EntityType type)
     {
-        return GetEntityListCount(type);
+        return getGameState().entities.GetEntityListCount(type);
     }
 
     struct EntityCounts
@@ -22,8 +21,9 @@ extern "C"
 
     EXPORT void GetEntityCounts(EntityCounts* counts)
     {
-        counts->vehicles = GetEntityListCount(EntityType::Vehicle);
-        counts->guests = GetEntityListCount(EntityType::Guest);
-        counts->staff = GetEntityListCount(EntityType::Staff);
+        auto& entities = getGameState().entities;
+        counts->vehicles = entities.GetEntityListCount(EntityType::vehicle);
+        counts->guests = entities.GetEntityListCount(EntityType::guest);
+        counts->staff = entities.GetEntityListCount(EntityType::staff);
     }
 }
